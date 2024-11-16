@@ -8,4 +8,5 @@ crate-type = [ 'staticlib' ]
 name = 'closure'
 
 [dependencies]
+closure-core = "0.1.0"
 extendr-api = '*'
