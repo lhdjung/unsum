@@ -1,0 +1,28 @@
+Package: closure
+Title: Complete Listing of Original Samples of Underlying Raw Evidence
+Version: 0.0.0.9000
+Authors@R: 
+    person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre"))
+Description: Reconstruct all possible raw data that could have led to reported
+    summary statistics. Provides a wrapper for the 'CLOSURE' algorithm written
+    in Rust.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.2
+Imports: 
+    cli,
+    ggplot2,
+    rlang,
+    scales,
+    tibble,
+    tidyr
+Collate: 
+    'extendr-wrappers.R'
+    'utils.R'
+    'pivot.R'
+    'summaries.R'
+    'plot.R'
+    'read.R'
+    'utils-pipe.R'
+Config/rextendr/version: 0.3.1

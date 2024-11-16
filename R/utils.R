@@ -1,0 +1,173 @@
+
+add_class <- function (x, new_class) {
+  `class<-`(x, value = c(new_class, class(x)))
+}
+
+# Reading CLOSURE data from disk can lead to spurious differences in attributes;
+# specifically, in pointers. However, what matters when comparing two data
+# frames produced by different CLOSURE implementations is only the values, not
+# any transitory details about the way R stores them in memory.
+
+
+
+
+
+# Test whether two objects are identical except for their attributes. In other
+# words, when the attributes are removed, is the rest identical between the two?
+identical_except_attributes <- function(x, y) {
+  identical(
+    `attributes<-`(x, NULL),
+    `attributes<-`(y, NULL)
+  )
+}
+
+
+# Does each pair of columns contain the same values?
+identical_sorted_cols <- function(x, y) {
+  if (ncol(x) != ncol(y)) {
+    cli::cli_abort("Different numbers of columns.")
+  }
+  if (!identical(colnames(x), colnames(y))) {
+    cli::cli_abort("Different column names.")
+  }
+  for (n in seq_len(ncol(x))) {
+    if (!identical(sort(x[[n]]), sort(y[[n]]))) {
+      # message(paste("Different at", n))
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+
+
+# TODO: Change name of mentioned function from `closure_read()` when Rust
+# function is in place -- perhaps `closure_combine()`?
+abort_not_closure_data <- function(action, allow_pivot = FALSE) {
+  msg <- "These data are not output of `closure_read()`"  # <-- change name here
+  if (allow_pivot) {
+    msg <- paste(msg, "or `closure_pivot_longer()`")
+  }
+  cli::cli_abort(c(
+    paste("Can only", action, "CLOSURE data."),
+    "x" = paste0(msg, ".")
+  ))
+}
+
+
+#' Error if input is not a CLOSURE data frame
+#'
+#' @param data Object to check.
+#'
+#' @return No return value, might throw an error.
+#'
+#' @noRd
+check_closure_data <- function(data) {
+
+  if (!inherits(data, "closure_data")) {
+    abort_not_closure_data(action = "use")
+  }
+
+  coltypes <- vapply(
+    data,
+    typeof,
+    character(1),
+    USE.NAMES = FALSE
+  )
+
+  if (!all(coltypes == "integer")) {
+    colnames_all <- colnames(data)
+    offenders <- colnames_all[!coltypes == "integer"]
+    offenders <- paste0("\"", offenders, "\"")
+    this_these <- if (length(offenders) == 1) {
+      "This column is"
+    } else {
+      "These columns are"
+    }
+    this_these <- maybe_plural(offenders, "This column is", "These columns are")
+    cli::cli_abort(c(
+      "All columns of CLOSURE data must be integer.",
+      "x" = "{this_these} not integer:",
+      "x" = "{offenders}"
+    ))
+  }
+
+  colnames_expected <- paste0("n", seq_len(ncol(data)))
+
+  # Check correct column names:
+  if (identical(colnames(data), colnames_expected)) {
+    return(invisible(NULL))
+  }
+
+
+# Incorrect column names --------------------------------------------------
+
+  colnames_all <- colnames(data)
+
+  # The parts of the error message that are common to all possible errors below:
+  error_start <- "Column names of CLOSURE data must be valid."
+  error_end <- c(
+    ">" = "Tip: leave the data unchanged to avoid this error."
+  )
+
+
+  # Are any incorrect column names present?
+  offenders <- colnames_all[!(colnames_all %in% colnames_expected)]
+
+  # Circumspect way of checking whether (correct) columns were removed: if so,
+  # `colnames_expected` will be too short, so that the last N column names from
+  # the longer `colnames_all` vector are not present in it, where N is the
+  # number of columns that were removed. Therefore, some "offenders" will
+  # actually have the correct format, so this is checked here.
+  if (any(grepl("^n\\d+$", offenders))) {
+    cli::cli_abort(c(
+      error_start,
+      "x" = "Were any columns removed?",
+      error_end
+    ))
+  }
+
+  if (length(offenders) > 0) {
+    this_these <- if (length(offenders) == 1) {
+      "This column name is"
+    } else {
+      "These column names are"
+    }
+
+    offenders <- paste0("\"", offenders, "\"")
+
+    cli::cli_abort(c(
+      error_start,
+      "x" = "{this_these} unexpected:",
+      "x" = "{offenders}",
+      error_end
+    ))
+  }
+
+
+  # Are any correct column names absent?
+  missing_cols <- colnames_expected[!(colnames_expected %in% colnames_all)]
+
+  if (length(missing_cols) > 0) {
+    missing_cols <- paste0("\"", missing_cols, "\"")
+    col_cols = if (length(missing_cols) == 1) "column" else "columns"
+    cli::cli_abort(c(
+      error_start,
+      "x" = "Missing {col_cols}:",
+      "x" = "{missing_cols}",
+      error_end
+    ))
+  }
+
+  last_n <- paste0("n", ncol(data))
+
+  # If the column names are complete and each of them is expected, but they
+  # are still not pairwise identical to the expected column names, the only
+  # possibility is that they are not ordered correctly:
+  cli::cli_abort(c(
+    error_start,
+    "x" = "Columns are not properly ordered.",
+    "x" = "They should run from \"n1\" to \"{last_n}\".",
+    error_end
+  ))
+
+}
