@@ -8,5 +8,6 @@ crate-type = [ 'staticlib' ]
 name = 'closure'
 
 [dependencies]
-closure-core = "0.1.0"
+closure-core = { git = "https://github.com/lhdjung/closure-core" }
 extendr-api = '*'
+rayon = "1.10.0"

@@ -10,9 +10,11 @@
 #' @useDynLib closure, .registration = TRUE
 NULL
 
-#' Return string `"Hello world!"` to R.
-#' @export
-hello_world <- function() .Call(wrap__hello_world)
+#' Core CLOSURE implementation, processed for R
+create_combinations <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd)
+
+#' Convert strings such as "n1" and "n2" to integers such as 1 and 2
+n_to_integer <- function(strings) .Call(wrap__n_to_integer, strings)
 
 
 # nolint end

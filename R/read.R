@@ -18,7 +18,7 @@ closure_read <- function(version = c("new", "old", "python")) {
     "/home/lukas/Documents/python_projects/CLOSURE-Python/parallel_results.csv"
   } else {
     paste0(
-      "/home/lukas/Documents/rust_projects/closure_ground/parallel_results",
+      "/home/lukas/Documents/rust_projects/closure-core/parallel_results",
       infix,
       ".csv"
     )
@@ -28,7 +28,7 @@ closure_read <- function(version = c("new", "old", "python")) {
   path %>%
     readr::read_csv(col_types = readr::cols(.default = "i")) %>%
     # dplyr::slice(1:5000) %>%
-    add_class("closure_data")
+    add_class("closure_combine")
 }
 
 

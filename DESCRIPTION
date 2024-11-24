@@ -3,9 +3,9 @@ Title: Complete Listing of Original Samples of Underlying Raw Evidence
 Version: 0.0.0.9000
 Authors@R: 
     person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre"))
-Description: Reconstruct all possible raw data that could have led to reported
-    summary statistics. Provides a wrapper for the 'CLOSURE' algorithm written
-    in Rust.
+Description: Reconstructs all possible raw data that could have led to reported
+    summary statistics. Provides a wrapper for the Rust implementation of the
+    'CLOSURE' algorithm.
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -20,9 +20,12 @@ Imports:
 Collate: 
     'extendr-wrappers.R'
     'utils.R'
+    'combine.R'
+    'count.R'
     'pivot.R'
     'summaries.R'
     'plot.R'
     'read.R'
     'utils-pipe.R'
-Config/rextendr/version: 0.3.1
+Config/rextendr/version: 0.3.1.9001
+SystemRequirements: Cargo (Rust's package manager), rustc

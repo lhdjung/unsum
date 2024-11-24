@@ -7,10 +7,11 @@
 closure_plot(
   data,
   frequency = c("absolute", "relative"),
-  include_text = TRUE,
-  text_offset = 0.05,
   bar_alpha = 0.8,
-  bar_color = "royalblue1"
+  bar_color = "royalblue1",
+  show_text = TRUE,
+  text_offset = 0.05,
+  text_color = bar_color
 )
 }
 \arguments{
@@ -19,16 +20,19 @@ closure_plot(
 \item{frequency}{String (length 1). What should the bars display? One of
 \code{"absolute"} (the default) and \code{"relative"}.}
 
-\item{include_text}{Logical (length 1). Should the bars be labeled with the
+\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
+
+\item{bar_color}{String (length 1). Color of the bars. Default is
+\code{"royalblue1"}.}
+
+\item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}
 
 \item{text_offset}{Numeric (length 1). Distance between the text labels and
 the bars. Default is \code{0.05}.}
 
-\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
-
-\item{bar_color}{String (length 1).  Color of the bars. Default is
-\code{"royalblue1"}.}
+\item{text_color}{String (length 1). Color of the text labels. By default,
+the same as \code{bar_color}.}
 }
 \value{
 A ggplot object.
@@ -38,9 +42,9 @@ Call \code{closure_plot()} to get a barplot of data coming from
 \code{closure_read()} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.
 
 For each scale value, the bars show how often this value appears in the
-full list of possible raw data combinations found by the CLOSURE technique.
+full list of possible raw data combinations found by the CLOSURE algorithm.
 }
 \seealso{
-\verb{[closure_count()}] which displays the same information in a data
-frame.
+\code{\link[=closure_summarize]{closure_summarize()}}, which displays the same information in a
+data frame.
 }

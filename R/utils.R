@@ -41,15 +41,17 @@ identical_sorted_cols <- function(x, y) {
 
 
 # TODO: Change name of mentioned function from `closure_read()` when Rust
-# function is in place -- perhaps `closure_combine()`?
-abort_not_closure_data <- function(action, allow_pivot = FALSE) {
-  msg <- "These data are not output of `closure_read()`"  # <-- change name here
+# function is in place -- perhaps `closure_combine()`? Actually, change the name
+# throughout the whole package when `closure_read()` is no longer needed!
+abort_not_closure_combine <- function(allow_pivot = FALSE) {
+  error <- "These data are not output of `closure_read()`"  # <-- change name here
   if (allow_pivot) {
-    msg <- paste(msg, "or `closure_pivot_longer()`")
+    error <- paste(error, "or `closure_pivot_longer()`")
   }
+  error <- paste0(error, ".")
   cli::cli_abort(c(
-    paste("Can only", action, "CLOSURE data."),
-    "x" = paste0(msg, ".")
+    "Can only use CLOSURE data.",
+    "x" = error
   ))
 }
 
@@ -61,16 +63,16 @@ abort_not_closure_data <- function(action, allow_pivot = FALSE) {
 #' @return No return value, might throw an error.
 #'
 #' @noRd
-check_closure_data <- function(data) {
+check_closure_combine <- function(data) {
 
-  if (!inherits(data, "closure_data")) {
-    abort_not_closure_data(action = "use")
+  if (!inherits(data, "closure_combine")) {
+    abort_not_closure_combine()
   }
 
   coltypes <- vapply(
-    data,
-    typeof,
-    character(1),
+    X = data,
+    FUN = typeof,
+    FUN.VALUE = character(1),
     USE.NAMES = FALSE
   )
 
@@ -83,7 +85,6 @@ check_closure_data <- function(data) {
     } else {
       "These columns are"
     }
-    this_these <- maybe_plural(offenders, "This column is", "These columns are")
     cli::cli_abort(c(
       "All columns of CLOSURE data must be integer.",
       "x" = "{this_these} not integer:",
@@ -106,7 +107,7 @@ check_closure_data <- function(data) {
   # The parts of the error message that are common to all possible errors below:
   error_start <- "Column names of CLOSURE data must be valid."
   error_end <- c(
-    ">" = "Tip: leave the data unchanged to avoid this error."
+    "i" = "Tip: leave the data unchanged to avoid this error."
   )
 
 
@@ -171,3 +172,31 @@ check_closure_data <- function(data) {
   ))
 
 }
+
+
+# Specifically check that data already known to inherit the
+# "closure_pivot_longer" class were not manipulated.
+check_closure_pivot_longer_unaltered <- function(data) {
+
+  data_are_correct <-
+    identical(colnames(data), c("n", "value")) &&
+    identical(
+      vapply(data, typeof, character(1), USE.NAMES = FALSE),
+      c("integer", "integer")
+    )
+
+  if (data_are_correct) {
+    return(invisible(NULL))
+  }
+
+  cli::cli_abort(c(
+    "Can only use long-format CLOSURE data here if left unaltered.",
+    "x" = paste(
+      "These data seem to be output of `closure_pivot_longer()`",
+      "that was later manipulated."
+    ),
+    "i" = "Leave the data unchanged to avoid this error."
+  ))
+
+}
+

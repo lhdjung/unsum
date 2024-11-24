@@ -27,8 +27,24 @@ Tibble (data frame) with two columns:
 }
 \description{
 Data coming from \code{closure_read()} can be reshaped using
-\code{closure_pivot_longer()}. This makes it easier to assess which "n" variable
-holds which combinations.
+\code{closure_pivot_longer()}. This turns CLOSURE output into tidy data.
 
-This function is a thin wrapper around \code{\link[tidyr:pivot_longer]{tidyr::pivot_longer()}}.
+It is a wrapper around \code{\link[tidyr:pivot_longer]{tidyr::pivot_longer()}} tailored to CLOSURE data.
+}
+\details{
+The present function differs from \code{\link[tidyr:pivot_longer]{tidyr::pivot_longer()}} in these
+ways:
+\itemize{
+\item It checks whether \code{data} are CLOSURE output.
+\item It always includes all columns.
+\item By default (\code{cols_vary = "slowest"}), it clusters the output by the
+original columns, such as \code{"n1"} and \code{"n2"}. This preserves the natural
+grouping of the data.
+\item It transforms the \code{"n"} column to integer, like \code{1} for \code{"n1"} and \code{2} for
+\code{"n2"}. The \code{"n"} prefix would be redundant and distract from the numeric
+values.
+\item It adds the \code{"closure_pivot_longer"} class to the output. This will inform
+downstream functions, such as \code{\link[=closure_summarize]{closure_summarize()}} and
+\code{\link[=closure_plot]{closure_plot()}}.
+}
 }

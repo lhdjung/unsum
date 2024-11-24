@@ -20,13 +20,13 @@ version = "0.1.0"
 dependencies = [
  "closure-core",
  "extendr-api",
+ "rayon",
 ]
 
 [[package]]
 name = "closure-core"
 version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fb7770fbe2b4baa0d75e3d2c545ee1b9a3ae61d934e2572a50db609149d3a3a"
+source = "git+https://github.com/lhdjung/closure-core#f4fa5247f3a0f8366dd2b3c5cbbf0c6eb97f63d9"
 dependencies = [
  "csv",
  "indicatif",
