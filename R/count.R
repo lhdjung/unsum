@@ -1,10 +1,21 @@
 
-#' Count initial CLOSURE combinations
+#' Count CLOSURE combinations in advance
+#'
+#' @description Determine how many combinations [`closure_combine()`] would find
+#'   for a given set of summary statistics.
+#'
+#'   - TODO: add a `closure_count_all()` function.
+#'   - `closure_count_initial()` only counts the first round of combinations,
+#'   from which all other ones would be generated.
+#'
+#'   This can help predict how much time [`closure_combine()`] would take, and
+#'   avoid prohibitively long runs.
 #'
 #' @param scale_min,scale_max Integers (length 1 each). Minimum and maximum of
 #'   the scales to which the reported statistics refer.
 #'
-#' @return
+#' @return Integer (length 1).
+#'
 #' @export
 #'
 #' @examples
@@ -15,6 +26,15 @@
 # matter The formula is: (n+1) * n / 2 where n is the range size
 
 closure_count_initial <- function(scale_min, scale_max) {
-    range_size <- scale_max - scale_min + 1
+  if (scale_min > scale_max) {
+    cli::cli_abort(c(
+      "Scale minimum can't be greater than scale maximum.",
+      "x" = "`scale_min` is {scale_min}.",
+      "x" = "`scale_max` is {scale_max}."
+    ))
+  }
+  range_size <- scale_max - scale_min + 1
+  as.integer(
     (range_size * (range_size + 1)) / 2
+  )
 }
