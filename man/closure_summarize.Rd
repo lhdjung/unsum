@@ -13,8 +13,8 @@ closure_summarize(data)
 Tibble (data frame) with these columns:
 \itemize{
 \item \code{value}: integer. Scale values.
-\item \code{n_absolute}: Absolute frequencies of the scale values in \code{data}.
-\item \code{n_relative}: Relative frequencies of the scale values in \code{data}.
+\item \code{f_absolute}: Absolute frequencies of the scale values in \code{data}.
+\item \code{f_relative}: Relative frequencies of the scale values in \code{data}.
 }
 }
 \description{

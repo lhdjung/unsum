@@ -2,7 +2,8 @@
 #' Visualize CLOSURE data
 #'
 #' @description Call `closure_plot()` to get a barplot of data coming from
-#'   [`closure_combine()`] or [`closure_pivot_longer()`].
+#'   [`closure_combine()`], [`closure_pivot_longer()`], or
+#'   [`closure_summarize()`].
 #'
 #'   For each scale value, the bars show how often this value appears in the
 #'   full list of possible raw data combinations found by the CLOSURE algorithm.
@@ -51,9 +52,14 @@ closure_plot <- function(data,
 
   frequency <- rlang::arg_match(frequency)
 
-  # Compute the summaries to be visualized. This will check for CLOSURE data
-  # first, so no such checks are needed here.
-  data <- closure_summarize(data)
+  # If the data appear to be CLOSURE summary data, verify this more closely.
+  # Else, compute the summaries to be visualized. The latter action will check
+  # for raw CLOSURE data first, so no such checks are needed here.
+  if (inherits(data, "closure_summarize")) {
+    check_closure_summarize_unaltered(data)
+  } else {
+    data <- closure_summarize(data)
+  }
 
   # Create a function that formats labels for large numbers as, e.g., "20,000"
   format_number_label <- scales::label_comma()
@@ -61,14 +67,14 @@ closure_plot <- function(data,
   # Remove the column that represents the non-chosen type of frequency, then
   # specify the y-axis label by frequency type
   if (frequency == "absolute") {
-    data$n_relative <- NULL
+    data$f_relative <- NULL
     label_y_axis <- paste(
       "Count in",
-      format_number_label(sum(data$n_absolute)),
+      format_number_label(sum(data$f_absolute)),
       "values"
     )
   } else if (frequency == "relative") {
-    data$n_absolute <- NULL
+    data$f_absolute <- NULL
     label_y_axis <- "Relative frequency"
   } else {
     cli::cli_abort("Internal error: unhandled `frequency` type.")
@@ -93,6 +99,9 @@ closure_plot <- function(data,
   } else {
     geom_text_frequency <- NULL
   }
+
+  # TODO: Make sure all the x-axis values are listed there in a row, even
+  # multiple zeros!
 
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
