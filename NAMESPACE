@@ -2,7 +2,7 @@
 
 export("%>%")
 export(closure_combine)
-export(closure_count_combinations_initial)
+export(closure_count_initial)
 export(closure_pivot_longer)
 export(closure_plot)
 export(closure_summarize)
