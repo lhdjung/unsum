@@ -53,6 +53,18 @@ abort_not_closure_data <- function(allow_pivot = FALSE) {
 }
 
 
+abort_closure_data_altered <- function(type, fn_name) {
+  cli::cli_abort(c(
+    "Can only use {type} here if left unaltered.",
+    "x" = paste(
+      "These data seem to be output of `{fn_name}()`",
+      "that was later manipulated."
+    ),
+    "i" = "Leave the data unchanged to avoid this error."
+  ))
+}
+
+
 #' Error if input is not a CLOSURE data frame
 #'
 #' @param data Object to check.
@@ -182,18 +194,60 @@ check_closure_pivot_longer_unaltered <- function(data) {
       c("integer", "integer")
     )
 
-  if (data_are_correct) {
-    return(invisible(NULL))
+  if (!data_are_correct) {
+    abort_closure_data_altered(
+      type = "long-format CLOSURE data",
+      fn_name = "closure_pivot_longer"
+    )
   }
 
-  cli::cli_abort(c(
-    "Can only use long-format CLOSURE data here if left unaltered.",
-    "x" = paste(
-      "These data seem to be output of `closure_pivot_longer()`",
-      "that was later manipulated."
-    ),
-    "i" = "Leave the data unchanged to avoid this error."
-  ))
+}
+
+
+# Borrowed from scrutiny's internals
+is_seq_linear_basic <- function(x) {
+  if (length(x) < 3L) {
+    return(TRUE)
+  }
+  diff_first <- x[2L] - x[1L]
+  for (i in 3L:length(x)) {
+    if (x[i] - x[i - 1L] != diff_first) {
+      return(FALSE)
+    }
+  }
+  TRUE
+}
+
+
+# Specifically check that data already known to inherit the "closure_summarize"
+# class were not manipulated.
+check_closure_summarize_unaltered <- function(data) {
+
+  data_are_correct <-
+    identical(colnames(data), c("value", "f_absolute", "f_relative")) &&
+    identical(
+      vapply(data, typeof, character(1), USE.NAMES = FALSE),
+      c("integer", "integer", "double")
+    ) &&
+    !anyNA(data$value) &&
+    !anyNA(data$f_absolute) &&
+    !anyNA(data$f_relative) &&
+    identical(
+      data$value,
+      seq(
+        from = data$value[1],
+        to   = data$value[length(data$value)]
+      )
+    ) &&
+    is_seq_linear_basic(data$value) &&
+    sum(data$f_relative) == 1
+
+  if (!data_are_correct) {
+    abort_closure_data_altered(
+      type = "summaries of CLOSURE data",
+      fn_name = "closure_summarize"
+    )
+  }
 
 }
 
