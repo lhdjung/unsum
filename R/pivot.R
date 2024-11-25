@@ -53,7 +53,7 @@ closure_pivot_longer <- function(data, cols_vary = c("slowest", "fastest")) {
     tidyr::pivot_longer(
       cols            = tidyr::everything(),
       cols_vary       = cols_vary,
-      names_transform = n_to_integer,
+      names_transform = function(x) as.integer(sub("n", "", x)),
       names_to        = "n",
       values_to       = "value"
     ) %>%

@@ -1,7 +1,7 @@
 use extendr_api::prelude::*;
 use closure_core::dfs_parallel;
 
-/// Core CLOSURE implementation, processed for R
+// Core CLOSURE implementation, processed for R
 #[extendr]
 fn create_combinations(
     mean: f64,
@@ -29,22 +29,10 @@ fn create_combinations(
 }
 
 
-/// Convert strings such as "n1" and "n2" to integers such as 1 and 2
-#[extendr]
-fn n_to_integer(strings: Vec<String>) -> Integers {
-    let rust_ints: Vec<i32> = strings
-        .into_iter()
-        .map(|s| s.trim_start_matches('n').parse().unwrap())
-        .collect();
-    
-    Integers::from_values(rust_ints)
-}
-
 // Macro to generate exports.
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
 extendr_module! {
     mod closure;
     fn create_combinations;
-    fn n_to_integer;
 }
