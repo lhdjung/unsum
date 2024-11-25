@@ -8,8 +8,8 @@
 #'
 #' @return Tibble (data frame) with these columns:
 #'  - `value`: integer. Scale values.
-#'  - `n_absolute`: Absolute frequencies of the scale values in `data`.
-#'  - `n_relative`: Relative frequencies of the scale values in `data`.
+#'  - `f_absolute`: Absolute frequencies of the scale values in `data`.
+#'  - `f_relative`: Relative frequencies of the scale values in `data`.
 #'
 #' @export
 #'
@@ -27,7 +27,7 @@ closure_summarize <- function(data) {
   # Group by scale value, transforming the data into a list of data frames.
   # Mapping `nrow()` to the list returns the number of rows in each data frame,
   # i.e., the number of times that the scale values appear in the combinations.
-  n_absolute <- data %>%
+  f_absolute <- data %>%
     split(data$value) %>%
     vapply(
       FUN       = nrow,
@@ -35,14 +35,41 @@ closure_summarize <- function(data) {
       USE.NAMES = TRUE
     )
 
-  n_relative <- n_absolute / sum(n_absolute)
+  f_relative <- f_absolute / sum(f_absolute)
+  value <- as.integer(names(f_absolute))
+  value_completed <- seq(from = value[1], to = value[length(value)])
 
-  value <- as.integer(names(n_absolute))
+  # If each possible value is instantiated in the values that were actually
+  # found, the results are complete and will be returned here. If not, the
+  # uninstantiated values must be added to `value`, and their frequencies of
+  # zero to `f_absolute` and `f_relative`. This is what the rest of the function
+  # will do.
+  if (length(value) == length(value_completed)) {
+    out <- tibble::tibble(
+      value,
+      f_absolute,
+      f_relative
+    ) %>%
+      add_class("closure_summarize")
+    return(out)
+  }
+
+  # At which indices in the complete vector of possible values are those values
+  # that were actually found?
+  indices_found <- which(value_completed %in% value)
+
+  # Construct full-length vectors where each value is zero
+  f_absolute_completed <- integer(length(value_completed))
+  f_relative_completed <- double(length(value_completed))
+
+  # Fill in the non-zero values where appropriate
+  f_absolute_completed[indices_found] <- f_absolute
+  f_relative_completed[indices_found] <- f_relative
 
   tibble::tibble(
-    value,
-    n_absolute,
-    n_relative
-  )
-
+    value      = value_completed,
+    f_absolute = f_absolute_completed,
+    f_relative = f_relative_completed
+  ) %>%
+    add_class("closure_summarize")
 }
