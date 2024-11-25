@@ -19,5 +19,5 @@ Tibble (data frame) with these columns:
 }
 \description{
 Use \code{closure_summarize()} to compute frequencies of data coming
-from \code{closure_read()} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.
+from \code{\link[=closure_combine]{closure_combine()}} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.
 }

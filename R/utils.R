@@ -40,11 +40,8 @@ identical_sorted_cols <- function(x, y) {
 }
 
 
-# TODO: Change name of mentioned function from `closure_read()` when Rust
-# function is in place -- perhaps `closure_combine()`? Actually, change the name
-# throughout the whole package when `closure_read()` is no longer needed!
-abort_not_closure_combine <- function(allow_pivot = FALSE) {
-  error <- "These data are not output of `closure_read()`"  # <-- change name here
+abort_not_closure_data <- function(allow_pivot = FALSE) {
+  error <- "These data are not output of `closure_combine()`"
   if (allow_pivot) {
     error <- paste(error, "or `closure_pivot_longer()`")
   }
@@ -66,7 +63,7 @@ abort_not_closure_combine <- function(allow_pivot = FALSE) {
 check_closure_combine <- function(data) {
 
   if (!inherits(data, "closure_combine")) {
-    abort_not_closure_combine()
+    abort_not_closure_data()
   }
 
   coltypes <- vapply(

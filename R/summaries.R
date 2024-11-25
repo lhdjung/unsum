@@ -2,7 +2,7 @@
 #' Summarize CLOSURE data
 #'
 #' @description Use `closure_summarize()` to compute frequencies of data coming
-#'   from `closure_read()` or [`closure_pivot_longer()`].
+#'   from [`closure_combine()`] or [`closure_pivot_longer()`].
 #'
 #' @param data CLOSURE data frame.
 #'
@@ -21,7 +21,7 @@ closure_summarize <- function(data) {
   } else if (inherits(data, "closure_pivot_longer")) {
     check_closure_pivot_longer_unaltered(data)
   } else {
-    abort_not_closure_combine(allow_pivot = TRUE)
+    abort_not_closure_data(allow_pivot = TRUE)
   }
 
   # Group by scale value, transforming the data into a list of data frames.

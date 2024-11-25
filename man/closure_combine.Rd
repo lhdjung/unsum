@@ -17,8 +17,16 @@ closure_combine(
 \arguments{
 \item{rounding_error_sd}{}
 }
+\value{
+Tibble (data frame). Each row contains one combination. The number of
+columns is equal to \code{n}, and the columns are named \code{"n1"}, \code{"n2"}, etc.
+}
 \description{
-Create CLOSURE combinations
+Call \code{closure_combine()} to run the CLOSURE algorithm on a given
+set of summary statistics.
+
+This can take a few seconds or even longer, depending on the input. Wide
+variance often leads to many combinations, i.e., long runtimes.
 }
 \examples{
 closure_combine(

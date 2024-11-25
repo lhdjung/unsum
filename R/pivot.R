@@ -1,12 +1,12 @@
 
 #' Pivot CLOSURE data from wide to long
 #'
-#' @description Data coming from `closure_read()` can be reshaped using
+#' @description Data coming from [`closure_combine()`] can be reshaped using
 #'   `closure_pivot_longer()`. This turns CLOSURE output into tidy data.
 #'
 #'   It is a wrapper around [`tidyr::pivot_longer()`] tailored to CLOSURE data.
 #'
-#' @param data Data frame returned by `closure_read()`.
+#' @param data Data frame returned by [`closure_combine()`].
 #' @param cols_vary String (length 1). How to arrange rows?
 #'  - If `"slowest"`, the default, values from the same original `"n"` columns
 #'   are kept together.

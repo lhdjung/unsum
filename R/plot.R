@@ -2,7 +2,7 @@
 #' Visualize CLOSURE data
 #'
 #' @description Call `closure_plot()` to get a barplot of data coming from
-#'   `closure_read()` or [`closure_pivot_longer()`].
+#'   [`closure_combine()`] or [`closure_pivot_longer()`].
 #'
 #'   For each scale value, the bars show how often this value appears in the
 #'   full list of possible raw data combinations found by the CLOSURE algorithm.

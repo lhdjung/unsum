@@ -7,7 +7,7 @@
 closure_pivot_longer(data, cols_vary = c("slowest", "fastest"))
 }
 \arguments{
-\item{data}{Data frame returned by \code{closure_read()}.}
+\item{data}{Data frame returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
 \item{cols_vary}{String (length 1). How to arrange rows?
 \itemize{
@@ -26,7 +26,7 @@ Tibble (data frame) with two columns:
 }
 }
 \description{
-Data coming from \code{closure_read()} can be reshaped using
+Data coming from \code{\link[=closure_combine]{closure_combine()}} can be reshaped using
 \code{closure_pivot_longer()}. This turns CLOSURE output into tidy data.
 
 It is a wrapper around \code{\link[tidyr:pivot_longer]{tidyr::pivot_longer()}} tailored to CLOSURE data.
