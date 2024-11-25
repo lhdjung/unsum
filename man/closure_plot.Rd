@@ -39,7 +39,7 @@ A ggplot object.
 }
 \description{
 Call \code{closure_plot()} to get a barplot of data coming from
-\code{closure_read()} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.
+\code{\link[=closure_combine]{closure_combine()}} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.
 
 For each scale value, the bars show how often this value appears in the
 full list of possible raw data combinations found by the CLOSURE algorithm.
