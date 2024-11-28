@@ -10,7 +10,8 @@
 #'
 #' @param data CLOSURE data frame.
 #' @param frequency String (length 1). What should the bars display? One of
-#'   `"absolute"` (the default) and `"relative"`.
+#'   `"absolute"` (the default), `"relative"`, `"percent"`, and
+#'   `"absolute-percent"`.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
 #' @param bar_color String (length 1). Color of the bars. Default is
 #'   `"royalblue1"`.
@@ -31,9 +32,22 @@
 #' @export
 #'
 #' @examples
+#' # Create CLOSURE data first:
+#' data <- closure_combine(
+#'   mean = 5.0,
+#'   sd = 2.78,
+#'   n = 30,
+#'   scale_min = 1,
+#'   scale_max = 8,
+#'   rounding_error_mean = 0.01,
+#'   rounding_error_sd = 0.01
+#' )
+#'
+#' # Visualize:
+#' closure_plot(data)
 
 
-# data <- closure_read("python")
+# # data <- closure_read("python")
 # frequency <- "absolute"
 # bar_alpha <- 0.8
 # bar_color <- "royalblue1"
@@ -43,7 +57,10 @@
 
 
 closure_plot <- function(data,
-                         frequency = c("absolute", "relative"),
+                         frequency = c("absolute",
+                                       "relative",
+                                       "percent",
+                                       "absolute-percent"),
                          bar_alpha = 0.8,
                          bar_color = "royalblue1",
                          show_text = TRUE,
@@ -65,17 +82,25 @@ closure_plot <- function(data,
   format_number_label <- scales::label_comma()
 
   # Remove the column that represents the non-chosen type of frequency, then
-  # specify the y-axis label by frequency type
-  if (frequency == "absolute") {
+  # specify the y-axis label by frequency type.
+  if (frequency %in% c("absolute", "absolute-percent")) {
     data$f_relative <- NULL
+    sum_absolute <- sum(data$f_absolute)
     label_y_axis <- paste(
       "Count in",
-      format_number_label(sum(data$f_absolute)),
+      format_number_label(sum_absolute),
       "values"
     )
+    if (frequency == "absolute-percent") {
+      label_y_axis <- paste(label_y_axis, "(percentage)")
+    }
   } else if (frequency == "relative") {
     data$f_absolute <- NULL
     label_y_axis <- "Relative frequency"
+  } else if (frequency == "percent") {
+    data$f_absolute <- NULL
+    data$f_relative <- 100 * round(data$f_relative, 2)
+    label_y_axis <- "Percentage of all values"
   } else {
     cli::cli_abort("Internal error: unhandled `frequency` type.")
   }
@@ -89,19 +114,29 @@ closure_plot <- function(data,
   # robust to very different values, such as absolute vs. relative values.
   if (show_text) {
     text_offset_adjusted <- text_offset * max(data$frequency)
+    needs_label_percent <- frequency %in% c("percent", "absolute-percent")
+    if (needs_label_percent && frequency == "absolute-percent") {
+      label_percent <- paste0(
+        " (", 100 * round(data$frequency / sum(data$frequency), 2), "%)"
+      )
+    } else if (needs_label_percent) {
+      label_percent <- "%"
+    } else {
+      label_percent <- ""
+    }
     geom_text_frequency <- ggplot2::geom_text(
       ggplot2::aes(
         y     = frequency + text_offset_adjusted,
-        label = format_number_label(round(frequency, 2))
+        label = paste0(
+          format_number_label(round(frequency, 2)),
+          label_percent
+        )
       ),
       color = text_color
     )
   } else {
     geom_text_frequency <- NULL
   }
-
-  # TODO: Make sure all the x-axis values are listed there in a row, even
-  # multiple zeros!
 
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
@@ -125,3 +160,35 @@ closure_plot <- function(data,
     )
 
 }
+
+
+
+
+closure_plot_ecdf <- function(data,
+                              line_color = "royalblue1",
+                              reference_line_alpha = 0.6) {
+
+  if (inherits(data, "closure_summarize")) {
+    check_closure_summarize_unaltered(data)
+  } else {
+    data <- closure_summarize(data)
+  }
+
+  ggplot2::ggplot(data) +
+    ggplot2::stat_ecdf(ggplot2::aes(f_absolute), color = line_color) +
+    ggplot2::annotate(
+      "segment",
+      linetype = 2,
+      alpha = reference_line_alpha,
+      x = 0,
+      xend = max(data$f_absolute),
+      y = 0,
+      yend = 1
+    ) +
+    ggplot2::labs(x = "Scale value", y = "Cumulative share") +
+    ggplot2::scale_x_continuous(expand = ggplot2::expansion(0, 0)) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(0, 0)) +
+    ggplot2::theme_bw()
+
+}
+
