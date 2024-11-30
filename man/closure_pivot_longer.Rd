@@ -45,6 +45,6 @@ grouping of the data.
 values.
 \item It adds the \code{"closure_pivot_longer"} class to the output. This will inform
 downstream functions, such as \code{\link[=closure_summarize]{closure_summarize()}} and
-\code{\link[=closure_plot]{closure_plot()}}.
+\code{\link[=closure_plot_bar]{closure_plot_bar()}}.
 }
 }
