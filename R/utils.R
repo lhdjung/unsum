@@ -188,9 +188,9 @@ check_closure_combine <- function(data) {
 check_closure_pivot_longer_unaltered <- function(data) {
 
   data_are_correct <-
-    identical(colnames(data), c("n", "value")) &&
+    identical(colnames(data$results), c("n", "value")) &&
     identical(
-      vapply(data, typeof, character(1), USE.NAMES = FALSE),
+      vapply(data$results, typeof, character(1), USE.NAMES = FALSE),
       c("integer", "integer")
     )
 
@@ -250,4 +250,27 @@ check_closure_summarize_unaltered <- function(data) {
   }
 
 }
+
+
+# `results`: tibble with CLOSURE results
+# `metadata`: list with `mean`, `sd`, etc.
+list_with_metadata <- function(results, metadata) {
+  c(list(results = results), metadata)
+}
+
+
+# This is used within `closure_combine()` to warn if no combinations were found.
+warn_if_length_zero <- function(results) {
+  if (length(results) > 0) {
+    return(results)
+  }
+  cli::cli_warn(c(
+    "No results found with these inputs.",
+    "x" = "Data internally inconsistent.",
+    "x" = "These statistics can't describe the same distribution."
+  ))
+  results
+}
+
+
 

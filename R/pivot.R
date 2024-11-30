@@ -25,7 +25,7 @@
 #'   values.
 #'  - It adds the `"closure_pivot_longer"` class to the output. This will inform
 #'   downstream functions, such as [`closure_summarize()`] and
-#'   [`closure_plot()`].
+#'   [`closure_plot_bar()`].
 #'
 #' @return Tibble (data frame) with two columns:
 #'  - `"n"`: integer. Numbers from the column names of `data`, like `1` for
@@ -39,17 +39,19 @@
 #' @examples
 closure_pivot_longer <- function(data, cols_vary = c("slowest", "fastest")) {
 
-  check_closure_combine(data)
+  check_closure_combine(data$results)
+
+  # Record the metadata to be re-added at the end
+  rest <- data[names(data) != "results"]
 
   # Pivot all the values into a single column, "value". The "n" column says
   # which original variable they are from. The rows are ordered by "n" via
   # `cols_vary = "slowest"` by default to keep the "n" variables together. Also,
   # the "n" column is reduced to its only informative component by coercing it
   # to an integer column of the numbers after the "n" in the original variables:
-  # n1, n2, n3, etc. This uses `n_to_integer()`, a helper written in Rust. Then,
-  # add a class that can later tell `closure_summarize()` and `closure_plot()`
-  # that the data is a product of this function.
-  data %>%
+  # n1, n2, n3, etc. Then, add a class that can later tell `closure_summarize()`
+  # and `closure_plot_bar()` that the data is a product of this function.
+  data$results %>%
     tidyr::pivot_longer(
       cols            = tidyr::everything(),
       cols_vary       = cols_vary,
@@ -57,5 +59,6 @@ closure_pivot_longer <- function(data, cols_vary = c("slowest", "fastest")) {
       names_to        = "n",
       values_to       = "value"
     ) %>%
-    add_class("closure_pivot_longer")
+    add_class("closure_pivot_longer") %>%
+    list_with_metadata(rest)
 }
