@@ -29,12 +29,25 @@ This can take a few seconds or even longer, depending on the input. Wide
 variance often leads to many combinations, i.e., long runtimes.
 }
 \examples{
+# High spread:
 closure_combine(
   mean = 5.0,
   sd = 2.78,
   n = 30,
   scale_min = 1,
   scale_max = 8,
+  rounding_error_mean = 0.01,
+  rounding_error_sd = 0.01
+)
+
+# Low spread, and not all scale values are possible
+# (this becomes clearer when following up with `closure_plot_bar()`):
+closure_combine(
+  mean = 2.9,
+  sd = 0.3,
+  n = 30,
+  scale_min = 1,
+  scale_max = 5,
   rounding_error_mean = 0.01,
   rounding_error_sd = 0.01
 )
