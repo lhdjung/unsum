@@ -260,8 +260,10 @@ list_with_metadata <- function(results, metadata) {
 
 
 # Functions like `closure_combine()` that take `scale_min` and `scale_max`
-# arguments need to make sure that min <= max.
-check_scale_order <- function(scale_min, scale_max) {
+# arguments need to make sure that min <= max. Functions that take the mean into
+# account also need to check that it is within these bounds. Such functions
+# include `closure_combine()` but not `closure_count_initial()`.
+check_scale <- function(scale_min, scale_max, mean = NULL) {
   if (scale_min > scale_max) {
     cli::cli_abort(c(
       "Scale minimum can't be greater than scale maximum.",
@@ -269,21 +271,21 @@ check_scale_order <- function(scale_min, scale_max) {
       "x" = "`scale_max` is {scale_max}."
     ))
   }
-}
-
-
-# This is used within `closure_combine()` to warn if no combinations were found.
-warn_if_length_zero <- function(results) {
-  if (length(results) > 0) {
-    return(results)
+  if (!is.null(mean)) {
+    if (mean < scale_min) {
+      cli::cli_abort(c(
+        "Mean can't be less than scale minimum.",
+        "x" = "`mean` is {mean}.",
+        "x" = "`scale_min` is {scale_min}."
+      ))
+    }
+    if (mean > scale_max) {
+      cli::cli_abort(c(
+        "Mean can't be greater than scale maximum.",
+        "x" = "`mean` is {mean}.",
+        "x" = "`scale_max` is {scale_max}."
+      ))
+    }
   }
-  cli::cli_warn(c(
-    "No results found with these inputs.",
-    "x" = "Data internally inconsistent.",
-    "x" = "These statistics can't describe the same distribution."
-  ))
-  results
 }
-
-
 
