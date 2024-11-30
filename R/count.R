@@ -28,7 +28,7 @@
 # matter The formula is: (n+1) * n / 2 where n is the range size
 
 closure_count_initial <- function(scale_min, scale_max) {
-  check_scale_order(scale_min, scale_max)
+  check_scale(scale_min, scale_max)
   range_size <- scale_max - scale_min + 1
   as.integer(
     (range_size * (range_size + 1)) / 2
