@@ -23,6 +23,7 @@
 #' @export
 #'
 #' @examples
+#' # High spread:
 #' closure_combine(
 #'   mean = 5.0,
 #'   sd = 2.78,
@@ -32,8 +33,21 @@
 #'   rounding_error_mean = 0.01,
 #'   rounding_error_sd = 0.01
 #' )
+#'
+#' # Low spread, and not all scale values are possible
+#' # (this becomes clearer when following up with `closure_plot_bar()`):
+#' closure_combine(
+#'   mean = 2.9,
+#'   sd = 0.3,
+#'   n = 30,
+#'   scale_min = 1,
+#'   scale_max = 5,
+#'   rounding_error_mean = 0.01,
+#'   rounding_error_sd = 0.01
+#' )
 
 
+# # For interactive testing:
 # mean <- 5.0
 # sd <- 2.78
 # n <- 30
@@ -51,29 +65,29 @@ closure_combine <- function(mean,
                             rounding_error_mean,
                             rounding_error_sd) {
 
-  out <- create_combinations(
-    mean = mean,
-    sd = sd,
-    n = n,
-    scale_min = scale_min,
-    scale_max = scale_max,
-    rounding_error_mean = rounding_error_mean,
-    rounding_error_sd = rounding_error_sd
-  )
-
-  if (length(out) == 0) {
-    cli::cli_abort(c(
-      "No combinations found with these inputs.",
-      "x" = "Data internally inconsistent.",
-      "x" = "These statistics can't describe the same distribution."
-    ))
-    # return(add_class(tibble::tibble(), "closure_combine"))
-  }
-
-  out %>%
+  mean %>%
+    create_combinations(
+      sd = sd,
+      n = n,
+      scale_min = scale_min,
+      scale_max = scale_max,
+      rounding_error_mean = rounding_error_mean,
+      rounding_error_sd = rounding_error_sd
+    ) %>%
+    warn_if_length_zero() %>%
     tibble::as_tibble(.name_repair = "minimal") %>%
     t() %>%
     tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x))) %>%
-    add_class("closure_combine")
+    add_class("closure_combine") %>%
+    list_with_metadata(
+      list(
+        mean = mean,
+        sd = sd,
+        n = n,
+        scale_min = scale_min,
+        scale_max = scale_max
+      )
+    )
+
 }
 
