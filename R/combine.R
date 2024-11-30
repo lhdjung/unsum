@@ -57,6 +57,13 @@
 # rounding_error_sd <- 0.01
 
 
+# Note: most helper functions called here can be found in the R/utils.R file.
+# The only exception, `create_combinations()`, is in R/extendr-wrappers.R, but
+# all it does is to call into Rust code in scr/rust/src/lib.rs which, in turn,
+# accesses closure-core, a Rust crate (roughly analogous to an R package) that
+# contains the actual implementation of CLOSURE:
+# https://github.com/lhdjung/closure-core/blob/master/src/lib.rs
+
 closure_combine <- function(mean,
                             sd,
                             n,
@@ -65,7 +72,7 @@ closure_combine <- function(mean,
                             rounding_error_mean,
                             rounding_error_sd) {
 
-  check_scale_order(scale_min, scale_max)
+  check_scale(scale_min, scale_max, mean)
 
   mean %>%
     create_combinations(
@@ -76,10 +83,22 @@ closure_combine <- function(mean,
       rounding_error_mean = rounding_error_mean,
       rounding_error_sd = rounding_error_sd
     ) %>%
-    warn_if_length_zero() %>%
     tibble::as_tibble(.name_repair = "minimal") %>%
     t() %>%
-    tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x))) %>%
+    tibble::as_tibble(
+      .name_repair = function(results) {
+        if (length(results) == 0) {
+          cli::cli_warn(c(
+            "No results found with these inputs.",
+            "x" = "Data internally inconsistent.",
+            "x" = "These statistics can't describe the same distribution."
+          ))
+          character(0)
+        } else {
+          paste0("n", seq_along(results))
+        }
+      }
+    ) %>%
     add_class("closure_combine") %>%
     list_with_metadata(
       list(
