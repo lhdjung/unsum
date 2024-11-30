@@ -65,6 +65,8 @@ closure_combine <- function(mean,
                             rounding_error_mean,
                             rounding_error_sd) {
 
+  check_scale_order(scale_min, scale_max)
+
   mean %>%
     create_combinations(
       sd = sd,

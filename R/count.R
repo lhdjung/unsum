@@ -16,6 +16,8 @@
 #'
 #' @return Integer (length 1).
 #'
+#' @include utils.R
+#'
 #' @export
 #'
 #' @examples
@@ -26,13 +28,7 @@
 # matter The formula is: (n+1) * n / 2 where n is the range size
 
 closure_count_initial <- function(scale_min, scale_max) {
-  if (scale_min > scale_max) {
-    cli::cli_abort(c(
-      "Scale minimum can't be greater than scale maximum.",
-      "x" = "`scale_min` is {scale_min}.",
-      "x" = "`scale_max` is {scale_max}."
-    ))
-  }
+  check_scale_order(scale_min, scale_max)
   range_size <- scale_max - scale_min + 1
   as.integer(
     (range_size * (range_size + 1)) / 2

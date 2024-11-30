@@ -259,6 +259,19 @@ list_with_metadata <- function(results, metadata) {
 }
 
 
+# Functions like `closure_combine()` that take `scale_min` and `scale_max`
+# arguments need to make sure that min <= max.
+check_scale_order <- function(scale_min, scale_max) {
+  if (scale_min > scale_max) {
+    cli::cli_abort(c(
+      "Scale minimum can't be greater than scale maximum.",
+      "x" = "`scale_min` is {scale_min}.",
+      "x" = "`scale_max` is {scale_max}."
+    ))
+  }
+}
+
+
 # This is used within `closure_combine()` to warn if no combinations were found.
 warn_if_length_zero <- function(results) {
   if (length(results) > 0) {
