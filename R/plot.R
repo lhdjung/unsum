@@ -9,9 +9,11 @@
 #'   full list of possible raw data combinations found by the CLOSURE algorithm.
 #'
 #' @param data CLOSURE data frame.
-#' @param frequency String (length 1). What should the bars display? One of
-#'   `"absolute"` (the default), `"relative"`, `"percent"`, and
-#'   `"absolute-percent"`.
+#' @param frequency String (length 1). What should the bars display? The
+#'   default, `"absolute-percent"`, is to show counts of each scale values
+#'   together with their percentages of all values. Other options are
+#'   `"absolute"`, `"relative"`, and `"percent"`, but all of them display less
+#'   information.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
 #' @param bar_color String (length 1). Color of the bars. Default is
 #'   `"royalblue1"`.
@@ -28,7 +30,7 @@
 #'
 #' @seealso
 #' - [`closure_summarize()`], which displays the same information in a
-#'   data frame.
+#' data frame.
 #' - [`closure_plot_ecdf()`], an alternative visualization.
 #'
 #' @export
@@ -58,10 +60,10 @@
 # text_color <- bar_color
 
 closure_plot_bar <- function(data,
-                             frequency = c("absolute",
+                             frequency = c("absolute-percent",
+                                           "absolute",
                                            "relative",
-                                           "percent",
-                                           "absolute-percent"),
+                                           "percent"),
                              bar_alpha = 0.8,
                              bar_color = "royalblue1",
                              show_text = TRUE,

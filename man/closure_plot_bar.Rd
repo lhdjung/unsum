@@ -6,7 +6,7 @@
 \usage{
 closure_plot_bar(
   data,
-  frequency = c("absolute", "relative", "percent", "absolute-percent"),
+  frequency = c("absolute-percent", "absolute", "relative", "percent"),
   bar_alpha = 0.8,
   bar_color = "royalblue1",
   show_text = TRUE,
@@ -17,9 +17,11 @@ closure_plot_bar(
 \arguments{
 \item{data}{CLOSURE data frame.}
 
-\item{frequency}{String (length 1). What should the bars display? One of
-\code{"absolute"} (the default), \code{"relative"}, \code{"percent"}, and
-\code{"absolute-percent"}.}
+\item{frequency}{String (length 1). What should the bars display? The
+default, \code{"absolute-percent"}, is to show counts of each scale values
+together with their percentages of all values. Other options are
+\code{"absolute"}, \code{"relative"}, and \code{"percent"}, but all of them display less
+information.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
 
