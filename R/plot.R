@@ -228,7 +228,7 @@ closure_plot_ecdf <- function(data,
   }
 
   # For the reference line and the x-axis
-  values_unique <- closure_summarize(data)$value
+  values_unique <- data$scale_min:data$scale_max
 
   # Construct the ECDF plot
   ggplot2::ggplot(data$results) +
