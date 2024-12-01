@@ -18,8 +18,14 @@ closure_combine(
 \item{rounding_error_sd}{}
 }
 \value{
-Tibble (data frame). Each row contains one combination. The number of
-columns is equal to \code{n}, and the columns are named \code{"n1"}, \code{"n2"}, etc.
+Named list with these elements:
+\itemize{
+\item \code{results}: Tibble (data frame). Each row contains one combination. The
+number of columns is equal to \code{n}, and the columns are named \code{"n1"},
+\code{"n2"}, etc.
+\item \code{mean}, \code{sd}, \code{n}, \code{scale_min}, \code{scale_max}: Inputs recorded here for
+downstream functions.
+}
 }
 \description{
 Call \code{closure_combine()} to run the CLOSURE algorithm on a given

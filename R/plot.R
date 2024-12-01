@@ -1,19 +1,18 @@
 
 #' Visualize CLOSURE data in a histogram
 #'
-#' @description Call `closure_plot_bar()` to get a barplot of data coming from
-#'   [`closure_combine()`], [`closure_pivot_longer()`], or
-#'   [`closure_summarize()`].
+#' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
 #'
 #'   For each scale value, the bars show how often this value appears in the
 #'   full list of possible raw data combinations found by the CLOSURE algorithm.
 #'
-#' @param data CLOSURE data frame.
+#' @param data List returned by [`closure_combine()`],
+#'   [`closure_pivot_longer()`], or [`closure_summarize()`].
 #' @param frequency String (length 1). What should the bars display? The
-#'   default, `"absolute-percent"`, is to show counts of each scale values
-#'   together with their percentages of all values. Other options are
-#'   `"absolute"`, `"relative"`, and `"percent"`, but all of them display less
-#'   information.
+#'   default, `"absolute-percent"`, displays the counts of each scale value, and
+#'   if text labels are shown (by default of `show_text = TRUE`), its percentage
+#'   of all values. Other options are `"absolute"`, `"relative"`, and
+#'   `"percent"`.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
 #' @param bar_color String (length 1). Color of the bars. Default is
 #'   `"royalblue1"`.
@@ -84,8 +83,8 @@ closure_plot_bar <- function(data,
   # Create a function that formats labels for large numbers as, e.g., "20,000"
   format_number_label <- scales::label_comma()
 
-  # Remove the column that represents the non-chosen type of frequency, then
-  # specify the y-axis label by frequency type.
+  # Remove the column that represents the main non-chosen type of frequency
+  # (absolute or relative), then specify the y-axis label by frequency type.
   if (frequency %in% c("absolute", "absolute-percent")) {
     data$f_relative <- NULL
     sum_absolute <- sum(data$f_absolute)
@@ -168,9 +167,8 @@ closure_plot_bar <- function(data,
 
 #' Visualize CLOSURE data in an ECDF plot
 #'
-#' @description Call `closure_plot_ecdf()` to visualize data coming from
-#'   [`closure_combine()`] or [`closure_pivot_longer()`] using the data's
-#'   empirical cumulative distribution function (ECDF).
+#' @description Call `closure_plot_ecdf()` to visualize CLOSURE results using
+#'   the data's empirical cumulative distribution function (ECDF).
 #'
 #'   A diagonal reference line benchmarks the ECDF against a hypothetical linear
 #'   relationship.
@@ -186,7 +184,7 @@ closure_plot_bar <- function(data,
 #'   exhaustive, so `closure_plot_ecdf()` shows all possible datasets in a
 #'   single line.
 #'
-#' @inheritParams closure_plot_bar
+#' @inheritParams closure_summarize
 #' @param line_color String (length 1). Color of the ECDF line. Default is
 #'   `"royalblue1"`.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
@@ -194,7 +192,7 @@ closure_plot_bar <- function(data,
 #'
 #' @return A ggplot object.
 #'
-#' @include utils.R closure_pivot_longer.R
+#' @include utils.R pivot.R
 #'
 #' @export
 #'

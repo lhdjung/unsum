@@ -6,7 +6,7 @@
 #'
 #'   It is a wrapper around [`tidyr::pivot_longer()`] tailored to CLOSURE data.
 #'
-#' @param data Data frame returned by [`closure_combine()`].
+#' @param data List returned by [`closure_combine()`].
 #' @param cols_vary String (length 1). How to arrange rows?
 #'  - If `"slowest"`, the default, values from the same original `"n"` columns
 #'   are kept together.
@@ -16,6 +16,8 @@
 #' @details The present function differs from [`tidyr::pivot_longer()`] in these
 #'   ways:
 #'  - It checks whether `data` are CLOSURE output.
+#'  - It only operates on the `results` element of `data`, i.e., on the data
+#'   frame; and it returns a list that is unchanged except for the data frame.
 #'  - It always includes all columns.
 #'  - By default (`cols_vary = "slowest"`), it clusters the output by the
 #'   original columns, such as `"n1"` and `"n2"`. This preserves the natural
@@ -23,11 +25,12 @@
 #'  - It transforms the `"n"` column to integer, like `1` for `"n1"` and `2` for
 #'   `"n2"`. The `"n"` prefix would be redundant and distract from the numeric
 #'   values.
-#'  - It adds the `"closure_pivot_longer"` class to the output. This will inform
-#'   downstream functions, such as [`closure_summarize()`] and
+#'  - It adds the `"closure_pivot_longer"` class to the data frame. This will
+#'   inform downstream functions, such as [`closure_summarize()`] and
 #'   [`closure_plot_bar()`].
 #'
-#' @return Tibble (data frame) with two columns:
+#' @return Named list like the one returned by [`closure_combine()`], except the
+#'   `results` data frame has only two columns:
 #'  - `"n"`: integer. Numbers from the column names of `data`, like `1` for
 #'   `"n1"`, `2` for `"n2"`, etc.
 #'  - `"value"`: integer. Combination components, i.e., all values from `data`.

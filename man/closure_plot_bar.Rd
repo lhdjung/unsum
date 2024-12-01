@@ -15,13 +15,14 @@ closure_plot_bar(
 )
 }
 \arguments{
-\item{data}{CLOSURE data frame.}
+\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}},
+\code{\link[=closure_pivot_longer]{closure_pivot_longer()}}, or \code{\link[=closure_summarize]{closure_summarize()}}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
-default, \code{"absolute-percent"}, is to show counts of each scale values
-together with their percentages of all values. Other options are
-\code{"absolute"}, \code{"relative"}, and \code{"percent"}, but all of them display less
-information.}
+default, \code{"absolute-percent"}, displays the counts of each scale value, and
+if text labels are shown (by default of \code{show_text = TRUE}), its percentage
+of all values. Other options are \code{"absolute"}, \code{"relative"}, and
+\code{"percent"}.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
 
@@ -41,9 +42,7 @@ the same as \code{bar_color}.}
 A ggplot object.
 }
 \description{
-Call \code{closure_plot_bar()} to get a barplot of data coming from
-\code{\link[=closure_combine]{closure_combine()}}, \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}, or
-\code{\link[=closure_summarize]{closure_summarize()}}.
+Call \code{closure_plot_bar()} to get a barplot of CLOSURE results.
 
 For each scale value, the bars show how often this value appears in the
 full list of possible raw data combinations found by the CLOSURE algorithm.

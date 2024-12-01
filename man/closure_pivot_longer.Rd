@@ -7,7 +7,7 @@
 closure_pivot_longer(data, cols_vary = c("slowest", "fastest"))
 }
 \arguments{
-\item{data}{Data frame returned by \code{\link[=closure_combine]{closure_combine()}}.}
+\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
 \item{cols_vary}{String (length 1). How to arrange rows?
 \itemize{
@@ -18,7 +18,8 @@ together, so that \code{"n"} varies after each row.
 }}
 }
 \value{
-Tibble (data frame) with two columns:
+Named list like the one returned by \code{\link[=closure_combine]{closure_combine()}}, except the
+\code{results} data frame has only two columns:
 \itemize{
 \item \code{"n"}: integer. Numbers from the column names of \code{data}, like \code{1} for
 \code{"n1"}, \code{2} for \code{"n2"}, etc.
@@ -36,6 +37,8 @@ The present function differs from \code{\link[tidyr:pivot_longer]{tidyr::pivot_l
 ways:
 \itemize{
 \item It checks whether \code{data} are CLOSURE output.
+\item It only operates on the \code{results} element of \code{data}, i.e., on the data
+frame; and it returns a list that is unchanged except for the data frame.
 \item It always includes all columns.
 \item By default (\code{cols_vary = "slowest"}), it clusters the output by the
 original columns, such as \code{"n1"} and \code{"n2"}. This preserves the natural
@@ -43,8 +46,8 @@ grouping of the data.
 \item It transforms the \code{"n"} column to integer, like \code{1} for \code{"n1"} and \code{2} for
 \code{"n2"}. The \code{"n"} prefix would be redundant and distract from the numeric
 values.
-\item It adds the \code{"closure_pivot_longer"} class to the output. This will inform
-downstream functions, such as \code{\link[=closure_summarize]{closure_summarize()}} and
+\item It adds the \code{"closure_pivot_longer"} class to the data frame. This will
+inform downstream functions, such as \code{\link[=closure_summarize]{closure_summarize()}} and
 \code{\link[=closure_plot_bar]{closure_plot_bar()}}.
 }
 }

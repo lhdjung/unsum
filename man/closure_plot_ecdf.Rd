@@ -7,7 +7,8 @@
 closure_plot_ecdf(data, line_color = "royalblue1", reference_line_alpha = 0.6)
 }
 \arguments{
-\item{data}{CLOSURE data frame.}
+\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}} or
+\code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.}
 
 \item{line_color}{String (length 1). Color of the ECDF line. Default is
 \code{"royalblue1"}.}
@@ -19,9 +20,8 @@ reference line. Default is \code{0.6}.}
 A ggplot object.
 }
 \description{
-Call \code{closure_plot_ecdf()} to visualize data coming from
-\code{\link[=closure_combine]{closure_combine()}} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}} using the data's
-empirical cumulative distribution function (ECDF).
+Call \code{closure_plot_ecdf()} to visualize CLOSURE results using
+the data's empirical cumulative distribution function (ECDF).
 
 A diagonal reference line benchmarks the ECDF against a hypothetical linear
 relationship.
