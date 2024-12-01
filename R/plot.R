@@ -1,7 +1,7 @@
 
-#' Visualize CLOSURE data
+#' Visualize CLOSURE data in a histogram
 #'
-#' @description Call `closure_plot()` to get a barplot of data coming from
+#' @description Call `closure_plot_bar()` to get a barplot of data coming from
 #'   [`closure_combine()`], [`closure_pivot_longer()`], or
 #'   [`closure_summarize()`].
 #'
@@ -26,8 +26,10 @@
 #'
 #' @include pivot.R summaries.R
 #'
-#' @seealso [`closure_summarize()`], which displays the same information in a
+#' @seealso
+#' - [`closure_summarize()`], which displays the same information in a
 #'   data frame.
+#' - [`closure_plot_ecdf()`], an alternative visualization.
 #'
 #' @export
 #'
@@ -44,7 +46,7 @@
 #' )
 #'
 #' # Visualize:
-#' closure_plot(data)
+#' closure_plot_bar(data)
 
 
 # # data <- closure_read("python")
@@ -55,17 +57,16 @@
 # text_offset <- 0.05
 # text_color <- bar_color
 
-
-closure_plot <- function(data,
-                         frequency = c("absolute",
-                                       "relative",
-                                       "percent",
-                                       "absolute-percent"),
-                         bar_alpha = 0.8,
-                         bar_color = "royalblue1",
-                         show_text = TRUE,
-                         text_offset = 0.05,
-                         text_color = bar_color) {
+closure_plot_bar <- function(data,
+                             frequency = c("absolute",
+                                           "relative",
+                                           "percent",
+                                           "absolute-percent"),
+                             bar_alpha = 0.8,
+                             bar_color = "royalblue1",
+                             show_text = TRUE,
+                             text_offset = 0.05,
+                             text_color = bar_color) {
 
   frequency <- rlang::arg_match(frequency)
 
@@ -163,32 +164,94 @@ closure_plot <- function(data,
 
 
 
+#' Visualize CLOSURE data in an ECDF plot
+#'
+#' @description Call `closure_plot_ecdf()` to visualize data coming from
+#'   [`closure_combine()`] or [`closure_pivot_longer()`] using the data's
+#'   empirical cumulative distribution function (ECDF).
+#'
+#'   A diagonal reference line benchmarks the ECDF against a hypothetical linear
+#'   relationship.
+#'
+#'   See [`closure_plot_bar()`] for more intuitive visuals.
+#'
+#' @details Unlike in [`closure_plot_bar()`], `data` cannot currently be output
+#'   of [`closure_summarize()`].
+#'
+#'   The present function was inspired by [`rsprite2::plot_distributions()`].
+#'   However, `plot_distributions()` shows multiple lines because it is based on
+#'   SPRITE, which draws random samples of possible datasets. CLOSURE is
+#'   exhaustive, so `closure_plot_ecdf()` shows all possible datasets in a
+#'   single line.
+#'
+#' @inheritParams closure_plot_bar
+#' @param line_color String (length 1). Color of the ECDF line. Default is
+#'   `"royalblue1"`.
+#' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
+#'   reference line. Default is `0.6`.
+#'
+#' @return A ggplot object.
+#'
+#' @include utils.R closure_pivot_longer.R
+#'
+#' @export
+#'
+#' @examples
+#' # Create CLOSURE data first:
+#' data <- closure_combine(
+#'   mean = 5.0,
+#'   sd = 2.78,
+#'   n = 30,
+#'   scale_min = 1,
+#'   scale_max = 8,
+#'   rounding_error_mean = 0.01,
+#'   rounding_error_sd = 0.01
+#' )
+#'
+#' # Visualize:
+#' closure_plot_ecdf(data)
+
+
+# line_color <- "royalblue1"
+# reference_line_alpha <- 0.65
 
 closure_plot_ecdf <- function(data,
                               line_color = "royalblue1",
                               reference_line_alpha = 0.6) {
 
-  if (inherits(data, "closure_summarize")) {
-    check_closure_summarize_unaltered(data)
+  if (inherits(data$results, "closure_pivot_longer")) {
+    check_closure_pivot_longer_unaltered(data)
   } else {
-    data <- closure_summarize(data)
+    data <- closure_pivot_longer(data)
   }
 
-  ggplot2::ggplot(data) +
-    ggplot2::stat_ecdf(ggplot2::aes(f_absolute), color = line_color) +
+  # For the reference line and the x-axis
+  values_unique <- closure_summarize(data)$value
+
+  # Construct the ECDF plot
+  ggplot2::ggplot(data$results) +
+    # ECDF line:
+    ggplot2::stat_ecdf(
+      ggplot2::aes(value),
+      color = line_color,
+      pad = TRUE
+    ) +
+    # Dashed diagonal reference line:
     ggplot2::annotate(
-      "segment",
+      geom = "segment",
       linetype = 2,
       alpha = reference_line_alpha,
       x = 0,
-      xend = max(data$f_absolute),
+      xend = max(values_unique),
       y = 0,
       yend = 1
     ) +
+    # Rest of the plot:
     ggplot2::labs(x = "Scale value", y = "Cumulative share") +
-    ggplot2::scale_x_continuous(expand = ggplot2::expansion(0, 0)) +
-    ggplot2::scale_y_continuous(expand = ggplot2::expansion(0, 0)) +
-    ggplot2::theme_bw()
-
+    ggplot2::scale_x_continuous(
+      breaks = values_unique,
+      labels = values_unique,
+    ) +
+    ggplot2::theme_minimal()
 }
 
