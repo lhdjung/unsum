@@ -7,7 +7,8 @@
 closure_summarize(data)
 }
 \arguments{
-\item{data}{CLOSURE data frame.}
+\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}} or
+\code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.}
 }
 \value{
 Tibble (data frame) with these columns:
@@ -18,6 +19,6 @@ Tibble (data frame) with these columns:
 }
 }
 \description{
-Use \code{closure_summarize()} to compute frequencies of data coming
-from \code{\link[=closure_combine]{closure_combine()}} or \code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.
+Use \code{closure_summarize()} to compute frequencies of values in
+CLOSURE results.
 }

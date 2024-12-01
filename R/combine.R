@@ -15,8 +15,12 @@
 #' @param rounding_error_mean
 #' @param rounding_error_sd
 #'
-#' @return Tibble (data frame). Each row contains one combination. The number of
-#'   columns is equal to `n`, and the columns are named `"n1"`, `"n2"`, etc.
+#' @return Named list with these elements:
+#'   - `results`: Tibble (data frame). Each row contains one combination. The
+#'   number of columns is equal to `n`, and the columns are named `"n1"`,
+#'   `"n2"`, etc.
+#'   - `mean`, `sd`, `n`, `scale_min`, `scale_max`: Inputs recorded here for
+#'   downstream functions.
 #'
 #' @include utils.R extendr-wrappers.R
 #'

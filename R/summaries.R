@@ -1,10 +1,11 @@
 
 #' Summarize CLOSURE data
 #'
-#' @description Use `closure_summarize()` to compute frequencies of data coming
-#'   from [`closure_combine()`] or [`closure_pivot_longer()`].
+#' @description Use `closure_summarize()` to compute frequencies of values in
+#'   CLOSURE results.
 #'
-#' @param data CLOSURE data frame.
+#' @param data List returned by [`closure_combine()`] or
+#'   [`closure_pivot_longer()`].
 #'
 #' @return Tibble (data frame) with these columns:
 #'  - `value`: integer. Scale values.
