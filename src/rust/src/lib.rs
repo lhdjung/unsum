@@ -12,7 +12,7 @@ fn create_combinations(
     rounding_error_mean: f64,
     rounding_error_sd: f64
 ) -> Robj {
-    dfs_parallel(    // let r_list: Vec<Robj> = 
+    dfs_parallel(
         mean,
         sd,
         n,
@@ -21,7 +21,6 @@ fn create_combinations(
         rounding_error_mean,
         rounding_error_sd
     )
-    .combinations
     .into_iter()
     .map(|vec| vec.into_robj())
     .collect::<Vec<Robj>>()
