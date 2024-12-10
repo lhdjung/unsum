@@ -1,7 +1,9 @@
 
+# Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 utils::globalVariables(c(".", "value"))
 
 
+# Add S3 class(es) to an object `x`
 add_class <- function (x, new_class) {
   `class<-`(x, value = c(new_class, class(x)))
 }
@@ -10,10 +12,6 @@ add_class <- function (x, new_class) {
 # specifically, in pointers. However, what matters when comparing two data
 # frames produced by different CLOSURE implementations is only the values, not
 # any transitory details about the way R stores them in memory.
-
-
-
-
 
 # Test whether two objects are identical except for their attributes. In other
 # words, when the attributes are removed, is the rest identical between the two?
@@ -25,7 +23,13 @@ identical_except_attributes <- function(x, y) {
 }
 
 
-# Does each pair of columns contain the same values?
+# Given two data frames, does each pair of columns contain the same values? This
+# is tested by sorting the columns first, then comparing them. CLOSURE results
+# are hard to predict, and different correct implementations can lead to
+# differently sorted columns. The mark of correctness, then, is whether the
+# columns are identical after being ordered equally. This assumes the same
+# number and names of columns. With `message = TRUE`, it will print which column
+# pair is the first unequal one if the result is `FALSE`.
 identical_sorted_cols <- function(x, y, message = FALSE) {
   if (ncol(x) != ncol(y)) {
     cli::cli_abort("Different numbers of columns.")
@@ -45,6 +49,9 @@ identical_sorted_cols <- function(x, y, message = FALSE) {
 }
 
 
+# Error if the input was not produced by `closure_combine()`, or perhaps
+# `closure_pivot_longer()`; this depends on the specifics of the caller
+# function.
 abort_not_closure_data <- function(allow_pivot = FALSE) {
   error <- "These data are not output of `closure_combine()`"
   if (allow_pivot) {
@@ -58,6 +65,8 @@ abort_not_closure_data <- function(allow_pivot = FALSE) {
 }
 
 
+# Error if the output of certain functions has been altered, i.e., it has been
+# manually tampered with so that downstream operations are no longer reliable.
 abort_closure_data_altered <- function(type, fn_name) {
   cli::cli_abort(c(
     "Can only use {type} here if left unaltered.",
@@ -70,13 +79,7 @@ abort_closure_data_altered <- function(type, fn_name) {
 }
 
 
-#' Error if input is not a CLOSURE data frame
-#'
-#' @param data Object to check.
-#'
-#' @return No return value, might throw an error.
-#'
-#' @noRd
+# Error if input is not a CLOSURE data frame.
 check_closure_combine <- function(data) {
 
   if (!inherits(data, "closure_combine")) {
@@ -114,7 +117,8 @@ check_closure_combine <- function(data) {
   }
 
 
-# Incorrect column names --------------------------------------------------
+  # From now on, the function only checks which kind of column name error it
+  # should throw.
 
   colnames_all <- colnames(data)
 
@@ -209,7 +213,7 @@ check_closure_pivot_longer_unaltered <- function(data) {
 }
 
 
-# Borrowed from scrutiny's internals
+# Borrowed from scrutiny's internals and used in the helper below this one.
 is_seq_linear_basic <- function(x) {
   if (length(x) < 3L) {
     return(TRUE)
@@ -254,13 +258,6 @@ check_closure_summarize_unaltered <- function(data) {
     )
   }
 
-}
-
-
-# `results`: tibble with CLOSURE results
-# `metadata`: list with `mean`, `sd`, etc.
-list_with_metadata <- function(results, metadata) {
-  c(list(results = results), metadata)
 }
 
 
