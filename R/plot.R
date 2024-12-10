@@ -37,13 +37,11 @@
 #' @examples
 #' # Create CLOSURE data first:
 #' data <- closure_combine(
-#'   mean = 5.0,
-#'   sd = 2.78,
+#'   mean = "5.0",
+#'   sd = "2.78",
 #'   n = 30,
 #'   scale_min = 1,
-#'   scale_max = 8,
-#'   rounding_error_mean = 0.01,
-#'   rounding_error_sd = 0.01
+#'   scale_max = 8
 #' )
 #'
 #' # Visualize:
@@ -199,13 +197,11 @@ closure_plot_bar <- function(data,
 #' @examples
 #' # Create CLOSURE data first:
 #' data <- closure_combine(
-#'   mean = 5.0,
-#'   sd = 2.78,
+#'   mean = "5.0",
+#'   sd = "2.78",
 #'   n = 30,
 #'   scale_min = 1,
-#'   scale_max = 8,
-#'   rounding_error_mean = 0.01,
-#'   rounding_error_sd = 0.01
+#'   scale_max = 8
 #' )
 #'
 #' # Visualize:

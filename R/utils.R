@@ -1,4 +1,7 @@
 
+utils::globalVariables(c(".", "value"))
+
+
 add_class <- function (x, new_class) {
   `class<-`(x, value = c(new_class, class(x)))
 }
