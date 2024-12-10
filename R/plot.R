@@ -37,18 +37,19 @@
 #' @examples
 #' # Create CLOSURE data first:
 #' data <- closure_combine(
-#'   mean = "5.0",
-#'   sd = "2.78",
-#'   n = 30,
+#'   mean = "3.5",
+#'   sd = "2",
+#'   n = 52,
 #'   scale_min = 1,
-#'   scale_max = 8
+#'   scale_max = 5
 #' )
 #'
 #' # Visualize:
 #' closure_plot_bar(data)
 
 
-# # data <- closure_read("python")
+# # For interactive testing:
+# # (create `data`)
 # frequency <- "absolute"
 # bar_alpha <- 0.8
 # bar_color <- "royalblue1"
@@ -197,19 +198,23 @@ closure_plot_bar <- function(data,
 #' @examples
 #' # Create CLOSURE data first:
 #' data <- closure_combine(
-#'   mean = "5.0",
-#'   sd = "2.78",
-#'   n = 30,
+#'   mean = "3.5",
+#'   sd = "2",
+#'   n = 52,
 #'   scale_min = 1,
-#'   scale_max = 8
+#'   scale_max = 5
 #' )
 #'
 #' # Visualize:
 #' closure_plot_ecdf(data)
 
 
+# # For interactive testing:
+# # (create `data`)
 # line_color <- "royalblue1"
-# reference_line_alpha <- 0.65
+# reference_line_alpha <- 0.6
+# pad <- TRUE
+
 
 closure_plot_ecdf <- function(data,
                               line_color = "royalblue1",

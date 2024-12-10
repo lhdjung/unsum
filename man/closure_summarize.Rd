@@ -22,3 +22,16 @@ Tibble (data frame) with these columns:
 Use \code{closure_summarize()} to compute frequencies of values in
 CLOSURE results.
 }
+\examples{
+# Create CLOSURE data first:
+data <- closure_combine(
+  mean = "3.5",
+  sd = "2",
+  n = 52,
+  scale_min = 1,
+  scale_max = 5
+)
+
+# Summary table:
+closure_summarize(data)
+}

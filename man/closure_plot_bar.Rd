@@ -50,11 +50,11 @@ full list of possible raw data combinations found by the CLOSURE algorithm.
 \examples{
 # Create CLOSURE data first:
 data <- closure_combine(
-  mean = "5.0",
-  sd = "2.78",
-  n = 30,
+  mean = "3.5",
+  sd = "2",
+  n = 52,
   scale_min = 1,
-  scale_max = 8
+  scale_max = 5
 )
 
 # Visualize:

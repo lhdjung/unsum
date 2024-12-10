@@ -11,6 +11,10 @@ datasets that may underlie a given set of summary statistics: mean, SD,
 sample size, and scale bounds. This can be useful in error detection to
 identify impossible or implausible reported numbers.
 
+CLOSURE is computationally intensive. If your code takes too long to
+run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/)
+instead (see *Previous work* below).
+
 ## TODO: add section with most important use cases here
 
 (…)
@@ -33,7 +37,9 @@ need a Rust installation; see `vignette("install-rust")`.
 
 [SPRITE](https://lukaswallrich.github.io/rsprite2) generates random
 datasets that could have led to the reported statistics. However,
-CLOSURE is exhaustive, so it always finds all such datasets.
+CLOSURE is exhaustive, so it always finds all such datasets, not just a
+random sample of them. For the same reason, SPRITE runs fast when
+CLOSURE may take too long.
 
 [GRIM and GRIMMER](https://lhdjung.github.io/scrutiny/) test reported
 summary statistics for consistency, but CLOSURE is the ultimate

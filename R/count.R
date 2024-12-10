@@ -21,6 +21,7 @@
 #' @export
 #'
 #' @examples
+#' closure_count_initial(scale_min = 1, scale_max = 5)
 
 # (By Claude:) Each combination starts with two numbers i,j where scale_min <= i
 # <= j <= scale_max

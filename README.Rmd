@@ -21,6 +21,8 @@ knitr::opts_chunk$set(
 
 The closure package enables efficient reconstruction of all possible datasets that may underlie a given set of summary statistics: mean, SD, sample size, and scale bounds. This can be useful in error detection to identify impossible or implausible reported numbers.
 
+CLOSURE is computationally intensive. If your code takes too long to run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see *Previous work* below).
+
 ## TODO: add section with most important use cases here
 
 (...)
@@ -39,7 +41,7 @@ Your R version should be 4.2.0 or more recent. To run closure, you also need a R
 
 ## Previous work
 
-[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random datasets that could have led to the reported statistics. However, CLOSURE is exhaustive, so it always finds all such datasets.
+[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random datasets that could have led to the reported statistics. However, CLOSURE is exhaustive, so it always finds all such datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.
 
 [GRIM and GRIMMER](https://lhdjung.github.io/scrutiny/) test reported summary statistics for consistency, but CLOSURE is the ultimate consistency test: if it finds at least one distribution, the statistics are consistent; and if not, they cannot all be correct.
 

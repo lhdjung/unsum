@@ -6,7 +6,9 @@
 #'
 #'   This can take seconds, minutes, or longer, depending on the input. Wide
 #'   variance and large samples often lead to many combinations, i.e., long
-#'   runtimes.
+#'   runtimes. These effects interact dynamically. For example, with large `n`,
+#'   even very small increases in `sd` can greatly increase runtime and number
+#'   of values found.
 #'
 #'   If the inputs are mutually inconsistent, there is a warning and an empty
 #'   data frame.
@@ -25,7 +27,8 @@
 #'   `"up_or_down"` which, e.g., unrounds `0.12` to `0.115` as a lower bound and
 #'   `0.125` as an upper bound.
 #' @param threshold Numeric (length 1). Number from which to round up or down,
-#'   if `rounding` is `"up_or_down"`, `"up"`, and `"down"`. Default is `5`.
+#'   if `rounding` is any of `"up_or_down"`, `"up"`, and `"down"`. Default is
+#'   `5`.
 #' @param warn_if_empty Logical (length 1). Should a warning be shown if no
 #'   combinations are found? Default is `TRUE`.
 #'
@@ -49,24 +52,36 @@
 #' @export
 #'
 #' @examples
-#' # High spread -- this becomes clearer when
-#' # following up with `closure_plot_bar()`:
-#' closure_combine(
-#'   mean = "5.0",
-#'   sd = "2.78",
-#'   n = 30,
-#'   scale_min = 1,
-#'   scale_max = 8
-#' )
-#'
-#' # Low spread, and not all scale values are possible:
-#' closure_combine(
-#'   mean = "2.9",
-#'   sd = "0.3",
-#'   n = 30,
+#' # High spread often leads to many combinations --
+#' # here, 735.
+#' data_high <- closure_combine(
+#'   mean = "3.5",
+#'   sd = "2",
+#'   n = 52,
 #'   scale_min = 1,
 #'   scale_max = 5
 #' )
+#'
+#' data_high
+#'
+#' # Get a clear picture of the distribution
+#' # by following up with `closure_plot_bar()`:
+#' closure_plot_bar(data_high)
+#'
+#' # Low spread, only 3 combinations, and not all
+#' # scale values are possible.
+#' data_low <- closure_combine(
+#'   mean = "3.5",
+#'   sd = "0.5",
+#'   n = 52,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' data_low
+#'
+#' # This can also be shown by `closure_plot_bar()`:
+#' closure_plot_bar(data_low)
 
 
 # Note: most helper functions called here can be found in the R/utils.R file.
@@ -86,8 +101,6 @@
 # scale_min <- 1
 # scale_max <- 8
 # warn_if_empty <- TRUE
-# # rounding_error_mean <- 0.01
-# # rounding_error_sd = 0.01
 
 
 closure_combine <- function(mean,

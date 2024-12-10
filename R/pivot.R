@@ -40,6 +40,22 @@
 #' @export
 #'
 #' @examples
+#' # Create CLOSURE data first:
+#' data <- closure_combine(
+#'   mean = "3.5",
+#'   sd = "2",
+#'   n = 52,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' # Unchanged data have many columns:
+#' data
+#'
+#' # Pivoted data only have two:
+#' closure_pivot_longer(data)
+
+
 closure_pivot_longer <- function(data, cols_vary = c("slowest", "fastest")) {
 
   check_closure_combine(data$results)
