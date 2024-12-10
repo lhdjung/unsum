@@ -25,3 +25,6 @@ from which all other ones would be generated.
 This can help predict how much time \code{\link[=closure_combine]{closure_combine()}} would take, and
 avoid prohibitively long runs.
 }
+\examples{
+closure_count_initial(scale_min = 1, scale_max = 5)
+}

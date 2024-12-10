@@ -15,6 +15,19 @@
 #' @export
 #'
 #' @examples
+#' # Create CLOSURE data first:
+#' data <- closure_combine(
+#'   mean = "3.5",
+#'   sd = "2",
+#'   n = 52,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' # Summary table:
+#' closure_summarize(data)
+
+
 closure_summarize <- function(data) {
 
   if (inherits(data$results, "closure_combine")) {
