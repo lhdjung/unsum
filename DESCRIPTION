@@ -13,6 +13,8 @@ RoxygenNote: 7.3.2
 Imports: 
     cli,
     ggplot2,
+    magrittr,
+    readr,
     rlang,
     roundwork,
     scales,
@@ -34,5 +36,5 @@ URL: https://github.com/lhdjung/closure
 BugReports: https://github.com/lhdjung/closure/issues
 Suggests: 
     knitr,
-rmarkdown
+    rmarkdown
 VignetteBuilder: knitr
