@@ -11,3 +11,7 @@ name = 'closure'
 closure-core = { git = "https://github.com/lhdjung/closure-core" }
 extendr-api = '*'
 rayon = "1.10.0"
+
+[profile.release]
+opt-level = 3
+lto = true
