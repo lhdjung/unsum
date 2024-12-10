@@ -23,7 +23,7 @@ identical_except_attributes <- function(x, y) {
 
 
 # Does each pair of columns contain the same values?
-identical_sorted_cols <- function(x, y) {
+identical_sorted_cols <- function(x, y, message = FALSE) {
   if (ncol(x) != ncol(y)) {
     cli::cli_abort("Different numbers of columns.")
   }
@@ -32,7 +32,9 @@ identical_sorted_cols <- function(x, y) {
   }
   for (n in seq_len(ncol(x))) {
     if (!identical(sort(x[[n]]), sort(y[[n]]))) {
-      # message(paste("Different at", n))
+      if (message) {
+        message(paste("Different at", n))
+      }
       return(FALSE)
     }
   }
@@ -286,6 +288,31 @@ check_scale <- function(scale_min, scale_max, mean = NULL) {
         "x" = "`scale_max` is {scale_max}."
       ))
     }
+  }
+}
+
+
+# Make sure a value has the right type (or one of multiple allowed types), has
+# length 1, and is not `NA`. Multiple allowed types are often `c("double",
+# "integer")` which allows any numeric value, but no values of any other types.
+check_value <- function(x, type) {
+  if (!any(type == typeof(x))) {
+    name <- deparse(substitute(x))
+    cli::cli_abort(c(
+      "`{name}` must be {type}.",
+      "x" = "It is a {typeof(x)}."
+    ))
+  }
+  if (length(x) != 1L) {
+    name <- deparse(substitute(x))
+    cli::cli_abort(c(
+      "`{name}` must have length 1.",
+      "x" = "It has length {length(x)}."
+    ))
+  }
+  if (is.na(x)) {
+    name <- deparse(substitute(x))
+    cli::cli_abort("`{name}` can't be `NA`.")
   }
 }
 
