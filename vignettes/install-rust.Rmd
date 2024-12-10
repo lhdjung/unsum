@@ -1,0 +1,37 @@
+---
+title: "Installing Rust for closure"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{install-rust}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+To use closure on your computer, you need to install the Rust toolchain, but don't worry: this is more similar to installing R than, e.g., setting up Python. Here is how, depending on your operating system:
+
+## Windows
+
+1.  Go to [the *Install Rust* page](https://www.rust-lang.org/tools/install), download `rustup-init.exe` ([32-bit or 64-bit?](https://support.microsoft.com/en-us/windows/32-bit-and-64-bit-windows-frequently-asked-questions-c6ca9541-8dce-4d48-0415-94a3faa2e13d)), and run it on your PC. This will open a terminal.
+2.  When given the choice between 1, 2, and 3, hit 1, then Enter again.
+3.  Wait for Visual Studio to install. This can take a while.
+4.  When finished, hit Enter in the terminal and close Visual Studio.
+5.  When the Rust installation is finished, hit Enter to close the terminal.
+6.  Open a new terminal ([how to do that?](https://learn.microsoft.com/en-us/windows/terminal/faq#how-do-i-run-a-shell-in-windows-terminal-in-administrator-mode)), paste the command `rustup target add x86_64-pc-windows-gnu` into it using Ctrl+V, and hit Enter.
+
+## Mac
+
+1.  Open a terminal ([how to do that?](https://support.apple.com/en-asia/guide/terminal/apd5265185d-f365-44cb-8b09-71a064a42125/mac)).
+2.  Go to [the *Install Rust* page](https://www.rust-lang.org/tools/install), copy the line that starts on `curl`, paste it into the terminal using Command+V, and hit Enter.
+3.  When given the choice between 1, 2, and 3, hit 1, then Enter again.
+
+## Linux
+
+1.  See instructions for Mac.
+2.  Spot the differences by yourself. You know how to do this.
