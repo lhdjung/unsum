@@ -4,16 +4,38 @@
 #' @description Call `closure_combine()` to run the CLOSURE algorithm on a given
 #'   set of summary statistics.
 #'
-#'   This can take a few seconds or even longer, depending on the input. Wide
-#'   variance often leads to many combinations, i.e., long runtimes.
+#'   This can take seconds, minutes, or longer, depending on the input. Wide
+#'   variance and large samples often lead to many combinations, i.e., long
+#'   runtimes.
 #'
-#' @param mean
-#' @param sd
-#' @param n
-#' @param scale_min
-#' @param scale_max
-#' @param rounding_error_mean
-#' @param rounding_error_sd
+#'   If the inputs are mutually inconsistent, there is a warning and an empty
+#'   data frame.
+#'
+#' @param mean String (length 1). Reported mean.
+#' @param sd String (length 1). Reported sample standard deviation.
+#' @param n Numeric (length 1). Reported sample size.
+#' @param scale_min,scale_max Numeric (length 1 each). Minimal and maximal
+#'   possible values of the measurement scale (not the *empirical* min and
+#'   max!). For example, with a 1-7 Likert scale, `scale_min = 1` and `scale_max
+#'   = 7`.
+#' @param rounding String (length 1). Rounding method assumed to have created
+#'   `mean` and `sd`. See [*Rounding
+#'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
+#'   but also the *Rounding limitations* section below. Default is
+#'   `"up_or_down"` which, e.g., unrounds `0.12` to `0.115` as a lower bound and
+#'   `0.125` as an upper bound.
+#' @param threshold Numeric (length 1). Number from which to round up or down,
+#'   if `rounding` is `"up_or_down"`, `"up"`, and `"down"`. Default is `5`.
+#' @param warn_if_empty Logical (length 1). Should a warning be shown if no
+#'   combinations are found? Default is `TRUE`.
+#'
+#' @section Rounding limitations: The `rounding` and `threshold` arguments are
+#'   not fully implemented. For example, CLOSURE currently treats all rounding
+#'   bounds as inclusive, even if the `rounding` specification would imply
+#'   otherwise.
+#'
+#'   Many specifications of the two arguments will not make any difference, and
+#'   those that do will most likely lead to empty results.
 #'
 #' @return Named list with these elements:
 #'   - `results`: Tibble (data frame). Each row contains one combination. The
@@ -27,91 +49,129 @@
 #' @export
 #'
 #' @examples
-#' # High spread:
+#' # High spread -- this becomes clearer when
+#' # following up with `closure_plot_bar()`:
 #' closure_combine(
-#'   mean = 5.0,
-#'   sd = 2.78,
+#'   mean = "5.0",
+#'   sd = "2.78",
 #'   n = 30,
 #'   scale_min = 1,
-#'   scale_max = 8,
-#'   rounding_error_mean = 0.01,
-#'   rounding_error_sd = 0.01
+#'   scale_max = 8
 #' )
 #'
-#' # Low spread, and not all scale values are possible
-#' # (this becomes clearer when following up with `closure_plot_bar()`):
+#' # Low spread, and not all scale values are possible:
 #' closure_combine(
-#'   mean = 2.9,
-#'   sd = 0.3,
+#'   mean = "2.9",
+#'   sd = "0.3",
 #'   n = 30,
 #'   scale_min = 1,
-#'   scale_max = 5,
-#'   rounding_error_mean = 0.01,
-#'   rounding_error_sd = 0.01
+#'   scale_max = 5
 #' )
-
-
-# # For interactive testing:
-# mean <- 5.0
-# sd <- 2.78
-# n <- 30
-# scale_min <- 1
-# scale_max <- 8
-# rounding_error_mean <- 0.01
-# rounding_error_sd <- 0.01
 
 
 # Note: most helper functions called here can be found in the R/utils.R file.
 # The only exception, `create_combinations()`, is in R/extendr-wrappers.R, but
 # all it does is to call into Rust code in scr/rust/src/lib.rs which, in turn,
-# accesses closure-core, a Rust crate (roughly analogous to an R package) that
-# contains the actual implementation of CLOSURE:
+# accesses closure-core. The latter is a Rust crate (roughly analogous to an R
+# package) that contains the actual implementation of CLOSURE:
 # https://github.com/lhdjung/closure-core/blob/master/src/lib.rs
+
+
+# # For interactive testing:
+# mean <- "5.00"
+# sd <- "2.78"
+# n <- 30
+# rounding = "up_or_down"
+# threshold = 5
+# scale_min <- 1
+# scale_max <- 8
+# warn_if_empty <- TRUE
+# # rounding_error_mean <- 0.01
+# # rounding_error_sd = 0.01
+
 
 closure_combine <- function(mean,
                             sd,
                             n,
                             scale_min,
                             scale_max,
-                            rounding_error_mean,
-                            rounding_error_sd) {
+                            rounding = "up_or_down",
+                            threshold = 5,
+                            warn_if_empty = TRUE) {
 
-  check_scale(scale_min, scale_max, mean)
+  # Comprehensive checks make sure that each argument is of the right type, has
+  # length 1, and is not `NA`.
+  check_value(mean, "character")
+  check_value(sd, "character")
+  check_value(n, c("double", "integer"))
+  check_value(scale_min, c("double", "integer"))
+  check_value(scale_max, c("double", "integer"))
+  check_value(warn_if_empty, "logical")
 
-  mean %>%
+  check_scale(scale_min, scale_max, as.numeric(mean))
+
+  mean_num <- as.numeric(mean)
+  sd_num   <- as.numeric(sd)
+
+  # TODO: Maybe take `scale_min` and `scale_max` into account; they might
+  # further confine the results of `unround()`!
+
+  # Reconstruct the min and max possible values of the unknown original number
+  # that was later rounded to the reported mean and SD values. Subtract each
+  # lower bound (i.e., each minimum) from the respective reported value to
+  # compute the rounding error.
+  mean_sd_unrounded <- roundwork::unround(
+    x = c(mean, sd),
+    rounding = rounding,
+    threshold = threshold
+  )
+
+  rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
+  rounding_error_sd   <- sd_num   - mean_sd_unrounded$lower[2]
+
+  mean_num %>%
     create_combinations(
-      sd = sd,
+      sd = sd_num,
       n = n,
       scale_min = scale_min,
       scale_max = scale_max,
       rounding_error_mean = rounding_error_mean,
       rounding_error_sd = rounding_error_sd
     ) %>%
+    # Fortify the tabular structure, then transpose it so that columns are
+    # (future) "n" values and rows are combinations.
     tibble::as_tibble(.name_repair = "minimal") %>%
     t() %>%
+    # Re-convert to a tibble since transposition removed the "tbl_df" class.
+    # While doing so, add "n*" column names if at least one combination was
+    # found. If that is not the case, use the opportunity to raise a warning.
     tibble::as_tibble(
       .name_repair = function(results) {
-        if (length(results) == 0) {
+        if (length(results) > 0) {
+          return(paste0("n", seq_along(results)))
+        }
+        if (warn_if_empty) {
           cli::cli_warn(c(
             "No results found with these inputs.",
             "x" = "Data internally inconsistent.",
             "x" = "These statistics can't describe the same distribution."
           ))
-          character(0)
-        } else {
-          paste0("n", seq_along(results))
         }
+        character(0)
       }
     ) %>%
+    # This S3 class will inform downstream functions, such as
+    # `closure_plot_bar()`.
     add_class("closure_combine") %>%
-    list_with_metadata(
-      list(
-        mean = mean,
-        sd = sd,
-        n = n,
-        scale_min = scale_min,
-        scale_max = scale_max
-      )
+    # Insert the data frame into a list as `results`, along with the statistical
+    # inputs to this function.
+    list(
+      results = .,
+      mean = mean,
+      sd = sd,
+      n = n,
+      scale_min = scale_min,
+      scale_max = scale_max
     )
 
 }
