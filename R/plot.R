@@ -151,14 +151,12 @@ closure_plot_bar <- function(data,
     ) +
     ggplot2::labs(
       x = "Scale value",
-      y = label_y_axis #,
-      # title = "CLOSURE: complete listing of original samples of underlying raw evidence"
+      y = label_y_axis
     ) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
-      # panel.grid.minor.y = ggplot2::element_blank()
     )
 
 }
@@ -189,6 +187,8 @@ closure_plot_bar <- function(data,
 #'   `"royalblue1"`.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
+#' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
+#'   so that it stretches beyond the data points? Default is `TRUE`.
 #'
 #' @return A ggplot object.
 #'
@@ -217,7 +217,8 @@ closure_plot_bar <- function(data,
 
 closure_plot_ecdf <- function(data,
                               line_color = "royalblue1",
-                              reference_line_alpha = 0.6) {
+                              reference_line_alpha = 0.6,
+                              pad = TRUE) {
 
   if (inherits(data$results, "closure_pivot_longer")) {
     check_closure_pivot_longer_unaltered(data)
@@ -234,15 +235,15 @@ closure_plot_ecdf <- function(data,
     ggplot2::stat_ecdf(
       ggplot2::aes(value),
       color = line_color,
-      pad = TRUE
+      pad = pad
     ) +
     # Dashed diagonal reference line:
     ggplot2::annotate(
       geom = "segment",
       linetype = 2,
       alpha = reference_line_alpha,
-      x = 0,
-      xend = max(values_unique),
+      x = values_unique[1],
+      xend = values_unique[length(values_unique)],
       y = 0,
       yend = 1
     ) +
