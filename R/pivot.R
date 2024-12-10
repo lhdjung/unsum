@@ -30,7 +30,7 @@
 #'   [`closure_plot_bar()`].
 #'
 #' @return Named list like the one returned by [`closure_combine()`], except the
-#'   `results` data frame has only two columns:
+#'   `results` data frame only has two columns:
 #'  - `"n"`: integer. Numbers from the column names of `data`, like `1` for
 #'   `"n1"`, `2` for `"n2"`, etc.
 #'  - `"value"`: integer. Combination components, i.e., all values from `data`.
@@ -45,15 +45,14 @@ closure_pivot_longer <- function(data, cols_vary = c("slowest", "fastest")) {
   check_closure_combine(data$results)
 
   # Record the metadata to be re-added at the end
-  rest <- data[names(data) != "results"]
+  metadata <- data[names(data) != "results"]
 
   # Pivot all the values into a single column, "value". The "n" column says
   # which original variable they are from. The rows are ordered by "n" via
   # `cols_vary = "slowest"` by default to keep the "n" variables together. Also,
   # the "n" column is reduced to its only informative component by coercing it
   # to an integer column of the numbers after the "n" in the original variables:
-  # n1, n2, n3, etc. Then, add a class that can later tell `closure_summarize()`
-  # and `closure_plot_bar()` that the data is a product of this function.
+  # n1, n2, and n3 become 1, 2, and 3, etc.
   data$results %>%
     tidyr::pivot_longer(
       cols            = tidyr::everything(),
@@ -62,6 +61,12 @@ closure_pivot_longer <- function(data, cols_vary = c("slowest", "fastest")) {
       names_to        = "n",
       values_to       = "value"
     ) %>%
+    # Add an S3 class that can later tell `closure_summarize()` and
+    # `closure_plot_bar()` that the data is a product of this function.
     add_class("closure_pivot_longer") %>%
-    list_with_metadata(rest)
+    # Finally, collect into a list like the input `data`. This works differently
+    # from `closure_combine()` where the resultant list is created on the fly.
+    # Here, a list of metadata is already present.
+    list() %>%
+    c(results = ., metadata)
 }
