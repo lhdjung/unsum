@@ -4,7 +4,12 @@
 \alias{closure_plot_ecdf}
 \title{Visualize CLOSURE data in an ECDF plot}
 \usage{
-closure_plot_ecdf(data, line_color = "royalblue1", reference_line_alpha = 0.6)
+closure_plot_ecdf(
+  data,
+  line_color = "royalblue1",
+  reference_line_alpha = 0.6,
+  pad = TRUE
+)
 }
 \arguments{
 \item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}} or
@@ -15,6 +20,9 @@ closure_plot_ecdf(data, line_color = "royalblue1", reference_line_alpha = 0.6)
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
+
+\item{pad}{Logical (length 1). Should the ECDF line be padded on the x-axis
+so that it stretches beyond the data points? Default is \code{TRUE}.}
 }
 \value{
 A ggplot object.

@@ -19,7 +19,7 @@ together, so that \code{"n"} varies after each row.
 }
 \value{
 Named list like the one returned by \code{\link[=closure_combine]{closure_combine()}}, except the
-\code{results} data frame has only two columns:
+\code{results} data frame only has two columns:
 \itemize{
 \item \code{"n"}: integer. Numbers from the column names of \code{data}, like \code{1} for
 \code{"n1"}, \code{2} for \code{"n2"}, etc.

@@ -10,12 +10,33 @@ closure_combine(
   n,
   scale_min,
   scale_max,
-  rounding_error_mean,
-  rounding_error_sd
+  rounding = "up_or_down",
+  threshold = 5,
+  warn_if_empty = TRUE
 )
 }
 \arguments{
-\item{rounding_error_sd}{}
+\item{mean}{String (length 1). Reported mean.}
+
+\item{sd}{String (length 1). Reported sample standard deviation.}
+
+\item{n}{Numeric (length 1). Reported sample size.}
+
+\item{scale_min, scale_max}{Numeric (length 1 each). Minimal and maximal
+possible values of the measurement scale (not the \emph{empirical} min and
+max!). For example, with a 1-7 Likert scale, \code{scale_min = 1} and \code{scale_max = 7}.}
+
+\item{rounding}{String (length 1). Rounding method assumed to have created
+\code{mean} and \code{sd}. See \href{https://lhdjung.github.io/roundwork/articles/rounding-options.html}{\emph{Rounding options}},
+but also the \emph{Rounding limitations} section below. Default is
+\code{"up_or_down"} which, e.g., unrounds \code{0.12} to \code{0.115} as a lower bound and
+\code{0.125} as an upper bound.}
+
+\item{threshold}{Numeric (length 1). Number from which to round up or down,
+if \code{rounding} is \code{"up_or_down"}, \code{"up"}, and \code{"down"}. Default is \code{5}.}
+
+\item{warn_if_empty}{Logical (length 1). Should a warning be shown if no
+combinations are found? Default is \code{TRUE}.}
 }
 \value{
 Named list with these elements:
@@ -31,30 +52,40 @@ downstream functions.
 Call \code{closure_combine()} to run the CLOSURE algorithm on a given
 set of summary statistics.
 
-This can take a few seconds or even longer, depending on the input. Wide
-variance often leads to many combinations, i.e., long runtimes.
+This can take seconds, minutes, or longer, depending on the input. Wide
+variance and large samples often lead to many combinations, i.e., long
+runtimes.
+
+If the inputs are mutually inconsistent, there is a warning and an empty
+data frame.
 }
+\section{Rounding limitations}{
+ The \code{rounding} and \code{threshold} arguments are
+not fully implemented. For example, CLOSURE currently treats all rounding
+bounds as inclusive, even if the \code{rounding} specification would imply
+otherwise.
+
+Many specifications of the two arguments will not make any difference, and
+those that do will most likely lead to empty results.
+}
+
 \examples{
-# High spread:
+# High spread -- this becomes clearer when
+# following up with `closure_plot_bar()`:
 closure_combine(
-  mean = 5.0,
-  sd = 2.78,
+  mean = "5.0",
+  sd = "2.78",
   n = 30,
   scale_min = 1,
-  scale_max = 8,
-  rounding_error_mean = 0.01,
-  rounding_error_sd = 0.01
+  scale_max = 8
 )
 
-# Low spread, and not all scale values are possible
-# (this becomes clearer when following up with `closure_plot_bar()`):
+# Low spread, and not all scale values are possible:
 closure_combine(
-  mean = 2.9,
-  sd = 0.3,
+  mean = "2.9",
+  sd = "0.3",
   n = 30,
   scale_min = 1,
-  scale_max = 5,
-  rounding_error_mean = 0.01,
-  rounding_error_sd = 0.01
+  scale_max = 5
 )
 }

@@ -17,7 +17,7 @@ Integer (length 1).
 Determine how many combinations \code{\link[=closure_combine]{closure_combine()}} would find
 for a given set of summary statistics.
 \itemize{
-\item TODO: add a \code{closure_count_all()} function.
+\item TODO: add a \code{closure_count_all()} function. Maybe get inspo from CORVIDS?
 \item \code{closure_count_initial()} only counts the first round of combinations,
 from which all other ones would be generated.
 }
