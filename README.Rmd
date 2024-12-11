@@ -13,6 +13,11 @@ knitr::opts_chunk$set(
 )
 ```
 
+```{r include=FALSE}
+devtools::load_all()
+```
+
+
 # CLOSURE: Complete Listing of Original Samples of Underlying Raw Evidence
 
 <!-- badges: start -->
@@ -22,10 +27,6 @@ knitr::opts_chunk$set(
 The closure package enables efficient reconstruction of all possible datasets that may underlie a given set of summary statistics: mean, SD, sample size, and scale bounds. This can be useful in error detection to identify impossible or implausible reported numbers.
 
 CLOSURE is computationally intensive. If your code takes too long to run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see *Previous work* below).
-
-## TODO: add section with most important use cases here
-
-(...)
 
 ## Installation
 
@@ -39,14 +40,45 @@ pak::pak("lhdjung/closure")
 
 Your R version should be 4.2.0 or more recent. To run closure, you also need a Rust installation; see `vignette("install-rust")`.
 
+## Get started
+
+Start with `closure_combine()`, the package's main function. It creates all possible samples:
+
+```{r example}
+library(closure)
+
+data <- closure_combine(
+  mean = "2.7",
+  sd = "1.9",
+  n = 100,
+  scale_min = 1,
+  scale_max = 5
+)
+
+# Columns run from 1 to `n`, rows are combinations
+data
+```
+
+Visualize the overall distribution of values found in the combinations:
+
+```{r}
+closure_plot_bar(data)
+```
+
+Get the same information in a data frame:
+
+```{r}
+closure_summarize(data)
+```
+
 ## Previous work
 
-[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random datasets that could have led to the reported statistics. However, CLOSURE is exhaustive, so it always finds all such datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.
+[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random datasets that could have led to the reported statistics. CLOSURE is exhaustive, so it always finds all possible datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.
 
 [GRIM and GRIMMER](https://lhdjung.github.io/scrutiny/) test reported summary statistics for consistency, but CLOSURE is the ultimate consistency test: if it finds at least one distribution, the statistics are consistent; and if not, they cannot all be correct.
 
-To the best of our knowledge, [CORVIDS](https://github.com/katherinemwood/corvids) was the first technique to reconstruct all possible underlying datasets. However, it takes very long to run, often prohibitively so. This is partly because the code is written in Python, but the algorithm is also inherently much more complex than CLOSURE.
+[CORVIDS](https://github.com/katherinemwood/corvids) deserves credit as the first technique to reconstruct all possible underlying datasets. However, it takes very long to run, often prohibitively so. This is partly because the code is written in Python, but the algorithm is also inherently much more complex than CLOSURE.
 
-## About the package
+## About
 
-The R package closure provides easy access to the algorithm's implementation in Rust, [closure-core](https://crates.io/crates/closure-core), via the amazing [extendr](https://extendr.github.io/) framework. Rust code tends to run much faster than R or Python code, and since CLOSURE is very intensive computationally, high performance is required for many practical applications.
+The CLOSURE algorithm was originally written [in Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael Larigaldie. The R package closure provides easy access to an optimized implementation in Rust, [closure-core](https://crates.io/crates/closure-core), via the amazing [extendr](https://extendr.github.io/) framework. Rust code tends to run much faster than R or Python code, which is required for many applications of CLOSURE.
