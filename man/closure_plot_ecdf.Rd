@@ -12,9 +12,6 @@ closure_plot_ecdf(
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}} or
-\code{\link[=closure_pivot_longer]{closure_pivot_longer()}}.}
-
 \item{line_color}{String (length 1). Color of the ECDF line. Default is
 \code{"royalblue1"}.}
 

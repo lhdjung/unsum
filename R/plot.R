@@ -6,8 +6,7 @@
 #'   For each scale value, the bars show how often this value appears in the
 #'   full list of possible raw data combinations found by the CLOSURE algorithm.
 #'
-#' @param data List returned by [`closure_combine()`],
-#'   [`closure_pivot_longer()`], or [`closure_summarize()`].
+#' @param data List returned by [`closure_combine()`].
 #' @param frequency String (length 1). What should the bars display? The
 #'   default, `"absolute-percent"`, displays the counts of each scale value, and
 #'   if text labels are shown (by default of `show_text = TRUE`), its percentage
@@ -24,8 +23,6 @@
 #'   the same as `bar_color`.
 #'
 #' @return A ggplot object.
-#'
-#' @include pivot.R summaries.R
 #'
 #' @seealso
 #' - [`closure_summarize()`], which displays the same information in a
@@ -181,7 +178,6 @@ closure_plot_bar <- function(data,
 #'   exhaustive, so `closure_plot_ecdf()` shows all possible datasets in a
 #'   single line.
 #'
-#' @inheritParams closure_summarize
 #' @param line_color String (length 1). Color of the ECDF line. Default is
 #'   `"royalblue1"`.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
@@ -191,7 +187,7 @@ closure_plot_bar <- function(data,
 #'
 #' @return A ggplot object.
 #'
-#' @include utils.R pivot.R
+#' @include utils.R
 #'
 #' @export
 #'

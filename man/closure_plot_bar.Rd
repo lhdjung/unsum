@@ -15,8 +15,7 @@ closure_plot_bar(
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}},
-\code{\link[=closure_pivot_longer]{closure_pivot_longer()}}, or \code{\link[=closure_summarize]{closure_summarize()}}.}
+\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
 default, \code{"absolute-percent"}, displays the counts of each scale value, and
