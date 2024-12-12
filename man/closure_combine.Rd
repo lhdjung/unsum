@@ -24,7 +24,8 @@ closure_combine(
 
 \item{scale_min, scale_max}{Numeric (length 1 each). Minimal and maximal
 possible values of the measurement scale (not the \emph{empirical} min and
-max!). For example, with a 1-7 Likert scale, \code{scale_min = 1} and \code{scale_max = 7}.}
+max!). For example, with a 1-7 Likert scale, use \code{scale_min = 1} and
+\code{scale_max = 7}.}
 
 \item{rounding}{String (length 1). Rounding method assumed to have created
 \code{mean} and \code{sd}. See \href{https://lhdjung.github.io/roundwork/articles/rounding-options.html}{\emph{Rounding options}},
@@ -42,11 +43,26 @@ combinations are found? Default is \code{TRUE}.}
 \value{
 Named list with these elements:
 \itemize{
-\item \code{results}: Tibble (data frame). Each row contains one combination. The
-number of columns is equal to \code{n}, and the columns are named \code{"n1"},
-\code{"n2"}, etc.
-\item \code{mean}, \code{sd}, \code{n}, \code{scale_min}, \code{scale_max}: Inputs recorded here for
-downstream functions.
+\item \strong{\code{metadata}}: Tibble (data frame) with the inputs and these columns:
+\itemize{
+\item \code{combos_initial}: integer. The basis for computing CLOSURE results,
+based on scale range only.
+\item \code{combos_all}: integer. Number of all combinations. Equal to the number
+of rows in \code{results}.
+\item \code{values_all}: integer. Number of all individual values found. Equal to
+\code{n * combos_all}.
+}
+\item \strong{\code{frequency}}: Tibble with these columns:
+\itemize{
+\item \code{value}: integer. Scale values derived from \code{scale_min} and
+\code{scale_max}.
+\item \code{f_absolute}: integer. Count of individual scale values found in the
+\code{results} combinations.
+\item \code{f_relative}: double. Values' share of total values found.
+}
+\item \strong{\code{results}}: Tibble with one column, \code{combination}. Each row contains
+an integer vector of length \code{n}. It is a combination (or distribution) of
+individual scale values found by CLOSURE.
 }
 }
 \description{
