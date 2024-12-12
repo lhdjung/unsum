@@ -316,3 +316,48 @@ check_value <- function(x, type) {
   }
 }
 
+
+# This helper creates the `frequency` part of `closure_combine()`'s output.
+summarize_frequencies <- function(results, scale_min, scale_max) {
+
+  f_absolute <- results %>%
+    unlist(use.names = FALSE) %>%
+    table()
+
+  value <- as.integer(names(f_absolute))
+  f_absolute <- as.integer(f_absolute)
+  f_relative <- f_absolute / sum(f_absolute)
+
+  value_completed <- scale_min:scale_max
+
+  if (length(value) == length(value_completed)) {
+    return(tibble::tibble(
+      value,
+      f_absolute,
+      f_relative
+    ))
+  }
+
+  # At which indices in the complete vector of possible values are those values
+  # that were actually found?
+  indices_found <- which(value_completed %in% value)
+
+  # Construct full-length vectors where each value is zero
+  f_absolute_completed <- integer(length(value_completed))
+  f_relative_completed <- double(length(value_completed))
+
+  # Fill in the non-zero values where appropriate
+  f_absolute_completed[indices_found] <- f_absolute
+  f_relative_completed[indices_found] <- f_relative
+
+  tibble::tibble(
+    value      = value_completed,
+    f_absolute = f_absolute_completed,
+    f_relative = f_relative_completed
+  )
+
+}
+
+
+
+

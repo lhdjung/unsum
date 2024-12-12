@@ -23,8 +23,8 @@ Imports:
 Collate: 
     'extendr-wrappers.R'
     'utils.R'
-    'combine.R'
     'count.R'
+    'combine.R'
     'pivot.R'
     'summaries.R'
     'plot.R'

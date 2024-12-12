@@ -18,8 +18,8 @@
 #' @param n Numeric (length 1). Reported sample size.
 #' @param scale_min,scale_max Numeric (length 1 each). Minimal and maximal
 #'   possible values of the measurement scale (not the *empirical* min and
-#'   max!). For example, with a 1-7 Likert scale, `scale_min = 1` and `scale_max
-#'   = 7`.
+#'   max!). For example, with a 1-7 Likert scale, use `scale_min = 1` and
+#'   `scale_max = 7`.
 #' @param rounding String (length 1). Rounding method assumed to have created
 #'   `mean` and `sd`. See [*Rounding
 #'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
@@ -41,13 +41,24 @@
 #'   those that do will most likely lead to empty results.
 #'
 #' @return Named list with these elements:
-#'   - `results`: Tibble (data frame). Each row contains one combination. The
-#'   number of columns is equal to `n`, and the columns are named `"n1"`,
-#'   `"n2"`, etc.
-#'   - `mean`, `sd`, `n`, `scale_min`, `scale_max`: Inputs recorded here for
-#'   downstream functions.
+#'   - **`metadata`**: Tibble (data frame) with the inputs and these columns:
+#'     - `combos_initial`: integer. The basis for computing CLOSURE results,
+#'   based on scale range only.
+#'     - `combos_all`: integer. Number of all combinations. Equal to the number
+#'   of rows in `results`.
+#'     - `values_all`: integer. Number of all individual values found. Equal to
+#'   `n * combos_all`.
+#'   - **`frequency`**: Tibble with these columns:
+#'     - `value`: integer. Scale values derived from `scale_min` and
+#'   `scale_max`.
+#'     - `f_absolute`: integer. Count of individual scale values found in the
+#'   `results` combinations.
+#'     - `f_relative`: double. Values' share of total values found.
+#'   - **`results`**: Tibble with one column, `combination`. Each row contains
+#'   an integer vector of length `n`. It is a combination (or distribution) of
+#'   individual scale values found by CLOSURE.
 #'
-#' @include utils.R extendr-wrappers.R
+#' @include utils.R count.R extendr-wrappers.R
 #'
 #' @export
 #'
@@ -142,7 +153,9 @@ closure_combine <- function(mean,
   rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
   rounding_error_sd   <- sd_num   - mean_sd_unrounded$lower[2]
 
-  mean_num %>%
+  # Compute CLOSURE combinations and collect them as values nested in a tibble.
+  # Add an S3 class that will inform downstream functions.
+  results <- mean_num %>%
     create_combinations(
       sd = sd_num,
       n = n,
@@ -151,41 +164,33 @@ closure_combine <- function(mean,
       rounding_error_mean = rounding_error_mean,
       rounding_error_sd = rounding_error_sd
     ) %>%
-    # Fortify the tabular structure, then transpose it so that columns are
-    # (future) "n" values and rows are combinations.
-    tibble::as_tibble(.name_repair = "minimal") %>%
-    t() %>%
-    # Re-convert to a tibble since transposition removed the "tbl_df" class.
-    # While doing so, add "n*" column names if at least one combination was
-    # found. If that is not the case, use the opportunity to raise a warning.
-    tibble::as_tibble(
-      .name_repair = function(results) {
-        if (length(results) > 0) {
-          return(paste0("n", seq_along(results)))
-        }
-        if (warn_if_empty) {
-          cli::cli_warn(c(
-            "No results found with these inputs.",
-            "x" = "Data internally inconsistent.",
-            "x" = "These statistics can't describe the same distribution."
-          ))
-        }
-        character(0)
-      }
-    ) %>%
-    # This S3 class will inform downstream functions, such as
-    # `closure_plot_bar()`.
-    add_class("closure_combine") %>%
-    # Insert the data frame into a list as `results`, along with the statistical
-    # inputs to this function.
-    list(
-      results = .,
+    tibble::tibble(combination = .) %>%
+    add_class("closure_combine")
+
+  # By default, raise a warning if no results were found.
+  if (warn_if_empty && nrow(results) == 0) {
+    cli::cli_warn(c(
+      "No results found with these inputs.",
+      "x" = "Data internally inconsistent.",
+      "x" = "These statistics can't describe the same distribution."
+    ))
+  }
+
+  # Insert the data frame into a list, along with some summary statistics.
+  list(
+    metadata = tibble::tibble(
       mean = mean,
       sd = sd,
       n = n,
       scale_min = scale_min,
-      scale_max = scale_max
-    )
+      scale_max = scale_max,
+      combos_initial = closure_count_initial(scale_min, scale_max),
+      combos_all = nrow(results),
+      values_all = combos_all * as.integer(n)
+    ),
+    frequency = summarize_frequencies(results, scale_min, scale_max),
+    results = results
+  )
 
 }
 
