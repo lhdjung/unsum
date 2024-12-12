@@ -49,171 +49,139 @@ identical_sorted_cols <- function(x, y, message = FALSE) {
 }
 
 
-# Error if the input was not produced by `closure_combine()`, or perhaps
-# `closure_pivot_longer()`; this depends on the specifics of the caller
-# function.
-abort_not_closure_data <- function(allow_pivot = FALSE) {
-  error <- "These data are not output of `closure_combine()`"
-  if (allow_pivot) {
-    error <- paste(error, "or `closure_pivot_longer()`")
-  }
-  error <- paste0(error, ".")
-  cli::cli_abort(c(
-    "Can only use CLOSURE data.",
-    "x" = error
-  ))
-}
-
-
-# Error if the output of certain functions has been altered, i.e., it has been
-# manually tampered with so that downstream operations are no longer reliable.
-abort_closure_data_altered <- function(type, fn_name) {
-  cli::cli_abort(c(
-    "Can only use {type} here if left unaltered.",
-    "x" = paste(
-      "These data seem to be output of `{fn_name}()`",
-      "that was later manipulated."
-    ),
-    "i" = "Leave the data unchanged to avoid this error."
-  ))
-}
-
-
-# Error if input is not a CLOSURE data frame.
+# Error if input is not an unchanged CLOSURE list.
 check_closure_combine <- function(data) {
 
-  if (!inherits(data, "closure_combine")) {
-    abort_not_closure_data()
+  top_level_is_correct <-
+    is.list(data) &&
+    length(data) == 3L &&
+    identical(names(data), c("metadata", "frequency", "results"))
+
+  if (!top_level_is_correct) {
+    cli::cli_abort(c(
+      "Input must be a list with elements \\
+      \"metadata\", \"frequency\", and \"results\"."
+    ))
   }
 
-  coltypes <- vapply(
-    X = data,
-    FUN = typeof,
-    FUN.VALUE = character(1),
-    USE.NAMES = FALSE
+  # Check the formats of the three tibbles that are elements of `data`, i.e., of
+  # the output of `closure_combine()`:
+
+  # Metadata (1 / 3)
+  check_closure_combine_tibble(
+    x = data$metadata,
+    name = "metadata",
+    dims = c(1L, 8L),
+    col_names = c(
+      "mean", "sd", "n", "scale_min", "scale_max", "combos_initial",
+      "combos_all", "values_all"
+    ),
+    col_types = c(
+      "character", "character", "double", "double", "double", "integer",
+      "integer", "integer"
+    )
   )
 
-  if (!all(coltypes == "integer")) {
-    colnames_all <- colnames(data)
-    offenders <- colnames_all[!coltypes == "integer"]
-    offenders <- paste0("\"", offenders, "\"")
-    this_these <- if (length(offenders) == 1) {
-      "This column is"
-    } else {
-      "These columns are"
-    }
-    cli::cli_abort(c(
-      "All columns of CLOSURE data must be integer.",
-      "x" = "{this_these} not integer:",
-      "x" = "{offenders}"
-    ))
-  }
+  # Frequency (2 / 3)
+  check_closure_combine_tibble(
+    x = data$frequency,
+    name = "frequency",
+    dims = c(data$metadata$scale_max - data$metadata$scale_min + 1, 3),
+    col_names = c("value", "f_absolute", "f_relative"),
+    col_types = c("integer", "integer", "double")
+  )
 
-  colnames_expected <- paste0("n", seq_len(ncol(data)))
-
-  # Check correct column names:
-  if (identical(colnames(data), colnames_expected)) {
-    return(invisible(NULL))
-  }
-
-
-  # From now on, the function only checks which kind of column name error it
-  # should throw.
-
-  colnames_all <- colnames(data)
-
-  # The parts of the error message that are common to all possible errors below:
-  error_start <- "Column names of CLOSURE data must be valid."
-  error_end <- c(
-    "i" = "Tip: leave the data unchanged to avoid this error."
+  # Results (3 / 3)
+  check_closure_combine_tibble(
+    x = data$results,
+    name = "results",
+    dims = c(data$metadata$combos_all, 1L),
+    col_names = "combination",
+    col_types = "list"
   )
 
 
-  # Are any incorrect column names present?
-  offenders <- colnames_all[!(colnames_all %in% colnames_expected)]
+  # Some additional checks:
 
-  # Circumspect way of checking whether (correct) columns were removed: if so,
-  # `colnames_expected` will be too short, so that the last N column names from
-  # the longer `colnames_all` vector are not present in it, where N is the
-  # number of columns that were removed. Therefore, some "offenders" will
-  # actually have the correct format, so this is checked here.
-  if (any(grepl("^n\\d+$", offenders))) {
+  check_scale(
+    data$metadata$scale_min,
+    data$metadata$scale_max,
+    data$metadata$mean
+  )
+
+  if (!is_seq_linear_basic(data$frequency$value)) {
     cli::cli_abort(c(
-      error_start,
-      "x" = "Were any columns removed?",
-      error_end
+      "The `value` column in `frequency` must be a linear sequence.",
+      "x" = "It is actually {data$frequency$value}."
     ))
   }
 
-  if (length(offenders) > 0) {
-    this_these <- if (length(offenders) == 1) {
-      "This column name is"
-    } else {
-      "These column names are"
-    }
-
-    offenders <- paste0("\"", offenders, "\"")
-
+  if (sum(data$frequency$f_relative) != 1) {
     cli::cli_abort(c(
-      error_start,
-      "x" = "{this_these} unexpected:",
-      "x" = "{offenders}",
-      error_end
+      "The `f_relative` column in `frequency` must sum up to 1.",
+      "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
     ))
   }
 
+  all_results_integer <- data$results$combination %>%
+    vapply(
+      FUN = function(x) typeof(x) == "integer",
+      FUN.VALUE = logical(1)
+    ) %>%
+    all()
 
-  # Are any correct column names absent?
-  missing_cols <- colnames_expected[!(colnames_expected %in% colnames_all)]
-
-  if (length(missing_cols) > 0) {
-    missing_cols <- paste0("\"", missing_cols, "\"")
-    col_cols = if (length(missing_cols) == 1) "column" else "columns"
-    cli::cli_abort(c(
-      error_start,
-      "x" = "Missing {col_cols}:",
-      "x" = "{missing_cols}",
-      error_end
-    ))
+  if (!all_results_integer) {
+    cli::cli_abort("All `results` elements must be integer vectors.")
   }
 
-  last_n <- paste0("n", ncol(data))
+  n <- data$metadata$n
 
-  # If the column names are complete and each of them is expected, but they
-  # are still not pairwise identical to the expected column names, the only
-  # possibility is that they are not ordered correctly:
-  cli::cli_abort(c(
-    error_start,
-    "x" = "Columns are not properly ordered.",
-    "x" = "They should run from \"n1\" to \"{last_n}\".",
-    error_end
-  ))
+  all_results_length_n <- data$results$combination %>%
+    vapply(
+      FUN = function(x) length(x) == n,
+      FUN.VALUE = logical(1)
+    ) %>%
+    all()
+
+  if (!all_results_length_n) {
+    cli::cli_abort("All `results` must have length `n` ({n}).")
+  }
 
 }
 
 
-# Specifically check that data already known to inherit the
-# "closure_pivot_longer" class were not manipulated.
-check_closure_pivot_longer_unaltered <- function(data) {
+# Check each element of `closure_combine()` for correct format.
+check_closure_combine_tibble <- function(x, name, dims, col_names, col_types) {
 
-  data_are_correct <-
-    identical(colnames(data$results), c("n", "value")) &&
+  tibble_is_correct <-
+    inherits(x, "tbl_df") &&
+    all(dim(x) == dims) &&
+    identical(names(x), col_names) &&
     identical(
-      vapply(data$results, typeof, character(1), USE.NAMES = FALSE),
-      c("integer", "integer")
+      vapply(x, typeof, character(1), USE.NAMES = FALSE),
+      col_types
     )
 
-  if (!data_are_correct) {
-    abort_closure_data_altered(
-      type = "long-format CLOSURE data",
-      fn_name = "closure_pivot_longer"
-    )
+  if (!tibble_is_correct) {
+    col_names_types <- paste0("\"", col_names, "\" (", col_types,")")
+    this_these <- if (length(col_names) == 1L) {
+      "This column name and type"
+    } else {
+      "These column names and types"
+    }
+    cli::cli_abort(c(
+      "Needs correct `{name}` format.",
+      "!" = "`{name}` must be a tibble with:",
+      "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
+      "*" = "{this_these}: {col_names_types}"
+    ))
   }
 
 }
 
 
-# Borrowed from scrutiny's internals and used in the helper below this one.
+# Borrowed from scrutiny's internals and used within `check_closure_combine()`,
+# this checks whether a vector is a linear sequence (1, 2, 3) or not (3, 1, 7).
 is_seq_linear_basic <- function(x) {
   if (length(x) < 3L) {
     return(TRUE)
@@ -225,39 +193,6 @@ is_seq_linear_basic <- function(x) {
     }
   }
   TRUE
-}
-
-
-# Specifically check that data already known to inherit the "closure_summarize"
-# class were not manipulated.
-check_closure_summarize_unaltered <- function(data) {
-
-  data_are_correct <-
-    identical(colnames(data), c("value", "f_absolute", "f_relative")) &&
-    identical(
-      vapply(data, typeof, character(1), USE.NAMES = FALSE),
-      c("integer", "integer", "double")
-    ) &&
-    !anyNA(data$value) &&
-    !anyNA(data$f_absolute) &&
-    !anyNA(data$f_relative) &&
-    identical(
-      data$value,
-      seq(
-        from = data$value[1],
-        to   = data$value[length(data$value)]
-      )
-    ) &&
-    is_seq_linear_basic(data$value) &&
-    sum(data$f_relative) == 1
-
-  if (!data_are_correct) {
-    abort_closure_data_altered(
-      type = "summaries of CLOSURE data",
-      fn_name = "closure_summarize"
-    )
-  }
-
 }
 
 
