@@ -17,8 +17,8 @@ add_class <- function (x, new_class) {
 # words, when the attributes are removed, is the rest identical between the two?
 identical_except_attributes <- function(x, y) {
   identical(
-    `attributes<-`(x, NULL),
-    `attributes<-`(y, NULL)
+    x = `attributes<-`(x, NULL),
+    y = `attributes<-`(y, NULL)
   )
 }
 
@@ -55,11 +55,13 @@ check_closure_combine <- function(data) {
   top_level_is_correct <-
     is.list(data) &&
     length(data) == 3L &&
-    identical(names(data), c("metadata", "frequency", "results"))
+    identical(names(data), c("metadata", "frequency", "results")) &&
+    inherits(data$results, "closure_combine")
 
   if (!top_level_is_correct) {
     cli::cli_abort(c(
-      "Input must be a list with elements \\
+      "Input must be the output of `closure_combine()`.",
+      "!" = "Such output is a list with the elements \\
       \"metadata\", \"frequency\", and \"results\"."
     ))
   }
@@ -104,9 +106,9 @@ check_closure_combine <- function(data) {
   # Some additional checks:
 
   check_scale(
-    data$metadata$scale_min,
-    data$metadata$scale_max,
-    data$metadata$mean
+    scale_min = data$metadata$scale_min,
+    scale_max = data$metadata$scale_max,
+    mean      = data$metadata$mean
   )
 
   if (!is_seq_linear_basic(data$frequency$value)) {
@@ -158,20 +160,21 @@ check_closure_combine_tibble <- function(x, name, dims, col_names, col_types) {
     all(dim(x) == dims) &&
     identical(names(x), col_names) &&
     identical(
-      vapply(x, typeof, character(1), USE.NAMES = FALSE),
-      col_types
+      x = vapply(x, typeof, character(1), USE.NAMES = FALSE),
+      y = col_types
     )
 
   if (!tibble_is_correct) {
-    col_names_types <- paste0("\"", col_names, "\" (", col_types,")")
+    col_names_types <- paste0("\"", col_names, "\" (", col_types, ")")
     this_these <- if (length(col_names) == 1L) {
       "This column name and type"
     } else {
       "These column names and types"
     }
     cli::cli_abort(c(
-      "Needs correct `{name}` format.",
-      "!" = "`{name}` must be a tibble with:",
+      "CLOSURE data must not be changed before passing them \\
+      to other `closure_*()` functions.",
+      "!" = "Specifically, `{name}` must be a tibble with:",
       "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
       "*" = "{this_these}: {col_names_types}"
     ))
@@ -233,9 +236,14 @@ check_scale <- function(scale_min, scale_max, mean = NULL) {
 check_value <- function(x, type) {
   if (!any(type == typeof(x))) {
     name <- deparse(substitute(x))
+    type_intro <- if (length(type) == 1) {
+      "be of type"
+    } else {
+      "have one of the types"
+    }
     cli::cli_abort(c(
-      "`{name}` must be {type}.",
-      "x" = "It is a {typeof(x)}."
+      "`{name}` must {type_intro} {type}.",
+      "x" = "It is {typeof(x)}."
     ))
   }
   if (length(x) != 1L) {
@@ -255,16 +263,29 @@ check_value <- function(x, type) {
 # This helper creates the `frequency` part of `closure_combine()`'s output.
 summarize_frequencies <- function(results, scale_min, scale_max) {
 
+  # Flatten the list of integer vectors into a single integer vector, then
+  # create a frequency table for the values in that vector.
   f_absolute <- results %>%
     unlist(use.names = FALSE) %>%
     table()
 
+  # Extract the scale values found in the combinations. Then, remove them from
+  # their source, `f_absolute`, as they are no longer needed.
   value <- as.integer(names(f_absolute))
   f_absolute <- as.integer(f_absolute)
+
+  # Compute the share of each individual value in the sum of all values.
   f_relative <- f_absolute / sum(f_absolute)
 
+  # Reconstruct the complete vector of possible scale values as a sequence from
+  # scale minimum to scale maximum.
   value_completed <- scale_min:scale_max
 
+  # If each possible value is instantiated in the values that were found in the
+  # combinations, the results are complete and will be returned here. If not,
+  # the zero counts of the uninstantiated values must be added to `value`, and
+  # their zero frequencies to `f_absolute` and `f_relative`. This is what the
+  # rest of the function will then do.
   if (length(value) == length(value_completed)) {
     return(tibble::tibble(
       value,
