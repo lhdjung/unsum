@@ -7,13 +7,18 @@
 closure_plot_ecdf(
   data,
   line_color = "royalblue1",
+  text_size = 13,
   reference_line_alpha = 0.6,
   pad = TRUE
 )
 }
 \arguments{
+\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
+
 \item{line_color}{String (length 1). Color of the ECDF line. Default is
 \code{"royalblue1"}.}
+
+\item{text_size}{Numeric. Base font size in pt. Default is \code{13}.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
@@ -34,14 +39,11 @@ relationship.
 See \code{\link[=closure_plot_bar]{closure_plot_bar()}} for more intuitive visuals.
 }
 \details{
-Unlike in \code{\link[=closure_plot_bar]{closure_plot_bar()}}, \code{data} cannot currently be output
-of \code{\link[=closure_summarize]{closure_summarize()}}.
-
-The present function was inspired by \code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}}.
-However, \code{plot_distributions()} shows multiple lines because it is based on
-SPRITE, which draws random samples of possible datasets. CLOSURE is
-exhaustive, so \code{closure_plot_ecdf()} shows all possible datasets in a
-single line.
+The present function was inspired by
+\code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}}. However, \code{plot_distributions()} shows
+multiple lines because it is based on SPRITE, which draws random samples of
+possible datasets. CLOSURE is exhaustive, so \code{closure_plot_ecdf()} shows
+all possible datasets in a single line.
 }
 \examples{
 # Create CLOSURE data first:

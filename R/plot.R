@@ -17,17 +17,18 @@
 #'   `"royalblue1"`.
 #' @param show_text Logical (length 1). Should the bars be labeled with the
 #'   corresponding frequencies? Default is `TRUE`.
+#' @param text_color String (length 1). Color of the frequency labels. By
+#'   default, the same as `bar_color`.
+#' @param text_size Numeric. Base font size in pt. Default is `13`.
 #' @param text_offset Numeric (length 1). Distance between the text labels and
 #'   the bars. Default is `0.05`.
-#' @param text_color String (length 1). Color of the text labels. By default,
-#'   the same as `bar_color`.
+#' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
+#'   groups of digits in text labels. Defaults are `","` for `mark_thousand`
+#'   (e.g., `"20,000"`) and `"."` for `mark_decimal` (e.g., `"0.15"`).
 #'
 #' @return A ggplot object.
 #'
-#' @seealso
-#' - [`closure_summarize()`], which displays the same information in a
-#' data frame.
-#' - [`closure_plot_ecdf()`], an alternative visualization.
+#' @seealso [`closure_plot_ecdf()`], an alternative visualization.
 #'
 #' @export
 #'
@@ -62,22 +63,25 @@ closure_plot_bar <- function(data,
                              bar_alpha = 0.8,
                              bar_color = "royalblue1",
                              show_text = TRUE,
+                             text_color = bar_color,
+                             text_size = 13,
                              text_offset = 0.05,
-                             text_color = bar_color) {
+                             mark_thousand = ",",
+                             mark_decimal = ".") {
 
+  # Check inputs
+  check_closure_combine(data)
   frequency <- rlang::arg_match(frequency)
 
-  # If the data appear to be CLOSURE summary data, verify this more closely.
-  # Else, compute the summaries to be visualized. The latter action will check
-  # for raw CLOSURE data first, so no such checks are needed here.
-  if (inherits(data, "closure_summarize")) {
-    check_closure_summarize_unaltered(data)
-  } else {
-    data <- closure_summarize(data)
-  }
+  # Zoom in on the frequency table -- the only element of `data` needed here
+  data <- data$frequency
 
-  # Create a function that formats labels for large numbers as, e.g., "20,000"
-  format_number_label <- scales::label_comma()
+  # Create a function that formats labels for large numbers. By default, they
+  # are formatted like, e.g., "12,345.67"
+  format_number_label <- scales::label_number(
+    big.mark = mark_thousand,
+    decimal.mark = mark_decimal
+  )
 
   # Remove the column that represents the main non-chosen type of frequency
   # (absolute or relative), then specify the y-axis label by frequency type.
@@ -124,13 +128,14 @@ closure_plot_bar <- function(data,
     }
     geom_text_frequency <- ggplot2::geom_text(
       ggplot2::aes(
-        y     = frequency + text_offset_adjusted,
+        y = frequency + text_offset_adjusted,
         label = paste0(
           format_number_label(round(frequency, 2)),
           label_percent
         )
       ),
-      color = text_color
+      color = text_color,
+      size = text_size / 3
     )
   } else {
     geom_text_frequency <- NULL
@@ -149,7 +154,7 @@ closure_plot_bar <- function(data,
       x = "Scale value",
       y = label_y_axis
     ) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
@@ -169,14 +174,11 @@ closure_plot_bar <- function(data,
 #'
 #'   See [`closure_plot_bar()`] for more intuitive visuals.
 #'
-#' @details Unlike in [`closure_plot_bar()`], `data` cannot currently be output
-#'   of [`closure_summarize()`].
-#'
-#'   The present function was inspired by [`rsprite2::plot_distributions()`].
-#'   However, `plot_distributions()` shows multiple lines because it is based on
-#'   SPRITE, which draws random samples of possible datasets. CLOSURE is
-#'   exhaustive, so `closure_plot_ecdf()` shows all possible datasets in a
-#'   single line.
+#' @details The present function was inspired by
+#'   [`rsprite2::plot_distributions()`]. However, `plot_distributions()` shows
+#'   multiple lines because it is based on SPRITE, which draws random samples of
+#'   possible datasets. CLOSURE is exhaustive, so `closure_plot_ecdf()` shows
+#'   all possible datasets in a single line.
 #'
 #' @param line_color String (length 1). Color of the ECDF line. Default is
 #'   `"royalblue1"`.
@@ -184,6 +186,7 @@ closure_plot_bar <- function(data,
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
 #'   so that it stretches beyond the data points? Default is `TRUE`.
+#' @inheritParams closure_plot_bar
 #'
 #' @return A ggplot object.
 #'
@@ -214,23 +217,29 @@ closure_plot_bar <- function(data,
 
 closure_plot_ecdf <- function(data,
                               line_color = "royalblue1",
+                              text_size = 13,
                               reference_line_alpha = 0.6,
                               pad = TRUE) {
 
-  if (inherits(data$results, "closure_pivot_longer")) {
-    check_closure_pivot_longer_unaltered(data)
-  } else {
-    data <- closure_pivot_longer(data)
-  }
+  check_closure_combine(data)
 
   # For the reference line and the x-axis
-  values_unique <- data$scale_min:data$scale_max
+  metadata <- data$metadata
+  values_unique <- metadata$scale_min:metadata$scale_max
+
+  # Zoom in on the detailed `results` -- the only element of `data` needed here.
+  # Flatten them into a single integer vector.
+  data <- tibble::new_tibble(
+    x = list(
+      value = unlist(data$results$combination, use.names = FALSE)
+    ),
+    nrow = metadata$values_all
+  )
 
   # Construct the ECDF plot
-  ggplot2::ggplot(data$results) +
+  ggplot2::ggplot(data, ggplot2::aes(value)) +
     # ECDF line:
     ggplot2::stat_ecdf(
-      ggplot2::aes(value),
       color = line_color,
       pad = pad
     ) +
@@ -250,6 +259,6 @@ closure_plot_ecdf <- function(data,
       breaks = values_unique,
       labels = values_unique,
     ) +
-    ggplot2::theme_minimal()
+    ggplot2::theme_minimal(base_size = text_size)
 }
 

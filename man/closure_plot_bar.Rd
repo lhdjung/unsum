@@ -10,8 +10,11 @@ closure_plot_bar(
   bar_alpha = 0.8,
   bar_color = "royalblue1",
   show_text = TRUE,
+  text_color = bar_color,
+  text_size = 13,
   text_offset = 0.05,
-  text_color = bar_color
+  mark_thousand = ",",
+  mark_decimal = "."
 )
 }
 \arguments{
@@ -31,11 +34,17 @@ of all values. Other options are \code{"absolute"}, \code{"relative"}, and
 \item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}
 
+\item{text_color}{String (length 1). Color of the frequency labels. By
+default, the same as \code{bar_color}.}
+
+\item{text_size}{Numeric. Base font size in pt. Default is \code{13}.}
+
 \item{text_offset}{Numeric (length 1). Distance between the text labels and
 the bars. Default is \code{0.05}.}
 
-\item{text_color}{String (length 1). Color of the text labels. By default,
-the same as \code{bar_color}.}
+\item{mark_thousand, mark_decimal}{Strings (length 1 each). Delimiters between
+groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand}
+(e.g., \code{"20,000"}) and \code{"."} for \code{mark_decimal} (e.g., \code{"0.15"}).}
 }
 \value{
 A ggplot object.
@@ -60,9 +69,5 @@ data <- closure_combine(
 closure_plot_bar(data)
 }
 \seealso{
-\itemize{
-\item \code{\link[=closure_summarize]{closure_summarize()}}, which displays the same information in a
-data frame.
-\item \code{\link[=closure_plot_ecdf]{closure_plot_ecdf()}}, an alternative visualization.
-}
+\code{\link[=closure_plot_ecdf]{closure_plot_ecdf()}}, an alternative visualization.
 }
