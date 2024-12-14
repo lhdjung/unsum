@@ -56,7 +56,7 @@ check_closure_combine <- function(data) {
     is.list(data) &&
     length(data) == 3L &&
     identical(names(data), c("metadata", "frequency", "results")) &&
-    inherits(data$results, "closure_combine")
+    inherits(data$metadata, "closure_combine")
 
   if (!top_level_is_correct) {
     cli::cli_abort(c(
@@ -74,13 +74,15 @@ check_closure_combine <- function(data) {
     x = data$metadata,
     name = "metadata",
     dims = c(1L, 8L),
-    col_names = c(
-      "mean", "sd", "n", "scale_min", "scale_max", "combos_initial",
-      "combos_all", "values_all"
-    ),
-    col_types = c(
-      "character", "character", "double", "double", "double", "integer",
-      "integer", "integer"
+    col_names_types = list(
+      "mean" = "character",
+      "sd" = "character",
+      "n" = c("integer", "double"),
+      "scale_min" = c("integer", "double"),
+      "scale_max" = c("integer", "double"),
+      "combos_initial" = "integer",
+      "combos_all" = "integer",
+      "values_all" = "integer"
     )
   )
 
@@ -89,21 +91,26 @@ check_closure_combine <- function(data) {
     x = data$frequency,
     name = "frequency",
     dims = c(data$metadata$scale_max - data$metadata$scale_min + 1, 3),
-    col_names = c("value", "f_absolute", "f_relative"),
-    col_types = c("integer", "integer", "double")
+    col_names_types = list(
+      "value" = "integer",
+      "f_absolute" = "integer",
+      "f_relative" = "double"
+    )
   )
 
   # Results (3 / 3)
   check_closure_combine_tibble(
     x = data$results,
     name = "results",
-    dims = c(data$metadata$combos_all, 1L),
-    col_names = "combination",
-    col_types = "list"
+    dims = c(data$metadata$combos_all, 2L),
+    col_names_types = list(
+      "id" = "integer",
+      "combination" = "list"
+    )
   )
 
 
-  # Some additional checks:
+  # Additional checks:
 
   check_scale(
     scale_min = data$metadata$scale_min,
@@ -153,20 +160,29 @@ check_closure_combine <- function(data) {
 
 
 # Check each element of `closure_combine()` for correct format.
-check_closure_combine_tibble <- function(x, name, dims, col_names, col_types) {
+check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
 
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
     all(dim(x) == dims) &&
-    identical(names(x), col_names) &&
-    identical(
-      x = vapply(x, typeof, character(1), USE.NAMES = FALSE),
-      y = col_types
+    identical(names(x), names(col_names_types)) &&
+    all(
+      mapply(
+        function(a, b) any(a == b),
+        vapply(x, typeof, character(1)),
+        col_names_types
+      )
     )
 
   if (!tibble_is_correct) {
-    col_names_types <- paste0("\"", col_names, "\" (", col_types, ")")
-    this_these <- if (length(col_names) == 1L) {
+    cols_msg <- paste0(
+      "\"",
+      names(col_names_types),
+      "\" (",
+      unname(col_names_types),
+      ")"
+    )
+    this_these <- if (length(col_names_types) == 1L) {
       "This column name and type"
     } else {
       "These column names and types"
@@ -176,7 +192,7 @@ check_closure_combine_tibble <- function(x, name, dims, col_names, col_types) {
       to other `closure_*()` functions.",
       "!" = "Specifically, `{name}` must be a tibble with:",
       "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
-      "*" = "{this_these}: {col_names_types}"
+      "*" = "{this_these}: {cols_msg}"
     ))
   }
 
