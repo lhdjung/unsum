@@ -43,7 +43,8 @@ combinations are found? Default is \code{TRUE}.}
 \value{
 Named list with these elements:
 \itemize{
-\item \strong{\code{metadata}}: Tibble (data frame) with the inputs and these columns:
+\item \strong{\code{metadata}}: Tibble (data frame) with the inputs and these additional
+columns:
 \itemize{
 \item \code{combos_initial}: integer. The basis for computing CLOSURE results,
 based on scale range only.
@@ -60,9 +61,13 @@ of rows in \code{results}.
 \code{results} combinations.
 \item \code{f_relative}: double. Values' share of total values found.
 }
-\item \strong{\code{results}}: Tibble with one column, \code{combination}. Each row contains
-an integer vector of length \code{n}. It is a combination (or distribution) of
-individual scale values found by CLOSURE.
+\item \strong{\code{results}}: Tibble with these columns:
+\itemize{
+\item \code{id}: integer. Runs from \code{1} to \code{combos_all}.
+\item \code{combination}: list of integer vectors. Each of these vectors has
+length \code{n}. It is a combination (or distribution) of individual scale
+values found by CLOSURE.
+}
 }
 }
 \description{
