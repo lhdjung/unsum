@@ -41,7 +41,8 @@
 #'   those that do will most likely lead to empty results.
 #'
 #' @return Named list with these elements:
-#'   - **`metadata`**: Tibble (data frame) with the inputs and these columns:
+#'   - **`metadata`**: Tibble (data frame) with the inputs and these additional
+#'   columns:
 #'     - `combos_initial`: integer. The basis for computing CLOSURE results,
 #'   based on scale range only.
 #'     - `combos_all`: integer. Number of all combinations. Equal to the number
@@ -54,9 +55,11 @@
 #'     - `f_absolute`: integer. Count of individual scale values found in the
 #'   `results` combinations.
 #'     - `f_relative`: double. Values' share of total values found.
-#'   - **`results`**: Tibble with one column, `combination`. Each row contains
-#'   an integer vector of length `n`. It is a combination (or distribution) of
-#'   individual scale values found by CLOSURE.
+#'   - **`results`**: Tibble with these columns:
+#'     - `id`: integer. Runs from `1` to `combos_all`.
+#'     - `combination`: list of integer vectors. Each of these vectors has
+#'   length `n`. It is a combination (or distribution) of individual scale
+#'   values found by CLOSURE.
 #'
 #' @include utils.R count.R extendr-wrappers.R
 #'
@@ -153,22 +156,21 @@ closure_combine <- function(mean,
   rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
   rounding_error_sd   <- sd_num   - mean_sd_unrounded$lower[2]
 
-  # Compute CLOSURE combinations and collect them as values nested in a tibble.
-  # Add an S3 class that will inform downstream functions.
-  results <- mean_num %>%
-    create_combinations(
-      sd = sd_num,
-      n = n,
-      scale_min = scale_min,
-      scale_max = scale_max,
-      rounding_error_mean = rounding_error_mean,
-      rounding_error_sd = rounding_error_sd
-    ) %>%
-    tibble::tibble(combination = .) %>%
-    add_class("closure_combine")
+  # Compute CLOSURE combinations by calling into pre-compiled Rust code.
+  results <- create_combinations(
+    mean = mean_num,
+    sd = sd_num,
+    n = n,
+    scale_min = scale_min,
+    scale_max = scale_max,
+    rounding_error_mean = rounding_error_mean,
+    rounding_error_sd = rounding_error_sd
+  )
+
+  n_combos_all <- length(results)
 
   # By default, raise a warning if no results were found.
-  if (warn_if_empty && nrow(results) == 0) {
+  if (warn_if_empty && n_combos_all == 0L) {
     cli::cli_warn(c(
       "No results found with these inputs.",
       "x" = "Data internally inconsistent.",
@@ -176,20 +178,34 @@ closure_combine <- function(mean,
     ))
   }
 
-  # Insert the data frame into a list, along with some summary statistics.
+  # Insert the combinations into a data frame, along with summary statistics.
+  # The S3 class "closure_combine" will be recognized by downstream functions,
+  # such as `closure_plot_bar()`. Two elements here are created using the
+  # low-level `new_tibble()` instead of `tibble()`: once for passing the S3
+  # class, and once for performance.
   list(
-    metadata = tibble::tibble(
-      mean = mean,
-      sd = sd,
-      n = n,
-      scale_min = scale_min,
-      scale_max = scale_max,
-      combos_initial = closure_count_initial(scale_min, scale_max),
-      combos_all = nrow(results),
-      values_all = combos_all * as.integer(n)
+    metadata = tibble::new_tibble(
+      x = list(
+        mean = mean,
+        sd = sd,
+        n = n,
+        scale_min = scale_min,
+        scale_max = scale_max,
+        combos_initial = closure_count_initial(scale_min, scale_max),
+        combos_all = n_combos_all,
+        values_all = n_combos_all * as.integer(n)
+      ),
+      nrow = 1L,
+      class = "closure_combine"
     ),
     frequency = summarize_frequencies(results, scale_min, scale_max),
-    results = results
+    results = tibble::new_tibble(
+      x = list(
+        id = seq_len(n_combos_all),
+        combination = results
+      ),
+      nrow = n_combos_all
+    )
   )
 
 }
