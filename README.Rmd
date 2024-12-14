@@ -26,7 +26,7 @@ devtools::load_all()
 
 The closure package enables efficient reconstruction of all possible datasets that may underlie a given set of summary statistics: mean, SD, sample size, and scale bounds. This can be useful in error detection to identify impossible or implausible reported numbers.
 
-CLOSURE is computationally intensive. If your code takes too long to run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see *Previous work* below).
+CLOSURE is exhaustive, which makes it computationally intensive. If your code takes too long to run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see *Previous work* below).
 
 ## Installation
 
@@ -55,7 +55,6 @@ data <- closure_combine(
   scale_max = 5
 )
 
-# Columns run from 1 to `n`, rows are combinations
 data
 ```
 
@@ -63,12 +62,6 @@ Visualize the overall distribution of values found in the combinations:
 
 ```{r}
 closure_plot_bar(data)
-```
-
-Get the same information in a data frame:
-
-```{r}
-closure_summarize(data)
 ```
 
 ## Previous work

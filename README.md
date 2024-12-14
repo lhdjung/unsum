@@ -11,9 +11,10 @@ datasets that may underlie a given set of summary statistics: mean, SD,
 sample size, and scale bounds. This can be useful in error detection to
 identify impossible or implausible reported numbers.
 
-CLOSURE is computationally intensive. If your code takes too long to
-run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/)
-instead (see *Previous work* below).
+CLOSURE is exhaustive, which makes it computationally intensive. If your
+code takes too long to run, consider using
+[SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see
+*Previous work* below).
 
 ## Installation
 
@@ -45,44 +46,38 @@ data <- closure_combine(
   scale_max = 5
 )
 
-# Columns run from 1 to `n`, rows are combinations
 data
+#> $metadata
+#> # A tibble: 1 × 8
+#>   mean  sd        n scale_min scale_max combos_initial combos_all values_all
+#>   <chr> <chr> <dbl>     <dbl>     <dbl>          <int>      <int>      <int>
+#> 1 2.7   1.9     100         1         5             15        216      21600
+#> 
+#> $frequency
+#> # A tibble: 5 × 3
+#>   value f_absolute f_relative
+#>   <int>      <int>      <dbl>
+#> 1     1      11111     0.514 
+#> 2     2        957     0.0443
+#> 3     3        704     0.0326
+#> 4     4        957     0.0443
+#> 5     5       7871     0.364 
+#> 
 #> $results
-#> # A tibble: 216 × 100
-#>       n1    n2    n3    n4    n5    n6    n7    n8    n9   n10   n11   n12   n13
-#>    <int> <int> <int> <int> <int> <int> <int> <int> <int> <int> <int> <int> <int>
-#>  1     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  2     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  3     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  4     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  5     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  6     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  7     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  8     1     1     1     1     1     1     1     1     1     1     1     1     1
-#>  9     1     1     1     1     1     1     1     1     1     1     1     1     1
-#> 10     1     1     1     1     1     1     1     1     1     1     1     1     1
+#> # A tibble: 216 × 2
+#>       id combination
+#>    <int> <list>     
+#>  1     1 <int [100]>
+#>  2     2 <int [100]>
+#>  3     3 <int [100]>
+#>  4     4 <int [100]>
+#>  5     5 <int [100]>
+#>  6     6 <int [100]>
+#>  7     7 <int [100]>
+#>  8     8 <int [100]>
+#>  9     9 <int [100]>
+#> 10    10 <int [100]>
 #> # ℹ 206 more rows
-#> # ℹ 87 more variables: n14 <int>, n15 <int>, n16 <int>, n17 <int>, n18 <int>,
-#> #   n19 <int>, n20 <int>, n21 <int>, n22 <int>, n23 <int>, n24 <int>,
-#> #   n25 <int>, n26 <int>, n27 <int>, n28 <int>, n29 <int>, n30 <int>,
-#> #   n31 <int>, n32 <int>, n33 <int>, n34 <int>, n35 <int>, n36 <int>,
-#> #   n37 <int>, n38 <int>, n39 <int>, n40 <int>, n41 <int>, n42 <int>,
-#> #   n43 <int>, n44 <int>, n45 <int>, n46 <int>, n47 <int>, n48 <int>, …
-#> 
-#> $mean
-#> [1] "2.7"
-#> 
-#> $sd
-#> [1] "1.9"
-#> 
-#> $n
-#> [1] 100
-#> 
-#> $scale_min
-#> [1] 1
-#> 
-#> $scale_max
-#> [1] 5
 ```
 
 Visualize the overall distribution of values found in the combinations:
@@ -92,20 +87,6 @@ closure_plot_bar(data)
 ```
 
 <img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
-
-Get the same information in a data frame:
-
-``` r
-closure_summarize(data)
-#> # A tibble: 5 × 3
-#>   value f_absolute f_relative
-#>   <int>      <int>      <dbl>
-#> 1     1      11111     0.514 
-#> 2     2        957     0.0443
-#> 3     3        704     0.0326
-#> 4     4        957     0.0443
-#> 5     5       7871     0.364
-```
 
 ## Previous work
 
