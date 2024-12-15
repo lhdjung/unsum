@@ -18,8 +18,7 @@ Imports:
     rlang,
     roundwork,
     scales,
-    tibble,
-    tidyr
+    tibble
 Collate: 
     'extendr-wrappers.R'
     'utils.R'
@@ -33,6 +32,9 @@ SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/closure
 BugReports: https://github.com/lhdjung/closure/issues
 Suggests: 
+    devtools,
     knitr,
-    rmarkdown
+    rmarkdown,
+    rsprite2,
+    tidyr
 VignetteBuilder: knitr
