@@ -66,7 +66,10 @@ solution_closure <- closure_combine(
   sd = "0.5",
   n = 52,
   scale_min = 1,
-  scale_max = 5 
+  scale_max = 5,
+  rounding = "ceiling",
+  rounding_error_mean = 0.05,
+  rounding_error_sd = 0.05
 )
 
 solution_closure
@@ -97,6 +100,8 @@ combos_closure <- solution_closure$results$combination %>%
 
 closure_combos_are_subset <- combos_closure %in% combos_sprite
 closure_combos_are_subset
+
+which(closure_combos_are_subset)
 
 all(closure_combos_are_subset)
 ```
