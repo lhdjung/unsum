@@ -12,7 +12,9 @@ closure_combine(
   scale_max,
   rounding = "up_or_down",
   threshold = 5,
-  warn_if_empty = TRUE
+  warn_if_empty = TRUE,
+  rounding_error_mean = NULL,
+  rounding_error_sd = NULL
 )
 }
 \arguments{
