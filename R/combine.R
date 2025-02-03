@@ -115,6 +115,8 @@
 # scale_min <- 1
 # scale_max <- 8
 # warn_if_empty <- TRUE
+# rounding_error_mean <- NULL
+# rounding_error_sd <- NULL
 
 
 closure_combine <- function(mean,
@@ -124,7 +126,9 @@ closure_combine <- function(mean,
                             scale_max,
                             rounding = "up_or_down",
                             threshold = 5,
-                            warn_if_empty = TRUE) {
+                            warn_if_empty = TRUE,
+                            rounding_error_mean = NULL,
+                            rounding_error_sd = NULL) {
 
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
@@ -153,8 +157,13 @@ closure_combine <- function(mean,
     threshold = threshold
   )
 
-  rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
-  rounding_error_sd   <- sd_num   - mean_sd_unrounded$lower[2]
+  if (is.null(rounding_error_mean)) {
+    rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
+  }
+
+  if (is.null(rounding_error_sd)) {
+    rounding_error_sd   <- sd_num   - mean_sd_unrounded$lower[2]
+  }
 
   # Compute CLOSURE combinations by calling into pre-compiled Rust code.
   results <- create_combinations(
