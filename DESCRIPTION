@@ -10,6 +10,8 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.2
+Depends:
+    R (>= 4.2.0)
 Imports: 
     cli,
     ggplot2,
@@ -34,7 +36,5 @@ BugReports: https://github.com/lhdjung/closure/issues
 Suggests: 
     devtools,
     knitr,
-    rmarkdown,
-    rsprite2,
-    tidyr
+    rmarkdown
 VignetteBuilder: knitr
