@@ -139,10 +139,10 @@ closure_combine <- function(mean,
   check_value(scale_max, c("double", "integer"))
   check_value(warn_if_empty, "logical")
 
-  check_scale(scale_min, scale_max, as.numeric(mean))
-
   mean_num <- as.numeric(mean)
   sd_num   <- as.numeric(sd)
+
+  check_scale(scale_min, scale_max, mean_num)
 
   # TODO: Maybe take `scale_min` and `scale_max` into account; they might
   # further confine the results of `unround()`!
