@@ -233,15 +233,16 @@ check_scale <- function(scale_min, scale_max, mean = NULL) {
       "x" = "`scale_max` is {scale_max}."
     ))
   }
+  # Coercing mean and scale bounds to avoid a false-positive error
   if (!is.null(mean)) {
-    if (mean < scale_min) {
+    if (as.numeric(mean) < as.numeric(scale_min)) {
       cli::cli_abort(c(
         "Mean can't be less than scale minimum.",
         "x" = "`mean` is {mean}.",
         "x" = "`scale_min` is {scale_min}."
       ))
     }
-    if (mean > scale_max) {
+    if (as.numeric(mean) > as.numeric(scale_max)) {
       cli::cli_abort(c(
         "Mean can't be greater than scale maximum.",
         "x" = "`mean` is {mean}.",
