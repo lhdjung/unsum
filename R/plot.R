@@ -86,23 +86,23 @@ closure_plot_bar <- function(data,
   # Remove the column that represents the main non-chosen type of frequency
   # (absolute or relative), then specify the y-axis label by frequency type.
   if (frequency %in% c("absolute", "absolute-percent")) {
-    data$f_relative <- NULL
-    sum_absolute <- sum(data$f_absolute)
+    # sum_absolute <- sum(data$f_absolute)
     label_y_axis <- paste(
       "Count in",
-      format_number_label(sum_absolute),
+      format_number_label(sum(data$f_absolute)),
       "values"
     )
     if (frequency == "absolute-percent") {
       label_y_axis <- paste(label_y_axis, "(percentage)")
     }
+    data$f_relative <- NULL
   } else if (frequency == "relative") {
-    data$f_absolute <- NULL
     label_y_axis <- "Relative frequency"
-  } else if (frequency == "percent") {
     data$f_absolute <- NULL
-    data$f_relative <- 100 * round(data$f_relative, 2)
+  } else if (frequency == "percent") {
     label_y_axis <- "Percentage of all values"
+    data$f_relative <- 100 * round(data$f_relative, 2)
+    data$f_absolute <- NULL
   } else {
     cli::cli_abort("Internal error: unhandled `frequency` type.")
   }
@@ -111,21 +111,23 @@ closure_plot_bar <- function(data,
   names(data) <- c("value", "frequency")
 
   # The text geom is pre-defined here because whether it has a non-`NULL` value
-  # depends on a logical argument. Also, the text offset is adjusted using the
-  # height of the highest bar so that the distance between text and bars is
-  # robust to very different values, such as absolute vs. relative values.
+  # depends on a logical argument.
   if (show_text) {
+    # Prepare a percent label if the frequency display should be a percentage,
+    # at least in part. Otherwise, `label_percent` is `NULL`, so it's ignored.
+    label_percent <- switch(
+      frequency,
+      "absolute-percent" = paste0(
+        " (",
+        100 * round(data$frequency / sum(data$frequency), 2),
+        "%)"
+      ),
+      "percent" = "%"
+    )
+    # Adjust the text offset using the height of the highest bar so that the
+    # distance between text and bars is robust to very different values, such as
+    # absolute vs. relative values.
     text_offset_adjusted <- text_offset * max(data$frequency)
-    needs_label_percent <- frequency %in% c("percent", "absolute-percent")
-    if (needs_label_percent && frequency == "absolute-percent") {
-      label_percent <- paste0(
-        " (", 100 * round(data$frequency / sum(data$frequency), 2), "%)"
-      )
-    } else if (needs_label_percent) {
-      label_percent <- "%"
-    } else {
-      label_percent <- ""
-    }
     geom_text_frequency <- ggplot2::geom_text(
       ggplot2::aes(
         y = frequency + text_offset_adjusted,
