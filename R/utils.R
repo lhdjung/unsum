@@ -125,9 +125,15 @@ check_closure_combine <- function(data) {
     ))
   }
 
-  if (sum(data$frequency$f_relative) != 1) {
+  f_relative_sums_up <- sum(data$frequency$f_relative) == 1 || (
+    sum(data$frequency$f_relative) == 0 &&
+    sum(data$frequency$f_absolute) == 0
+  )
+
+  if (!f_relative_sums_up) {
     cli::cli_abort(c(
-      "The `f_relative` column in `frequency` must sum up to 1.",
+      "The `f_relative` column in `frequency` must sum up to 1 \\
+      (or 0, if `f_absolute` does).",
       "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
     ))
   }
