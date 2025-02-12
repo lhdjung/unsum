@@ -51,20 +51,20 @@ data
 #> # A tibble: 1 × 8
 #>   mean  sd        n scale_min scale_max combos_initial combos_all values_all
 #>   <chr> <chr> <dbl>     <dbl>     <dbl>          <int>      <int>      <int>
-#> 1 2.7   1.9     100         1         5             15        216      21600
+#> 1 2.7   1.9     100         1         5             15       2256     225600
 #> 
 #> $frequency
 #> # A tibble: 5 × 3
 #>   value f_absolute f_relative
 #>   <int>      <int>      <dbl>
-#> 1     1      11111     0.514 
-#> 2     2        957     0.0443
-#> 3     3        704     0.0326
-#> 4     4        957     0.0443
-#> 5     5       7871     0.364 
+#> 1     1     116060     0.514 
+#> 2     2       9908     0.0439
+#> 3     3       7160     0.0317
+#> 4     4       9912     0.0439
+#> 5     5      82560     0.366 
 #> 
 #> $results
-#> # A tibble: 216 × 2
+#> # A tibble: 2,256 × 2
 #>       id combination
 #>    <int> <list>     
 #>  1     1 <int [100]>
@@ -77,7 +77,7 @@ data
 #>  8     8 <int [100]>
 #>  9     9 <int [100]>
 #> 10    10 <int [100]>
-#> # ℹ 206 more rows
+#> # ℹ 2,246 more rows
 ```
 
 Visualize the overall distribution of values found in the combinations:
