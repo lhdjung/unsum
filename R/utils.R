@@ -3,11 +3,6 @@
 utils::globalVariables(c(".", "value"))
 
 
-# Add S3 class(es) to an object `x`
-add_class <- function (x, new_class) {
-  `class<-`(x, value = c(new_class, class(x)))
-}
-
 # Reading CLOSURE data from disk can lead to spurious differences in attributes;
 # specifically, in pointers. However, what matters when comparing two data
 # frames produced by different CLOSURE implementations is only the values, not
