@@ -125,9 +125,21 @@ check_closure_combine <- function(data) {
     ))
   }
 
-  f_relative_sums_up <- sum(data$frequency$f_relative) == 1 || (
-    sum(data$frequency$f_relative) == 0 &&
-    sum(data$frequency$f_absolute) == 0
+  # The relative frequencies must sum up to 1 or 0. In the latter case, the
+  # absolute frequencies must also sum up to 0: it only makes sense if no values
+  # at all were found. These comparisons use `near()`, copied from dplyr, to
+  # account for accidental floating-point inaccuracies.
+  f_relative_sums_up <- near(
+    sum(data$frequency$f_relative),
+    1
+  ) || (
+    near(
+      sum(data$frequency$f_relative),
+      0
+    ) && near(
+      sum(data$frequency$f_absolute),
+      0
+    )
   )
 
   if (!f_relative_sums_up) {
@@ -338,5 +350,9 @@ summarize_frequencies <- function(results, scale_min, scale_max) {
 }
 
 
+# Copied from `dplyr::near()`
+near <- function(x, y, tol = .Machine$double.eps^0.5) {
+  abs(x - y) < tol
+}
 
 
