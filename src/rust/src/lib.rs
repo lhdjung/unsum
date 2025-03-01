@@ -32,6 +32,6 @@ fn create_combinations(
 // This ensures exported functions are registered with R.
 // See corresponding C code in `entrypoint.c`.
 extendr_module! {
-    mod closure;
+    mod unsum;
     fn create_combinations;
 }

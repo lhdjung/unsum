@@ -1,4 +1,4 @@
-Package: closure
+Package: unsum
 Title: Complete Listing of Original Samples of Underlying Raw Evidence
 Version: 0.0.0.9000
 Authors@R: 
@@ -31,8 +31,8 @@ Collate:
     'utils-pipe.R'
 Config/rextendr/version: 0.3.1.9001
 SystemRequirements: Cargo (Rust's package manager), rustc
-URL: https://github.com/lhdjung/closure
-BugReports: https://github.com/lhdjung/closure/issues
+URL: https://github.com/lhdjung/unsum
+BugReports: https://github.com/lhdjung/unsum/issues
 Suggests: 
     devtools,
     knitr,
