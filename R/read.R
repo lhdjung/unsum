@@ -18,7 +18,7 @@ closure_read <- function(version = c("new", "old", "python")) {
     "/home/lukas/Documents/python_projects/CLOSURE-Python/parallel_results.csv"
   } else {
     paste0(
-      "/home/lukas/Documents/rust_projects/closure-core/parallel_results",
+      "/home/lukas/Documents/rust_projects/unsum-core/parallel_results",
       infix,
       ".csv"
     )

@@ -1,5 +1,5 @@
 ---
-title: "Installing Rust for closure"
+title: "Installing Rust for unsum"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{install-rust}
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-To use closure on your computer, you need to install the Rust toolchain, but don't worry: this is more similar to installing R than, e.g., setting up Python. Here is how, depending on your operating system:
+To use unsum on your computer, you need to install the Rust toolchain, but don't worry: this is more similar to installing R than, e.g., setting up Python. Here is how, depending on your operating system:
 
 ## Windows
 
