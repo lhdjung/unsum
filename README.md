@@ -6,7 +6,7 @@
 <!-- badges: start -->
 <!-- badges: end -->
 
-The closure package enables efficient reconstruction of all possible
+The unsum package enables efficient reconstruction of all possible
 datasets that may underlie a given set of summary statistics: mean, SD,
 sample size, and scale bounds. This can be useful in error detection to
 identify impossible or implausible reported numbers.
@@ -18,16 +18,16 @@ code takes too long to run, consider using
 
 ## Installation
 
-You can install the development version of closure from
+You can install the development version of unsum from
 [GitHub](https://github.com/) with either of these:
 
 ``` r
-remotes::install_github("lhdjung/closure")
+remotes::install_github("lhdjung/unsum")
 # or
-pak::pak("lhdjung/closure")
+pak::pak("lhdjung/unsum")
 ```
 
-Your R version should be 4.2.0 or more recent. To run closure, you also
+Your R version should be 4.2.0 or more recent. To run unsum, you also
 need a Rust installation; see `vignette("install-rust")`.
 
 ## Get started
@@ -36,7 +36,7 @@ Start with `closure_combine()`, the package’s main function. It creates
 all possible samples:
 
 ``` r
-library(closure)
+library(unsum)
 
 data <- closure_combine(
   mean = "2.7",
@@ -111,9 +111,9 @@ inherently much more complex than CLOSURE.
 
 The CLOSURE algorithm was originally written [in
 Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael
-Larigaldie. The R package closure provides easy access to an optimized
+Larigaldie. The R package unsum provides easy access to an optimized
 implementation in Rust,
-[closure-core](https://crates.io/crates/closure-core), via the amazing
+[unsum-core](https://crates.io/crates/unsum-core), via the amazing
 [extendr](https://extendr.github.io/) framework. Rust code tends to run
 much faster than R or Python code, which is required for many
 applications of CLOSURE.

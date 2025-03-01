@@ -4,10 +4,10 @@
 
 #
 # This file was created with the following call:
-#   .Call("wrap__make_closure_wrappers", use_symbols = TRUE, package_name = "closure")
+#   .Call("wrap__make_closure_wrappers", use_symbols = TRUE, package_name = "unsum")
 
 #' @usage NULL
-#' @useDynLib closure, .registration = TRUE
+#' @useDynLib unsum, .registration = TRUE
 NULL
 
 create_combinations <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd)
