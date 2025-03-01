@@ -113,7 +113,7 @@ The CLOSURE algorithm was originally written [in
 Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael
 Larigaldie. The R package unsum provides easy access to an optimized
 implementation in Rust,
-[unsum-core](https://crates.io/crates/unsum-core), via the amazing
+[closure-core](https://crates.io/crates/closure-core), via the amazing
 [extendr](https://extendr.github.io/) framework. Rust code tends to run
 much faster than R or Python code, which is required for many
 applications of CLOSURE.
