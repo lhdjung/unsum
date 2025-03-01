@@ -3,3 +3,4 @@
 ^src/\.cargo$
 ^LICENSE\.md$
 ^README\.Rmd$
+^special-scripts$
