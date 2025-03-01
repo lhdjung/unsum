@@ -3,19 +3,19 @@
 version = 3
 
 [[package]]
-name = "closure"
+name = "unsum"
 version = "0.1.0"
 dependencies = [
- "closure-core",
+ "unsum-core",
  "extendr-api",
  "libR-sys",
  "rayon",
 ]
 
 [[package]]
-name = "closure-core"
+name = "unsum-core"
 version = "0.1.0"
-source = "git+https://github.com/lhdjung/closure-core#257a41390251fe653bf7e2ab403508035441ce6a"
+source = "git+https://github.com/lhdjung/unsum-core#257a41390251fe653bf7e2ab403508035441ce6a"
 dependencies = [
  "rayon",
 ]
