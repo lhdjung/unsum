@@ -36,5 +36,7 @@ BugReports: https://github.com/lhdjung/unsum/issues
 Suggests: 
     devtools,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat (>= 3.0.0)
 VignetteBuilder: knitr
+Config/testthat/edition: 3
