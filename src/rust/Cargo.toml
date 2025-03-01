@@ -9,7 +9,7 @@ name = 'unsum'
 
 [dependencies]
 libR-sys = "=0.7.0"
-unsum-core = { git = "https://github.com/lhdjung/unsum-core" }
+closure-core = { git = "https://github.com/lhdjung/closure-core" }
 extendr-api = '*'
 rayon = "1.10.0"
 
