@@ -4,7 +4,7 @@
 
 #
 # This file was created with the following call:
-#   .Call("wrap__make_closure_wrappers", use_symbols = TRUE, package_name = "unsum")
+#   .Call("wrap__make_unsum_wrappers", use_symbols = TRUE, package_name = "unsum")
 
 #' @usage NULL
 #' @useDynLib unsum, .registration = TRUE
