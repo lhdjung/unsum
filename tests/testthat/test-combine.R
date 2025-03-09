@@ -9,11 +9,7 @@ data_r <- closure_combine(
 )
 
 # Adjust results of R wrapper to format of data saved on disk
-data_r <- data_r$results$combination %>%
-  tibble::as_tibble(.name_repair = "minimal") %>%
-  t() %>%
-  tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
-
+data_r <- format_n_cols(data_r)
 
 # Check results for identity after sorting columns. Different CLOSURE
 # implementations may yield results in different order (even though the samples
