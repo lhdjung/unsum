@@ -46,6 +46,10 @@
 #' closure_plot_bar(data)
 
 
+# TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#341d5c" or
+# similar to distinguish CLOSURE plots from SPRITE plots; especially if and when
+# SPRITE gets implemented in unsum!
+
 # # For interactive testing:
 # # (create `data`)
 # frequency <- "absolute"
