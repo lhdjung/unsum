@@ -1,6 +1,15 @@
 ## code to prepare datasets containing results of other CLOSURE implementations
 ## goes here
 
+# # Note: These data should be equivalent to:
+# closure_combine(
+#   mean = "3.5",
+#   sd = "0.5",
+#   n = 52,
+#   scale_min = 1,
+#   scale_max = 5
+# )
+
 closure_read <- function(version = c("rust", "python")) {
 
   version <- rlang::arg_match(version)
