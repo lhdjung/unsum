@@ -11,19 +11,15 @@ fn create_combinations(
     rounding_error_mean: f64,
     rounding_error_sd: f64
 ) -> Robj {
-    // Call dfs_parallel with explicit type parameters
-    let result: Vec<Vec<i32>> = dfs_parallel::<f64, i32>(
+    dfs_parallel(
         mean,
         sd,
-        n,
+        n.try_into().unwrap(),
         scale_min,
         scale_max,
         rounding_error_mean,
         rounding_error_sd
-    );
-    
-    // Since result is already Vec<Vec<i32>>, this should convert directly to an R object
-    result
+    )
     .into_iter()
     .map(|vec| vec.into_robj())
     .collect::<Vec<Robj>>()
