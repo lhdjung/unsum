@@ -1,12 +1,11 @@
 use extendr_api::prelude::*;
 use closure_core::dfs_parallel;
 
-// Core CLOSURE implementation, processed for R
 #[extendr]
 fn create_combinations(
     mean: f64,
     sd: f64,
-    n: usize,
+    n: i32,
     scale_min: i32,
     scale_max: i32,
     rounding_error_mean: f64,
@@ -15,7 +14,7 @@ fn create_combinations(
     dfs_parallel(
         mean,
         sd,
-        n,
+        n.try_into().unwrap(),
         scale_min,
         scale_max,
         rounding_error_mean,
