@@ -8,43 +8,53 @@ check_closure_combine <- function(data) {
 
   top_level_is_correct <-
     is.list(data) &&
-    length(data) == 3L &&
-    identical(names(data), c("metadata", "frequency", "results")) &&
-    inherits(data$metadata, "closure_combine")
+    length(data) == 4L &&
+    identical(names(data), c("inputs", "metrics", "frequency", "results")) &&
+    inherits(data$inputs, "closure_combine")
 
   if (!top_level_is_correct) {
     cli::cli_abort(c(
       "Input must be the output of `closure_combine()`.",
       "!" = "Such output is a list with the elements \\
-      \"metadata\", \"frequency\", and \"results\"."
+      \"inputs\", \"metrics\", \"frequency\", and \"results\"."
     ))
   }
 
   # Check the formats of the three tibbles that are elements of `data`, i.e., of
   # the output of `closure_combine()`:
 
-  # Metadata (1 / 3)
+  # Inputs (1 / 4)
   check_closure_combine_tibble(
-    x = data$metadata,
-    name = "metadata",
-    dims = c(1L, 8L),
+    x = data$inputs,
+    name = "inputs",
+    dims = c(1L, 5L),
     col_names_types = list(
       "mean" = "character",
       "sd" = "character",
       "n" = c("integer", "double"),
       "scale_min" = c("integer", "double"),
-      "scale_max" = c("integer", "double"),
-      "combos_initial" = "integer",
-      "combos_all" = "integer",
-      "values_all" = "integer"
+      "scale_max" = c("integer", "double")
     )
   )
 
-  # Frequency (2 / 3)
+  # Metrics (2 / 4)
+  check_closure_combine_tibble(
+    x = data$metrics,
+    name = "metrics",
+    dims = c(1L, 4L),
+    col_names_types = list(
+      "combos_initial" = "integer",
+      "combos_all" = "integer",
+      "values_all" = "integer",
+      "horns_index" = "double"
+    )
+  )
+
+  # Frequency (3 / 4)
   check_closure_combine_tibble(
     x = data$frequency,
     name = "frequency",
-    dims = c(data$metadata$scale_max - data$metadata$scale_min + 1, 3),
+    dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 3),
     col_names_types = list(
       "value" = "integer",
       "f_absolute" = "integer",
@@ -52,11 +62,11 @@ check_closure_combine <- function(data) {
     )
   )
 
-  # Results (3 / 3)
+  # Results (4 / 4)
   check_closure_combine_tibble(
     x = data$results,
     name = "results",
-    dims = c(data$metadata$combos_all, 2L),
+    dims = c(data$metrics$combos_all, 2L),
     col_names_types = list(
       "id" = "integer",
       "combination" = "list"
@@ -67,9 +77,9 @@ check_closure_combine <- function(data) {
   # Additional checks:
 
   check_scale(
-    scale_min = data$metadata$scale_min,
-    scale_max = data$metadata$scale_max,
-    mean      = data$metadata$mean
+    scale_min = data$inputs$scale_min,
+    scale_max = data$inputs$scale_max,
+    mean      = data$inputs$mean
   )
 
   if (!is_seq_linear_basic(data$frequency$value)) {
@@ -115,7 +125,7 @@ check_closure_combine <- function(data) {
     cli::cli_abort("All `results` elements must be integer vectors.")
   }
 
-  n <- data$metadata$n
+  n <- data$inputs$n
 
   all_results_length_n <- data$results$combination %>%
     vapply(
