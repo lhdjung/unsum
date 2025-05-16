@@ -32,6 +32,13 @@ closure_read <- function(version = c("rust", "python")) {
 .data_rust   <- closure_read("rust")
 .data_python <- closure_read("python")
 
+# Check that results are equal
+if (identical_sorted_cols(.data_rust, .data_python)) {
+  message("Rust and Python results are equal")
+} else {
+  stop("`.data_rust` and `.data_python` are different results!")
+}
+
 # Save these datasets to disk. They will be internally available to the package,
 # so they can be used by unit tests. However, they are not exported -- this is
 # why their names start with dots.
