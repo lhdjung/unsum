@@ -223,18 +223,7 @@ check_scale <- function(scale_min, scale_max, mean = NULL) {
 # length 1, and is not `NA`. Multiple allowed types are often `c("double",
 # "integer")` which allows any numeric value, but no values of any other types.
 check_value <- function(x, type) {
-  if (!any(type == typeof(x))) {
-    name <- deparse(substitute(x))
-    type_intro <- if (length(type) == 1) {
-      "be of type"
-    } else {
-      "have one of the types"
-    }
-    cli::cli_abort(c(
-      "`{name}` must {type_intro} {type}.",
-      "x" = "It is {typeof(x)}."
-    ))
-  }
+  check_type(x, type, 2)
   if (length(x) != 1L) {
     name <- deparse(substitute(x))
     cli::cli_abort(c(
@@ -246,6 +235,26 @@ check_value <- function(x, type) {
     name <- deparse(substitute(x))
     cli::cli_abort("`{name}` can't be `NA`.")
   }
+}
+
+
+check_type <- function (x, t, n = 1) {
+  if (any(typeof(x) == t)) {
+    return(invisible(NULL))
+  }
+  name <- deparse(substitute(x))
+  msg_type <- if (length(t) == 1L) {
+    "be of type"
+  } else {
+    "be one of the types"
+  }
+  cli::cli_abort(
+    message = c(
+      `!` = "`{name}` must {msg_type} {t}.",
+      x = "It is {typeof(x)}."
+    ),
+    call = rlang::caller_env(n)
+  )
 }
 
 

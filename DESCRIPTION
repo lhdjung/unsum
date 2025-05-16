@@ -26,6 +26,7 @@ Collate:
     'utils.R'
     'count.R'
     'combine.R'
+    'horns.R'
     'plot.R'
     'utils-pipe.R'
 Config/rextendr/version: 0.3.1.9001
