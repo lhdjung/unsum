@@ -6,6 +6,8 @@
 #'   - 1 means that the observations are evenly split between the extremes, with
 #'   none in between.
 #'
+#'   It creates the `horns_index` column in the output of [`closure_combine()`].
+#'
 #' @param freqs Numeric. Vector with the frequencies (relative or absolute) of
 #'   binned observations; e.g., a vector with 5 elements for a 1-5 scale.
 #' @param scale_min,scale_max Numeric (length 1 each). Minimum and maximum of

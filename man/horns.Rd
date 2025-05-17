@@ -27,6 +27,8 @@ observations based on the scale limits. It ranges from 0 to 1:
 \item 1 means that the observations are evenly split between the extremes, with
 none in between.
 }
+
+It creates the \code{horns_index} column in the output of \code{\link[=closure_combine]{closure_combine()}}.
 }
 \details{
 The horns index \eqn{h} is defined as:
