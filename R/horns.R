@@ -3,7 +3,6 @@
 #' @description `horns()` measures the dispersion in a sample of clamped
 #'   observations based on the scale limits. It ranges from 0 to 1:
 #'   - 0 means no variation, i.e., all observations have the same value.
-#'   - 0.5 indicates a perfect uniform distribution.
 #'   - 1 means that the observations are evenly split between the extremes, with
 #'   none in between.
 #'

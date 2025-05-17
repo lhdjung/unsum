@@ -24,7 +24,6 @@ Numeric (length 1).
 observations based on the scale limits. It ranges from 0 to 1:
 \itemize{
 \item 0 means no variation, i.e., all observations have the same value.
-\item 0.5 indicates a perfect uniform distribution.
 \item 1 means that the observations are evenly split between the extremes, with
 none in between.
 }
