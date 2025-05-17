@@ -54,8 +54,10 @@ based on scale range only.
 of rows in \code{results}.
 \item \code{values_all}: integer. Number of all individual values found. Equal to
 \code{n * combos_all}.
-\item \code{horns_index}: double. Measure of dispersion for bounded scales; see
+\item \code{horns}: double. Measure of dispersion for bounded scales; see
 \code{\link[=horns]{horns()}}.
+\item \code{horns_uniform}: double. Value \code{horns} would have if the reconstructed
+sample was uniformly distributed.
 }
 \item \strong{\code{frequency}}:
 \itemize{

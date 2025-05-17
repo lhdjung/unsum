@@ -6,11 +6,12 @@
 #'   - 1 means that the observations are evenly split between the extremes, with
 #'   none in between.
 #'
-#'   `horns_uniform()` returns the value `horns()` would return for a uniform
-#'   distribution within given scale limits. It can be useful as a point of
-#'   reference for `horns()` results.
+#'   `horns_uniform()` computes the value that `horns()` would return for a
+#'   uniform distribution within given scale limits. This can be useful as a
+#'   point of reference for `horns()`.
 #'
-#'   It creates the `horns_index` column in the output of [`closure_combine()`].
+#'   These functions create the `horns` and `horns_uniform` columns in
+#'   [`closure_combine()`].
 #'
 #' @param freqs Numeric. Vector with the frequencies (relative or absolute) of
 #'   binned observations; e.g., a vector with 5 elements for a 1-5 scale.

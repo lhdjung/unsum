@@ -49,8 +49,10 @@
 #'   of rows in `results`.
 #'     - `values_all`: integer. Number of all individual values found. Equal to
 #'   `n * combos_all`.
-#'     - `horns_index`: double. Measure of dispersion for bounded scales; see
-#'     [`horns()`].
+#'     - `horns`: double. Measure of dispersion for bounded scales; see
+#'   [`horns()`].
+#'     - `horns_uniform`: double. Value `horns` would have if the reconstructed
+#'   sample was uniformly distributed.
 #'   - **`frequency`**:
 #'     - `value`: integer. Scale values derived from `scale_min` and
 #'   `scale_max`.
@@ -214,7 +216,8 @@ closure_combine <- function(mean,
         combos_initial = closure_count_initial(scale_min, scale_max),
         combos_all = n_combos_all,
         values_all = n_combos_all * as.integer(n),
-        horns_index = horns(freqs$f_absolute, scale_min, scale_max)
+        horns = horns(freqs$f_absolute, scale_min, scale_max),
+        horns_uniform = horns_uniform(scale_min, scale_max)
       ),
       nrow = 1L
     ),

@@ -31,11 +31,12 @@ observations based on the scale limits. It ranges from 0 to 1:
 none in between.
 }
 
-\code{horns_uniform()} returns the value \code{horns()} would return for a uniform
-distribution within given scale limits. It can be useful as a point of
-reference for \code{horns()} results.
+\code{horns_uniform()} computes the value that \code{horns()} would return for a
+uniform distribution within given scale limits. This can be useful as a
+point of reference for \code{horns()}.
 
-It creates the \code{horns_index} column in the output of \code{\link[=closure_combine]{closure_combine()}}.
+These functions create the \code{horns} and \code{horns_uniform} columns in
+\code{\link[=closure_combine]{closure_combine()}}.
 }
 \details{
 The horns index \eqn{h} is defined as:
