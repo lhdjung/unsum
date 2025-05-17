@@ -233,26 +233,27 @@ check_scale <- function(scale_min, scale_max, mean = NULL) {
 # length 1, and is not `NA`. Multiple allowed types are often `c("double",
 # "integer")` which allows any numeric value, but no values of any other types.
 check_value <- function(x, type) {
-  check_type(x, type, 2)
+  name <- deparse(substitute(x))
+  check_type(x, type, n = 2, name = name)
   if (length(x) != 1L) {
-    name <- deparse(substitute(x))
     cli::cli_abort(c(
       "`{name}` must have length 1.",
       "x" = "It has length {length(x)}."
     ))
   }
   if (is.na(x)) {
-    name <- deparse(substitute(x))
     cli::cli_abort("`{name}` can't be `NA`.")
   }
 }
 
 
-check_type <- function (x, t, n = 1) {
+check_type <- function (x, t, n = 1, name = NULL) {
   if (any(typeof(x) == t)) {
     return(invisible(NULL))
   }
-  name <- deparse(substitute(x))
+  if (is.null(name)) {
+    name <- deparse(substitute(x))
+  }
   msg_type <- if (length(t) == 1L) {
     "be of type"
   } else {
