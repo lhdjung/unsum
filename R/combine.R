@@ -40,28 +40,32 @@
 #'   Many specifications of the two arguments will not make any difference, and
 #'   those that do will most likely lead to empty results.
 #'
-#' @return Named list with these elements:
-#'   - **`metadata`**: Tibble (data frame) with the inputs and these additional
-#'   columns:
+#' @return Named list of four tibbles (data frames):
+#'   - **`inputs`**: Arguments to this function.
+#'   - **`metrics`**:
 #'     - `combos_initial`: integer. The basis for computing CLOSURE results,
 #'   based on scale range only.
 #'     - `combos_all`: integer. Number of all combinations. Equal to the number
 #'   of rows in `results`.
 #'     - `values_all`: integer. Number of all individual values found. Equal to
 #'   `n * combos_all`.
-#'   - **`frequency`**: Tibble with these columns:
+#'     - `horns`: double. Measure of dispersion for bounded scales; see
+#'   [`horns()`].
+#'     - `horns_uniform`: double. Value `horns` would have if the reconstructed
+#'   sample was uniformly distributed.
+#'   - **`frequency`**:
 #'     - `value`: integer. Scale values derived from `scale_min` and
 #'   `scale_max`.
 #'     - `f_absolute`: integer. Count of individual scale values found in the
 #'   `results` combinations.
 #'     - `f_relative`: double. Values' share of total values found.
-#'   - **`results`**: Tibble with these columns:
+#'   - **`results`**:
 #'     - `id`: integer. Runs from `1` to `combos_all`.
 #'     - `combination`: list of integer vectors. Each of these vectors has
 #'   length `n`. It is a combination (or distribution) of individual scale
 #'   values found by CLOSURE.
 #'
-#' @include utils.R count.R extendr-wrappers.R
+#' @include utils.R count.R horns.R extendr-wrappers.R
 #'
 #' @export
 #'
@@ -187,27 +191,37 @@ closure_combine <- function(mean,
     ))
   }
 
+  # Frequency table
+  freqs <- summarize_frequencies(results, scale_min, scale_max)
+
   # Insert the combinations into a data frame, along with summary statistics.
   # The S3 class "closure_combine" will be recognized by downstream functions,
-  # such as `closure_plot_bar()`. Two elements here are created using the
+  # such as `closure_plot_bar()`. Three elements here are created using the
   # low-level `new_tibble()` instead of `tibble()`: once for passing the S3
-  # class, and once for performance.
+  # class, and twice for performance.
   list(
-    metadata = tibble::new_tibble(
+    inputs = tibble::new_tibble(
       x = list(
         mean = mean,
         sd = sd,
         n = n,
         scale_min = scale_min,
-        scale_max = scale_max,
-        combos_initial = closure_count_initial(scale_min, scale_max),
-        combos_all = n_combos_all,
-        values_all = n_combos_all * as.integer(n)
+        scale_max = scale_max
       ),
       nrow = 1L,
       class = "closure_combine"
     ),
-    frequency = summarize_frequencies(results, scale_min, scale_max),
+    metrics = tibble::new_tibble(
+      x = list(
+        combos_initial = closure_count_initial(scale_min, scale_max),
+        combos_all = n_combos_all,
+        values_all = n_combos_all * as.integer(n),
+        horns = horns(freqs$f_absolute, scale_min, scale_max),
+        horns_uniform = horns_uniform(scale_min, scale_max)
+      ),
+      nrow = 1L
+    ),
+    frequency = freqs,
     results = tibble::new_tibble(
       x = list(
         id = seq_len(n_combos_all),
@@ -216,6 +230,5 @@ closure_combine <- function(mean,
       nrow = n_combos_all
     )
   )
-
 }
 

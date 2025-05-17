@@ -43,10 +43,10 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 combinations are found? Default is \code{TRUE}.}
 }
 \value{
-Named list with these elements:
+Named list of four tibbles (data frames):
 \itemize{
-\item \strong{\code{metadata}}: Tibble (data frame) with the inputs and these additional
-columns:
+\item \strong{\code{inputs}}: Arguments to this function.
+\item \strong{\code{metrics}}:
 \itemize{
 \item \code{combos_initial}: integer. The basis for computing CLOSURE results,
 based on scale range only.
@@ -54,8 +54,12 @@ based on scale range only.
 of rows in \code{results}.
 \item \code{values_all}: integer. Number of all individual values found. Equal to
 \code{n * combos_all}.
+\item \code{horns}: double. Measure of dispersion for bounded scales; see
+\code{\link[=horns]{horns()}}.
+\item \code{horns_uniform}: double. Value \code{horns} would have if the reconstructed
+sample was uniformly distributed.
 }
-\item \strong{\code{frequency}}: Tibble with these columns:
+\item \strong{\code{frequency}}:
 \itemize{
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
@@ -63,7 +67,7 @@ of rows in \code{results}.
 \code{results} combinations.
 \item \code{f_relative}: double. Values' share of total values found.
 }
-\item \strong{\code{results}}: Tibble with these columns:
+\item \strong{\code{results}}:
 \itemize{
 \item \code{id}: integer. Runs from \code{1} to \code{combos_all}.
 \item \code{combination}: list of integer vectors. Each of these vectors has

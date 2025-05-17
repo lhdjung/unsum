@@ -58,6 +58,9 @@
 # show_text <- TRUE
 # text_offset <- 0.05
 # text_color <- bar_color
+# mark_thousand <- ","
+# mark_decimal <- "."
+# text_size <- 13
 
 closure_plot_bar <- function(data,
                              frequency = c("absolute-percent",
@@ -217,6 +220,7 @@ closure_plot_bar <- function(data,
 # # For interactive testing:
 # # (create `data`)
 # line_color <- "royalblue1"
+# text_size <- 13
 # reference_line_alpha <- 0.6
 # pad <- TRUE
 
@@ -230,16 +234,17 @@ closure_plot_ecdf <- function(data,
   check_closure_combine(data)
 
   # For the reference line and the x-axis
-  metadata <- data$metadata
-  values_unique <- metadata$scale_min:metadata$scale_max
+  inputs <- data$inputs
+  metrics <- data$metrics
+  values_unique <- inputs$scale_min:inputs$scale_max
 
-  # Zoom in on the detailed `results` -- the only element of `data` needed here.
+  # Zoom in on the detailed `results` -- the key element of `data` needed here.
   # Flatten them into a single integer vector.
   data <- tibble::new_tibble(
     x = list(
       value = unlist(data$results$combination, use.names = FALSE)
     ),
-    nrow = metadata$values_all
+    nrow = metrics$values_all
   )
 
   # Construct the ECDF plot
