@@ -41,12 +41,13 @@ check_closure_combine <- function(data) {
   check_closure_combine_tibble(
     x = data$metrics,
     name = "metrics",
-    dims = c(1L, 4L),
+    dims = c(1L, 5L),
     col_names_types = list(
       "combos_initial" = "integer",
       "combos_all" = "integer",
       "values_all" = "integer",
-      "horns_index" = "double"
+      "horns" = "double",
+      "horns_uniform" = "double"
     )
   )
 
