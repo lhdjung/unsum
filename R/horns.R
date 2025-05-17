@@ -6,6 +6,10 @@
 #'   - 1 means that the observations are evenly split between the extremes, with
 #'   none in between.
 #'
+#'   `horns_uniform()` returns the value `horns()` would return for a uniform
+#'   distribution within given scale limits. It can be useful as a point of
+#'   reference for `horns()` results.
+#'
 #'   It creates the `horns_index` column in the output of [`closure_combine()`].
 #'
 #' @param freqs Numeric. Vector with the frequencies (relative or absolute) of
@@ -68,8 +72,6 @@
 
 horns <- function(freqs, scale_min, scale_max) {
   check_type(freqs, c("double", "integer"))
-  check_type(scale_min, c("double", "integer"))
-  check_type(scale_max, c("double", "integer"))
 
   check_value(scale_min, c("double", "integer"))
   check_value(scale_max, c("double", "integer"))
@@ -100,5 +102,19 @@ horns <- function(freqs, scale_min, scale_max) {
   denominator <- ((scale_max - scale_min)^2) / 4
 
   numerator / denominator
+}
+
+
+#' @rdname horns
+#' @export
+
+# The function uses `1` for the uniform frequency, but any other non-zero
+# definite number (no `NA`, no `NaN`) would lead to the same results.
+horns_uniform <- function(scale_min, scale_max) {
+  horns(
+    freqs = rep(1, length(scale_min:scale_max)),
+    scale_min = scale_min,
+    scale_max = scale_max
+  )
 }
 

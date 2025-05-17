@@ -2,9 +2,12 @@
 % Please edit documentation in R/horns.R
 \name{horns}
 \alias{horns}
+\alias{horns_uniform}
 \title{Horns index (\eqn{h})}
 \usage{
 horns(freqs, scale_min, scale_max)
+
+horns_uniform(scale_min, scale_max)
 }
 \arguments{
 \item{freqs}{Numeric. Vector with the frequencies (relative or absolute) of
@@ -27,6 +30,10 @@ observations based on the scale limits. It ranges from 0 to 1:
 \item 1 means that the observations are evenly split between the extremes, with
 none in between.
 }
+
+\code{horns_uniform()} returns the value \code{horns()} would return for a uniform
+distribution within given scale limits. It can be useful as a point of
+reference for \code{horns()} results.
 
 It creates the \code{horns_index} column in the output of \code{\link[=closure_combine]{closure_combine()}}.
 }
