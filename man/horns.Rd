@@ -3,11 +3,14 @@
 \name{horns}
 \alias{horns}
 \alias{horns_uniform}
+\alias{horns_rescaled}
 \title{Horns index (\eqn{h})}
 \usage{
 horns(freqs, scale_min, scale_max)
 
 horns_uniform(scale_min, scale_max)
+
+horns_rescaled(freqs, scale_min, scale_max)
 }
 \arguments{
 \item{freqs}{Numeric. Vector with the frequencies (relative or absolute) of
@@ -35,8 +38,15 @@ none in between.
 uniform distribution within given scale limits. This can be useful as a
 point of reference for \code{horns()}.
 
-These functions create the \code{horns} and \code{horns_uniform} columns in
+These two functions create the \code{horns} and \code{horns_uniform} columns in
 \code{\link[=closure_combine]{closure_combine()}}.
+
+\code{horns_rescaled()} is a version of \code{horns()} that  is normalized by scale
+length, such that \code{0.5} always indicates a uniform distribution,
+independent of the number of scale points. It is meant to enable comparison
+across scales of different lengths, but it is harder to interpret for an
+individual scale. Even so, the range and the meaning of \code{0} and \code{1} are the
+same as for \code{horns()}.
 }
 \details{
 The horns index \eqn{h} is defined as:
