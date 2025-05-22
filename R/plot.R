@@ -12,6 +12,9 @@
 #'   if text labels are shown (by default of `show_text = TRUE`), its percentage
 #'   of all values. Other options are `"absolute"`, `"relative"`, and
 #'   `"percent"`.
+#' @param samples String (length 1). Should the plot show the sum of all values
+#'   (`"all"`, the default) or the average sample (`"average"`)? This only
+#'   matters if absolute frequencies are shown.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
 #' @param bar_color String (length 1). Color of the bars. Default is
 #'   `"royalblue1"`.
@@ -53,6 +56,7 @@
 # # For interactive testing:
 # # (create `data`)
 # frequency <- "absolute"
+# samples <- "all"
 # bar_alpha <- 0.8
 # bar_color <- "royalblue1"
 # show_text <- TRUE
@@ -67,6 +71,9 @@ closure_plot_bar <- function(data,
                                            "absolute",
                                            "relative",
                                            "percent"),
+                             # TODO: Which one should be the default here -- all
+                             # samples or the average sample?
+                             samples = c("all", "average"),
                              bar_alpha = 0.8,
                              bar_color = "royalblue1",
                              show_text = TRUE,
@@ -79,9 +86,33 @@ closure_plot_bar <- function(data,
   # Check inputs
   check_closure_combine(data)
   frequency <- rlang::arg_match(frequency)
+  samples <- rlang::arg_match(samples)
 
   # Zoom in on the frequency table -- the only element of `data` needed here
   data <- data$frequency
+
+  # In terms of absolute frequencies, the user may choose to show the average
+  # number of observations per bin instead of the full count. If so, replace the
+  # full absolute values by the average values, and prepare a label to signpost
+  # the average inside of the plot.
+  if (samples == "average") {
+    # Warn if the user chooses relative frequencies but also averaging. This
+    # won't matter for a Shiny app where users keep buttons checked.
+    if (interactive() && frequency %in% c("relative", "percent")) {
+      cli::cli_warn(c(
+        "Averaging samples only matters to absolute frequencies.",
+        "!" = "Using `samples = \"average\"` here has no effect because of \
+        `frequency = \"{frequency}\"`."
+      ))
+    }
+    data$f_absolute <- data$f_average
+    label_avg <- "avg."
+  } else {
+    label_avg <- NULL
+  }
+
+  # After that, the average is not needed in any case, even if it was before
+  data$f_average <- NULL
 
   # Create a function that formats labels for large numbers. By default, they
   # are formatted like, e.g., "12,345.67"
@@ -96,6 +127,7 @@ closure_plot_bar <- function(data,
     # sum_absolute <- sum(data$f_absolute)
     label_y_axis <- paste(
       "Count in",
+      label_avg,
       format_number_label(sum(data$f_absolute)),
       "values"
     )
