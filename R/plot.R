@@ -106,9 +106,11 @@ closure_plot_bar <- function(data,
       ))
     }
     data$f_absolute <- data$f_average
-    label_avg <- "avg."
+    label_avg_all <- "avg. sample, N = "
+    label_values <- " "
   } else {
-    label_avg <- NULL
+    label_avg_all <- "all "
+    label_values <- " values "
   }
 
   # After that, the average is not needed in any case, even if it was before
@@ -124,15 +126,14 @@ closure_plot_bar <- function(data,
   # Remove the column that represents the main non-chosen type of frequency
   # (absolute or relative), then specify the y-axis label by frequency type.
   if (frequency %in% c("absolute", "absolute-percent")) {
-    # sum_absolute <- sum(data$f_absolute)
-    label_y_axis <- paste(
-      "Count in",
-      label_avg,
+    label_y_axis <- paste0(
+      "Count in ",
+      label_avg_all,
       format_number_label(sum(data$f_absolute)),
-      "values"
+      label_values
     )
     if (frequency == "absolute-percent") {
-      label_y_axis <- paste(label_y_axis, "(percentage)")
+      label_y_axis <- paste0(label_y_axis, "(%)")
     }
     data$f_relative <- NULL
   } else if (frequency == "relative") {
