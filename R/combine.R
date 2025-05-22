@@ -192,7 +192,7 @@ closure_combine <- function(mean,
   }
 
   # Frequency table
-  freqs <- summarize_frequencies(results, scale_min, scale_max)
+  freqs <- summarize_frequencies(results, scale_min, scale_max, n_combos_all)
 
   # Insert the combinations into a data frame, along with summary statistics.
   # The S3 class "closure_combine" will be recognized by downstream functions,

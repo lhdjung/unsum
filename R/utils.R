@@ -55,9 +55,10 @@ check_closure_combine <- function(data) {
   check_closure_combine_tibble(
     x = data$frequency,
     name = "frequency",
-    dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 3),
+    dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 4),
     col_names_types = list(
       "value" = "integer",
+      "f_average" = "double",
       "f_absolute" = "integer",
       "f_relative" = "double"
     )
@@ -271,7 +272,7 @@ check_type <- function (x, t, n = 1, name = NULL) {
 
 
 # This helper creates the `frequency` part of `closure_combine()`'s output.
-summarize_frequencies <- function(results, scale_min, scale_max) {
+summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
 
   # Flatten the list of integer vectors into a single integer vector, then
   # create a frequency table for the values in that vector.
@@ -287,6 +288,10 @@ summarize_frequencies <- function(results, scale_min, scale_max) {
   # Compute the share of each individual value in the sum of all values.
   f_relative <- f_absolute / sum(f_absolute)
 
+  # Divide by the number of samples instead to get the average number of values
+  # in each bin.
+  f_average <- f_absolute / combos_all
+
   # Reconstruct the complete vector of possible scale values as a sequence from
   # scale minimum to scale maximum.
   value_completed <- scale_min:scale_max
@@ -299,6 +304,7 @@ summarize_frequencies <- function(results, scale_min, scale_max) {
   if (length(value) == length(value_completed)) {
     return(tibble::tibble(
       value,
+      f_average,
       f_absolute,
       f_relative
     ))
@@ -309,15 +315,18 @@ summarize_frequencies <- function(results, scale_min, scale_max) {
   indices_found <- which(value_completed %in% value)
 
   # Construct full-length vectors where each value is zero
+  f_average_completed  <- double(length(value_completed))
   f_absolute_completed <- integer(length(value_completed))
   f_relative_completed <- double(length(value_completed))
 
   # Fill in the non-zero values where appropriate
+  f_average_completed[indices_found]  <- f_average
   f_absolute_completed[indices_found] <- f_absolute
   f_relative_completed[indices_found] <- f_relative
 
   tibble::tibble(
     value      = value_completed,
+    f_average  = f_average_completed,
     f_absolute = f_absolute_completed,
     f_relative = f_relative_completed
   )
