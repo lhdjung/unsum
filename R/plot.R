@@ -12,9 +12,9 @@
 #'   if text labels are shown (by default of `show_text = TRUE`), its percentage
 #'   of all values. Other options are `"absolute"`, `"relative"`, and
 #'   `"percent"`.
-#' @param samples String (length 1). Should the plot show the sum of all values
-#'   (`"all"`, the default) or the average sample (`"average"`)? This only
-#'   matters if absolute frequencies are shown.
+#' @param samples String (length 1). How to aggregate the samples? Either take
+#'   the average sample (`"mean"`, the default) or the sum of all samples
+#'   (`"sum"`). This only matters if absolute frequencies are shown.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
 #' @param bar_color String (length 1). Color of the bars. Default is
 #'   `"royalblue1"`.
@@ -49,14 +49,14 @@
 #' closure_plot_bar(data)
 
 
-# TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#341d5c" or
-# similar to distinguish CLOSURE plots from SPRITE plots; especially if and when
-# SPRITE gets implemented in unsum!
+# TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#880808",
+# "#341d5c" or similar to distinguish CLOSURE plots from SPRITE plots;
+# especially if and when SPRITE gets implemented in unsum!
 
 # # For interactive testing:
 # # (create `data`)
 # frequency <- "absolute"
-# samples <- "all"
+# samples <- "mean"
 # bar_alpha <- 0.8
 # bar_color <- "royalblue1"
 # show_text <- TRUE
@@ -73,8 +73,9 @@ closure_plot_bar <- function(data,
                                            "percent"),
                              # TODO: Which one should be the default here -- all
                              # samples or the average sample?
-                             samples = c("all", "average"),
+                             samples = c("mean", "sum"),
                              bar_alpha = 0.8,
+                             # TODO: Choose favorite -- #880808, #960019,
                              bar_color = "royalblue1",
                              show_text = TRUE,
                              text_color = bar_color,
@@ -95,7 +96,7 @@ closure_plot_bar <- function(data,
   # number of observations per bin instead of the full count. If so, replace the
   # full absolute values by the average values, and prepare a label to signpost
   # the average inside of the plot.
-  if (samples == "average") {
+  if (samples == "mean") {
     # Warn if the user chooses relative frequencies but also averaging. This
     # won't matter for a Shiny app where users keep buttons checked.
     if (interactive() && frequency %in% c("relative", "percent")) {

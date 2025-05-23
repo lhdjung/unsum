@@ -7,7 +7,7 @@
 closure_plot_bar(
   data,
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
-  samples = c("all", "average"),
+  samples = c("mean", "sum"),
   bar_alpha = 0.8,
   bar_color = "royalblue1",
   show_text = TRUE,
@@ -27,9 +27,9 @@ if text labels are shown (by default of \code{show_text = TRUE}), its percentage
 of all values. Other options are \code{"absolute"}, \code{"relative"}, and
 \code{"percent"}.}
 
-\item{samples}{String (length 1). Should the plot show the sum of all values
-(\code{"all"}, the default) or the average sample (\code{"average"})? This only
-matters if absolute frequencies are shown.}
+\item{samples}{String (length 1). How to aggregate the samples? Either take
+the average sample (\code{"mean"}, the default) or the sum of all samples
+(\code{"sum"}). This only matters if absolute frequencies are shown.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
 
