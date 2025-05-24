@@ -31,10 +31,10 @@ of all values. Other options are \code{"absolute"}, \code{"relative"}, and
 the average sample (\code{"mean"}, the default) or the sum of all samples
 (\code{"sum"}). This only matters if absolute frequencies are shown.}
 
-\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
+\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
 \item{bar_color}{String (length 1). Color of the bars. Default is
-\code{"royalblue1"}.}
+\code{"#960019"}.}
 
 \item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}
@@ -42,7 +42,7 @@ corresponding frequencies? Default is \code{TRUE}.}
 \item{text_color}{String (length 1). Color of the frequency labels. By
 default, the same as \code{bar_color}.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{13}.}
+\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
 \item{text_offset}{Numeric (length 1). Distance between the text labels and
 the bars. Default is \code{0.05}.}

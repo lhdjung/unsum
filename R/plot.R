@@ -15,14 +15,14 @@
 #' @param samples String (length 1). How to aggregate the samples? Either take
 #'   the average sample (`"mean"`, the default) or the sum of all samples
 #'   (`"sum"`). This only matters if absolute frequencies are shown.
-#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
+#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
 #' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"royalblue1"`.
+#'   `"#960019"`.
 #' @param show_text Logical (length 1). Should the bars be labeled with the
 #'   corresponding frequencies? Default is `TRUE`.
 #' @param text_color String (length 1). Color of the frequency labels. By
 #'   default, the same as `bar_color`.
-#' @param text_size Numeric. Base font size in pt. Default is `13`.
+#' @param text_size Numeric. Base font size in pt. Default is `12`.
 #' @param text_offset Numeric (length 1). Distance between the text labels and
 #'   the bars. Default is `0.05`.
 #' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
@@ -55,16 +55,16 @@
 
 # # For interactive testing:
 # # (create `data`)
-# frequency <- "absolute"
+# frequency <- "absolute-percent"
 # samples <- "mean"
-# bar_alpha <- 0.8
-# bar_color <- "royalblue1"
+# bar_alpha <- 0.75
+# bar_color <- "#960019"
 # show_text <- TRUE
 # text_offset <- 0.05
 # text_color <- bar_color
 # mark_thousand <- ","
 # mark_decimal <- "."
-# text_size <- 13
+# text_size <- 12
 
 closure_plot_bar <- function(data,
                              frequency = c("absolute-percent",
@@ -213,7 +213,7 @@ closure_plot_bar <- function(data,
 #'   all possible datasets in a single line.
 #'
 #' @param line_color String (length 1). Color of the ECDF line. Default is
-#'   `"royalblue1"`.
+#'   `"#960019"`.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
@@ -242,8 +242,8 @@ closure_plot_bar <- function(data,
 
 # # For interactive testing:
 # # (create `data`)
-# line_color <- "royalblue1"
-# text_size <- 13
+# line_color <- "#960019"
+# text_size <- 12
 # reference_line_alpha <- 0.6
 # pad <- TRUE
 

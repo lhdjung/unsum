@@ -16,9 +16,9 @@ closure_plot_ecdf(
 \item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
 \item{line_color}{String (length 1). Color of the ECDF line. Default is
-\code{"royalblue1"}.}
+\code{"#960019"}.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{13}.}
+\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
