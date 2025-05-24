@@ -1,4 +1,3 @@
-
 #' Create CLOSURE combinations
 #'
 #' @description Call `closure_combine()` to run the CLOSURE algorithm on a given
@@ -101,14 +100,12 @@
 #' # This can also be shown by `closure_plot_bar()`:
 #' closure_plot_bar(data_low)
 
-
 # Note: most helper functions called here can be found in the R/utils.R file.
 # The only exception, `create_combinations()`, is in R/extendr-wrappers.R, but
 # all it does is to call into Rust code in scr/rust/src/lib.rs which, in turn,
 # accesses closure-core. The latter is a Rust crate (roughly analogous to an R
 # package) that contains the actual implementation of CLOSURE:
 # https://github.com/lhdjung/closure-core/blob/master/src/lib.rs
-
 
 # # For interactive testing:
 # mean <- "5.00"
@@ -122,17 +119,18 @@
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
 
-
-closure_combine <- function(mean,
-                            sd,
-                            n,
-                            scale_min,
-                            scale_max,
-                            rounding = "up_or_down",
-                            threshold = 5,
-                            warn_if_empty = TRUE,
-                            rounding_error_mean = NULL,
-                            rounding_error_sd = NULL) {
+closure_combine <- function(
+  mean,
+  sd,
+  n,
+  scale_min,
+  scale_max,
+  rounding = "up_or_down",
+  threshold = 5,
+  warn_if_empty = TRUE,
+  rounding_error_mean = NULL,
+  rounding_error_sd = NULL
+) {
 
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
@@ -144,7 +142,7 @@ closure_combine <- function(mean,
   check_value(warn_if_empty, "logical")
 
   mean_num <- as.numeric(mean)
-  sd_num   <- as.numeric(sd)
+  sd_num <- as.numeric(sd)
 
   check_scale(scale_min, scale_max, mean_num)
 
@@ -166,7 +164,7 @@ closure_combine <- function(mean,
   }
 
   if (is.null(rounding_error_sd)) {
-    rounding_error_sd   <- sd_num   - mean_sd_unrounded$lower[2]
+    rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
   }
 
   # Compute CLOSURE combinations by calling into pre-compiled Rust code.
@@ -192,7 +190,7 @@ closure_combine <- function(mean,
   }
 
   # Frequency table
-  freqs <- summarize_frequencies(results, scale_min, scale_max)
+  freqs <- summarize_frequencies(results, scale_min, scale_max, n_combos_all)
 
   # Insert the combinations into a data frame, along with summary statistics.
   # The S3 class "closure_combine" will be recognized by downstream functions,
@@ -231,4 +229,3 @@ closure_combine <- function(mean,
     )
   )
 }
-

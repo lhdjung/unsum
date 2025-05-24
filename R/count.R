@@ -1,4 +1,3 @@
-
 #' Count CLOSURE combinations in advance
 #'
 #' @description Determine how many combinations [`closure_combine()`] would find
@@ -29,7 +28,6 @@
 # matter The formula is: (n+1) * n / 2 where n is the range size
 
 closure_count_initial <- function(scale_min, scale_max) {
-
   check_value(scale_min, c("double", "integer"))
   check_value(scale_max, c("double", "integer"))
 
@@ -40,5 +38,4 @@ closure_count_initial <- function(scale_min, scale_max) {
   as.integer(
     (range_size * (range_size + 1)) / 2
   )
-
 }

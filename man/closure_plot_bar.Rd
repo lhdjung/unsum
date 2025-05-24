@@ -7,11 +7,12 @@
 closure_plot_bar(
   data,
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
-  bar_alpha = 0.8,
-  bar_color = "royalblue1",
+  samples = c("mean", "all"),
+  bar_alpha = 0.75,
+  bar_color = "#960019",
   show_text = TRUE,
   text_color = bar_color,
-  text_size = 13,
+  text_size = 12,
   text_offset = 0.05,
   mark_thousand = ",",
   mark_decimal = "."
@@ -21,15 +22,18 @@ closure_plot_bar(
 \item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
-default, \code{"absolute-percent"}, displays the counts of each scale value, and
-if text labels are shown (by default of \code{show_text = TRUE}), its percentage
-of all values. Other options are \code{"absolute"}, \code{"relative"}, and
-\code{"percent"}.}
+default, \code{"absolute-percent"}, displays the count of each scale value and
+its percentage of all values. Other options are \code{"absolute"}, \code{"relative"},
+and \code{"percent"}.}
 
-\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
+\item{samples}{String (length 1). How to aggregate the samples? Either take
+the average sample (\code{"mean"}, the default) or the sum of all samples
+(\code{"all"}). This only matters if absolute frequencies are shown.}
+
+\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
 \item{bar_color}{String (length 1). Color of the bars. Default is
-\code{"royalblue1"}.}
+\code{"#960019"}, a red color.}
 
 \item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}
@@ -37,7 +41,7 @@ corresponding frequencies? Default is \code{TRUE}.}
 \item{text_color}{String (length 1). Color of the frequency labels. By
 default, the same as \code{bar_color}.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{13}.}
+\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
 \item{text_offset}{Numeric (length 1). Distance between the text labels and
 the bars. Default is \code{0.05}.}

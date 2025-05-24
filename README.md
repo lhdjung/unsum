@@ -1,15 +1,20 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# CLOSURE: Complete Listing of Original Samples of Underlying Raw Evidence
+# unsum: reconstruct raw data from summary statistics
 
 <!-- badges: start -->
+
 <!-- badges: end -->
 
-The unsum package enables efficient reconstruction of all possible
-datasets that may underlie a given set of summary statistics: mean, SD,
-sample size, and scale bounds. This can be useful in error detection to
-identify impossible or implausible reported numbers.
+The goal of unsum is to **un**do **sum**marization: reconstruct all
+possible samples that may underlie a given set of summary statistics. It
+is currently implemented for sets of mean, SD, sample size, and scale
+bounds. This can be useful in error detection to identify impossible or
+implausible reported numbers.
+
+The package features *CLOSURE: Complete Listing of Original Samples of
+Underlying Raw Evidence*, a fast algorithm implemented in Rust.
 
 CLOSURE is exhaustive, which makes it computationally intensive. If your
 code takes too long to run, consider using
@@ -47,21 +52,27 @@ data <- closure_combine(
 )
 
 data
-#> $metadata
-#> # A tibble: 1 × 8
-#>   mean  sd        n scale_min scale_max combos_initial combos_all values_all
-#>   <chr> <chr> <dbl>     <dbl>     <dbl>          <int>      <int>      <int>
-#> 1 2.7   1.9     100         1         5             15       2256     225600
+#> $inputs
+#> # A tibble: 1 × 5
+#>   mean  sd        n scale_min scale_max
+#>   <chr> <chr> <dbl>     <dbl>     <dbl>
+#> 1 2.7   1.9     100         1         5
+#> 
+#> $metrics
+#> # A tibble: 1 × 5
+#>   combos_initial combos_all values_all horns horns_uniform
+#>            <int>      <int>      <int> <dbl>         <dbl>
+#> 1             15       2256     225600 0.880           0.5
 #> 
 #> $frequency
-#> # A tibble: 5 × 3
-#>   value f_absolute f_relative
-#>   <int>      <int>      <dbl>
-#> 1     1     116060     0.514 
-#> 2     2       9908     0.0439
-#> 3     3       7160     0.0317
-#> 4     4       9912     0.0439
-#> 5     5      82560     0.366 
+#> # A tibble: 5 × 4
+#>   value f_average f_absolute f_relative
+#>   <int>     <dbl>      <int>      <dbl>
+#> 1     1     51.4      116060     0.514 
+#> 2     2      4.39       9908     0.0439
+#> 3     3      3.17       7160     0.0317
+#> 4     4      4.39       9912     0.0439
+#> 5     5     36.6       82560     0.366 
 #> 
 #> $results
 #> # A tibble: 2,256 × 2
