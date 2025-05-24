@@ -74,12 +74,12 @@ closure_plot_bar <- function(data,
                              # TODO: Which one should be the default here -- all
                              # samples or the average sample?
                              samples = c("mean", "sum"),
-                             bar_alpha = 0.8,
+                             bar_alpha = 0.75,
                              # TODO: Choose favorite -- #880808, #960019,
-                             bar_color = "royalblue1",
+                             bar_color = "#960019",
                              show_text = TRUE,
                              text_color = bar_color,
-                             text_size = 13,
+                             text_size = 12,
                              text_offset = 0.05,
                              mark_thousand = ",",
                              mark_decimal = ".") {
@@ -260,8 +260,8 @@ closure_plot_bar <- function(data,
 
 
 closure_plot_ecdf <- function(data,
-                              line_color = "royalblue1",
-                              text_size = 13,
+                              line_color = "#960019",
+                              text_size = 12,
                               reference_line_alpha = 0.6,
                               pad = TRUE) {
 
