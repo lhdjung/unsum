@@ -7,16 +7,15 @@
 #'
 #' @param data List returned by [`closure_combine()`].
 #' @param frequency String (length 1). What should the bars display? The
-#'   default, `"absolute-percent"`, displays the counts of each scale value, and
-#'   if text labels are shown (by default of `show_text = TRUE`), its percentage
-#'   of all values. Other options are `"absolute"`, `"relative"`, and
-#'   `"percent"`.
+#'   default, `"absolute-percent"`, displays the count of each scale value and
+#'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
+#'   and `"percent"`.
 #' @param samples String (length 1). How to aggregate the samples? Either take
 #'   the average sample (`"mean"`, the default) or the sum of all samples
-#'   (`"sum"`). This only matters if absolute frequencies are shown.
+#'   (`"all"`). This only matters if absolute frequencies are shown.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
 #' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"#960019"`.
+#'   `"#960019"`, a red color.
 #' @param show_text Logical (length 1). Should the bars be labeled with the
 #'   corresponding frequencies? Default is `TRUE`.
 #' @param text_color String (length 1). Color of the frequency labels. By
@@ -69,7 +68,7 @@ closure_plot_bar <- function(
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
   # TODO: Which one should be the default here -- all
   # samples or the average sample?
-  samples = c("mean", "sum"),
+  samples = c("mean", "all"),
   bar_alpha = 0.75,
   # TODO: Choose favorite -- #880808, #960019,
   bar_color = "#960019",
@@ -97,7 +96,7 @@ closure_plot_bar <- function(
     data$f_absolute <- data$f_average
     label_avg_all <- "avg. sample, N = "
     label_values <- " "
-  } else if (samples == "sum") {
+  } else if (samples == "all") {
     label_avg_all <- "all "
     label_values <- " values "
   } else {
@@ -211,11 +210,10 @@ closure_plot_bar <- function(
 #'
 #' @param samples String (length 1). How to aggregate the samples? Either draw a
 #'   single ECDF line for the average sample (`"mean"`, the default); or draw a
-#'   separate line for each sample to represent the full set of results
-#'   (`"sum"`). Note: the latter option can be very slow if many values were
-#'   found.
+#'   separate line for each sample (`"all"`). Note: the latter option can be
+#'   very slow if many values were found.
 #' @param line_color String (length 1). Color of the ECDF line. Default is
-#'   `"#960019"`.
+#'   `"#960019"`, a red color.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
@@ -243,7 +241,7 @@ closure_plot_bar <- function(
 
 # # For interactive testing:
 # # (create `data`)
-# samples <- "sum"
+# samples <- "all"
 # line_color <- "#960019"
 # text_size <- 12
 # reference_line_alpha <- 0.6
@@ -251,7 +249,7 @@ closure_plot_bar <- function(
 
 closure_plot_ecdf <- function(
   data,
-  samples = c("mean", "sum"),
+  samples = c("mean", "all"),
   line_color = "#960019",
   text_size = 12,
   reference_line_alpha = 0.6,
@@ -272,7 +270,7 @@ closure_plot_ecdf <- function(
   data <- tibble::new_tibble(
     x = list(
       value = unlist(data$results$combination, use.names = FALSE),
-      sample_id = if (samples == "sum") {
+      sample_id = if (samples == "all") {
         rep(seq_len(metrics$combos_all), each = inputs$n)
       } else {
         NULL
@@ -288,7 +286,7 @@ closure_plot_ecdf <- function(
       color = line_color,
       pad = pad
     )
-  } else if (samples == "sum") {
+  } else if (samples == "all") {
     stat_ecdf_line <- ggplot2::stat_ecdf(
       ggplot2::aes(
         group = sample_id,

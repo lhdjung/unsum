@@ -6,7 +6,7 @@
 \usage{
 closure_plot_ecdf(
   data,
-  samples = c("mean", "sum"),
+  samples = c("mean", "all"),
   line_color = "#960019",
   text_size = 12,
   reference_line_alpha = 0.6,
@@ -18,12 +18,11 @@ closure_plot_ecdf(
 
 \item{samples}{String (length 1). How to aggregate the samples? Either draw a
 single ECDF line for the average sample (\code{"mean"}, the default); or draw a
-separate line for each sample to represent the full set of results
-(\code{"sum"}). Note: the latter option can be very slow if many values were
-found.}
+separate line for each sample (\code{"all"}). Note: the latter option can be
+very slow if many values were found.}
 
 \item{line_color}{String (length 1). Color of the ECDF line. Default is
-\code{"#960019"}.}
+\code{"#960019"}, a red color.}
 
 \item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
