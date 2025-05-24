@@ -6,8 +6,8 @@
 \usage{
 closure_plot_ecdf(
   data,
-  line_color = "royalblue1",
-  text_size = 13,
+  line_color = "#960019",
+  text_size = 12,
   reference_line_alpha = 0.6,
   pad = TRUE
 )
