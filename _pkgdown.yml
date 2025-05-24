@@ -7,3 +7,4 @@ template:
     code-color: '#ca225e'
     navbar-dark-hover-color: '#ca225e'
     navbar-dark-active-color: '#f9ea6b'
+  math-rendering: katex
