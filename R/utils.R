@@ -11,11 +11,14 @@ check_closure_combine <- function(data) {
     inherits(data$inputs, "closure_combine")
 
   if (!top_level_is_correct) {
-    cli::cli_abort(c(
-      "Input must be the output of `closure_combine()`.",
-      "!" = "Such output is a list with the elements \\
-      \"inputs\", \"metrics\", \"frequency\", and \"results\"."
-    ))
+    cli::cli_abort(
+      message = c(
+        "Input must be the output of `closure_combine()`.",
+        "!" = "Such output is a list with the elements \
+        \"inputs\", \"metrics\", \"frequency\", and \"results\"."
+      ),
+      call = rlang::caller_env()
+    )
   }
 
   # Check the formats of the three tibbles that are elements of `data`, i.e., of
@@ -33,6 +36,15 @@ check_closure_combine <- function(data) {
       "scale_min" = c("integer", "double"),
       "scale_max" = c("integer", "double")
     )
+  )
+
+  # (Intermezzo to make sure that the assumption in the second check hold)
+  check_scale(
+    scale_min = data$inputs$scale_min,
+    scale_max = data$inputs$scale_max,
+    mean = data$inputs$mean,
+    warning = "Don't change CLOSURE results before this step.",
+    n = 2
   )
 
   # Metrics (2 / 4)
@@ -75,17 +87,14 @@ check_closure_combine <- function(data) {
 
   # Additional checks:
 
-  check_scale(
-    scale_min = data$inputs$scale_min,
-    scale_max = data$inputs$scale_max,
-    mean = data$inputs$mean
-  )
-
   if (!is_seq_linear_basic(data$frequency$value)) {
-    cli::cli_abort(c(
-      "The `value` column in `frequency` must be a linear sequence.",
-      "x" = "It is actually {data$frequency$value}."
-    ))
+    cli::cli_abort(
+      message = c(
+        "The `value` column in `frequency` must be a linear sequence.",
+        "x" = "It is actually {data$frequency$value}."
+      ),
+      call = rlang::caller_env()
+    )
   }
 
   # The relative frequencies must sum up to 1 or 0. In the latter case, the
@@ -95,22 +104,26 @@ check_closure_combine <- function(data) {
   f_relative_sums_up <- near(
     sum(data$frequency$f_relative),
     1
-  ) ||
-    (near(
+  ) || (
+    near(
       sum(data$frequency$f_relative),
       0
     ) &&
       near(
         sum(data$frequency$f_absolute),
         0
-      ))
+      )
+  )
 
   if (!f_relative_sums_up) {
-    cli::cli_abort(c(
-      "The `f_relative` column in `frequency` must sum up to 1 \\
-      (or 0, if `f_absolute` does).",
-      "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
-    ))
+    cli::cli_abort(
+      message = c(
+        "The `f_relative` column in `frequency` must sum up to 1 \
+        (or 0, if `f_absolute` does).",
+        "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
+      ),
+      call = rlang::caller_env()
+    )
   }
 
   all_results_integer <- data$results$combination %>%
@@ -134,7 +147,10 @@ check_closure_combine <- function(data) {
     all()
 
   if (!all_results_length_n) {
-    cli::cli_abort("All `results` must have length `n` ({n}).")
+    cli::cli_abort(
+      message = "All `results` must have length `n` ({n}).",
+      call = rlang::caller_env()
+    )
   }
 }
 
@@ -166,13 +182,16 @@ check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
     } else {
       "These column names and types"
     }
-    cli::cli_abort(c(
-      "CLOSURE data must not be changed before passing them \\
-      to other `closure_*()` functions.",
-      "!" = "Specifically, `{name}` must be a tibble with:",
-      "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
-      "*" = "{this_these}: {cols_msg}"
-    ))
+    cli::cli_abort(
+      message = c(
+        "CLOSURE data must not be changed before passing them \
+        to other `closure_*()` functions.",
+        "!" = "Specifically, `{name}` must be a tibble with:",
+        "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
+        "*" = "{this_these}: {cols_msg}"
+      ),
+      call = rlang::caller_env(2)
+    )
   }
 }
 
@@ -197,29 +216,47 @@ is_seq_linear_basic <- function(x) {
 # arguments need to make sure that min <= max. Functions that take the mean into
 # account also need to check that it is within these bounds. Such functions
 # include `closure_combine()` but not `closure_count_initial()`.
-check_scale <- function(scale_min, scale_max, mean = NULL) {
+check_scale <- function(
+    scale_min,
+    scale_max,
+    mean = NULL,
+    warning = NULL,
+    n = 1
+) {
   if (scale_min > scale_max) {
-    cli::cli_abort(c(
-      "Scale minimum can't be greater than scale maximum.",
-      "x" = "`scale_min` is {scale_min}.",
-      "x" = "`scale_max` is {scale_max}."
-    ))
+    cli::cli_abort(
+      message = c(
+        "Scale minimum can't be greater than scale maximum.",
+        "!" = warning,
+        "x" = "`scale_min` is {scale_min}.",
+        "x" = "`scale_max` is {scale_max}."
+      ),
+      call = rlang::caller_env(n)
+    )
   }
   # Coercing mean and scale bounds to avoid a false-positive error
   if (!is.null(mean)) {
     if (as.numeric(mean) < as.numeric(scale_min)) {
-      cli::cli_abort(c(
-        "Mean can't be less than scale minimum.",
-        "x" = "`mean` is {mean}.",
-        "x" = "`scale_min` is {scale_min}."
-      ))
+      cli::cli_abort(
+        message = c(
+          "Mean can't be less than scale minimum.",
+          "!" = warning,
+          "x" = "`mean` is {mean}.",
+          "x" = "`scale_min` is {scale_min}."
+        ),
+        call = rlang::caller_env(n)
+      )
     }
     if (as.numeric(mean) > as.numeric(scale_max)) {
-      cli::cli_abort(c(
-        "Mean can't be greater than scale maximum.",
-        "x" = "`mean` is {mean}.",
-        "x" = "`scale_max` is {scale_max}."
-      ))
+      cli::cli_abort(
+        message = c(
+          "Mean can't be greater than scale maximum.",
+          "!" = warning,
+          "x" = "`mean` is {mean}.",
+          "x" = "`scale_max` is {scale_max}."
+        ),
+        call = rlang::caller_env(n)
+      )
     }
   }
 }
@@ -232,13 +269,19 @@ check_value <- function(x, type) {
   name <- deparse(substitute(x))
   check_type(x, type, n = 2, name = name)
   if (length(x) != 1L) {
-    cli::cli_abort(c(
-      "`{name}` must have length 1.",
-      "x" = "It has length {length(x)}."
-    ))
+    cli::cli_abort(
+      message = c(
+        "`{name}` must have length 1.",
+        "x" = "It has length {length(x)}."
+      ),
+      call = rlang::caller_env()
+    )
   }
   if (is.na(x)) {
-    cli::cli_abort("`{name}` can't be `NA`.")
+    cli::cli_abort(
+      message = "`{name}` can't be `NA`.",
+      call = rlang::caller_env()
+    )
   }
 }
 
