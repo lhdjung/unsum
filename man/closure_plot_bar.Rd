@@ -7,7 +7,7 @@
 closure_plot_bar(
   data,
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
-  samples = c("mean", "sum"),
+  samples = c("mean", "all"),
   bar_alpha = 0.75,
   bar_color = "#960019",
   show_text = TRUE,
@@ -22,19 +22,18 @@ closure_plot_bar(
 \item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
-default, \code{"absolute-percent"}, displays the counts of each scale value, and
-if text labels are shown (by default of \code{show_text = TRUE}), its percentage
-of all values. Other options are \code{"absolute"}, \code{"relative"}, and
-\code{"percent"}.}
+default, \code{"absolute-percent"}, displays the count of each scale value and
+its percentage of all values. Other options are \code{"absolute"}, \code{"relative"},
+and \code{"percent"}.}
 
 \item{samples}{String (length 1). How to aggregate the samples? Either take
 the average sample (\code{"mean"}, the default) or the sum of all samples
-(\code{"sum"}). This only matters if absolute frequencies are shown.}
+(\code{"all"}). This only matters if absolute frequencies are shown.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
 \item{bar_color}{String (length 1). Color of the bars. Default is
-\code{"#960019"}.}
+\code{"#960019"}, a red color.}
 
 \item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}
