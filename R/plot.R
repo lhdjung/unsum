@@ -109,6 +109,7 @@ closure_plot_bar <- function(
   # Create a function that formats labels for large numbers. By default, they
   # are formatted like, e.g., "12,345.67"
   format_number_label <- scales::label_number(
+    accuracy = 0.1,
     big.mark = mark_thousand,
     decimal.mark = mark_decimal
   )
@@ -119,7 +120,7 @@ closure_plot_bar <- function(
     label_y_axis <- paste0(
       "Count in ",
       label_avg_all,
-      format_number_label(sum(data$f_absolute)),
+      sum(data$f_absolute),
       label_values,
       if (frequency == "absolute-percent") "(%)" else NULL
     )
@@ -160,7 +161,7 @@ closure_plot_bar <- function(
       ggplot2::aes(
         y = frequency + text_offset_adjusted,
         label = paste0(
-          format_number_label(round(frequency, 2)),
+          format_number_label(frequency),
           label_percent
         )
       ),
