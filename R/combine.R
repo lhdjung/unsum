@@ -131,6 +131,7 @@ closure_combine <- function(
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 ) {
+
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
   check_value(mean, "character")
