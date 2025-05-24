@@ -31,7 +31,7 @@ Collate:
     'utils-pipe.R'
 Config/rextendr/version: 0.3.1.9001
 SystemRequirements: Cargo (Rust's package manager), rustc
-URL: https://github.com/lhdjung/unsum
+URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
 BugReports: https://github.com/lhdjung/unsum/issues
 Suggests: 
     devtools,
