@@ -97,15 +97,6 @@ closure_plot_bar <- function(data,
   # full absolute values by the average values, and prepare a label to signpost
   # the average inside of the plot.
   if (samples == "mean") {
-    # Warn if the user chooses relative frequencies but also averaging. This
-    # won't matter for a Shiny app where users keep buttons checked.
-    if (interactive() && frequency %in% c("relative", "percent")) {
-      cli::cli_warn(c(
-        "Averaging samples only matters to absolute frequencies.",
-        "!" = "Using `samples = \"average\"` here has no effect because of \
-        `frequency = \"{frequency}\"`."
-      ))
-    }
     data$f_absolute <- data$f_average
     label_avg_all <- "avg. sample, N = "
     label_values <- " "
