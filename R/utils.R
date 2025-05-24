@@ -288,19 +288,25 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
   # Reconstruct the complete vector of possible scale values as a sequence from
   # scale minimum to scale maximum.
   value_completed <- scale_min:scale_max
+  n_completed <- length(value_completed)
 
   # If each possible value is instantiated in the values that were found in the
   # combinations, the results are complete and will be returned here. If not,
   # the zero counts of the uninstantiated values must be added to `value`, and
   # their zero frequencies to `f_absolute` and `f_relative`. This is what the
   # rest of the function will then do.
-  if (length(value) == length(value_completed)) {
-    return(tibble::tibble(
-      value,
-      f_average,
-      f_absolute,
-      f_relative
-    ))
+  if (length(value) == n_completed) {
+    return(
+      tibble::new_tibble(
+        x = list(
+          value = value,
+          f_average = f_average,
+          f_absolute = f_absolute,
+          f_relative = f_relative
+        ),
+        nrow = n_completed
+      )
+    )
   }
 
   # At which indices in the complete vector of possible values are those values
@@ -308,20 +314,23 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
   indices_found <- which(value_completed %in% value)
 
   # Construct full-length vectors where each value is zero
-  f_average_completed <- double(length(value_completed))
-  f_absolute_completed <- integer(length(value_completed))
-  f_relative_completed <- double(length(value_completed))
+  f_average_completed <- double(n_completed)
+  f_absolute_completed <- integer(n_completed)
+  f_relative_completed <- double(n_completed)
 
   # Fill in the non-zero values where appropriate
   f_average_completed[indices_found] <- f_average
   f_absolute_completed[indices_found] <- f_absolute
   f_relative_completed[indices_found] <- f_relative
 
-  tibble::tibble(
-    value = value_completed,
-    f_average = f_average_completed,
-    f_absolute = f_absolute_completed,
-    f_relative = f_relative_completed
+  tibble::new_tibble(
+    x = list(
+      value = value_completed,
+      f_average = f_average_completed,
+      f_absolute = f_absolute_completed,
+      f_relative = f_relative_completed
+    ),
+    nrow = n_completed
   )
 }
 
