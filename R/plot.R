@@ -80,6 +80,7 @@ closure_plot_bar <- function(
   mark_thousand = ",",
   mark_decimal = "."
 ) {
+
   # Check inputs
   check_closure_combine(data)
   frequency <- rlang::arg_match(frequency)
@@ -247,6 +248,7 @@ closure_plot_ecdf <- function(
   reference_line_alpha = 0.6,
   pad = TRUE
 ) {
+
   check_closure_combine(data)
 
   # For the reference line and the x-axis
