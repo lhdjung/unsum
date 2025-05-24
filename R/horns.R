@@ -77,7 +77,6 @@
 #'
 #' horns(c(100, 40, 20, 40, 100), 1, 5)
 
-
 horns <- function(freqs, scale_min, scale_max) {
   check_type(freqs, c("double", "integer"))
 
@@ -131,7 +130,6 @@ horns_uniform <- function(scale_min, scale_max) {
 #' @export
 
 horns_rescaled <- function(freqs, scale_min, scale_max) {
-
   # Actual horns index and reference value for uniform distribution
   h_actual <- horns(freqs, scale_min, scale_max)
   h_uniform <- horns_uniform(scale_min, scale_max)
@@ -144,5 +142,3 @@ horns_rescaled <- function(freqs, scale_min, scale_max) {
     0.5 + 0.5 * ((h_actual - h_uniform) / (1 - h_uniform))
   }
 }
-
-

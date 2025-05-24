@@ -1,4 +1,3 @@
-
 #' Visualize CLOSURE data in a histogram
 #'
 #' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
@@ -48,7 +47,6 @@
 #' # Visualize:
 #' closure_plot_bar(data)
 
-
 # TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#880808",
 # "#341d5c" or similar to distinguish CLOSURE plots from SPRITE plots;
 # especially if and when SPRITE gets implemented in unsum!
@@ -66,24 +64,22 @@
 # mark_decimal <- "."
 # text_size <- 12
 
-closure_plot_bar <- function(data,
-                             frequency = c("absolute-percent",
-                                           "absolute",
-                                           "relative",
-                                           "percent"),
-                             # TODO: Which one should be the default here -- all
-                             # samples or the average sample?
-                             samples = c("mean", "sum"),
-                             bar_alpha = 0.75,
-                             # TODO: Choose favorite -- #880808, #960019,
-                             bar_color = "#960019",
-                             show_text = TRUE,
-                             text_color = bar_color,
-                             text_size = 12,
-                             text_offset = 0.05,
-                             mark_thousand = ",",
-                             mark_decimal = ".") {
-
+closure_plot_bar <- function(
+  data,
+  frequency = c("absolute-percent", "absolute", "relative", "percent"),
+  # TODO: Which one should be the default here -- all
+  # samples or the average sample?
+  samples = c("mean", "sum"),
+  bar_alpha = 0.75,
+  # TODO: Choose favorite -- #880808, #960019,
+  bar_color = "#960019",
+  show_text = TRUE,
+  text_color = bar_color,
+  text_size = 12,
+  text_offset = 0.05,
+  mark_thousand = ",",
+  mark_decimal = "."
+) {
   # Check inputs
   check_closure_combine(data)
   frequency <- rlang::arg_match(frequency)
@@ -191,9 +187,7 @@ closure_plot_bar <- function(data,
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
     )
-
 }
-
 
 
 #' Visualize CLOSURE data in an ECDF plot
@@ -239,7 +233,6 @@ closure_plot_bar <- function(data,
 #' # Visualize:
 #' closure_plot_ecdf(data)
 
-
 # # For interactive testing:
 # # (create `data`)
 # line_color <- "#960019"
@@ -247,13 +240,13 @@ closure_plot_bar <- function(data,
 # reference_line_alpha <- 0.6
 # pad <- TRUE
 
-
-closure_plot_ecdf <- function(data,
-                              line_color = "#960019",
-                              text_size = 12,
-                              reference_line_alpha = 0.6,
-                              pad = TRUE) {
-
+closure_plot_ecdf <- function(
+  data,
+  line_color = "#960019",
+  text_size = 12,
+  reference_line_alpha = 0.6,
+  pad = TRUE
+) {
   check_closure_combine(data)
 
   # For the reference line and the x-axis
@@ -295,4 +288,3 @@ closure_plot_ecdf <- function(data,
     ) +
     ggplot2::theme_minimal(base_size = text_size)
 }
-
