@@ -1,4 +1,3 @@
-
 #' Visualize CLOSURE data in a histogram
 #'
 #' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
@@ -8,18 +7,20 @@
 #'
 #' @param data List returned by [`closure_combine()`].
 #' @param frequency String (length 1). What should the bars display? The
-#'   default, `"absolute-percent"`, displays the counts of each scale value, and
-#'   if text labels are shown (by default of `show_text = TRUE`), its percentage
-#'   of all values. Other options are `"absolute"`, `"relative"`, and
-#'   `"percent"`.
-#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
+#'   default, `"absolute-percent"`, displays the count of each scale value and
+#'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
+#'   and `"percent"`.
+#' @param samples String (length 1). How to aggregate the samples? Either take
+#'   the average sample (`"mean"`, the default) or the sum of all samples
+#'   (`"all"`). This only matters if absolute frequencies are shown.
+#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
 #' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"royalblue1"`.
+#'   `"#960019"`, a red color.
 #' @param show_text Logical (length 1). Should the bars be labeled with the
 #'   corresponding frequencies? Default is `TRUE`.
 #' @param text_color String (length 1). Color of the frequency labels. By
 #'   default, the same as `bar_color`.
-#' @param text_size Numeric. Base font size in pt. Default is `13`.
+#' @param text_size Numeric. Base font size in pt. Default is `12`.
 #' @param text_offset Numeric (length 1). Distance between the text labels and
 #'   the bars. Default is `0.05`.
 #' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
@@ -45,63 +46,84 @@
 #' # Visualize:
 #' closure_plot_bar(data)
 
-
-# TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#341d5c" or
-# similar to distinguish CLOSURE plots from SPRITE plots; especially if and when
-# SPRITE gets implemented in unsum!
+# TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#880808",
+# "#341d5c" or similar to distinguish CLOSURE plots from SPRITE plots;
+# especially if and when SPRITE gets implemented in unsum!
 
 # # For interactive testing:
 # # (create `data`)
-# frequency <- "absolute"
-# bar_alpha <- 0.8
-# bar_color <- "royalblue1"
+# frequency <- "absolute-percent"
+# samples <- "mean"
+# bar_alpha <- 0.75
+# bar_color <- "#960019"
 # show_text <- TRUE
 # text_offset <- 0.05
 # text_color <- bar_color
 # mark_thousand <- ","
 # mark_decimal <- "."
-# text_size <- 13
+# text_size <- 12
 
-closure_plot_bar <- function(data,
-                             frequency = c("absolute-percent",
-                                           "absolute",
-                                           "relative",
-                                           "percent"),
-                             bar_alpha = 0.8,
-                             bar_color = "royalblue1",
-                             show_text = TRUE,
-                             text_color = bar_color,
-                             text_size = 13,
-                             text_offset = 0.05,
-                             mark_thousand = ",",
-                             mark_decimal = ".") {
+closure_plot_bar <- function(
+  data,
+  frequency = c("absolute-percent", "absolute", "relative", "percent"),
+  # TODO: Which one should be the default here -- all
+  # samples or the average sample?
+  samples = c("mean", "all"),
+  bar_alpha = 0.75,
+  # TODO: Choose favorite -- #880808, #960019,
+  bar_color = "#960019",
+  show_text = TRUE,
+  text_color = bar_color,
+  text_size = 12,
+  text_offset = 0.05,
+  mark_thousand = ",",
+  mark_decimal = "."
+) {
 
   # Check inputs
   check_closure_combine(data)
   frequency <- rlang::arg_match(frequency)
+  samples <- rlang::arg_match(samples)
 
   # Zoom in on the frequency table -- the only element of `data` needed here
   data <- data$frequency
 
+  # In terms of absolute frequencies, the user may choose to show the average
+  # number of observations per bin instead of the full count. If so, replace the
+  # full absolute values by the average values, and prepare a label to signpost
+  # the average inside of the plot.
+  if (samples == "mean") {
+    data$f_absolute <- data$f_average
+    label_avg_all <- "avg. sample, N = "
+    label_values <- " "
+  } else if (samples == "all") {
+    label_avg_all <- "all "
+    label_values <- " values "
+  } else {
+    cli::cli_abort("Internal error: unhandled `samples` type.")
+  }
+
+  # After that, the average is not needed in any case, even if it was before
+  data$f_average <- NULL
+
   # Create a function that formats labels for large numbers. By default, they
   # are formatted like, e.g., "12,345.67"
   format_number_label <- scales::label_number(
+    accuracy = 0.1,
     big.mark = mark_thousand,
     decimal.mark = mark_decimal
   )
 
   # Remove the column that represents the main non-chosen type of frequency
-  # (absolute or relative), then specify the y-axis label by frequency type.
+  # (absolute or relative) after specifying the y-axis label by frequency type.
   if (frequency %in% c("absolute", "absolute-percent")) {
-    # sum_absolute <- sum(data$f_absolute)
-    label_y_axis <- paste(
-      "Count in",
-      format_number_label(sum(data$f_absolute)),
-      "values"
+    label_y_axis <- paste0(
+      "Count in ",
+      label_avg_all,
+      sum(data$f_absolute),
+      label_values,
+      if (frequency == "absolute-percent") "(%)" else NULL
     )
-    if (frequency == "absolute-percent") {
-      label_y_axis <- paste(label_y_axis, "(percentage)")
-    }
     data$f_relative <- NULL
   } else if (frequency == "relative") {
     label_y_axis <- "Relative frequency"
@@ -139,7 +161,7 @@ closure_plot_bar <- function(data,
       ggplot2::aes(
         y = frequency + text_offset_adjusted,
         label = paste0(
-          format_number_label(round(frequency, 2)),
+          format_number_label(frequency),
           label_percent
         )
       ),
@@ -168,9 +190,7 @@ closure_plot_bar <- function(data,
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
     )
-
 }
-
 
 
 #' Visualize CLOSURE data in an ECDF plot
@@ -187,10 +207,14 @@ closure_plot_bar <- function(data,
 #'   [`rsprite2::plot_distributions()`]. However, `plot_distributions()` shows
 #'   multiple lines because it is based on SPRITE, which draws random samples of
 #'   possible datasets. CLOSURE is exhaustive, so `closure_plot_ecdf()` shows
-#'   all possible datasets in a single line.
+#'   all possible datasets in a single line by default.
 #'
+#' @param samples String (length 1). How to aggregate the samples? Either draw a
+#'   single ECDF line for the average sample (`"mean"`, the default); or draw a
+#'   separate line for each sample (`"all"`). Note: the latter option can be
+#'   very slow if many values were found.
 #' @param line_color String (length 1). Color of the ECDF line. Default is
-#'   `"royalblue1"`.
+#'   `"#960019"`, a red color.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
@@ -216,22 +240,25 @@ closure_plot_bar <- function(data,
 #' # Visualize:
 #' closure_plot_ecdf(data)
 
-
 # # For interactive testing:
 # # (create `data`)
-# line_color <- "royalblue1"
-# text_size <- 13
+# samples <- "all"
+# line_color <- "#960019"
+# text_size <- 12
 # reference_line_alpha <- 0.6
 # pad <- TRUE
 
-
-closure_plot_ecdf <- function(data,
-                              line_color = "royalblue1",
-                              text_size = 13,
-                              reference_line_alpha = 0.6,
-                              pad = TRUE) {
+closure_plot_ecdf <- function(
+  data,
+  samples = c("mean", "all"),
+  line_color = "#960019",
+  text_size = 12,
+  reference_line_alpha = 0.6,
+  pad = TRUE
+) {
 
   check_closure_combine(data)
+  samples <- rlang::arg_match(samples)
 
   # For the reference line and the x-axis
   inputs <- data$inputs
@@ -239,27 +266,49 @@ closure_plot_ecdf <- function(data,
   values_unique <- inputs$scale_min:inputs$scale_max
 
   # Zoom in on the detailed `results` -- the key element of `data` needed here.
-  # Flatten them into a single integer vector.
+  # Flatten them into a single integer vector. If all samples should be shown,
+  # enable grouping the values by sample using a `sample_id` column.
   data <- tibble::new_tibble(
     x = list(
-      value = unlist(data$results$combination, use.names = FALSE)
+      value = unlist(data$results$combination, use.names = FALSE),
+      sample_id = if (samples == "all") {
+        rep(seq_len(metrics$combos_all), each = inputs$n)
+      } else {
+        NULL
+      }
     ),
     nrow = metrics$values_all
   )
 
+  # Prepare the geom-like ggplot2 object that maps the data to the ECDF line(s).
+  # Group the atomic integer values by `sample_id` if needed.
+  if (samples == "mean") {
+    stat_ecdf_line <- ggplot2::stat_ecdf(
+      color = line_color,
+      pad = pad
+    )
+  } else if (samples == "all") {
+    stat_ecdf_line <- ggplot2::stat_ecdf(
+      ggplot2::aes(
+        group = sample_id,
+        color = as.factor(sample_id)
+      ),
+      pad = pad
+    )
+  } else {
+    cli::cli_abort("Internal error: unhandled `samples` type.")
+  }
+
   # Construct the ECDF plot
   ggplot2::ggplot(data, ggplot2::aes(value)) +
     # ECDF line:
-    ggplot2::stat_ecdf(
-      color = line_color,
-      pad = pad
-    ) +
+    stat_ecdf_line +
     # Dashed diagonal reference line:
     ggplot2::annotate(
       geom = "segment",
       linetype = 2,
       alpha = reference_line_alpha,
-      x = values_unique[1],
+      x = 0,
       xend = values_unique[length(values_unique)],
       y = 0,
       yend = 1
@@ -270,6 +319,6 @@ closure_plot_ecdf <- function(data,
       breaks = values_unique,
       labels = values_unique,
     ) +
-    ggplot2::theme_minimal(base_size = text_size)
+    ggplot2::theme_minimal(base_size = text_size) +
+    ggplot2::theme(legend.position = "none")
 }
-

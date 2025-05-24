@@ -10,8 +10,15 @@
 #'   uniform distribution within given scale limits. This can be useful as a
 #'   point of reference for `horns()`.
 #'
-#'   These functions create the `horns` and `horns_uniform` columns in
+#'   These two functions create the `horns` and `horns_uniform` columns in
 #'   [`closure_combine()`].
+#'
+#'   `horns_rescaled()` is a version of `horns()` that  is normalized by scale
+#'   length, such that `0.5` always indicates a uniform distribution,
+#'   independent of the number of scale points. It is meant to enable comparison
+#'   across scales of different lengths, but it is harder to interpret for an
+#'   individual scale. Even so, the range and the meaning of `0` and `1` are the
+#'   same as for `horns()`.
 #'
 #' @param freqs Numeric. Vector with the frequencies (relative or absolute) of
 #'   binned observations; e.g., a vector with 5 elements for a 1-5 scale.
@@ -70,7 +77,6 @@
 #'
 #' horns(c(100, 40, 20, 40, 100), 1, 5)
 
-
 horns <- function(freqs, scale_min, scale_max) {
   check_type(freqs, c("double", "integer"))
 
@@ -119,3 +125,20 @@ horns_uniform <- function(scale_min, scale_max) {
   )
 }
 
+
+#' @rdname horns
+#' @export
+
+horns_rescaled <- function(freqs, scale_min, scale_max) {
+  # Actual horns index and reference value for uniform distribution
+  h_actual <- horns(freqs, scale_min, scale_max)
+  h_uniform <- horns_uniform(scale_min, scale_max)
+
+  if (h_actual <= h_uniform) {
+    # Map [0, h_uniform] to [0, 0.5]
+    0.5 * (h_actual / h_uniform)
+  } else {
+    # Map [h_uniform, 1] to [0.5, 1]
+    0.5 + 0.5 * ((h_actual - h_uniform) / (1 - h_uniform))
+  }
+}

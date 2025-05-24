@@ -6,8 +6,9 @@
 \usage{
 closure_plot_ecdf(
   data,
-  line_color = "royalblue1",
-  text_size = 13,
+  samples = c("mean", "all"),
+  line_color = "#960019",
+  text_size = 12,
   reference_line_alpha = 0.6,
   pad = TRUE
 )
@@ -15,10 +16,15 @@ closure_plot_ecdf(
 \arguments{
 \item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
 
-\item{line_color}{String (length 1). Color of the ECDF line. Default is
-\code{"royalblue1"}.}
+\item{samples}{String (length 1). How to aggregate the samples? Either draw a
+single ECDF line for the average sample (\code{"mean"}, the default); or draw a
+separate line for each sample (\code{"all"}). Note: the latter option can be
+very slow if many values were found.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{13}.}
+\item{line_color}{String (length 1). Color of the ECDF line. Default is
+\code{"#960019"}, a red color.}
+
+\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
@@ -43,7 +49,7 @@ The present function was inspired by
 \code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}}. However, \code{plot_distributions()} shows
 multiple lines because it is based on SPRITE, which draws random samples of
 possible datasets. CLOSURE is exhaustive, so \code{closure_plot_ecdf()} shows
-all possible datasets in a single line.
+all possible datasets in a single line by default.
 }
 \examples{
 # Create CLOSURE data first:
