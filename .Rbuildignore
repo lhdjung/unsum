@@ -5,3 +5,6 @@
 ^README\.Rmd$
 ^special-scripts$
 ^data-raw$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
