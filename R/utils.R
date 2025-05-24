@@ -1,11 +1,9 @@
-
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 utils::globalVariables(c(".", "value"))
 
 
 # Error if input is not an unchanged CLOSURE list.
 check_closure_combine <- function(data) {
-
   top_level_is_correct <-
     is.list(data) &&
     length(data) == 4L &&
@@ -75,13 +73,12 @@ check_closure_combine <- function(data) {
     )
   )
 
-
   # Additional checks:
 
   check_scale(
     scale_min = data$inputs$scale_min,
     scale_max = data$inputs$scale_max,
-    mean      = data$inputs$mean
+    mean = data$inputs$mean
   )
 
   if (!is_seq_linear_basic(data$frequency$value)) {
@@ -98,15 +95,15 @@ check_closure_combine <- function(data) {
   f_relative_sums_up <- near(
     sum(data$frequency$f_relative),
     1
-  ) || (
-    near(
+  ) ||
+    (near(
       sum(data$frequency$f_relative),
       0
-    ) && near(
-      sum(data$frequency$f_absolute),
-      0
-    )
-  )
+    ) &&
+      near(
+        sum(data$frequency$f_absolute),
+        0
+      ))
 
   if (!f_relative_sums_up) {
     cli::cli_abort(c(
@@ -139,13 +136,11 @@ check_closure_combine <- function(data) {
   if (!all_results_length_n) {
     cli::cli_abort("All `results` must have length `n` ({n}).")
   }
-
 }
 
 
 # Check each element of `closure_combine()` for correct format.
 check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
-
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
     all(dim(x) == dims) &&
@@ -179,7 +174,6 @@ check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
       "*" = "{this_these}: {cols_msg}"
     ))
   }
-
 }
 
 
@@ -249,7 +243,7 @@ check_value <- function(x, type) {
 }
 
 
-check_type <- function (x, t, n = 1, name = NULL) {
+check_type <- function(x, t, n = 1, name = NULL) {
   if (any(typeof(x) == t)) {
     return(invisible(NULL))
   }
@@ -273,7 +267,6 @@ check_type <- function (x, t, n = 1, name = NULL) {
 
 # This helper creates the `frequency` part of `closure_combine()`'s output.
 summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
-
   # Flatten the list of integer vectors into a single integer vector, then
   # create a frequency table for the values in that vector.
   f_absolute <- results %>%
@@ -315,22 +308,21 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
   indices_found <- which(value_completed %in% value)
 
   # Construct full-length vectors where each value is zero
-  f_average_completed  <- double(length(value_completed))
+  f_average_completed <- double(length(value_completed))
   f_absolute_completed <- integer(length(value_completed))
   f_relative_completed <- double(length(value_completed))
 
   # Fill in the non-zero values where appropriate
-  f_average_completed[indices_found]  <- f_average
+  f_average_completed[indices_found] <- f_average
   f_absolute_completed[indices_found] <- f_absolute
   f_relative_completed[indices_found] <- f_relative
 
   tibble::tibble(
-    value      = value_completed,
-    f_average  = f_average_completed,
+    value = value_completed,
+    f_average = f_average_completed,
     f_absolute = f_absolute_completed,
     f_relative = f_relative_completed
   )
-
 }
 
 
@@ -338,5 +330,3 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
 near <- function(x, y, tol = .Machine$double.eps^0.5) {
   abs(x - y) < tol
 }
-
-
