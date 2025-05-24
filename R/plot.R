@@ -97,9 +97,11 @@ closure_plot_bar <- function(
     data$f_absolute <- data$f_average
     label_avg_all <- "avg. sample, N = "
     label_values <- " "
-  } else {
+  } else if (samples == "sum") {
     label_avg_all <- "all "
     label_values <- " values "
+  } else {
+    cli::cli_abort("Internal error: unhandled `samples` type.")
   }
 
   # After that, the average is not needed in any case, even if it was before
@@ -205,8 +207,13 @@ closure_plot_bar <- function(
 #'   [`rsprite2::plot_distributions()`]. However, `plot_distributions()` shows
 #'   multiple lines because it is based on SPRITE, which draws random samples of
 #'   possible datasets. CLOSURE is exhaustive, so `closure_plot_ecdf()` shows
-#'   all possible datasets in a single line.
+#'   all possible datasets in a single line by default.
 #'
+#' @param samples String (length 1). How to aggregate the samples? Either draw a
+#'   single ECDF line for the average sample (`"mean"`, the default); or draw a
+#'   separate line for each sample to represent the full set of results
+#'   (`"sum"`). Note: the latter option can be very slow if many values were
+#'   found.
 #' @param line_color String (length 1). Color of the ECDF line. Default is
 #'   `"#960019"`.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
@@ -236,6 +243,7 @@ closure_plot_bar <- function(
 
 # # For interactive testing:
 # # (create `data`)
+# samples <- "sum"
 # line_color <- "#960019"
 # text_size <- 12
 # reference_line_alpha <- 0.6
@@ -243,6 +251,7 @@ closure_plot_bar <- function(
 
 closure_plot_ecdf <- function(
   data,
+  samples = c("mean", "sum"),
   line_color = "#960019",
   text_size = 12,
   reference_line_alpha = 0.6,
@@ -250,6 +259,7 @@ closure_plot_ecdf <- function(
 ) {
 
   check_closure_combine(data)
+  samples <- rlang::arg_match(samples)
 
   # For the reference line and the x-axis
   inputs <- data$inputs
@@ -257,21 +267,43 @@ closure_plot_ecdf <- function(
   values_unique <- inputs$scale_min:inputs$scale_max
 
   # Zoom in on the detailed `results` -- the key element of `data` needed here.
-  # Flatten them into a single integer vector.
+  # Flatten them into a single integer vector. If all samples should be shown,
+  # enable grouping the values by sample using a `sample_id` column.
   data <- tibble::new_tibble(
     x = list(
-      value = unlist(data$results$combination, use.names = FALSE)
+      value = unlist(data$results$combination, use.names = FALSE),
+      sample_id = if (samples == "sum") {
+        rep(seq_len(metrics$combos_all), each = inputs$n)
+      } else {
+        NULL
+      }
     ),
     nrow = metrics$values_all
   )
 
+  # Prepare the geom-like ggplot2 object that maps the data to the ECDF line(s).
+  # Group the atomic integer values by `sample_id` if needed.
+  if (samples == "mean") {
+    stat_ecdf_line <- ggplot2::stat_ecdf(
+      color = line_color,
+      pad = pad
+    )
+  } else if (samples == "sum") {
+    stat_ecdf_line <- ggplot2::stat_ecdf(
+      ggplot2::aes(
+        group = sample_id,
+        color = as.factor(sample_id)
+      ),
+      pad = pad
+    )
+  } else {
+    cli::cli_abort("Internal error: unhandled `samples` type.")
+  }
+
   # Construct the ECDF plot
   ggplot2::ggplot(data, ggplot2::aes(value)) +
     # ECDF line:
-    ggplot2::stat_ecdf(
-      color = line_color,
-      pad = pad
-    ) +
+    stat_ecdf_line +
     # Dashed diagonal reference line:
     ggplot2::annotate(
       geom = "segment",
@@ -288,5 +320,6 @@ closure_plot_ecdf <- function(
       breaks = values_unique,
       labels = values_unique,
     ) +
-    ggplot2::theme_minimal(base_size = text_size)
+    ggplot2::theme_minimal(base_size = text_size) +
+    ggplot2::theme(legend.position = "none")
 }
