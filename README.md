@@ -97,7 +97,7 @@ Visualize the overall distribution of values found in the combinations:
 closure_plot_bar(data)
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a somewhat polarized distribution." width="100%" />
 
 ## Previous work
 

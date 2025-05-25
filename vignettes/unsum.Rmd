@@ -42,6 +42,12 @@ data <- closure_combine(
 First create a plot of the mean sample found by CLOSURE. This gives us a sense of the overall results, which are quite polarized:
 
 ```{r}
+#| fig.alt: >
+#|   Barplot of `data`, the CLOSURE output.
+#|   It specifically visualizes the `f_average` column of
+#|   the `frequency` tibble, but also gives percentage figures,
+#|   similar to the `f_relative` column. The overall shape is
+#|   a strongly polarized distribution.
 closure_plot_bar(data)
 ```
 You can customize the plot, e.g., to show the sum of all samples found instead of the average sample, or only percentages, or different colors. See documentation at `closure_plot_bar()`. However, the default should be informative enough for a start.
@@ -69,6 +75,10 @@ See `closure_combine()` for more details.
 In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
 
 ```{r}
+#| fig.alt: >
+#|   Empirical cumulative distribution function (ECDF) plot
+#|   of `data`, the CLOSURE output. The curve rises most steeply at the
+#|   first and last scale values, indicating a strongly polarized distribution.
 closure_plot_ecdf(data)
 ```
 
