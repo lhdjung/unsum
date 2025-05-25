@@ -41,6 +41,11 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 
 \item{warn_if_empty}{Logical (length 1). Should a warning be shown if no
 combinations are found? Default is \code{TRUE}.}
+
+\item{rounding_error_mean, rounding_error_sd}{Numeric (length 1 each). Option
+to manually set the rounding error around \code{mean} and \code{sd}. This is meant
+for development and might be removed in the future, so most users can
+ignore it.}
 }
 \value{
 Named list of four tibbles (data frames):
