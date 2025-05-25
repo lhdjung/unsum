@@ -52,7 +52,7 @@ library(unsum)
 data <- closure_combine(
   mean = "2.7",
   sd = "1.9",
-  n = 100,
+  n = 130,
   scale_min = 1,
   scale_max = 5
 )
