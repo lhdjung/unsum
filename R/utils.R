@@ -126,11 +126,11 @@ check_closure_combine <- function(data) {
     )
   }
 
-  all_results_integer <- data$results$combination %>%
+  all_results_integer <- data$results$combination |>
     vapply(
       FUN = function(x) typeof(x) == "integer",
       FUN.VALUE = logical(1)
-    ) %>%
+    ) |>
     all()
 
   if (!all_results_integer) {
@@ -139,11 +139,11 @@ check_closure_combine <- function(data) {
 
   n <- data$inputs$n
 
-  all_results_length_n <- data$results$combination %>%
+  all_results_length_n <- data$results$combination |>
     vapply(
       FUN = function(x) length(x) == n,
       FUN.VALUE = logical(1)
-    ) %>%
+    ) |>
     all()
 
   if (!all_results_length_n) {
@@ -312,8 +312,8 @@ check_type <- function(x, t, n = 1, name = NULL) {
 summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
   # Flatten the list of integer vectors into a single integer vector, then
   # create a frequency table for the values in that vector.
-  f_absolute <- results %>%
-    unlist(use.names = FALSE) %>%
+  f_absolute <- results |>
+    unlist(use.names = FALSE) |>
     table()
 
   # Extract the scale values found in the combinations. Then, remove them from
