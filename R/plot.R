@@ -15,7 +15,7 @@
 #'   (`"all"`). This only matters if absolute frequencies are shown.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
 #' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"#960019"`, a red color.
+#'   `"#5D3FD3"`, a purple color.
 #' @param show_text Logical (length 1). Should the bars be labeled with the
 #'   corresponding frequencies? Default is `TRUE`.
 #' @param text_color String (length 1). Color of the frequency labels. By
@@ -70,8 +70,8 @@ closure_plot_bar <- function(
   # samples or the average sample?
   samples = c("mean", "all"),
   bar_alpha = 0.75,
-  # TODO: Choose favorite -- #880808, #960019,
-  bar_color = "#960019",
+  # TODO: Choose favorite -- #880808, #960019, #5D3FD3
+  bar_color = "#5D3FD3",
   show_text = TRUE,
   text_color = bar_color,
   text_size = 12,
@@ -107,9 +107,20 @@ closure_plot_bar <- function(
   data$f_average <- NULL
 
   # Create a function that formats labels for large numbers. By default, they
-  # are formatted like, e.g., "12,345.67"
+  # are formatted like, e.g., "12,345.67". In terms of `accuracy`, relative
+  # numbers deserve two decimal places because such nuance matters for fractions
+  # of 1. If the mean sample or the percentage of values is shown, this is less
+  # important, but one decimal place might matter, and it can show that the
+  # numbers are fractions. However, if all numbers are absolute integers, there
+  # is no need for decimal places.
   format_number_label <- scales::label_number(
-    accuracy = 0.1,
+    accuracy = if (frequency == "relative") {
+      0.01
+    } else if (samples == "mean" || frequency == "percent") {
+      0.1
+    } else {
+      1
+    },
     big.mark = mark_thousand,
     decimal.mark = mark_decimal
   )
@@ -120,7 +131,13 @@ closure_plot_bar <- function(
     label_y_axis <- paste0(
       "Count in ",
       label_avg_all,
-      sum(data$f_absolute),
+      # Need to create a separate number-formatting function on the fly to
+      # format the number of values found by CLOSURE: no decimal places but a
+      # comma (or similar) to separate levels of thousand every three digits.
+      scales::label_number(
+        accuracy = 1,
+        big.mark = mark_thousand
+      )(sum(data$f_absolute)),
       label_values,
       if (frequency == "absolute-percent") "(%)" else NULL
     )
@@ -214,7 +231,7 @@ closure_plot_bar <- function(
 #'   separate line for each sample (`"all"`). Note: the latter option can be
 #'   very slow if many values were found.
 #' @param line_color String (length 1). Color of the ECDF line. Default is
-#'   `"#960019"`, a red color.
+#'   `"#5D3FD3"`, a purple color.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
@@ -251,7 +268,7 @@ closure_plot_bar <- function(
 closure_plot_ecdf <- function(
   data,
   samples = c("mean", "all"),
-  line_color = "#960019",
+  line_color = "#5D3FD3",
   text_size = 12,
   reference_line_alpha = 0.6,
   pad = TRUE

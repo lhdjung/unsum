@@ -9,7 +9,7 @@ closure_plot_bar(
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
   samples = c("mean", "all"),
   bar_alpha = 0.75,
-  bar_color = "#960019",
+  bar_color = "#5D3FD3",
   show_text = TRUE,
   text_color = bar_color,
   text_size = 12,
@@ -33,7 +33,7 @@ the average sample (\code{"mean"}, the default) or the sum of all samples
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
 \item{bar_color}{String (length 1). Color of the bars. Default is
-\code{"#960019"}, a red color.}
+\code{"#5D3FD3"}, a purple color.}
 
 \item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}

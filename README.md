@@ -46,7 +46,7 @@ library(unsum)
 data <- closure_combine(
   mean = "2.7",
   sd = "1.9",
-  n = 100,
+  n = 130,
   scale_min = 1,
   scale_max = 5
 )
@@ -56,39 +56,39 @@ data
 #> # A tibble: 1 × 5
 #>   mean  sd        n scale_min scale_max
 #>   <chr> <chr> <dbl>     <dbl>     <dbl>
-#> 1 2.7   1.9     100         1         5
+#> 1 2.7   1.9     130         1         5
 #> 
 #> $metrics
 #> # A tibble: 1 × 5
 #>   combos_initial combos_all values_all horns horns_uniform
 #>            <int>      <int>      <int> <dbl>         <dbl>
-#> 1             15       2256     225600 0.880           0.5
+#> 1             15       5359     696670 0.881           0.5
 #> 
 #> $frequency
 #> # A tibble: 5 × 4
 #>   value f_average f_absolute f_relative
 #>   <int>     <dbl>      <int>      <dbl>
-#> 1     1     51.4      116060     0.514 
-#> 2     2      4.39       9908     0.0439
-#> 3     3      3.17       7160     0.0317
-#> 4     4      4.39       9912     0.0439
-#> 5     5     36.6       82560     0.366 
+#> 1     1     67.0      358972     0.515 
+#> 2     2      5.63      30170     0.0433
+#> 3     3      4.09      21940     0.0315
+#> 4     4      5.63      30162     0.0433
+#> 5     5     47.7      255426     0.367 
 #> 
 #> $results
-#> # A tibble: 2,256 × 2
+#> # A tibble: 5,359 × 2
 #>       id combination
 #>    <int> <list>     
-#>  1     1 <int [100]>
-#>  2     2 <int [100]>
-#>  3     3 <int [100]>
-#>  4     4 <int [100]>
-#>  5     5 <int [100]>
-#>  6     6 <int [100]>
-#>  7     7 <int [100]>
-#>  8     8 <int [100]>
-#>  9     9 <int [100]>
-#> 10    10 <int [100]>
-#> # ℹ 2,246 more rows
+#>  1     1 <int [130]>
+#>  2     2 <int [130]>
+#>  3     3 <int [130]>
+#>  4     4 <int [130]>
+#>  5     5 <int [130]>
+#>  6     6 <int [130]>
+#>  7     7 <int [130]>
+#>  8     8 <int [130]>
+#>  9     9 <int [130]>
+#> 10    10 <int [130]>
+#> # ℹ 5,349 more rows
 ```
 
 Visualize the overall distribution of values found in the combinations:
@@ -97,7 +97,7 @@ Visualize the overall distribution of values found in the combinations:
 closure_plot_bar(data)
 ```
 
-<img src="man/figures/README-unnamed-chunk-3-1.png" width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a somewhat polarized distribution." width="100%" />
 
 ## Previous work
 

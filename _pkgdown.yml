@@ -1,0 +1,22 @@
+url: https://lhdjung.github.io/unsum/
+template:
+  bootstrap: 5
+  bootswatch: flatly
+  bslib:
+    link-color: '#ca225e'
+    code-color: '#ca225e'
+    navbar-dark-hover-color: '#ca225e'
+    navbar-dark-active-color: '#f9ea6b'
+  math-rendering: katex
+reference:
+- title: Main CLOSURE function
+- contents:
+  - closure_combine
+- title: Visualization
+- contents:
+  - closure_plot_bar
+  - closure_plot_ecdf
+- title: Metrics
+- contents:
+  - closure_count_initial
+  - horns
