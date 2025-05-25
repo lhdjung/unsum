@@ -2,7 +2,7 @@
 title: "Installing Rust for unsum"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{install-rust}
+  %\VignetteIndexEntry{Installing Rust for unsum}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
