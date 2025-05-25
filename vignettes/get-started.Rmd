@@ -10,18 +10,66 @@ vignette: >
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  out.width = "100%"
 )
+```
+
+```{r include=FALSE}
+devtools::load_all()
 ```
 
 ```{r setup}
 library(unsum)
 ```
 
-## (...)
+Here is a brief walkthrough on using CLOSURE in unsum.
 
-## Caveat
+Call `closure_combine()` to run the CLOSURE algorithm. Enter mean, SD, and sample size that you read in a paper. For `scale_min` and `scale_max`, use the empirical minimum and maximum if available. Otherwise, use the more fundamental scale bounds, e.g., `1` and `7` for a 1-7 scale.
 
-It is strongly discouraged to run custom data transformations on the output of `closure_combine()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
+The `mean` and `sd` arguments must be strings to preserve trailing zeros. Note that CLOSURE can only be used if the values must be integers: e.g., a value can be 2 or 3, but not 2.5.
 
-If you want to run your own transformations or analyses on `closure_combine()` output, it might be best to first save this output in a new variable specifically for use in your custom code. This way, you can still safely run unsum functions like `closure_plot_bar()` on the original data.
+```{r}
+data <- closure_combine(
+  mean = "3.5",
+  sd = "2",
+  n = 80,
+  scale_min = 1,
+  scale_max = 5
+)
+```
+
+First create a plot of the mean sample found by CLOSURE. This gives us a sense of the overall results, which are quite polarized:
+
+```{r}
+closure_plot_bar(data)
+```
+You can customize the plot, e.g., to show the sum of all samples found instead of the average sample, or only percentages, or different colors. See documentation at `closure_plot_bar()`. However, the default should be informative enough for a start.
+
+Now let's look at the results themselves:
+
+```{r}
+data
+```
+
+-   `inputs` records the arguments in `closure_combine()`.
+
+-   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`combos_all`) and the total number of all values found in them (`values_all`).
+
+    Importantly, it also features an index of variation in bounded scales (`horns`). It ranges from 0 to 1, where 0 means no variability and 1 would be a sample evenly split between the extremes — here, 1, and 5 — with no values in between. The reference value `horns_uniform` shows which value `horns` would have if the mean sample was uniformly distributed. This is 0.5 because of the 1-5 scale. See `horns()` for more details.
+
+    The actual `horns` value is 0.65, which is a moderate to high degree of variability in the abstract. However, in practice, 0.65 might be extremely high compared to theoretical expectations: if the sample should have a roughly normal shape, even the hypothetical 0.5 uniform value would be surprisingly high, let alone the 0.65 actual value.
+
+-   `frequency` shows the absolute and relative frequencies of values found by CLOSURE at each scale point. It also gives us the (absolute) frequency of values in the average sample that we saw in the plot above.
+
+-   `results` stores all the samples that CLOSURE found (`combination`). Each has a unique number (`id`).
+
+See `closure_combine()` for more details.
+
+In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
+
+```{r}
+closure_plot_ecdf(data)
+```
+
+A caveat: it is strongly discouraged to run custom data transformations on the output of `closure_combine()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
