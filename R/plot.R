@@ -107,9 +107,20 @@ closure_plot_bar <- function(
   data$f_average <- NULL
 
   # Create a function that formats labels for large numbers. By default, they
-  # are formatted like, e.g., "12,345.67"
+  # are formatted like, e.g., "12,345.67". In terms of `accuracy`, relative
+  # numbers deserve two decimal places because such nuance matters for fractions
+  # of 1. If the mean sample or the percentage of values is shown, this is less
+  # important, but one decimal place might matter, and it can show that the
+  # numbers are fractions. However, if all numbers are absolute integers, there
+  # is no need for decimal places.
   format_number_label <- scales::label_number(
-    accuracy = 0.1,
+    accuracy = if (frequency == "relative") {
+      0.01
+    } else if (samples == "mean" || frequency == "percent") {
+      0.1
+    } else {
+      1
+    },
     big.mark = mark_thousand,
     decimal.mark = mark_decimal
   )
@@ -120,7 +131,13 @@ closure_plot_bar <- function(
     label_y_axis <- paste0(
       "Count in ",
       label_avg_all,
-      sum(data$f_absolute),
+      # Need to create a separate number-formatting function on the fly to
+      # format the number of values found by CLOSURE: no decimal places but a
+      # comma (or similar) to separate levels of thousand every three digits.
+      scales::label_number(
+        accuracy = 1,
+        big.mark = mark_thousand
+      )(sum(data$f_absolute)),
       label_values,
       if (frequency == "absolute-percent") "(%)" else NULL
     )
