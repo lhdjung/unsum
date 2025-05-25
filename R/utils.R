@@ -1,5 +1,5 @@
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
-utils::globalVariables(c(".", "value"))
+utils::globalVariables(c(".", "value", ".data"))
 
 
 # Error if input is not an unchanged CLOSURE list.

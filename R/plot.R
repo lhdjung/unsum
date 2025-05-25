@@ -307,8 +307,8 @@ closure_plot_ecdf <- function(
   } else if (samples == "all") {
     stat_ecdf_line <- ggplot2::stat_ecdf(
       ggplot2::aes(
-        group = sample_id,
-        color = as.factor(sample_id)
+        group = .data$sample_id,
+        color = as.factor(.data$sample_id)
       ),
       pad = pad
     )
