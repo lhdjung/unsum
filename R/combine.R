@@ -30,6 +30,10 @@
 #'   `5`.
 #' @param warn_if_empty Logical (length 1). Should a warning be shown if no
 #'   combinations are found? Default is `TRUE`.
+#' @param rounding_error_mean,rounding_error_sd Numeric (length 1 each). Option
+#'   to manually set the rounding error around `mean` and `sd`. This is meant
+#'   for development and might be removed in the future, so most users can
+#'   ignore it.
 #'
 #' @section Rounding limitations: The `rounding` and `threshold` arguments are
 #'   not fully implemented. For example, CLOSURE currently treats all rounding
