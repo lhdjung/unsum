@@ -15,7 +15,6 @@ Depends:
 Imports: 
     cli,
     ggplot2,
-    magrittr,
     readr,
     rlang,
     roundwork,
@@ -28,7 +27,6 @@ Collate:
     'count.R'
     'combine.R'
     'plot.R'
-    'utils-pipe.R'
 Config/rextendr/version: 0.3.1.9001
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
