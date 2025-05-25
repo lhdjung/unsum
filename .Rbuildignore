@@ -4,6 +4,7 @@
 ^LICENSE\.md$
 ^README\.Rmd$
 ^special-scripts$
+^benchmark_.*$
 ^data-raw$
 ^_pkgdown\.yml$
 ^docs$
