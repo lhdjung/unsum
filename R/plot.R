@@ -15,7 +15,7 @@
 #'   (`"all"`). This only matters if absolute frequencies are shown.
 #' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
 #' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"#960019"`, a red color.
+#'   `"#5D3FD3"`, a purple color.
 #' @param show_text Logical (length 1). Should the bars be labeled with the
 #'   corresponding frequencies? Default is `TRUE`.
 #' @param text_color String (length 1). Color of the frequency labels. By
@@ -70,8 +70,8 @@ closure_plot_bar <- function(
   # samples or the average sample?
   samples = c("mean", "all"),
   bar_alpha = 0.75,
-  # TODO: Choose favorite -- #880808, #960019,
-  bar_color = "#960019",
+  # TODO: Choose favorite -- #880808, #960019, #5D3FD3
+  bar_color = "#5D3FD3",
   show_text = TRUE,
   text_color = bar_color,
   text_size = 12,
@@ -231,7 +231,7 @@ closure_plot_bar <- function(
 #'   separate line for each sample (`"all"`). Note: the latter option can be
 #'   very slow if many values were found.
 #' @param line_color String (length 1). Color of the ECDF line. Default is
-#'   `"#960019"`, a red color.
+#'   `"#5D3FD3"`, a purple color.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
@@ -268,7 +268,7 @@ closure_plot_bar <- function(
 closure_plot_ecdf <- function(
   data,
   samples = c("mean", "all"),
-  line_color = "#960019",
+  line_color = "#5D3FD3",
   text_size = 12,
   reference_line_alpha = 0.6,
   pad = TRUE
