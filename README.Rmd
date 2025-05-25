@@ -52,7 +52,7 @@ library(unsum)
 data <- closure_combine(
   mean = "2.7",
   sd = "1.9",
-  n = 100,
+  n = 130,
   scale_min = 1,
   scale_max = 5
 )
@@ -63,6 +63,12 @@ data
 Visualize the overall distribution of values found in the combinations:
 
 ```{r}
+#| fig.alt: >
+#|   Barplot of `data`, the CLOSURE output.
+#|   It specifically visualizes the `f_average` column of
+#|   the `frequency` tibble, but also gives percentage figures,
+#|   similar to the `f_relative` column. The overall shape is
+#|   a somewhat polarized distribution.
 closure_plot_bar(data)
 ```
 

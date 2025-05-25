@@ -49,7 +49,7 @@ Named list of four tibbles (data frames):
 \item \strong{\code{metrics}}:
 \itemize{
 \item \code{combos_initial}: integer. The basis for computing CLOSURE results,
-based on scale range only.
+based on scale range only. See \code{\link[=closure_count_initial]{closure_count_initial()}}.
 \item \code{combos_all}: integer. Number of all combinations. Equal to the number
 of rows in \code{results}.
 \item \code{values_all}: integer. Number of all individual values found. Equal to
@@ -63,6 +63,7 @@ sample was uniformly distributed.
 \itemize{
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
+\item \code{f_average}: Count of scale values in the mean \code{results} combination.
 \item \code{f_absolute}: integer. Count of individual scale values found in the
 \code{results} combinations.
 \item \code{f_relative}: double. Values' share of total values found.

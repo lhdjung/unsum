@@ -7,7 +7,7 @@
 closure_plot_ecdf(
   data,
   samples = c("mean", "all"),
-  line_color = "#960019",
+  line_color = "#5D3FD3",
   text_size = 12,
   reference_line_alpha = 0.6,
   pad = TRUE
@@ -22,7 +22,7 @@ separate line for each sample (\code{"all"}). Note: the latter option can be
 very slow if many values were found.}
 
 \item{line_color}{String (length 1). Color of the ECDF line. Default is
-\code{"#960019"}, a red color.}
+\code{"#5D3FD3"}, a purple color.}
 
 \item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
