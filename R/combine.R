@@ -141,9 +141,9 @@ closure_combine <- function(
   # length 1, and is not `NA`.
   check_value(mean, "character")
   check_value(sd, "character")
-  check_value(n, c("double", "integer"))
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
+  check_value(n, "double")
+  check_value(scale_min, "double")
+  check_value(scale_max, "double")
   check_value(warn_if_empty, "logical")
 
   mean_num <- as.numeric(mean)

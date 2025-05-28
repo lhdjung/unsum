@@ -28,8 +28,8 @@
 # matter The formula is: (n+1) * n / 2 where n is the range size
 
 closure_count_initial <- function(scale_min, scale_max) {
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
+  check_value(scale_min, "double")
+  check_value(scale_max, "double")
 
   check_scale(scale_min, scale_max)
 
