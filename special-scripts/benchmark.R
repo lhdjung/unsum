@@ -25,8 +25,8 @@ result <- bench::mark(
 )
 
 
-result %>%
-  print() %>%
+result |>
+  print() |>
   plot()
 
 

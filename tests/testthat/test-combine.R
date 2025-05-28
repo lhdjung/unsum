@@ -19,8 +19,8 @@ data_r <- format_n_cols(data_r)
 # effects are ignored below.
 
 test_that("All implementations return identical results (after sorting columns)", {
-  .data_rust   %>% identical_sorted_cols(data_r) %>% expect_true()
-  .data_python %>% identical_sorted_cols(data_r) %>% expect_true()
+  .data_rust   |> identical_sorted_cols(data_r) |> expect_true()
+  .data_python |> identical_sorted_cols(data_r) |> expect_true()
 })
 
 # # If any differences occur, investigate them in detail:
