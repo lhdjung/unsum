@@ -1,5 +1,5 @@
 Package: unsum
-Title: Complete Listing of Original Samples of Underlying Raw Evidence
+Title: Reconstruct Raw Data from Summary Statistics
 Version: 0.0.0.9000
 Authors@R: 
     person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre"))
