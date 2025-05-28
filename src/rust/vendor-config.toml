@@ -1,0 +1,10 @@
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source."git+https://github.com/lhdjung/closure-core?branch=generic"]
+git = "https://github.com/lhdjung/closure-core"
+branch = "generic"
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
