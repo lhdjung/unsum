@@ -287,7 +287,7 @@ check_value <- function(x, type) {
 
 
 check_type <- function(x, t, n = 1, name = NULL) {
-  if (any(typeof(x) == t)) {
+  if (any(typeof(x) == t) || (is.integer(x) && t == "double")) {
     return(invisible(NULL))
   }
   if (is.null(name)) {
@@ -297,6 +297,9 @@ check_type <- function(x, t, n = 1, name = NULL) {
     "be of type"
   } else {
     "be one of the types"
+  }
+  if (length(t) == 1 && t == "double") {
+    t <- "double or integer"
   }
   cli::cli_abort(
     message = c(
