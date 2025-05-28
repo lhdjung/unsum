@@ -92,8 +92,8 @@ runtimes. These effects interact dynamically. For example, with large \code{n},
 even very small increases in \code{sd} can greatly increase runtime and number
 of values found.
 
-If the inputs are mutually inconsistent, there is a warning and an empty
-data frame.
+If the inputs are inconsistent, there is no solution. The function will
+then return empty results and throw a warning.
 }
 \section{Rounding limitations}{
  The \code{rounding} and \code{threshold} arguments are
@@ -107,7 +107,7 @@ those that do will most likely lead to empty results.
 
 \examples{
 # High spread often leads to many combinations --
-# here, 735.
+# here, 3682.
 data_high <- closure_combine(
   mean = "3.5",
   sd = "2",
