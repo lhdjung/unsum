@@ -26,7 +26,7 @@ Collate:
     'count.R'
     'combine.R'
     'plot.R'
-Config/rextendr/version: 0.3.1.9001
+Config/rextendr/version: 0.4.0.9000
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
 BugReports: https://github.com/lhdjung/unsum/issues
