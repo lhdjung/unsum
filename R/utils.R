@@ -28,17 +28,19 @@ check_closure_combine <- function(data) {
   check_closure_combine_tibble(
     x = data$inputs,
     name = "inputs",
-    dims = c(1L, 5L),
+    dims = c(1L, 7L),
     col_names_types = list(
       "mean" = "character",
       "sd" = "character",
       "n" = c("integer", "double"),
       "scale_min" = c("integer", "double"),
-      "scale_max" = c("integer", "double")
+      "scale_max" = c("integer", "double"),
+      "rounding" = c("character"),
+      "threshold" = c("integer", "double")
     )
   )
 
-  # (Intermezzo to make sure that the assumption in the second check hold)
+  # (Intermezzo to make sure that the assumptions in the second check hold)
   check_scale(
     scale_min = data$inputs$scale_min,
     scale_max = data$inputs$scale_max,
