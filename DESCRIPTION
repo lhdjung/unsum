@@ -15,6 +15,8 @@ Depends:
 Imports: 
     cli,
     ggplot2,
+    nanoparquet,
+    readr,
     rlang,
     roundwork,
     scales,
@@ -26,6 +28,7 @@ Collate:
     'count.R'
     'combine.R'
     'plot.R'
+    'write.R'
 Config/rextendr/version: 0.4.0.9000
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/

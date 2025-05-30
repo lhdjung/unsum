@@ -387,3 +387,14 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
 near <- function(x, y, tol = .Machine$double.eps^0.5) {
   abs(x - y) < tol
 }
+
+
+# Transform unsum's CLOSURE results into the "n"-column format of the CSV files
+# made by closure-core's test harness or the original Python implementation
+format_n_cols <- function(samples_all) {
+  samples_all |>
+    tibble::as_tibble(.name_repair = "minimal") |>
+    t() |>
+    tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
+}
+
