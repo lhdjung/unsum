@@ -209,7 +209,9 @@ closure_combine <- function(
         sd = sd,
         n = n,
         scale_min = scale_min,
-        scale_max = scale_max
+        scale_max = scale_max,
+        rounding = rounding,
+        threshold = threshold
       ),
       nrow = 1L,
       class = "closure_combine"
