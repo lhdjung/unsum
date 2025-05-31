@@ -2,6 +2,7 @@
 
 export(closure_combine)
 export(closure_count_initial)
+export(closure_gauge_complexity)
 export(closure_plot_bar)
 export(closure_plot_ecdf)
 export(closure_read)

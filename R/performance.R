@@ -1,5 +1,67 @@
+#' Heuristic to predict CLOSURE runtime
+#'
+#' @description Before you run [`closure_combine()`], you may want to get a
+#'   sense of the time it will take to run. Use `closure_gauge_complexity()` to
+#'   compute a heuristics-based complexity score. For reference, here is how it
+#'   determines the messages in `closure_combine()`:
+#'
+#' \tabular{ll}{
+#'   \strong{Value} \tab \strong{Message} \cr
+#'   if < 1       \tab (no message)                 \cr
+#'   else if < 2  \tab "Just a second..."           \cr
+#'   else if < 3  \tab "This could take a minute..."\cr
+#'   else         \tab "NOTE: Long runtime ahead!"
+#' }
+#'
+#' @details The result of this function is hard to interpret. All it can do is
+#'   to convey an idea about the likely runtime of CLOSURE. This is because the
+#'   input parameters interact in highly dynamic ways, which makes prediction
+#'   difficult.
+#'
+#'   In addition, even progress bars or updates at regular intervals (e.g., "10%
+#'   complete") prove to be extremely challenging: the Rust code computes
+#'   CLOSURE results in parallel, which makes it hard to get an overview of the
+#'   total progress across all cores; and especially to display such information
+#'   on the R level.
+#'
+#' @inheritParams closure_combine
+#'
+#' @returns Numeric (length 1).
+#'
+#' @export
+#'
+#' @examples
+#' # Low SD, N, and scale range:
+#' closure_gauge_complexity(
+#'   mean = 2.55,
+#'   sd = 0.85,
+#'   n = 84,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' # Somewhat higher:
+#' closure_gauge_complexity(
+#'   mean = 4.26,
+#'   sd = 1.58,
+#'   n = 100,
+#'   scale_min = 1,
+#'   scale_max = 7
+#' )
+#'
+#' # Very high:
+#' closure_gauge_complexity(
+#'   mean = 3.81,
+#'   sd = 3.09,
+#'   n = 156,
+#'   scale_min = 1,
+#'   scale_max = 7
+#' )
 
-estimate_runtime <- function(mean, sd, n, scale_min, scale_max) {
+closure_gauge_complexity <- function(mean, sd, n, scale_min, scale_max) {
+
+  mean <- as.numeric(mean)
+  sd <- as.numeric(sd)
 
   # Scale range is THE dominant factor - empirically verified
   range_size <- scale_max - scale_min + 1
@@ -7,45 +69,44 @@ estimate_runtime <- function(mean, sd, n, scale_min, scale_max) {
   # 1. Initial combinations (quadratic in range_size)
   initial_combinations <- (range_size * (range_size + 1)) / 2
 
-  # 2. Scale range factor (the key insight from your scale_max=5 vs 7 test)
-  # This has exponential impact through the search tree
-  if (range_size <= 3) {
-    scale_factor <- 0.1      # trivial cases
+  # 2. Scale range factor (this has exponential impact through the search tree)
+  scale_factor <- if (range_size <= 3) {
+    0.1                      # trivial cases
   } else if (range_size <= 5) {
-    scale_factor <- 1.0      # baseline
+    1.0                      # baseline
   } else if (range_size <= 7) {
-    scale_factor <- 50.0     # under a minute
+    50.0                     # under a minute
   } else if (range_size <= 9) {
-    scale_factor <- 500.0    # extrapolated
+    500.0                    # extrapolated
   } else {
-    scale_factor <- 5000.0   # very large ranges
+    5000.0                   # very large ranges
   }
 
   # 3. Sample size factor (tree depth effect)
-  if (n <= 20) {
-    n_factor <- 0.5
+  n_factor <- if (n <= 20) {
+    0.5
   } else if (n <= 50) {
-    n_factor <- 1.0          # baseline
+    1.0                      # baseline
   } else if (n <= 100) {
-    n_factor <- 3.0
+    3.0
   } else if (n <= 200) {
-    n_factor <- 10.0
+    10.0
   } else {
-    n_factor <- 50.0
+    50.0
   }
 
   # 4. SD constraint factor (loose constraints = less pruning = harder)
   # Your sd=2.0 case was loose and took time
-  if (sd <= 0.5) {
-    sd_factor <- 0.1         # very tight = easy
+  sd_factor <- if (sd <= 0.5) {
+    0.1                      # very tight = easy
   } else if (sd <= 1.0) {
-    sd_factor <- 0.5         # tight
+    0.5                      # tight
   } else if (sd <= 1.5) {
-    sd_factor <- 1.0         # moderate
+    1.0                      # moderate
   } else if (sd <= 2.0) {
-    sd_factor <- 2.0         # loose
+    2.0                      # loose
   } else {
-    sd_factor <- 5.0         # very loose
+    5.0                      # very loose
   }
 
   # 5. Mean extremeness (extreme means are harder to achieve)
@@ -54,12 +115,12 @@ estimate_runtime <- function(mean, sd, n, scale_min, scale_max) {
   max_distance <- (scale_max - scale_min) / 2
   mean_extremeness <- mean_distance_from_center / max_distance
 
-  if (mean_extremeness < 0.2) {
-    mean_factor <- 1.0       # central means are easier
+  mean_factor <- if (mean_extremeness < 0.2) {
+    1.0                      # central means are easier
   } else if (mean_extremeness < 0.5) {
-    mean_factor <- 1.5
+    1.5
   } else {
-    mean_factor <- 3.0       # extreme means are harder
+    3.0                      # extreme means are harder
   }
 
   # 6. Base complexity calculation

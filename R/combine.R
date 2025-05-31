@@ -16,9 +16,9 @@
 #' @param sd String (length 1). Reported sample standard deviation.
 #' @param n Numeric (length 1). Reported sample size.
 #' @param scale_min,scale_max Numeric (length 1 each). Minimal and maximal
-#'   possible values of the measurement scale (not the *empirical* min and
-#'   max!). For example, with a 1-7 Likert scale, use `scale_min = 1` and
-#'   `scale_max = 7`.
+#'   possible values of the measurement scale. For example, with a 1-7 Likert
+#'   scale, use `scale_min = 1` and `scale_max = 7`. Prefer the empirical min
+#'   and max if available: they constrain the possible values further.
 #' @param rounding String (length 1). Rounding method assumed to have created
 #'   `mean` and `sd`. See [*Rounding
 #'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
@@ -173,7 +173,7 @@ closure_combine <- function(
   }
 
   # Make an educated guess about the complexity, and hence the runtime duration
-  complexity_score <- estimate_runtime(
+  complexity <- closure_gauge_complexity(
     mean = mean_num,
     sd = sd_num,
     n = n,
@@ -181,24 +181,19 @@ closure_combine <- function(
     scale_max = scale_max
   )
 
-  category <- if (complexity_score < 1) {
-    "1"
-  } else if (complexity_score < 2) {
-    "2"
-  } else if (complexity_score < 3) {
-    "3"
+  msg_wait <- if (complexity < 1) {
+    NULL
+  } else if (complexity < 2) {
+    "Just a second..."
+  } else if (complexity < 3) {
+    "This could take a minute..."
   } else {
-    "4"
+    "NOTE: Long runtime ahead!"
   }
 
-  msg_wait <- switch(
-    category,
-    "1" = NULL,
-    "2" = "Just a second...",
-    "3" = "This could take a minute...",
-    "4" = "NOTE: Long runtime ahead!"
-  )
-
+  # Using `cli_alert()` for all three messages, even though the last one is
+  # meant to be a warning. This is because `cli_warn()` may defer until after
+  # the samples are computed, defeating its purpose here.
   if (!is.null(msg_wait)) {
     cli::cli_alert(msg_wait)
   }
