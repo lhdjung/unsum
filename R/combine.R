@@ -69,7 +69,7 @@
 #'   length `n`. It is a combination (or distribution) of individual scale
 #'   values found by CLOSURE.
 #'
-#' @include utils.R count.R horns.R extendr-wrappers.R
+#' @include utils.R count.R horns.R performance.R extendr-wrappers.R
 #'
 #' @export
 #'
@@ -78,8 +78,8 @@
 #' # here, 3682.
 #' data_high <- closure_combine(
 #'   mean = "3.5",
-#'   sd = "2",
-#'   n = 52,
+#'   sd = "1.7",
+#'   n = 70,
 #'   scale_min = 1,
 #'   scale_max = 5
 #' )
@@ -93,9 +93,9 @@
 #' # Low spread, only 3 combinations, and not all
 #' # scale values are possible.
 #' data_low <- closure_combine(
-#'   mean = "3.5",
+#'   mean = "2.9",
 #'   sd = "0.5",
-#'   n = 52,
+#'   n = 70,
 #'   scale_min = 1,
 #'   scale_max = 5
 #' )
@@ -170,6 +170,37 @@ closure_combine <- function(
 
   if (is.null(rounding_error_sd)) {
     rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
+  }
+
+  # Make an educated guess about the complexity, and hence the runtime duration
+  complexity_score <- estimate_runtime(
+    mean = mean_num,
+    sd = sd_num,
+    n = n,
+    scale_min = scale_min,
+    scale_max = scale_max
+  )
+
+  category <- if (complexity_score < 1) {
+    "1"
+  } else if (complexity_score < 2) {
+    "2"
+  } else if (complexity_score < 3) {
+    "3"
+  } else {
+    "4"
+  }
+
+  msg_wait <- switch(
+    category,
+    "1" = NULL,
+    "2" = "Just a second...",
+    "3" = "This could take a minute...",
+    "4" = "NOTE: Long runtime ahead!"
+  )
+
+  if (!is.null(msg_wait)) {
+    cli::cli_alert(msg_wait)
   }
 
   # Compute CLOSURE combinations by calling into pre-compiled Rust code.

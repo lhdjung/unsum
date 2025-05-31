@@ -23,6 +23,7 @@ Imports:
     tibble
 Collate: 
     'extendr-wrappers.R'
+    'performance.R'
     'horns.R'
     'utils.R'
     'count.R'
