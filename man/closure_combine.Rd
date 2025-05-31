@@ -110,8 +110,8 @@ those that do will most likely lead to empty results.
 # here, 3682.
 data_high <- closure_combine(
   mean = "3.5",
-  sd = "2",
-  n = 52,
+  sd = "1.7",
+  n = 70,
   scale_min = 1,
   scale_max = 5
 )
@@ -125,9 +125,9 @@ closure_plot_bar(data_high)
 # Low spread, only 3 combinations, and not all
 # scale values are possible.
 data_low <- closure_combine(
-  mean = "3.5",
+  mean = "2.9",
   sd = "0.5",
-  n = 52,
+  n = 70,
   scale_min = 1,
   scale_max = 5
 )
