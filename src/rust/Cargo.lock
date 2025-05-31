@@ -11,7 +11,7 @@ checksum = "ace50bade8e6234aa140d9a2f552bbee1db4d353f69b8217bc503490fc1a9f26"
 [[package]]
 name = "closure-core"
 version = "0.1.0"
-source = "git+https://github.com/lhdjung/closure-core?branch=generic#bf228776826d4a71b3e21e0f4c894146f2f54a85"
+source = "git+https://github.com/lhdjung/closure-core?branch=master#dfe128c01996ec6b683a17f214f20b96fdced241"
 dependencies = [
  "num",
  "rayon",
