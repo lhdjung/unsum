@@ -23,7 +23,7 @@ devtools::load_all()
 library(unsum)
 ```
 
-Here is a brief walkthrough on using CLOSURE in unsum.
+Here is a brief walkthrough of using CLOSURE in unsum.
 
 Call `closure_combine()` to run the CLOSURE algorithm. Enter mean, SD, and sample size that you read in a paper. For `scale_min` and `scale_max`, use the empirical minimum and maximum if available. Otherwise, use the more fundamental scale bounds, e.g., `1` and `7` for a 1-7 scale.
 
@@ -50,6 +50,7 @@ First create a plot of the mean sample found by CLOSURE. This gives us a sense o
 #|   a strongly polarized distribution.
 closure_plot_bar(data)
 ```
+
 You can customize the plot, e.g., to show the sum of all samples found instead of the average sample, or only percentages, or different colors. See documentation at `closure_plot_bar()`. However, the default should be informative enough for a start.
 
 Now let's look at the results themselves:
@@ -82,4 +83,26 @@ In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
 closure_plot_ecdf(data)
 ```
 
-A caveat: it is strongly discouraged to run custom data transformations on the output of `closure_combine()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
+What if you have a huge object with CLOSURE results that you want to save? Write it to disk with `closure_write()`:
+
+```{r}
+# Temporary folder just for this example --
+# use a real folder on your computer instead!
+fake_folder <- tempdir()
+
+# Saving the path in a variable
+path_new_folder <- closure_write(data, path = fake_folder)
+```
+
+This stores the results using the highly efficient Parquet format. It will only take a tiny fraction of a CSV file's disk space.
+
+In your later session, read the data in from the folder to get the same CLOSURE list back:
+
+```{r}
+data_new <- closure_read(path_new_folder)
+
+# Same as the original data:
+waldo::compare(data, data_new)
+```
+
+A caveat: don't modify the output of `closure_combine()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
