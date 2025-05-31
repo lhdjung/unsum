@@ -2,18 +2,23 @@
 % Please edit documentation in R/write.R
 \name{closure_write}
 \alias{closure_write}
-\title{Write CLOSURE results to disk}
+\alias{closure_read}
+\title{Write CLOSURE results to disk (and read them back in)}
 \usage{
 closure_write(data, path = ".")
+
+closure_read(path)
 }
 \arguments{
 \item{data}{List returned by \code{closure_combine()}.}
 
-\item{path}{String (length 1). File path where a new folder with the results
-will be created. By default, the current working directory.}
+\item{path}{String (length 1). File path where \code{closure_write()} will create
+a new folder with the results. By default, the current working directory.
+For \code{closure_read()}, the path to that new folder.}
 }
 \value{
-No return value, called for side effects.
+\code{closure_write()} returns the path to the new folder it created,
+\code{closure_read()} returns a list.
 }
 \description{
 You can use \code{closure_write()} to save the results of
@@ -23,15 +28,21 @@ location.
 The data are saved in a new folder as four separate files, one for each
 tibble in \code{closure_combine()}'s output. The folder is named after the
 parameters of \code{closure_combine()}.
+
+\code{closure_read()} is the opposite: it reads those files back into R,
+recreating the original CLOSURE list. This is useful for later analyses if
+you don't want to re-run a lengthy \code{closure_combine()} call.
 }
 \details{
-The first three tibbles are saved as CSVs, but the \code{"results"}
-tibble becomes a Parquet file. This is much faster and takes up far less
-disk space --- roughly 1\% of a CSV file with the same data. Speed and disk
-space can be relevant with large result sets.
+\code{closure_write()} saves the first three tibbles as CSVs, but the
+\code{"results"} tibble becomes a Parquet file. This is much faster and takes up
+far less disk space --- roughly 1\% of a CSV file with the same data. Speed
+and disk space can be relevant with large result sets.
 
-Opening a Parquet file requires a special reader. Inside of R, you could
-use \code{\link[nanoparquet:read_parquet]{nanoparquet::read_parquet()}}.
+Use \code{closure_read()} to recreate the CLOSURE list from the folder. One of
+the reasons why it is convenient is that opening a Parquet file requires a
+special reader. For a more general tool, see
+\code{\link[nanoparquet:read_parquet]{nanoparquet::read_parquet()}}.
 }
 \section{Folder name}{
  The new folder's name should be sufficient to recreate
@@ -55,3 +66,24 @@ The order is the same as in \code{closure_combine()}:
  }
 }
 
+\examples{
+data <- closure_combine(
+  mean = "2.7",
+  sd = "0.6",
+  n = 45,
+  scale_min = 1,
+  scale_max = 5
+)
+
+# Just for this example -- don't try at home
+fake_folder <- tempdir()
+
+# You should write to a real folder instead;
+# or just leave `path` unspecified.
+path_new_folder <- closure_write(data, path = fake_folder)
+
+# In a later session, conveniently read the files
+# back into R. This returns the original list,
+# identical except for floating-point error.
+closure_read(path_new_folder)
+}
