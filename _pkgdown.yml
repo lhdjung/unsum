@@ -19,6 +19,7 @@ reference:
 - title: Metrics
 - contents:
   - closure_count_initial
+  - closure_gauge_complexity
   - horns
 - title: Write and read
 - contents:

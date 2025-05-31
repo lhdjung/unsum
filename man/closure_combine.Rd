@@ -25,9 +25,9 @@ closure_combine(
 \item{n}{Numeric (length 1). Reported sample size.}
 
 \item{scale_min, scale_max}{Numeric (length 1 each). Minimal and maximal
-possible values of the measurement scale (not the \emph{empirical} min and
-max!). For example, with a 1-7 Likert scale, use \code{scale_min = 1} and
-\code{scale_max = 7}.}
+possible values of the measurement scale. For example, with a 1-7 Likert
+scale, use \code{scale_min = 1} and \code{scale_max = 7}. Prefer the empirical min
+and max if available: they constrain the possible values further.}
 
 \item{rounding}{String (length 1). Rounding method assumed to have created
 \code{mean} and \code{sd}. See \href{https://lhdjung.github.io/roundwork/articles/rounding-options.html}{\emph{Rounding options}},
