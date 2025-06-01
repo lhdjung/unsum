@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">unsum</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -68,8 +68,8 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lhdjung/unsum" class="external-link">unsum</a></span><span class="op">)</span></span></code></pre></div>
-<p>Here is a brief walkthrough on using CLOSURE in unsum.</p>
-<p>Call <code><a href="../reference/closure_combine.html">closure_combine()</a></code> to run the CLOSURE algorithm.
+<p>Here is a brief walkthrough of using CLOSURE in unsum.</p>
+<p>Call <code><a href="../reference/closure_generate.html">closure_generate()</a></code> to run the CLOSURE algorithm.
 Enter mean, SD, and sample size that you read in a paper. For
 <code>scale_min</code> and <code>scale_max</code>, use the empirical
 minimum and maximum if available. Otherwise, use the more fundamental
@@ -79,7 +79,7 @@ scale.</p>
 to preserve trailing zeros. Note that CLOSURE can only be used if the
 values must be integers: e.g., a value can be 2 or 3, but not 2.5.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_combine.html">closure_combine</a></span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_generate.html">closure_generate</a></span><span class="op">(</span></span>
 <span>  mean <span class="op">=</span> <span class="st">"3.5"</span>,</span>
 <span>  sd <span class="op">=</span> <span class="st">"2"</span>,</span>
 <span>  n <span class="op">=</span> <span class="fl">80</span>,</span>
@@ -90,25 +90,25 @@ values must be integers: e.g., a value can be 2 or 3, but not 2.5.</p>
 us a sense of the overall results, which are quite polarized:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/closure_plot_bar.html">closure_plot_bar</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p><img src="unsum_files/figure-html/unnamed-chunk-4-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a strongly polarized distribution." width="100%">
-You can customize the plot, e.g., to show the sum of all samples found
-instead of the average sample, or only percentages, or different colors.
-See documentation at <code><a href="../reference/closure_plot_bar.html">closure_plot_bar()</a></code>. However, the
-default should be informative enough for a start.</p>
+<p><img src="unsum_files/figure-html/unnamed-chunk-4-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a strongly polarized distribution." width="100%"></p>
+<p>You can customize the plot, e.g., to show the sum of all samples
+found instead of the average sample, or only percentages, or different
+colors. See documentation at <code><a href="../reference/closure_plot_bar.html">closure_plot_bar()</a></code>. However,
+the default should be informative enough for a start.</p>
 <p>Now let’s look at the results themselves:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span></span>
 <span><span class="co">#&gt; $inputs</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
-<span><span class="co">#&gt;   mean  sd        n scale_min scale_max</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3.5   2        80         1         5</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
+<span><span class="co">#&gt;   mean  sd        n scale_min scale_max rounding   threshold</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3.5   2        80         1         5 up_or_down         5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $metrics</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
-<span><span class="co">#&gt;   combos_initial combos_all values_all horns horns_uniform</span></span>
-<span><span class="co">#&gt;            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>             15      <span style="text-decoration: underline;">21</span>861    1<span style="text-decoration: underline;">748</span>880 0.653           0.5</span></span>
+<span><span class="co">#&gt;   samples_initial samples_all values_all horns horns_uniform</span></span>
+<span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              15       <span style="text-decoration: underline;">21</span>861    1<span style="text-decoration: underline;">748</span>880 0.653           0.5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $frequency</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 4</span></span></span>
@@ -122,26 +122,26 @@ default should be informative enough for a start.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $results</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 21,861 × 2</span></span></span>
-<span><span class="co">#&gt;       id combination</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>     </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>     1 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>     2 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>     3 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>     4 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>     5 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>     6 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>     7 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>     8 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     9 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    10 <span style="color: #949494;">&lt;int [80]&gt;</span> </span></span>
+<span><span class="co">#&gt;       id sample    </span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>     1 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>     2 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>     3 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>     4 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>     5 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>     6 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>     7 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>     8 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     9 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    10 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 21,851 more rows</span></span></span></code></pre></div>
 <ul>
 <li><p><code>inputs</code> records the arguments in
-<code><a href="../reference/closure_combine.html">closure_combine()</a></code>.</p></li>
+<code><a href="../reference/closure_generate.html">closure_generate()</a></code>.</p></li>
 <li>
 <p><code>metrics</code> shows the number of possible samples that
 could have led to the reported summary statistics
-(<code>combos_all</code>) and the total number of all values found in
+(<code>samples_all</code>) and the total number of all values found in
 them (<code>values_all</code>).</p>
 <p>Importantly, it also features an index of variation in bounded scales
 (<code>horns</code>). It ranges from 0 to 1, where 0 means no
@@ -162,21 +162,41 @@ frequencies of values found by CLOSURE at each scale point. It also
 gives us the (absolute) frequency of values in the average sample that
 we saw in the plot above.</p></li>
 <li><p><code>results</code> stores all the samples that CLOSURE found
-(<code>combination</code>). Each has a unique number
+(<code>sample</code>). Each has a unique number
 (<code>id</code>).</p></li>
 </ul>
-<p>See <code><a href="../reference/closure_combine.html">closure_combine()</a></code> for more details.</p>
+<p>See <code><a href="../reference/closure_generate.html">closure_generate()</a></code> for more details.</p>
 <p>In addition to the bar plot, unsum offers an ECDF plot for CLOSURE
 results:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/closure_plot_ecdf.html">closure_plot_ecdf</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
 <p><img src="unsum_files/figure-html/unnamed-chunk-6-1.png" alt="Empirical cumulative distribution function (ECDF) plot of `data`, the CLOSURE output. The curve rises most steeply at the first and last scale values, indicating a strongly polarized distribution." width="100%"></p>
-<p>A caveat: it is strongly discouraged to run custom data
-transformations on the output of <code><a href="../reference/closure_combine.html">closure_combine()</a></code> before
-passing it into other <code>closure_*()</code> functions. The latter
-need input with a very specific format, and if you manipulate the data
-between two <code>closure_*()</code> calls, these assumptions may no
-longer hold. Some checks are in place to detect alterations, but they
+<p>What if you have a huge object with CLOSURE results that you want to
+save? Write it to disk with <code><a href="../reference/closure_write.html">closure_write()</a></code>:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># Temporary folder just for this example --</span></span>
+<span><span class="co"># use a real folder on your computer instead!</span></span>
+<span><span class="va">fake_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Saving the path in a variable</span></span>
+<span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_write</a></span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="va">fake_folder</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All files written to:</span></span>
+<span><span class="co">#&gt; /tmp/RtmpKHg2yD/CLOSURE-3_5-2-80-1-5-up_or_down-5/</span></span></code></pre></div>
+<p>This stores the results using the highly efficient Parquet format. It
+will only take a tiny fraction of a CSV file’s disk space.</p>
+<p>In your later session, read the data in from the folder to get the
+same CLOSURE list back:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">data_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_read</a></span><span class="op">(</span><span class="va">path_new_folder</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Same as the original data:</span></span>
+<span><span class="fu">waldo</span><span class="fu">::</span><span class="fu"><a href="https://waldo.r-lib.org/reference/compare.html" class="external-link">compare</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">data_new</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> No differences</span></span></code></pre></div>
+<p>A caveat: don’t modify the output of <code><a href="../reference/closure_generate.html">closure_generate()</a></code>
+before passing it into other <code>closure_*()</code> functions. The
+latter need input with a very specific format, and if you manipulate the
+data between two <code>closure_*()</code> calls, these assumptions may
+no longer hold. Some checks are in place to detect alterations, but they
 may not catch all of them.</p>
   </main>
 </div>

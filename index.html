@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Complete Listing of Original Samples of Underlying Raw Evidence • unsum</title>
+<title>Reconstruct Raw Data from Summary Statistics • unsum</title>
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="katex-auto.js"></script><script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Complete Listing of Original Samples of Underlying Raw Evidence">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Reconstruct Raw Data from Summary Statistics">
 <meta name="description" content="Reconstructs all possible raw data that could have led to reported summary statistics. Provides a wrapper for the Rust implementation of the CLOSURE algorithm.">
 <meta property="og:description" content="Reconstructs all possible raw data that could have led to reported summary statistics. Provides a wrapper for the Rust implementation of the CLOSURE algorithm.">
 </head>
@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">unsum</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,9 +58,9 @@
 </h1></div>
 <!-- badges: start -->
 <!-- badges: end -->
-<p>The goal of unsum is to <strong>un</strong>do <strong>sum</strong>marization: reconstruct all possible samples that may underlie a given set of summary statistics. It is currently implemented for sets of mean, SD, sample size, and scale bounds. This can be useful in error detection to identify impossible or implausible reported numbers.</p>
-<p>The package features <em>CLOSURE: Complete Listing of Original Samples of Underlying Raw Evidence</em>, a fast algorithm implemented in Rust.</p>
-<p>CLOSURE is exhaustive, which makes it computationally intensive. If your code takes too long to run, consider using <a href="https://lukaswallrich.github.io/rsprite2/" class="external-link">SPRITE</a> instead (see <em>Previous work</em> below).</p>
+<p>The goal of unsum is to <strong>un</strong>do <strong>sum</strong>marization: reconstruct all possible samples that may underlie a given set of summary statistics. It currently supports sets of mean, SD, sample size, and scale bounds. This can be useful in forensic metascience to identify impossible or implausible reported numbers.</p>
+<p>The package features <em>CLOSURE: Complete Listing of Original Samples of Underlying Raw Evidence</em>, a fast algorithm implemented in Rust. Go to <a href="https://lhdjung.github.io/unsum/articles/unsum.html"><em>Get started</em></a> to learn how to use it.</p>
+<p>CLOSURE is exhaustive, which makes it computationally intensive. If your code takes too long to run, consider using <a href="https://lukaswallrich.github.io/rsprite2//" class="external-link">SPRITE</a> instead (see <em>Previous work</em> below).</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
@@ -69,35 +69,36 @@
 <code class="sourceCode R"><span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"lhdjung/unsum"</span><span class="op">)</span></span>
 <span><span class="co"># or</span></span>
 <span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"lhdjung/unsum"</span><span class="op">)</span></span></code></pre></div>
-<p>Your R version should be 4.2.0 or more recent. To run unsum, you also need a Rust installation; see <code><a href="articles/install-rust.html">vignette("install-rust")</a></code>.</p>
+<p>Your R version should be 4.2.0 or more recent. To run unsum, you also need a Rust installation; see <a href="https://lhdjung.github.io/unsum/articles/install-rust.html"><em>Installing Rust for unsum</em></a>.</p>
 </div>
 <div class="section level2">
-<h2 id="get-started">Get started<a class="anchor" aria-label="anchor" href="#get-started"></a>
+<h2 id="demo">Demo<a class="anchor" aria-label="anchor" href="#demo"></a>
 </h2>
-<p>Start with <code><a href="reference/closure_combine.html">closure_combine()</a></code>, the package’s main function. It creates all possible samples:</p>
+<p>Start with <code><a href="reference/closure_generate.html">closure_generate()</a></code>, the package’s main function. It creates all possible samples:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/lhdjung/unsum" class="external-link">unsum</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/closure_combine.html">closure_combine</a></span><span class="op">(</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/closure_generate.html">closure_generate</a></span><span class="op">(</span></span>
 <span>  mean <span class="op">=</span> <span class="st">"2.7"</span>,</span>
 <span>  sd <span class="op">=</span> <span class="st">"1.9"</span>,</span>
 <span>  n <span class="op">=</span> <span class="fl">130</span>,</span>
 <span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  scale_max <span class="op">=</span> <span class="fl">5</span></span>
 <span><span class="op">)</span></span>
+<span><span class="co">#&gt; → Just a second...</span></span>
 <span></span>
 <span><span class="va">data</span></span>
 <span><span class="co">#&gt; $inputs</span></span>
-<span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
-<span><span class="co">#&gt;   mean  sd        n scale_min scale_max</span></span>
-<span><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1 2.7   1.9     130         1         5</span></span>
+<span><span class="co">#&gt; # A tibble: 1 × 7</span></span>
+<span><span class="co">#&gt;   mean  sd        n scale_min scale_max rounding   threshold</span></span>
+<span><span class="co">#&gt;   &lt;chr&gt; &lt;chr&gt; &lt;dbl&gt;     &lt;dbl&gt;     &lt;dbl&gt; &lt;chr&gt;          &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1 2.7   1.9     130         1         5 up_or_down         5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $metrics</span></span>
 <span><span class="co">#&gt; # A tibble: 1 × 5</span></span>
-<span><span class="co">#&gt;   combos_initial combos_all values_all horns horns_uniform</span></span>
-<span><span class="co">#&gt;            &lt;int&gt;      &lt;int&gt;      &lt;int&gt; &lt;dbl&gt;         &lt;dbl&gt;</span></span>
-<span><span class="co">#&gt; 1             15       5359     696670 0.881           0.5</span></span>
+<span><span class="co">#&gt;   samples_initial samples_all values_all horns horns_uniform</span></span>
+<span><span class="co">#&gt;             &lt;int&gt;       &lt;int&gt;      &lt;int&gt; &lt;dbl&gt;         &lt;dbl&gt;</span></span>
+<span><span class="co">#&gt; 1              15        5359     696670 0.881           0.5</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $frequency</span></span>
 <span><span class="co">#&gt; # A tibble: 5 × 4</span></span>
@@ -111,7 +112,7 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $results</span></span>
 <span><span class="co">#&gt; # A tibble: 5,359 × 2</span></span>
-<span><span class="co">#&gt;       id combination</span></span>
+<span><span class="co">#&gt;       id sample     </span></span>
 <span><span class="co">#&gt;    &lt;int&gt; &lt;list&gt;     </span></span>
 <span><span class="co">#&gt;  1     1 &lt;int [130]&gt;</span></span>
 <span><span class="co">#&gt;  2     2 &lt;int [130]&gt;</span></span>
@@ -124,7 +125,7 @@
 <span><span class="co">#&gt;  9     9 &lt;int [130]&gt;</span></span>
 <span><span class="co">#&gt; 10    10 &lt;int [130]&gt;</span></span>
 <span><span class="co">#&gt; # ℹ 5,349 more rows</span></span></code></pre></div>
-<p>Visualize the overall distribution of values found in the combinations:</p>
+<p>Visualize the overall distribution of values found in the samples:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="reference/closure_plot_bar.html">closure_plot_bar</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
 <p><img src="reference/figures/README-unnamed-chunk-3-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a somewhat polarized distribution." width="100%"></p>
@@ -132,14 +133,14 @@
 <div class="section level2">
 <h2 id="previous-work">Previous work<a class="anchor" aria-label="anchor" href="#previous-work"></a>
 </h2>
-<p><a href="https://lukaswallrich.github.io/rsprite2" class="external-link">SPRITE</a> generates random datasets that could have led to the reported statistics. CLOSURE is exhaustive, so it always finds all possible datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.</p>
+<p><a href="https://lukaswallrich.github.io/rsprite2/" class="external-link">SPRITE</a> generates random datasets that could have led to the reported statistics. CLOSURE is exhaustive, so it always finds all possible datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.</p>
 <p><a href="https://lhdjung.github.io/scrutiny/" class="external-link">GRIM and GRIMMER</a> test reported summary statistics for consistency, but CLOSURE is the ultimate consistency test: if it finds at least one distribution, the statistics are consistent; and if not, they cannot all be correct.</p>
 <p><a href="https://github.com/katherinemwood/corvids" class="external-link">CORVIDS</a> deserves credit as the first technique to reconstruct all possible underlying datasets. However, it takes very long to run, often prohibitively so. This is partly because the code is written in Python, but the algorithm is also inherently much more complex than CLOSURE.</p>
 </div>
 <div class="section level2">
 <h2 id="about">About<a class="anchor" aria-label="anchor" href="#about"></a>
 </h2>
-<p>The CLOSURE algorithm was originally written <a href="https://github.com/larigaldie-n/CLOSURE-Python" class="external-link">in Python</a> by Nathanael Larigaldie. The R package unsum provides easy access to an optimized implementation in Rust, <a href="https://crates.io/crates/closure-core" class="external-link">closure-core</a>, via the amazing <a href="https://extendr.github.io/" class="external-link">extendr</a> framework. Rust code tends to run much faster than R or Python code, which is required for many applications of CLOSURE.</p>
+<p>The CLOSURE algorithm was originally written <a href="https://github.com/larigaldie-n/CLOSURE-Python" class="external-link">in Python</a> by Nathanael Larigaldie. The R package unsum provides easy access to an optimized implementation in Rust, <a href="https://github.com/lhdjung/closure-core" class="external-link">closure-core</a>, via the amazing <a href="https://extendr.github.io/" class="external-link">extendr</a> framework. Rust code tends to run much faster than R or Python code, which is required for many applications of CLOSURE.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -170,6 +171,7 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>Lukas Jung <br><small class="roles"> Author, maintainer </small>   </li>
+<li><a href="authors.html">More about authors...</a></li>
 </ul>
 </div>
 
