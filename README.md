@@ -9,12 +9,14 @@
 
 The goal of unsum is to **un**do **sum**marization: reconstruct all
 possible samples that may underlie a given set of summary statistics. It
-is currently implemented for sets of mean, SD, sample size, and scale
-bounds. This can be useful in error detection to identify impossible or
+currently supports sets of mean, SD, sample size, and scale bounds. This
+can be useful in forensic metascience to identify impossible or
 implausible reported numbers.
 
 The package features *CLOSURE: Complete Listing of Original Samples of
-Underlying Raw Evidence*, a fast algorithm implemented in Rust.
+Underlying Raw Evidence*, a fast algorithm implemented in Rust. Go to
+[*Get started*](https://lhdjung.github.io/unsum/articles/unsum.html) to
+learn how to use it.
 
 CLOSURE is exhaustive, which makes it computationally intensive. If your
 code takes too long to run, consider using
@@ -33,9 +35,10 @@ pak::pak("lhdjung/unsum")
 ```
 
 Your R version should be 4.2.0 or more recent. To run unsum, you also
-need a Rust installation; see `vignette("install-rust")`.
+need a Rust installation; see [*Installing Rust for
+unsum*](https://lhdjung.github.io/unsum/articles/install-rust.html).
 
-## Get started
+## Demo
 
 Start with `closure_combine()`, the package’s main function. It creates
 all possible samples:
