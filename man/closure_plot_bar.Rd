@@ -19,7 +19,7 @@ closure_plot_bar(
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
+\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
 default, \code{"absolute-percent"}, displays the count of each scale value and
@@ -61,7 +61,7 @@ full list of possible raw data samples found by the CLOSURE algorithm.
 }
 \examples{
 # Create CLOSURE data first:
-data <- closure_combine(
+data <- closure_generate(
   mean = "3.5",
   sd = "2",
   n = 52,

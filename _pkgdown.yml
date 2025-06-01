@@ -11,7 +11,7 @@ template:
 reference:
 - title: Main CLOSURE function
 - contents:
-  - closure_combine
+  - closure_generate
 - title: Visualization
 - contents:
   - closure_plot_bar

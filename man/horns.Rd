@@ -39,7 +39,7 @@ uniform distribution within given scale limits. This can be useful as a
 point of reference for \code{horns()}.
 
 These two functions create the \code{horns} and \code{horns_uniform} columns in
-\code{\link[=closure_combine]{closure_combine()}}.
+\code{\link[=closure_generate]{closure_generate()}}.
 
 \code{horns_rescaled()} is a version of \code{horns()} that  is normalized by scale
 length, such that \code{0.5} always indicates a uniform distribution,

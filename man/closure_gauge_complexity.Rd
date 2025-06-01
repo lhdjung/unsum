@@ -22,10 +22,10 @@ and max if available: they constrain the possible values further.}
 Numeric (length 1).
 }
 \description{
-Before you run \code{\link[=closure_combine]{closure_combine()}}, you may want to get a
+Before you run \code{\link[=closure_generate]{closure_generate()}}, you may want to get a
 sense of the time it will take to run. Use \code{closure_gauge_complexity()} to
 compute a heuristics-based complexity score. For reference, here is how it
-determines the messages in \code{closure_combine()}:
+determines the messages in \code{closure_generate()}:
 
 \tabular{ll}{
 \strong{Value} \tab \strong{Message} \cr

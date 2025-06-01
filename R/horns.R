@@ -11,7 +11,7 @@
 #'   point of reference for `horns()`.
 #'
 #'   These two functions create the `horns` and `horns_uniform` columns in
-#'   [`closure_combine()`].
+#'   [`closure_generate()`].
 #'
 #'   `horns_rescaled()` is a version of `horns()` that  is normalized by scale
 #'   length, such that `0.5` always indicates a uniform distribution,

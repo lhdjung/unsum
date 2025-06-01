@@ -1,18 +1,18 @@
 #' Write CLOSURE results to disk (and read them back in)
 #'
 #' @description You can use `closure_write()` to save the results of
-#'   [`closure_combine()`] on your computer. A message will show the exact
+#'   [`closure_generate()`] on your computer. A message will show the exact
 #'   location.
 #'
 #'   The data are saved in a new folder as four separate files, one for each
-#'   tibble in `closure_combine()`'s output. The folder is named after the
-#'   parameters of `closure_combine()`.
+#'   tibble in `closure_generate()`'s output. The folder is named after the
+#'   parameters of `closure_generate()`.
 #'
 #'   `closure_read()` is the opposite: it reads those files back into R,
 #'   recreating the original CLOSURE list. This is useful for later analyses if
-#'   you don't want to re-run a lengthy `closure_combine()` call.
+#'   you don't want to re-run a lengthy `closure_generate()` call.
 #'
-#' @param data List returned by `closure_combine()`.
+#' @param data List returned by `closure_generate()`.
 #' @param path String (length 1). File path where `closure_write()` will create
 #'   a new folder with the results. By default, the current working directory.
 #'   For `closure_read()`, the path to that new folder.
@@ -23,10 +23,10 @@
 #'
 #'   \preformatted{CLOSURE-3_5-1_0-90-1-5-up_or_down-5}
 #'
-#'   The order is the same as in `closure_combine()`:
+#'   The order is the same as in `closure_generate()`:
 #'
 #'   \preformatted{
-#'   closure_combine(
+#'   closure_generate(
 #'     mean = "3.5",
 #'     sd = "1.0",
 #'     n = 90,
@@ -55,7 +55,7 @@
 #' @export
 #'
 #' @examples
-#' data <- closure_combine(
+#' data <- closure_generate(
 #'   mean = "2.7",
 #'   sd = "0.6",
 #'   n = 45,
@@ -76,7 +76,7 @@
 #' closure_read(path_new_folder)
 closure_write <- function(data, path = ".") {
 
-  check_closure_combine(data)
+  check_closure_generate(data)
   check_value(path, "character")
 
   slash <- if (Sys.info()[["sysname"]] == "Windows") "\\" else "/"
@@ -201,7 +201,7 @@ closure_read <- function(path) {
       format_results_list()
   )
 
-  class(out$inputs) <- c("closure_combine", class(out$inputs))
+  class(out$inputs) <- c("closure_generate", class(out$inputs))
 
   # Parse mean and SD from the folder name
   mean_sd_str <- strsplit(name_dir, "-")[[1]][2:3] |>
@@ -255,7 +255,7 @@ closure_read <- function(path) {
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
-    expr = check_closure_combine(out),
+    expr = check_closure_generate(out),
     error = function(e) {
       cli::cli_abort(
         message = c(

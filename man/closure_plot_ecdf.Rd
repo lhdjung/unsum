@@ -14,7 +14,7 @@ closure_plot_ecdf(
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_combine]{closure_combine()}}.}
+\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
 
 \item{samples}{String (length 1). How to aggregate the samples? Either draw a
 single ECDF line for the average sample (\code{"mean"}, the default); or draw a
@@ -53,7 +53,7 @@ all possible datasets in a single line by default.
 }
 \examples{
 # Create CLOSURE data first:
-data <- closure_combine(
+data <- closure_generate(
   mean = "3.5",
   sd = "2",
   n = 52,

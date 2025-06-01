@@ -2,7 +2,7 @@
 ## goes here
 
 # # Note: These data should be equivalent to:
-# closure_combine(
+# closure_generate(
 #   mean = "3.5",
 #   sd = "0.5",
 #   n = 52,
