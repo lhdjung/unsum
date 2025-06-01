@@ -22,12 +22,12 @@ Imports:
     scales,
     tibble
 Collate: 
+    'utils.R'
+    'count.R'
     'extendr-wrappers.R'
     'performance.R'
     'horns.R'
-    'utils.R'
-    'count.R'
-    'combine.R'
+    'generate.R'
     'plot.R'
     'read-write.R'
 Config/rextendr/version: 0.4.0.9000
