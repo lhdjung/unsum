@@ -1,13 +1,13 @@
 #' Count CLOSURE samples in advance
 #'
-#' @description Determine how many samples [`closure_combine()`] would find for
+#' @description Determine how many samples [`closure_generate()`] would find for
 #'   a given set of summary statistics.
 #'
 #'   - `closure_count_initial()` only counts the first round of samples, from
 #'   which all other ones would be generated.
 #'   - There is currently no `closure_count_all()` function.
 #'
-#'   This can help predict how much time [`closure_combine()`] would take, and
+#'   This can help predict how much time [`closure_generate()`] would take, and
 #'   avoid prohibitively long runs.
 #'
 #' @param scale_min,scale_max Integers (length 1 each). Minimum and maximum of

@@ -3,17 +3,17 @@ utils::globalVariables(c(".", "value", ".data"))
 
 
 # Error if input is not an unchanged CLOSURE list.
-check_closure_combine <- function(data) {
+check_closure_generate <- function(data) {
   top_level_is_correct <-
     is.list(data) &&
     length(data) == 4L &&
     identical(names(data), c("inputs", "metrics", "frequency", "results")) &&
-    inherits(data$inputs, "closure_combine")
+    inherits(data$inputs, "closure_generate")
 
   if (!top_level_is_correct) {
     cli::cli_abort(
       message = c(
-        "Input must be the output of `closure_combine()`.",
+        "Input must be the output of `closure_generate()`.",
         "!" = "Such output is a list with the elements \
         \"inputs\", \"metrics\", \"frequency\", and \"results\"."
       ),
@@ -22,10 +22,10 @@ check_closure_combine <- function(data) {
   }
 
   # Check the formats of the three tibbles that are elements of `data`, i.e., of
-  # the output of `closure_combine()`:
+  # the output of `closure_generate()`:
 
   # Inputs (1 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$inputs,
     name = "inputs",
     dims = c(1L, 7L),
@@ -50,7 +50,7 @@ check_closure_combine <- function(data) {
   )
 
   # Metrics (2 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$metrics,
     name = "metrics",
     dims = c(1L, 5L),
@@ -64,7 +64,7 @@ check_closure_combine <- function(data) {
   )
 
   # Frequency (3 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$frequency,
     name = "frequency",
     dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 4),
@@ -77,7 +77,7 @@ check_closure_combine <- function(data) {
   )
 
   # Results (4 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$results,
     name = "results",
     dims = c(data$metrics$samples_all, 2L),
@@ -157,8 +157,8 @@ check_closure_combine <- function(data) {
 }
 
 
-# Check each element of `closure_combine()` for correct format.
-check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
+# Check each element of `closure_generate()` for correct format.
+check_closure_generate_tibble <- function(x, name, dims, col_names_types) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
     all(dim(x) == dims) &&
@@ -198,7 +198,7 @@ check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
 }
 
 
-# Borrowed from scrutiny's internals and used within `check_closure_combine()`,
+# Borrowed from scrutiny's internals and used within `check_closure_generate()`,
 # this checks whether a vector is a linear sequence (1, 2, 3) or not (3, 1, 7).
 is_seq_linear_basic <- function(x) {
   if (length(x) < 3L) {
@@ -214,10 +214,10 @@ is_seq_linear_basic <- function(x) {
 }
 
 
-# Functions like `closure_combine()` that take `scale_min` and `scale_max`
+# Functions like `closure_generate()` that take `scale_min` and `scale_max`
 # arguments need to make sure that min <= max. Functions that take the mean into
 # account also need to check that it is within these bounds. Such functions
-# include `closure_combine()` but not `closure_count_initial()`.
+# include `closure_generate()` but not `closure_count_initial()`.
 check_scale <- function(
     scale_min,
     scale_max,
@@ -313,7 +313,7 @@ check_type <- function(x, t, n = 1, name = NULL) {
 }
 
 
-# This helper creates the `frequency` part of `closure_combine()`'s output.
+# This helper creates the `frequency` part of `closure_generate()`'s output.
 summarize_frequencies <- function(results, scale_min, scale_max, samples_all) {
   # Flatten the list of integer vectors into a single integer vector, then
   # create a frequency table for the values in that vector.

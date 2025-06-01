@@ -1,6 +1,6 @@
 #' Create CLOSURE samples
 #'
-#' @description Call `closure_combine()` to run the CLOSURE algorithm on a given
+#' @description Call `closure_generate()` to run the CLOSURE algorithm on a given
 #'   set of summary statistics.
 #'
 #'   This can take seconds, minutes, or longer, depending on the input. Wide
@@ -76,7 +76,7 @@
 #' @examples
 #' # High spread often leads to many samples --
 #' # here, 3682.
-#' data_high <- closure_combine(
+#' data_high <- closure_generate(
 #'   mean = "3.5",
 #'   sd = "1.7",
 #'   n = 70,
@@ -92,7 +92,7 @@
 #'
 #' # Low spread, only 3 samples, and not all
 #' # scale values are possible.
-#' data_low <- closure_combine(
+#' data_low <- closure_generate(
 #'   mean = "2.9",
 #'   sd = "0.5",
 #'   n = 70,
@@ -125,7 +125,7 @@
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
 
-closure_combine <- function(
+closure_generate <- function(
   mean,
   sd,
   n,
@@ -225,7 +225,7 @@ closure_combine <- function(
   freqs <- summarize_frequencies(results, scale_min, scale_max, n_samples_all)
 
   # Insert the samples into a data frame, along with summary statistics.
-  # The S3 class "closure_combine" will be recognized by downstream functions,
+  # The S3 class "closure_generate" will be recognized by downstream functions,
   # such as `closure_plot_bar()`. Three elements here are created using the
   # low-level `new_tibble()` instead of `tibble()`: once for passing the S3
   # class, and twice for performance.
@@ -241,7 +241,7 @@ closure_combine <- function(
         threshold = threshold
       ),
       nrow = 1L,
-      class = "closure_combine"
+      class = "closure_generate"
     ),
     metrics = tibble::new_tibble(
       x = list(
