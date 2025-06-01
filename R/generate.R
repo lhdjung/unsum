@@ -1,10 +1,10 @@
-#' Create CLOSURE samples
+#' Generate CLOSURE samples
 #'
-#' @description Call `closure_generate()` to run the CLOSURE algorithm on a given
-#'   set of summary statistics.
+#' @description Call `closure_generate()` to run the CLOSURE algorithm on a
+#'   given set of summary statistics.
 #'
 #'   This can take seconds, minutes, or longer, depending on the input. Wide
-#'   variance and large samples often lead to many samples, i.e., long runtimes.
+#'   variance and large `n` often lead to many samples, i.e., long runtimes.
 #'   These effects interact dynamically. For example, with large `n`, even very
 #'   small increases in `sd` can greatly increase runtime and number of values
 #'   found.
@@ -30,6 +30,9 @@
 #'   `5`.
 #' @param warn_if_empty Logical (length 1). Should a warning be shown if no
 #'   samples are found? Default is `TRUE`.
+#' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
+#'   very long, should the function prompt you to proceed or abort in an
+#'   interactive setting? Default is `TRUE`.
 #' @param rounding_error_mean,rounding_error_sd Numeric (length 1 each). Option
 #'   to manually set the rounding error around `mean` and `sd`. This is meant
 #'   for development and might be removed in the future, so most users can
@@ -122,6 +125,7 @@
 # scale_min <- 1
 # scale_max <- 8
 # warn_if_empty <- TRUE
+# ask_to_proceed <- TRUE
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
 
@@ -134,6 +138,7 @@ closure_generate <- function(
   rounding = "up_or_down",
   threshold = 5,
   warn_if_empty = TRUE,
+  ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 ) {
@@ -146,6 +151,7 @@ closure_generate <- function(
   check_value(scale_min, "double")
   check_value(scale_max, "double")
   check_value(warn_if_empty, "logical")
+  check_value(ask_to_proceed, "logical")
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
@@ -182,6 +188,9 @@ closure_generate <- function(
     scale_max = scale_max
   )
 
+  # This might be set to `TRUE` below
+  need_to_ask <- FALSE
+
   msg_wait <- if (complexity < 1) {
     NULL
   } else if (complexity < 2) {
@@ -189,14 +198,31 @@ closure_generate <- function(
   } else if (complexity < 3) {
     "This could take a minute..."
   } else {
-    "NOTE: Long runtime ahead!"
+    # With very high complexity, the user may be asked whether to proceed. The
+    # need to ask will then depend on the `ask_to_proceed` argument, but there
+    # will be no prompt unless the setting is interactive.
+    need_to_ask <- ask_to_proceed && interactive()
+    "ATTENTION: Long runtime ahead!"
   }
 
-  # Using `cli_alert()` for all three messages, even though the last one is
-  # meant to be a warning. This is because `cli_warn()` may defer until after
-  # the samples are computed, defeating its purpose here.
+  # Simplest case here: just a message (on the bottom). Otherwise, the
+  # complexity is so high that the user is asked whether to proceed.
   if (!is.null(msg_wait)) {
-    cli::cli_alert(msg_wait)
+    if (need_to_ask) {
+      cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
+      selection <- utils::menu(
+        choices = c("Yes, wait", "No, abort"),
+        title = "Please enter 1 or 2:"
+      )
+      if (selection == 1L) {
+        cli::cli_alert_info("Running CLOSURE, please wait...")
+      } else {
+        cli::cli_alert_info("Aborting `closure_generate()`.")
+        return(invisible(NULL))
+      }
+    } else {
+      cli::cli_alert(msg_wait)
+    }
   }
 
   # Compute CLOSURE samples by calling into pre-compiled Rust code.

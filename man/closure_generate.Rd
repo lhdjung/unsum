@@ -2,7 +2,7 @@
 % Please edit documentation in R/generate.R
 \name{closure_generate}
 \alias{closure_generate}
-\title{Create CLOSURE samples}
+\title{Generate CLOSURE samples}
 \usage{
 closure_generate(
   mean,
@@ -13,6 +13,7 @@ closure_generate(
   rounding = "up_or_down",
   threshold = 5,
   warn_if_empty = TRUE,
+  ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 )
@@ -41,6 +42,10 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 
 \item{warn_if_empty}{Logical (length 1). Should a warning be shown if no
 samples are found? Default is \code{TRUE}.}
+
+\item{ask_to_proceed}{Logical (length 1). If the runtime is predicted to be
+very long, should the function prompt you to proceed or abort in an
+interactive setting? Default is \code{TRUE}.}
 
 \item{rounding_error_mean, rounding_error_sd}{Numeric (length 1 each). Option
 to manually set the rounding error around \code{mean} and \code{sd}. This is meant
@@ -83,11 +88,11 @@ found by CLOSURE.
 }
 }
 \description{
-Call \code{closure_generate()} to run the CLOSURE algorithm on a given
-set of summary statistics.
+Call \code{closure_generate()} to run the CLOSURE algorithm on a
+given set of summary statistics.
 
 This can take seconds, minutes, or longer, depending on the input. Wide
-variance and large samples often lead to many samples, i.e., long runtimes.
+variance and large \code{n} often lead to many samples, i.e., long runtimes.
 These effects interact dynamically. For example, with large \code{n}, even very
 small increases in \code{sd} can greatly increase runtime and number of values
 found.
