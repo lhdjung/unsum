@@ -4,9 +4,8 @@
 //! all possible distributions of raw data from summary statistics. It is not
 //! about the Rust feature called closure.
 //! 
-//! The only API users are likely to need is `dfs_parallel()`. This function applies
-//! the lower-level `dfs_branch()` in parallel and writes results to disk (currently
-//! into a CSV file, but this may change in the future.)
+//! The crate is mostly meant to serve as a backend for the R package [unsum](https://lhdjung.github.io/unsum/).
+//! The only API users are likely to need is `dfs_parallel()`.
 //! 
 //! Most of the code was written by Claude 3.5, translating Python code by Nathanael Larigaldie.
 
@@ -55,12 +54,39 @@ struct Combination<T, U> {
     running_m2: T,
 }
 
+/// Count first set of integers
+/// 
+/// The first set of integers that can be formed
+/// given a range defined by `scale_min` and `scale_max`.
+/// This function calculates the number of unique pairs (i, j) where i and j are integers
+/// within the specified range, and i <= j.
+/// # Arguments
+/// * `scale_min` - The minimum value of the scale.
+/// * `scale_max` - The maximum value of the scale.
+/// # Returns
+/// The total number of unique combinations of integers within the specified range.
 pub fn count_initial_combinations(scale_min: i32, scale_max: i32) -> i32 {
     let range_size = scale_max - scale_min + 1;
     (range_size * (range_size + 1)) / 2
 }
 
-// takes in summary statistics, top level function
+
+/// Generate all valid combinations
+/// 
+/// `dfs_parallel()` computes all valid combinations of integers that
+/// match the given summary statistics.
+///
+/// # Arguments
+/// * `mean` - The mean of the target distribution.
+/// * `sd` - The standard deviation of the target distribution.
+/// * `n` - The number of elements in the target distribution.
+/// * `scale_min` - The minimum value of the scale.
+/// * `scale_max` - The maximum value of the scale.
+/// * `rounding_error_mean` - The rounding error for the mean.
+/// * `rounding_error_sd` - The rounding error for the standard deviation.
+/// # Returns
+/// A vector of vectors, where each inner vector represents a valid combination of integers
+/// that matches the given summary statistics.
 pub fn dfs_parallel<T, U>(
     mean: T,
     sd: T,

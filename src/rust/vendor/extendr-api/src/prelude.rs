@@ -38,7 +38,7 @@ pub use crate::{
 
 pub use super::wrapper::{
     AltComplexImpl, AltIntegerImpl, AltLogicalImpl, AltRawImpl, AltRealImpl, AltStringImpl, Altrep,
-    AltrepImpl, RArray, RColumn, RMatrix, RMatrix3D,
+    AltrepImpl, RArray, RColumn, RMatrix, RMatrix3D, RMatrix4D, RMatrix5D,
 };
 
 #[cfg(use_r_altlist)]
@@ -72,10 +72,10 @@ pub use super::scalar::*;
 pub use super::Nullable::*;
 
 #[cfg(feature = "ndarray")]
-pub use ::ndarray::*;
+pub use ::ndarray;
 
 #[cfg(feature = "either")]
 pub use ::either::*;
 
 #[cfg(feature = "faer")]
-pub use ::faer::*;
+pub use ::faer;

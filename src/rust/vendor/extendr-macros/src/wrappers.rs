@@ -124,6 +124,7 @@ pub(crate) fn make_function_wrappers(
         .iter_mut()
         .map(|input| translate_meta_arg(input, self_ty))
         .collect::<syn::Result<Vec<Expr>>>()?;
+    let len_meta_args = meta_args.len();
 
     // Generate wrappers for rust functions to be called from R.
     // Example:
@@ -189,8 +190,14 @@ pub(crate) fn make_function_wrappers(
             let return_ref_to_self = #call_name(#actual_args);
 
             #(
+            let arg_ref = extendr_api::R_ExternalPtrAddr(#sexp_args)
+                .cast::<Box<dyn std::any::Any>>()
+                .as_ref()
+                .unwrap()
+                .downcast_ref::<#self_ty>()
+                .unwrap();
             if std::ptr::addr_eq(
-                extendr_api::R_ExternalPtrAddr(#sexp_args),
+                arg_ref,
                 std::ptr::from_ref(return_ref_to_self)) {
                     return Ok(extendr_api::Robj::from_sexp(#sexp_args))
                 }
@@ -256,9 +263,11 @@ pub(crate) fn make_function_wrappers(
     wrappers.push(parse_quote!(
         #[allow(non_snake_case)]
         fn #meta_name(metadata: &mut Vec<extendr_api::metadata::Func>) {
-            let args = vec![
-                #( #meta_args, )*
-            ];
+            let mut args = Vec::with_capacity(#len_meta_args);
+            #(
+                args.push(#meta_args);
+            )*
+            let args = args;
 
             metadata.push(extendr_api::metadata::Func {
                 doc: #doc_string,
