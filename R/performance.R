@@ -1,9 +1,9 @@
 #' Heuristic to predict CLOSURE runtime
 #'
-#' @description Before you run [`closure_combine()`], you may want to get a
+#' @description Before you run [`closure_generate()`], you may want to get a
 #'   sense of the time it will take to run. Use `closure_gauge_complexity()` to
 #'   compute a heuristics-based complexity score. For reference, here is how it
-#'   determines the messages in `closure_combine()`:
+#'   determines the messages in `closure_generate()`:
 #'
 #' \tabular{ll}{
 #'   \strong{Value} \tab \strong{Message} \cr
@@ -24,7 +24,7 @@
 #'   total progress across all cores; and especially to display such information
 #'   on the R level.
 #'
-#' @inheritParams closure_combine
+#' @inheritParams closure_generate
 #'
 #' @returns Numeric (length 1).
 #'

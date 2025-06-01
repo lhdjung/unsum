@@ -40,13 +40,13 @@ unsum*](https://lhdjung.github.io/unsum/articles/install-rust.html).
 
 ## Demo
 
-Start with `closure_combine()`, the package’s main function. It creates
+Start with `closure_generate()`, the package’s main function. It creates
 all possible samples:
 
 ``` r
 library(unsum)
 
-data <- closure_combine(
+data <- closure_generate(
   mean = "2.7",
   sd = "1.9",
   n = 130,

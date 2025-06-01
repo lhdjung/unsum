@@ -1,6 +1,6 @@
 
 # Use R wrapper around Rust implementation
-data_r <- closure_combine(
+data_r <- closure_generate(
   mean = "3.5",
   sd = "0.5",
   n = 52,
@@ -32,7 +32,7 @@ test_that("All implementations return identical results (after sorting columns)"
 # waldo::compare(.data_python, data_r,       x_arg = "python", y_arg = "r")
 
 
-f_absolute_centered <- closure_combine(
+f_absolute_centered <- closure_generate(
   mean = "4.0",
   sd = "1.0",
   n = 50,
@@ -40,7 +40,7 @@ f_absolute_centered <- closure_combine(
   scale_max = 7
 )$frequency$f_absolute
 
-f_absolute_skewed_left <- closure_combine(
+f_absolute_skewed_left <- closure_generate(
   mean = "2.5",
   sd = "1.7",
   n = 50,
@@ -48,7 +48,7 @@ f_absolute_skewed_left <- closure_combine(
   scale_max = 7
 )$frequency$f_absolute
 
-f_absolute_skewed_right <- closure_combine(
+f_absolute_skewed_right <- closure_generate(
   mean = "5.3",
   sd = "1.7",
   n = 50,

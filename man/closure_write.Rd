@@ -10,7 +10,7 @@ closure_write(data, path = ".")
 closure_read(path)
 }
 \arguments{
-\item{data}{List returned by \code{closure_combine()}.}
+\item{data}{List returned by \code{closure_generate()}.}
 
 \item{path}{String (length 1). File path where \code{closure_write()} will create
 a new folder with the results. By default, the current working directory.
@@ -22,16 +22,16 @@ For \code{closure_read()}, the path to that new folder.}
 }
 \description{
 You can use \code{closure_write()} to save the results of
-\code{\link[=closure_combine]{closure_combine()}} on your computer. A message will show the exact
+\code{\link[=closure_generate]{closure_generate()}} on your computer. A message will show the exact
 location.
 
 The data are saved in a new folder as four separate files, one for each
-tibble in \code{closure_combine()}'s output. The folder is named after the
-parameters of \code{closure_combine()}.
+tibble in \code{closure_generate()}'s output. The folder is named after the
+parameters of \code{closure_generate()}.
 
 \code{closure_read()} is the opposite: it reads those files back into R,
 recreating the original CLOSURE list. This is useful for later analyses if
-you don't want to re-run a lengthy \code{closure_combine()} call.
+you don't want to re-run a lengthy \code{closure_generate()} call.
 }
 \details{
 \code{closure_write()} saves the first three tibbles as CSVs, but the
@@ -51,10 +51,10 @@ periods. For example:
 
 \preformatted{CLOSURE-3_5-1_0-90-1-5-up_or_down-5}
 
-The order is the same as in \code{closure_combine()}:
+The order is the same as in \code{closure_generate()}:
 
 \preformatted{
-  closure_combine(
+  closure_generate(
     mean = "3.5",
     sd = "1.0",
     n = 90,
@@ -67,7 +67,7 @@ The order is the same as in \code{closure_combine()}:
 }
 
 \examples{
-data <- closure_combine(
+data <- closure_generate(
   mean = "2.7",
   sd = "0.6",
   n = 45,

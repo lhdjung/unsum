@@ -5,7 +5,7 @@
 #'   For each scale value, the bars show how often this value appears in the
 #'   full list of possible raw data samples found by the CLOSURE algorithm.
 #'
-#' @param data List returned by [`closure_combine()`].
+#' @param data List returned by [`closure_generate()`].
 #' @param frequency String (length 1). What should the bars display? The
 #'   default, `"absolute-percent"`, displays the count of each scale value and
 #'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
@@ -35,7 +35,7 @@
 #'
 #' @examples
 #' # Create CLOSURE data first:
-#' data <- closure_combine(
+#' data <- closure_generate(
 #'   mean = "3.5",
 #'   sd = "2",
 #'   n = 52,
@@ -81,7 +81,7 @@ closure_plot_bar <- function(
 ) {
 
   # Check inputs
-  check_closure_combine(data)
+  check_closure_generate(data)
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
 
@@ -246,7 +246,7 @@ closure_plot_bar <- function(
 #'
 #' @examples
 #' # Create CLOSURE data first:
-#' data <- closure_combine(
+#' data <- closure_generate(
 #'   mean = "3.5",
 #'   sd = "2",
 #'   n = 52,
@@ -274,7 +274,7 @@ closure_plot_ecdf <- function(
   pad = TRUE
 ) {
 
-  check_closure_combine(data)
+  check_closure_generate(data)
   samples <- rlang::arg_match(samples)
 
   # For the reference line and the x-axis

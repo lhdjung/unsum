@@ -3,7 +3,7 @@ n <- 275
 
 result <- bench::mark(
   data_low = {
-    closure_combine(
+    closure_generate(
       mean = "3.5",
       sd = "0.5",
       n = n,
@@ -12,7 +12,7 @@ result <- bench::mark(
     )
   },
   # data_high = {
-  #   closure_combine(
+  #   closure_generate(
   #     mean = "3.5",
   #     sd = "2",
   #     n = 200,

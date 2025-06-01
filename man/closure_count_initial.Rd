@@ -14,7 +14,7 @@ the scales to which the reported statistics refer.}
 Integer (length 1).
 }
 \description{
-Determine how many samples \code{\link[=closure_combine]{closure_combine()}} would find for
+Determine how many samples \code{\link[=closure_generate]{closure_generate()}} would find for
 a given set of summary statistics.
 \itemize{
 \item \code{closure_count_initial()} only counts the first round of samples, from
@@ -22,7 +22,7 @@ which all other ones would be generated.
 \item There is currently no \code{closure_count_all()} function.
 }
 
-This can help predict how much time \code{\link[=closure_combine]{closure_combine()}} would take, and
+This can help predict how much time \code{\link[=closure_generate]{closure_generate()}} would take, and
 avoid prohibitively long runs.
 }
 \examples{

@@ -44,12 +44,12 @@ Your R version should be 4.2.0 or more recent. To run unsum, you also need a Rus
 
 ## Demo
 
-Start with `closure_combine()`, the package's main function. It creates all possible samples:
+Start with `closure_generate()`, the package's main function. It creates all possible samples:
 
 ```{r example}
 library(unsum)
 
-data <- closure_combine(
+data <- closure_generate(
   mean = "2.7",
   sd = "1.9",
   n = 130,

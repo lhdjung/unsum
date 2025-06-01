@@ -25,12 +25,12 @@ library(unsum)
 
 Here is a brief walkthrough of using CLOSURE in unsum.
 
-Call `closure_combine()` to run the CLOSURE algorithm. Enter mean, SD, and sample size that you read in a paper. For `scale_min` and `scale_max`, use the empirical minimum and maximum if available. Otherwise, use the more fundamental scale bounds, e.g., `1` and `7` for a 1-7 scale.
+Call `closure_generate()` to run the CLOSURE algorithm. Enter mean, SD, and sample size that you read in a paper. For `scale_min` and `scale_max`, use the empirical minimum and maximum if available. Otherwise, use the more fundamental scale bounds, e.g., `1` and `7` for a 1-7 scale.
 
 The `mean` and `sd` arguments must be strings to preserve trailing zeros. Note that CLOSURE can only be used if the values must be integers: e.g., a value can be 2 or 3, but not 2.5.
 
 ```{r}
-data <- closure_combine(
+data <- closure_generate(
   mean = "3.5",
   sd = "2",
   n = 80,
@@ -59,7 +59,7 @@ Now let's look at the results themselves:
 data
 ```
 
--   `inputs` records the arguments in `closure_combine()`.
+-   `inputs` records the arguments in `closure_generate()`.
 
 -   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`samples_all`) and the total number of all values found in them (`values_all`).
 
@@ -71,7 +71,7 @@ data
 
 -   `results` stores all the samples that CLOSURE found (`sample`). Each has a unique number (`id`).
 
-See `closure_combine()` for more details.
+See `closure_generate()` for more details.
 
 In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
 
@@ -105,4 +105,4 @@ data_new <- closure_read(path_new_folder)
 waldo::compare(data, data_new)
 ```
 
-A caveat: don't modify the output of `closure_combine()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
+A caveat: don't modify the output of `closure_generate()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
