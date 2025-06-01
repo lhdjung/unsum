@@ -2,7 +2,7 @@
 % Please edit documentation in R/combine.R
 \name{closure_combine}
 \alias{closure_combine}
-\title{Create CLOSURE combinations}
+\title{Create CLOSURE samples}
 \usage{
 closure_combine(
   mean,
@@ -40,7 +40,7 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 \code{5}.}
 
 \item{warn_if_empty}{Logical (length 1). Should a warning be shown if no
-combinations are found? Default is \code{TRUE}.}
+samples are found? Default is \code{TRUE}.}
 
 \item{rounding_error_mean, rounding_error_sd}{Numeric (length 1 each). Option
 to manually set the rounding error around \code{mean} and \code{sd}. This is meant
@@ -53,12 +53,12 @@ Named list of four tibbles (data frames):
 \item \strong{\code{inputs}}: Arguments to this function.
 \item \strong{\code{metrics}}:
 \itemize{
-\item \code{combos_initial}: integer. The basis for computing CLOSURE results,
+\item \code{samples_initial}: integer. The basis for computing CLOSURE results,
 based on scale range only. See \code{\link[=closure_count_initial]{closure_count_initial()}}.
-\item \code{combos_all}: integer. Number of all combinations. Equal to the number
+\item \code{samples_all}: integer. Number of all samples. Equal to the number
 of rows in \code{results}.
 \item \code{values_all}: integer. Number of all individual values found. Equal to
-\code{n * combos_all}.
+\code{n * samples_all}.
 \item \code{horns}: double. Measure of dispersion for bounded scales; see
 \code{\link[=horns]{horns()}}.
 \item \code{horns_uniform}: double. Value \code{horns} would have if the reconstructed
@@ -68,17 +68,17 @@ sample was uniformly distributed.
 \itemize{
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
-\item \code{f_average}: Count of scale values in the mean \code{results} combination.
+\item \code{f_average}: Count of scale values in the mean \code{results} sample.
 \item \code{f_absolute}: integer. Count of individual scale values found in the
-\code{results} combinations.
+\code{results} samples.
 \item \code{f_relative}: double. Values' share of total values found.
 }
 \item \strong{\code{results}}:
 \itemize{
-\item \code{id}: integer. Runs from \code{1} to \code{combos_all}.
-\item \code{combination}: list of integer vectors. Each of these vectors has
-length \code{n}. It is a combination (or distribution) of individual scale
-values found by CLOSURE.
+\item \code{id}: integer. Runs from \code{1} to \code{samples_all}.
+\item \code{sample}: list of integer vectors. Each of these vectors has
+length \code{n}. It is a sample (or distribution) of individual scale values
+found by CLOSURE.
 }
 }
 }
@@ -87,10 +87,10 @@ Call \code{closure_combine()} to run the CLOSURE algorithm on a given
 set of summary statistics.
 
 This can take seconds, minutes, or longer, depending on the input. Wide
-variance and large samples often lead to many combinations, i.e., long
-runtimes. These effects interact dynamically. For example, with large \code{n},
-even very small increases in \code{sd} can greatly increase runtime and number
-of values found.
+variance and large samples often lead to many samples, i.e., long runtimes.
+These effects interact dynamically. For example, with large \code{n}, even very
+small increases in \code{sd} can greatly increase runtime and number of values
+found.
 
 If the inputs are inconsistent, there is no solution. The function will
 then return empty results and throw a warning.
@@ -106,7 +106,7 @@ those that do will most likely lead to empty results.
 }
 
 \examples{
-# High spread often leads to many combinations --
+# High spread often leads to many samples --
 # here, 3682.
 data_high <- closure_combine(
   mean = "3.5",
@@ -122,7 +122,7 @@ data_high
 # by following up with `closure_plot_bar()`:
 closure_plot_bar(data_high)
 
-# Low spread, only 3 combinations, and not all
+# Low spread, only 3 samples, and not all
 # scale values are possible.
 data_low <- closure_combine(
   mean = "2.9",

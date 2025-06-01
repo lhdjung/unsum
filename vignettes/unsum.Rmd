@@ -61,7 +61,7 @@ data
 
 -   `inputs` records the arguments in `closure_combine()`.
 
--   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`combos_all`) and the total number of all values found in them (`values_all`).
+-   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`samples_all`) and the total number of all values found in them (`values_all`).
 
     Importantly, it also features an index of variation in bounded scales (`horns`). It ranges from 0 to 1, where 0 means no variability and 1 would be a sample evenly split between the extremes — here, 1, and 5 — with no values in between. The reference value `horns_uniform` shows which value `horns` would have if the mean sample was uniformly distributed. This is 0.5 because of the 1-5 scale. See `horns()` for more details.
 
@@ -69,7 +69,7 @@ data
 
 -   `frequency` shows the absolute and relative frequencies of values found by CLOSURE at each scale point. It also gives us the (absolute) frequency of values in the average sample that we saw in the plot above.
 
--   `results` stores all the samples that CLOSURE found (`combination`). Each has a unique number (`id`).
+-   `results` stores all the samples that CLOSURE found (`sample`). Each has a unique number (`id`).
 
 See `closure_combine()` for more details.
 

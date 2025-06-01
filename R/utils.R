@@ -55,8 +55,8 @@ check_closure_combine <- function(data) {
     name = "metrics",
     dims = c(1L, 5L),
     col_names_types = list(
-      "combos_initial" = "integer",
-      "combos_all" = "integer",
+      "samples_initial" = "integer",
+      "samples_all" = "integer",
       "values_all" = "integer",
       "horns" = "double",
       "horns_uniform" = "double"
@@ -80,10 +80,10 @@ check_closure_combine <- function(data) {
   check_closure_combine_tibble(
     x = data$results,
     name = "results",
-    dims = c(data$metrics$combos_all, 2L),
+    dims = c(data$metrics$samples_all, 2L),
     col_names_types = list(
       "id" = "integer",
-      "combination" = "list"
+      "sample" = "list"
     )
   )
 
@@ -128,7 +128,7 @@ check_closure_combine <- function(data) {
     )
   }
 
-  all_results_integer <- data$results$combination |>
+  all_results_integer <- data$results$sample |>
     vapply(
       FUN = function(x) typeof(x) == "integer",
       FUN.VALUE = logical(1)
@@ -141,7 +141,7 @@ check_closure_combine <- function(data) {
 
   n <- data$inputs$n
 
-  all_results_length_n <- data$results$combination |>
+  all_results_length_n <- data$results$sample |>
     vapply(
       FUN = function(x) length(x) == n,
       FUN.VALUE = logical(1)
@@ -314,14 +314,14 @@ check_type <- function(x, t, n = 1, name = NULL) {
 
 
 # This helper creates the `frequency` part of `closure_combine()`'s output.
-summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
+summarize_frequencies <- function(results, scale_min, scale_max, samples_all) {
   # Flatten the list of integer vectors into a single integer vector, then
   # create a frequency table for the values in that vector.
   f_absolute <- results |>
     unlist(use.names = FALSE) |>
     table()
 
-  # Extract the scale values found in the combinations. Then, remove them from
+  # Extract the scale values found in the samples. Then, remove them from
   # their source, `f_absolute`, as they are no longer needed.
   value <- as.integer(names(f_absolute))
   f_absolute <- as.integer(f_absolute)
@@ -331,7 +331,7 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
 
   # Divide by the number of samples instead to get the average number of values
   # in each bin.
-  f_average <- f_absolute / combos_all
+  f_average <- f_absolute / samples_all
 
   # Reconstruct the complete vector of possible scale values as a sequence from
   # scale minimum to scale maximum.
@@ -339,7 +339,7 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
   n_completed <- length(value_completed)
 
   # If each possible value is instantiated in the values that were found in the
-  # combinations, the results are complete and will be returned here. If not,
+  # samples, the results are complete and will be returned here. If not,
   # the zero counts of the uninstantiated values must be added to `value`, and
   # their zero frequencies to `f_absolute` and `f_relative`. This is what the
   # rest of the function will then do.
@@ -414,7 +414,7 @@ format_results_list <- function(n_cols) {
   tibble::new_tibble(
     x = list(
       id = seq_len(n_samples_all),
-      combination = out
+      sample = out
     ),
     nrow = n_samples_all
   )
