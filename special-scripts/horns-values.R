@@ -30,12 +30,12 @@ complete_scale_by_zeroes <- function(x, endpoint) {
 
 
 # df1 <- tibble::tibble(
-#   frequencies = sd_all %>%
+#   frequencies = sd_all |>
 #     vapply(
 #       function(x) rnorm(n, mean = 3, sd = x),
 #       numeric(n)
-#     ) %>%
-#     table() %>%
+#     ) |>
+#     table() |>
 #     as.list()
 # )
 
@@ -65,11 +65,11 @@ n <- 100000
 
 for (i in seq_along(sd_all)) {
 
-  freqs_current <- n %>%
-    rnorm(mean = 3, sd = sd_all[i]) %>%
-    round() %>%
-    censor(left = 1, right = endpoint) %>%
-    table() %>%
+  freqs_current <- n |>
+    rnorm(mean = 3, sd = sd_all[i]) |>
+    round() |>
+    censor(left = 1, right = endpoint) |>
+    table() |>
     complete_scale_by_zeroes(endpoint)
 
   horns_all[i] <- horns(freqs_current, 1, endpoint)
@@ -77,13 +77,13 @@ for (i in seq_along(sd_all)) {
 
   # freqs_all[[i]] <- freqs_current
   #
-  # probs_all[[i]] <- endpoint %>%
-  #   seq_len() %>%
+  # probs_all[[i]] <- endpoint |>
+  #   seq_len() |>
   #   sample(
   #     size = n,
   #     replace = TRUE,
   #     prob = freqs_current / sum(freqs_current)
-  #   ) %>%
+  #   ) |>
   #   table()
 
 
@@ -107,13 +107,13 @@ for (i in seq_along(sd_all)) {
   #
   # freqs_all[[i]] <- probs_current
   #
-  # sample_current <- endpoint %>%
-  #   seq_len() %>%
+  # sample_current <- endpoint |>
+  #   seq_len() |>
   #   sample(
   #     size = n,
   #     replace = TRUE,
   #     prob = probs_current
-  #   ) %>%
+  #   ) |>
   #   table()
 }
 
@@ -134,8 +134,8 @@ ggplot(df1, aes(x = sd, y = horns)) +
 
 
 
-# horns_results_all <- probs_all %>%
-#   lapply(function(x) sample(1:5, size = 5000, replace = TRUE, prob = x)) %>%
+# horns_results_all <- probs_all |>
+#   lapply(function(x) sample(1:5, size = 5000, replace = TRUE, prob = x)) |>
 #   lapply(
 #     function(x) {
 #       out <- tibble::as_tibble(table(x))
@@ -149,7 +149,7 @@ ggplot(df1, aes(x = sd, y = horns)) +
 #       }
 #       horns(freqs, 1, 5)
 #     }
-#   ) %>%
+#   ) |>
 #   as.numeric()
 
 
