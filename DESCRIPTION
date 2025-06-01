@@ -20,7 +20,8 @@ Imports:
     rlang,
     roundwork,
     scales,
-    tibble
+    tibble,
+    utils
 Collate: 
     'utils.R'
     'count.R'
