@@ -148,7 +148,8 @@ closure_read <- function(path) {
     )
   }
 
-  slash <- if (Sys.info()[["sysname"]] == "Windows") "\\" else "/"
+  # Seems to work on Windows, as well
+  slash <- "/"
 
   name_dir <- strsplit(path, slash)[[1]]
   name_dir <- name_dir[length(name_dir)]
