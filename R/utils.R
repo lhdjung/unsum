@@ -1,19 +1,19 @@
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
-utils::globalVariables(c(".", "value"))
+utils::globalVariables(c(".", "value", ".data"))
 
 
 # Error if input is not an unchanged CLOSURE list.
-check_closure_combine <- function(data) {
+check_closure_generate <- function(data) {
   top_level_is_correct <-
     is.list(data) &&
     length(data) == 4L &&
     identical(names(data), c("inputs", "metrics", "frequency", "results")) &&
-    inherits(data$inputs, "closure_combine")
+    inherits(data$inputs, "closure_generate")
 
   if (!top_level_is_correct) {
     cli::cli_abort(
       message = c(
-        "Input must be the output of `closure_combine()`.",
+        "Input must be the output of `closure_generate()`.",
         "!" = "Such output is a list with the elements \
         \"inputs\", \"metrics\", \"frequency\", and \"results\"."
       ),
@@ -22,23 +22,25 @@ check_closure_combine <- function(data) {
   }
 
   # Check the formats of the three tibbles that are elements of `data`, i.e., of
-  # the output of `closure_combine()`:
+  # the output of `closure_generate()`:
 
   # Inputs (1 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$inputs,
     name = "inputs",
-    dims = c(1L, 5L),
+    dims = c(1L, 7L),
     col_names_types = list(
       "mean" = "character",
       "sd" = "character",
       "n" = c("integer", "double"),
       "scale_min" = c("integer", "double"),
-      "scale_max" = c("integer", "double")
+      "scale_max" = c("integer", "double"),
+      "rounding" = c("character"),
+      "threshold" = c("integer", "double")
     )
   )
 
-  # (Intermezzo to make sure that the assumption in the second check hold)
+  # (Intermezzo to make sure that the assumptions in the second check hold)
   check_scale(
     scale_min = data$inputs$scale_min,
     scale_max = data$inputs$scale_max,
@@ -48,13 +50,13 @@ check_closure_combine <- function(data) {
   )
 
   # Metrics (2 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$metrics,
     name = "metrics",
     dims = c(1L, 5L),
     col_names_types = list(
-      "combos_initial" = "integer",
-      "combos_all" = "integer",
+      "samples_initial" = "integer",
+      "samples_all" = "integer",
       "values_all" = "integer",
       "horns" = "double",
       "horns_uniform" = "double"
@@ -62,7 +64,7 @@ check_closure_combine <- function(data) {
   )
 
   # Frequency (3 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$frequency,
     name = "frequency",
     dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 4),
@@ -75,13 +77,13 @@ check_closure_combine <- function(data) {
   )
 
   # Results (4 / 4)
-  check_closure_combine_tibble(
+  check_closure_generate_tibble(
     x = data$results,
     name = "results",
-    dims = c(data$metrics$combos_all, 2L),
+    dims = c(data$metrics$samples_all, 2L),
     col_names_types = list(
       "id" = "integer",
-      "combination" = "list"
+      "sample" = "list"
     )
   )
 
@@ -126,11 +128,11 @@ check_closure_combine <- function(data) {
     )
   }
 
-  all_results_integer <- data$results$combination %>%
+  all_results_integer <- data$results$sample |>
     vapply(
       FUN = function(x) typeof(x) == "integer",
       FUN.VALUE = logical(1)
-    ) %>%
+    ) |>
     all()
 
   if (!all_results_integer) {
@@ -139,11 +141,11 @@ check_closure_combine <- function(data) {
 
   n <- data$inputs$n
 
-  all_results_length_n <- data$results$combination %>%
+  all_results_length_n <- data$results$sample |>
     vapply(
       FUN = function(x) length(x) == n,
       FUN.VALUE = logical(1)
-    ) %>%
+    ) |>
     all()
 
   if (!all_results_length_n) {
@@ -155,8 +157,8 @@ check_closure_combine <- function(data) {
 }
 
 
-# Check each element of `closure_combine()` for correct format.
-check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
+# Check each element of `closure_generate()` for correct format.
+check_closure_generate_tibble <- function(x, name, dims, col_names_types) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
     all(dim(x) == dims) &&
@@ -196,7 +198,7 @@ check_closure_combine_tibble <- function(x, name, dims, col_names_types) {
 }
 
 
-# Borrowed from scrutiny's internals and used within `check_closure_combine()`,
+# Borrowed from scrutiny's internals and used within `check_closure_generate()`,
 # this checks whether a vector is a linear sequence (1, 2, 3) or not (3, 1, 7).
 is_seq_linear_basic <- function(x) {
   if (length(x) < 3L) {
@@ -212,10 +214,10 @@ is_seq_linear_basic <- function(x) {
 }
 
 
-# Functions like `closure_combine()` that take `scale_min` and `scale_max`
+# Functions like `closure_generate()` that take `scale_min` and `scale_max`
 # arguments need to make sure that min <= max. Functions that take the mean into
 # account also need to check that it is within these bounds. Such functions
-# include `closure_combine()` but not `closure_count_initial()`.
+# include `closure_generate()` but not `closure_count_initial()`.
 check_scale <- function(
     scale_min,
     scale_max,
@@ -287,7 +289,7 @@ check_value <- function(x, type) {
 
 
 check_type <- function(x, t, n = 1, name = NULL) {
-  if (any(typeof(x) == t)) {
+  if (any(typeof(x) == t) || (is.integer(x) && t == "double")) {
     return(invisible(NULL))
   }
   if (is.null(name)) {
@@ -297,6 +299,9 @@ check_type <- function(x, t, n = 1, name = NULL) {
     "be of type"
   } else {
     "be one of the types"
+  }
+  if (length(t) == 1 && t == "double") {
+    t <- "double or integer"
   }
   cli::cli_abort(
     message = c(
@@ -308,15 +313,15 @@ check_type <- function(x, t, n = 1, name = NULL) {
 }
 
 
-# This helper creates the `frequency` part of `closure_combine()`'s output.
-summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
+# This helper creates the `frequency` part of `closure_generate()`'s output.
+summarize_frequencies <- function(results, scale_min, scale_max, samples_all) {
   # Flatten the list of integer vectors into a single integer vector, then
   # create a frequency table for the values in that vector.
-  f_absolute <- results %>%
-    unlist(use.names = FALSE) %>%
+  f_absolute <- results |>
+    unlist(use.names = FALSE) |>
     table()
 
-  # Extract the scale values found in the combinations. Then, remove them from
+  # Extract the scale values found in the samples. Then, remove them from
   # their source, `f_absolute`, as they are no longer needed.
   value <- as.integer(names(f_absolute))
   f_absolute <- as.integer(f_absolute)
@@ -326,7 +331,7 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
 
   # Divide by the number of samples instead to get the average number of values
   # in each bin.
-  f_average <- f_absolute / combos_all
+  f_average <- f_absolute / samples_all
 
   # Reconstruct the complete vector of possible scale values as a sequence from
   # scale minimum to scale maximum.
@@ -334,7 +339,7 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
   n_completed <- length(value_completed)
 
   # If each possible value is instantiated in the values that were found in the
-  # combinations, the results are complete and will be returned here. If not,
+  # samples, the results are complete and will be returned here. If not,
   # the zero counts of the uninstantiated values must be added to `value`, and
   # their zero frequencies to `f_absolute` and `f_relative`. This is what the
   # rest of the function will then do.
@@ -382,3 +387,36 @@ summarize_frequencies <- function(results, scale_min, scale_max, combos_all) {
 near <- function(x, y, tol = .Machine$double.eps^0.5) {
   abs(x - y) < tol
 }
+
+
+# Transform unsum's CLOSURE results into the "n"-column format of the CSV files
+# made by closure-core's test harness or the original Python implementation
+format_n_cols <- function(samples_all) {
+  samples_all |>
+    tibble::as_tibble(.name_repair = "minimal") |>
+    t() |>
+    tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
+}
+
+
+# This is the reverse operation of `format_n_cols()` except it also constructs a
+# full "results" tibble
+format_results_list <- function(n_cols) {
+
+  out <- n_cols |>
+    t() |>
+    tibble::as_tibble(.name_repair = "minimal") |>
+    as.list() |>
+    unname()
+
+  n_samples_all <- length(out)
+
+  tibble::new_tibble(
+    x = list(
+      id = seq_len(n_samples_all),
+      sample = out
+    ),
+    nrow = n_samples_all
+  )
+}
+

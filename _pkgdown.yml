@@ -11,7 +11,7 @@ template:
 reference:
 - title: Main CLOSURE function
 - contents:
-  - closure_combine
+  - closure_generate
 - title: Visualization
 - contents:
   - closure_plot_bar
@@ -19,4 +19,8 @@ reference:
 - title: Metrics
 - contents:
   - closure_count_initial
+  - closure_gauge_complexity
   - horns
+- title: Write and read
+- contents:
+  - closure_write

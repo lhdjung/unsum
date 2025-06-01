@@ -1,13 +1,13 @@
-#' Count CLOSURE combinations in advance
+#' Count CLOSURE samples in advance
 #'
-#' @description Determine how many combinations [`closure_combine()`] would find
-#'   for a given set of summary statistics.
+#' @description Determine how many samples [`closure_generate()`] would find for
+#'   a given set of summary statistics.
 #'
-#'   - TODO: add a `closure_count_all()` function. Maybe get inspo from CORVIDS?
-#'   - `closure_count_initial()` only counts the first round of combinations,
-#'   from which all other ones would be generated.
+#'   - `closure_count_initial()` only counts the first round of samples, from
+#'   which all other ones would be generated.
+#'   - There is currently no `closure_count_all()` function.
 #'
-#'   This can help predict how much time [`closure_combine()`] would take, and
+#'   This can help predict how much time [`closure_generate()`] would take, and
 #'   avoid prohibitively long runs.
 #'
 #' @param scale_min,scale_max Integers (length 1 each). Minimum and maximum of
@@ -28,8 +28,8 @@
 # matter The formula is: (n+1) * n / 2 where n is the range size
 
 closure_count_initial <- function(scale_min, scale_max) {
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
+  check_value(scale_min, "double")
+  check_value(scale_max, "double")
 
   check_scale(scale_min, scale_max)
 

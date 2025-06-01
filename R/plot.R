@@ -3,9 +3,9 @@
 #' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
 #'
 #'   For each scale value, the bars show how often this value appears in the
-#'   full list of possible raw data combinations found by the CLOSURE algorithm.
+#'   full list of possible raw data samples found by the CLOSURE algorithm.
 #'
-#' @param data List returned by [`closure_combine()`].
+#' @param data List returned by [`closure_generate()`].
 #' @param frequency String (length 1). What should the bars display? The
 #'   default, `"absolute-percent"`, displays the count of each scale value and
 #'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
@@ -35,7 +35,7 @@
 #'
 #' @examples
 #' # Create CLOSURE data first:
-#' data <- closure_combine(
+#' data <- closure_generate(
 #'   mean = "3.5",
 #'   sd = "2",
 #'   n = 52,
@@ -81,7 +81,7 @@ closure_plot_bar <- function(
 ) {
 
   # Check inputs
-  check_closure_combine(data)
+  check_closure_generate(data)
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
 
@@ -246,7 +246,7 @@ closure_plot_bar <- function(
 #'
 #' @examples
 #' # Create CLOSURE data first:
-#' data <- closure_combine(
+#' data <- closure_generate(
 #'   mean = "3.5",
 #'   sd = "2",
 #'   n = 52,
@@ -274,7 +274,7 @@ closure_plot_ecdf <- function(
   pad = TRUE
 ) {
 
-  check_closure_combine(data)
+  check_closure_generate(data)
   samples <- rlang::arg_match(samples)
 
   # For the reference line and the x-axis
@@ -287,9 +287,9 @@ closure_plot_ecdf <- function(
   # enable grouping the values by sample using a `sample_id` column.
   data <- tibble::new_tibble(
     x = list(
-      value = unlist(data$results$combination, use.names = FALSE),
+      value = unlist(data$results$sample, use.names = FALSE),
       sample_id = if (samples == "all") {
-        rep(seq_len(metrics$combos_all), each = inputs$n)
+        rep(seq_len(metrics$samples_all), each = inputs$n)
       } else {
         NULL
       }
@@ -307,8 +307,8 @@ closure_plot_ecdf <- function(
   } else if (samples == "all") {
     stat_ecdf_line <- ggplot2::stat_ecdf(
       ggplot2::aes(
-        group = sample_id,
-        color = as.factor(sample_id)
+        group = .data$sample_id,
+        color = as.factor(.data$sample_id)
       ),
       pad = pad
     )

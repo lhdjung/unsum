@@ -9,16 +9,18 @@
 
 The goal of unsum is to **un**do **sum**marization: reconstruct all
 possible samples that may underlie a given set of summary statistics. It
-is currently implemented for sets of mean, SD, sample size, and scale
-bounds. This can be useful in error detection to identify impossible or
+currently supports sets of mean, SD, sample size, and scale bounds. This
+can be useful in forensic metascience to identify impossible or
 implausible reported numbers.
 
 The package features *CLOSURE: Complete Listing of Original Samples of
-Underlying Raw Evidence*, a fast algorithm implemented in Rust.
+Underlying Raw Evidence*, a fast algorithm implemented in Rust. Go to
+[*Get started*](https://lhdjung.github.io/unsum/articles/unsum.html) to
+learn how to use it.
 
 CLOSURE is exhaustive, which makes it computationally intensive. If your
 code takes too long to run, consider using
-[SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see
+[SPRITE](https://lukaswallrich.github.io/rsprite2//) instead (see
 *Previous work* below).
 
 ## Installation
@@ -33,36 +35,38 @@ pak::pak("lhdjung/unsum")
 ```
 
 Your R version should be 4.2.0 or more recent. To run unsum, you also
-need a Rust installation; see `vignette("install-rust")`.
+need a Rust installation; see [*Installing Rust for
+unsum*](https://lhdjung.github.io/unsum/articles/install-rust.html).
 
-## Get started
+## Demo
 
-Start with `closure_combine()`, the package’s main function. It creates
+Start with `closure_generate()`, the package’s main function. It creates
 all possible samples:
 
 ``` r
 library(unsum)
 
-data <- closure_combine(
+data <- closure_generate(
   mean = "2.7",
   sd = "1.9",
   n = 130,
   scale_min = 1,
   scale_max = 5
 )
+#> → Just a second...
 
 data
 #> $inputs
-#> # A tibble: 1 × 5
-#>   mean  sd        n scale_min scale_max
-#>   <chr> <chr> <dbl>     <dbl>     <dbl>
-#> 1 2.7   1.9     130         1         5
+#> # A tibble: 1 × 7
+#>   mean  sd        n scale_min scale_max rounding   threshold
+#>   <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
+#> 1 2.7   1.9     130         1         5 up_or_down         5
 #> 
 #> $metrics
 #> # A tibble: 1 × 5
-#>   combos_initial combos_all values_all horns horns_uniform
-#>            <int>      <int>      <int> <dbl>         <dbl>
-#> 1             15       5359     696670 0.881           0.5
+#>   samples_initial samples_all values_all horns horns_uniform
+#>             <int>       <int>      <int> <dbl>         <dbl>
+#> 1              15        5359     696670 0.881           0.5
 #> 
 #> $frequency
 #> # A tibble: 5 × 4
@@ -76,7 +80,7 @@ data
 #> 
 #> $results
 #> # A tibble: 5,359 × 2
-#>       id combination
+#>       id sample     
 #>    <int> <list>     
 #>  1     1 <int [130]>
 #>  2     2 <int [130]>
@@ -91,7 +95,7 @@ data
 #> # ℹ 5,349 more rows
 ```
 
-Visualize the overall distribution of values found in the combinations:
+Visualize the overall distribution of values found in the samples:
 
 ``` r
 closure_plot_bar(data)
@@ -101,7 +105,7 @@ closure_plot_bar(data)
 
 ## Previous work
 
-[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random
+[SPRITE](https://lukaswallrich.github.io/rsprite2/) generates random
 datasets that could have led to the reported statistics. CLOSURE is
 exhaustive, so it always finds all possible datasets, not just a random
 sample of them. For the same reason, SPRITE runs fast when CLOSURE may
@@ -124,7 +128,7 @@ The CLOSURE algorithm was originally written [in
 Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael
 Larigaldie. The R package unsum provides easy access to an optimized
 implementation in Rust,
-[closure-core](https://crates.io/crates/closure-core), via the amazing
+[closure-core](https://github.com/lhdjung/closure-core), via the amazing
 [extendr](https://extendr.github.io/) framework. Rust code tends to run
 much faster than R or Python code, which is required for many
 applications of CLOSURE.
