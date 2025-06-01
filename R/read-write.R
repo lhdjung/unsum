@@ -154,16 +154,6 @@ closure_read <- function(path) {
   name_dir <- strsplit(path, slash)[[1]]
   name_dir <- name_dir[length(name_dir)]
 
-  if (!is_output_folder(name_dir)) {
-    cli::cli_abort(
-      message = c(
-        "Must choose CLOSURE output folder.",
-        "x" = "Incorrect format in folder name:",
-        "x" = "{path}"
-      )
-    )
-  }
-
   files_all <- dir(path)
   files_expected <- c(
     "inputs.csv",
