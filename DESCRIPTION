@@ -1,8 +1,10 @@
 Package: unsum
 Title: Reconstruct Raw Data from Summary Statistics
 Version: 0.1.0
-Authors@R: 
-    person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre"))
+Authors@R: c(
+    person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre")),
+    person("Nathanael", "Larigaldie", role = "ctb")
+  )
 Description: Reconstructs all possible raw data that could have led to reported
     summary statistics. Provides a wrapper for the Rust implementation of the
     'CLOSURE' algorithm.
