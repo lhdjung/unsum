@@ -50,19 +50,20 @@ data <- closure_combine(
   scale_min = 1,
   scale_max = 5
 )
+#> → Just a second...
 
 data
 #> $inputs
-#> # A tibble: 1 × 5
-#>   mean  sd        n scale_min scale_max
-#>   <chr> <chr> <dbl>     <dbl>     <dbl>
-#> 1 2.7   1.9     130         1         5
+#> # A tibble: 1 × 7
+#>   mean  sd        n scale_min scale_max rounding   threshold
+#>   <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
+#> 1 2.7   1.9     130         1         5 up_or_down         5
 #> 
 #> $metrics
 #> # A tibble: 1 × 5
-#>   combos_initial combos_all values_all horns horns_uniform
-#>            <int>      <int>      <int> <dbl>         <dbl>
-#> 1             15       5359     696670 0.881           0.5
+#>   samples_initial samples_all values_all horns horns_uniform
+#>             <int>       <int>      <int> <dbl>         <dbl>
+#> 1              15        5359     696670 0.881           0.5
 #> 
 #> $frequency
 #> # A tibble: 5 × 4
@@ -76,7 +77,7 @@ data
 #> 
 #> $results
 #> # A tibble: 5,359 × 2
-#>       id combination
+#>       id sample     
 #>    <int> <list>     
 #>  1     1 <int [130]>
 #>  2     2 <int [130]>
@@ -91,7 +92,7 @@ data
 #> # ℹ 5,349 more rows
 ```
 
-Visualize the overall distribution of values found in the combinations:
+Visualize the overall distribution of values found in the samples:
 
 ``` r
 closure_plot_bar(data)

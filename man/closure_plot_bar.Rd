@@ -57,7 +57,7 @@ A ggplot object.
 Call \code{closure_plot_bar()} to get a barplot of CLOSURE results.
 
 For each scale value, the bars show how often this value appears in the
-full list of possible raw data combinations found by the CLOSURE algorithm.
+full list of possible raw data samples found by the CLOSURE algorithm.
 }
 \examples{
 # Create CLOSURE data first:
