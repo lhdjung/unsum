@@ -58,6 +58,7 @@
 mod R;
 mod call;
 mod dataframe;
+mod extendr_conversion;
 mod extendr_function;
 mod extendr_impl;
 mod extendr_module;
@@ -91,6 +92,8 @@ pub fn extendr(attr: TokenStream, item: TokenStream) -> TokenStream {
     parse_macro_input!(attr with extendr_opts_parser);
 
     match parse_macro_input!(item as Item) {
+        Item::Struct(str) => extendr_conversion::extendr_type_conversion(Item::Struct(str), &opts),
+        Item::Enum(enm) => extendr_conversion::extendr_type_conversion(Item::Enum(enm), &opts),
         Item::Fn(func) => extendr_function::extendr_function(func, &opts),
         Item::Impl(item_impl) => match extendr_impl::extendr_impl(item_impl, &opts) {
             Ok(result) => result,
@@ -298,4 +301,95 @@ pub fn derive_into_robj(item: TokenStream) -> TokenStream {
 #[proc_macro_derive(IntoDataFrameRow)]
 pub fn derive_into_dataframe(item: TokenStream) -> TokenStream {
     dataframe::derive_into_dataframe(item)
+}
+
+#[proc_macro]
+pub fn impl_try_from_robj_tuples(input: TokenStream) -> TokenStream {
+    let range = parse_macro_input!(input as syn::ExprTuple);
+    let start = match &range.elems[0] {
+        syn::Expr::Lit(syn::ExprLit {
+            lit: syn::Lit::Int(lit),
+            ..
+        }) => lit.base10_parse::<usize>().unwrap(),
+        _ => {
+            return TokenStream::from(quote!(compile_error!(
+                "Expected integer literal for `start`"
+            )))
+        }
+    };
+    let end = match &range.elems[1] {
+        syn::Expr::Lit(syn::ExprLit {
+            lit: syn::Lit::Int(lit),
+            ..
+        }) => lit.base10_parse::<usize>().unwrap(),
+        _ => {
+            return TokenStream::from(quote!(compile_error!("Expected integer literal for `end`")))
+        }
+    };
+
+    TokenStream::from_iter((start..=end).map(|n| {
+        let types: Vec<_> = (0..n).map(|i| quote::format_ident!("T{}", i)).collect();
+        let indices = 0..n;
+        let element_extraction = indices.map(|idx| {
+            quote! {
+                (&list.elt(#idx)?).try_into()?
+            }
+        });
+
+        TokenStream::from(quote! {
+            impl<#(#types),*> TryFrom<&Robj> for (#(#types,)*)
+            where
+                #(#types: for<'a> TryFrom<&'a Robj, Error = extendr_api::Error>),*
+            {
+                type Error = Error;
+
+                fn try_from(robj: &Robj) -> extendr_api::Result<Self> {
+                    let list: List = robj.try_into()?;
+                    if list.len() != #n {
+                        return Err(Error::ExpectedLength(#n));
+                    }
+                    Ok((
+                        #(#element_extraction),*
+                    ))
+                }
+            }
+
+            // TODO: the following impls are borrowed from `impl_try_from_robj`
+            // find a way to reuse that code, possibly
+
+            impl<#(#types),*> TryFrom<Robj> for (#(#types,)*)
+            where
+                #(#types: for<'a> TryFrom<&'a Robj, Error = extendr_api::Error>),* {
+                type Error = Error;
+
+                fn try_from(robj: Robj) -> extendr_api::Result<Self> {
+                    Self::try_from(&robj)
+                }
+            }
+
+            impl<#(#types),*> TryFrom<&Robj> for Option<(#(#types,)*)>
+            where
+            #(#types: for<'a> TryFrom<&'a Robj, Error = extendr_api::Error>),*{
+                type Error = Error;
+
+                fn try_from(robj: &Robj) -> extendr_api::Result<Self> {
+                    if robj.is_null() || robj.is_na() {
+                        Ok(None)
+                    } else {
+                        Ok(Some(<(#(#types,)*)>::try_from(robj)?))
+                    }
+                }
+            }
+
+            impl<#(#types),*> TryFrom<Robj> for Option<(#(#types,)*)>
+            where
+            #(#types: for<'a> TryFrom<&'a Robj, Error = extendr_api::Error>),*{
+                type Error = Error;
+
+                fn try_from(robj: Robj) -> extendr_api::Result<Self> {
+                    Self::try_from(&robj)
+                }
+            }
+        })
+    }))
 }

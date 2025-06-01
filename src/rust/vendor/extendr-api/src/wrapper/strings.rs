@@ -1,7 +1,9 @@
+use super::*;
+use extendr_ffi::{
+    R_xlen_t, SET_STRING_ELT, STRING_ELT, STRING_IS_SORTED, STRING_NO_NA, STRING_PTR_RO,
+};
 use std::convert::From;
 use std::iter::FromIterator;
-
-use super::*;
 
 #[derive(PartialEq, Clone)]
 pub struct Strings {
@@ -145,6 +147,15 @@ impl std::fmt::Debug for Strings {
             write!(f, "{:?}", self.elt(0))
         } else {
             f.debug_list().entries(self.iter()).finish()
+        }
+    }
+}
+
+impl From<Option<Strings>> for Robj {
+    fn from(value: Option<Strings>) -> Self {
+        match value {
+            Some(value_strings) => value_strings.into(),
+            None => nil_value(),
         }
     }
 }

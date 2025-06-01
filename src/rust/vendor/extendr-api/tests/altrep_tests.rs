@@ -244,6 +244,7 @@ fn test_altlist() {
     use extendr_api::AltListImpl;
     with_r(|| {
         #[derive(Debug, Clone)]
+        #[extendr]
         pub struct VecUsize(pub Vec<Option<usize>>);
 
         // need to make the VecUsize object `.into_robj()`-able
@@ -258,7 +259,11 @@ fn test_altlist() {
 
         impl AltListImpl for VecUsize {
             fn elt(&self, index: usize) -> Robj {
-                Self(vec![self.0[index]]).into_robj()
+                let mut v = Vec::with_capacity(1usize);
+                v.push(self.0[index]);
+                let v = v;
+
+                Self(v).into_robj()
             }
         }
 

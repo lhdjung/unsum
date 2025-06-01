@@ -2,6 +2,8 @@
 
 Implements the novel CLOSURE technique for efficiently reconstructing all possible distributions of raw data from summary statistics. It is not about the Rust feature called closure.
 
+The crate is mostly meant to serve as a backend for the R package [unsum](https://lhdjung.github.io/unsum/).
+
 You will likely only need `dfs_parallel()`.
 
 Most of the code was written by Claude 3.5, translating Python code by Nathanael Larigaldie.
@@ -16,8 +18,8 @@ let sd = 2.78;
 let n = 30;
 let scale_min = 1;
 let scale_max = 7;
-let rounding_error_mean = 0.01;
-let rounding_error_sd = 0.01;
+let rounding_error_mean = 0.005;
+let rounding_error_sd = 0.005;
 
 dfs_parallel(
     mean,

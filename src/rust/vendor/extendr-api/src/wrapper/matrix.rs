@@ -2,6 +2,10 @@
 use self::robj::{AsTypedSlice, Robj};
 use super::*;
 use crate::scalar::Scalar;
+use extendr_ffi::{
+    Rf_GetArrayDimnames, Rf_GetColNames, Rf_GetRowNames, Rf_dimgets, Rf_dimnamesgets, Rf_namesgets,
+    TYPEOF,
+};
 use std::ops::{Index, IndexMut};
 
 /// Wrapper for creating and using matrices and arrays.
@@ -72,6 +76,8 @@ impl<T, D> RArray<T, D> {
 pub type RColumn<T> = RArray<T, [usize; 1]>;
 pub type RMatrix<T> = RArray<T, [usize; 2]>;
 pub type RMatrix3D<T> = RArray<T, [usize; 3]>;
+pub type RMatrix4D<T> = RArray<T, [usize; 4]>;
+pub type RMatrix5D<T> = RArray<T, [usize; 5]>;
 
 impl<T> RMatrix<T>
 where
@@ -114,13 +120,35 @@ where
 }
 
 impl<T> RMatrix<T> {
-    pub fn get_colnames(&self) -> Robj {
-        let colnames = Robj::from_sexp(unsafe { Rf_GetColNames(Rf_GetArrayDimnames(self.get())) });
-        colnames
+    pub fn get_colnames(&self) -> Option<Strings> {
+        unsafe {
+            let maybe_colnames = Rf_GetColNames(Rf_GetArrayDimnames(self.get()));
+            match TYPEOF(maybe_colnames) {
+                SEXPTYPE::NILSXP => None,
+                SEXPTYPE::STRSXP => {
+                    let colnames = Robj::from_sexp(maybe_colnames);
+                    Some(std::mem::transmute(colnames))
+                }
+                _ => unreachable!(
+                    "This should not have occurred. Please report an error at https://github.com/extendr/extendr/issues"
+                ),
+            }
+        }
     }
-    pub fn get_rownames(&self) -> Robj {
-        let rownames = Robj::from_sexp(unsafe { Rf_GetRowNames(Rf_GetArrayDimnames(self.get())) });
-        rownames
+    pub fn get_rownames(&self) -> Option<Strings> {
+        unsafe {
+            let maybe_rownames = Rf_GetRowNames(Rf_GetArrayDimnames(self.get()));
+            match TYPEOF(maybe_rownames) {
+                SEXPTYPE::NILSXP => None,
+                SEXPTYPE::STRSXP => {
+                    let rownames = Robj::from_sexp(maybe_rownames);
+                    Some(std::mem::transmute(rownames))
+                }
+                _ => unreachable!(
+                    "This should not have occurred. Please report an error at https://github.com/extendr/extendr/issues"
+                ),
+            }
+        }
     }
 }
 
@@ -367,6 +395,60 @@ where
     }
 }
 
+impl<T> TryFrom<&Robj> for RMatrix4D<T>
+where
+    Robj: for<'a> AsTypedSlice<'a, T>,
+{
+    type Error = Error;
+
+    fn try_from(robj: &Robj) -> Result<Self> {
+        if let Some(_slice) = robj.as_typed_slice() {
+            if let Some(dim) = robj.dim() {
+                if dim.len() != 4 {
+                    Err(Error::ExpectedMatrix4D(robj.clone()))
+                } else {
+                    let dim: Vec<_> = dim.iter().map(|d| d.inner() as usize).collect();
+                    Ok(RArray::from_parts(
+                        robj.clone(),
+                        [dim[0], dim[1], dim[2], dim[3]],
+                    ))
+                }
+            } else {
+                Err(Error::ExpectedMatrix4D(robj.clone()))
+            }
+        } else {
+            Err(Error::TypeMismatch(robj.clone()))
+        }
+    }
+}
+
+impl<T> TryFrom<&Robj> for RMatrix5D<T>
+where
+    Robj: for<'a> AsTypedSlice<'a, T>,
+{
+    type Error = Error;
+
+    fn try_from(robj: &Robj) -> Result<Self> {
+        if let Some(_slice) = robj.as_typed_slice() {
+            if let Some(dim) = robj.dim() {
+                if dim.len() != 5 {
+                    Err(Error::ExpectedMatrix5D(robj.clone()))
+                } else {
+                    let dim: Vec<_> = dim.iter().map(|d| d.inner() as usize).collect();
+                    Ok(RArray::from_parts(
+                        robj.clone(),
+                        [dim[0], dim[1], dim[2], dim[3], dim[4]],
+                    ))
+                }
+            } else {
+                Err(Error::ExpectedMatrix5D(robj.clone()))
+            }
+        } else {
+            Err(Error::TypeMismatch(robj.clone()))
+        }
+    }
+}
+
 macro_rules! impl_try_from_robj_ref {
     ($($type : tt)*) => {
         $(
@@ -414,6 +496,8 @@ impl_try_from_robj_ref!(
     RMatrix
     RColumn
     RMatrix3D
+    RMatrix4D
+    RMatrix5D
 );
 
 impl<T, D> From<RArray<T, D>> for Robj {
@@ -508,6 +592,65 @@ where
     }
 }
 
+impl<T> Index<[usize; 3]> for RArray<T, [usize; 3]>
+where
+    Robj: for<'a> AsTypedSlice<'a, T>,
+{
+    type Output = T;
+
+    /// Zero-based indexing in row, column order.
+    ///
+    /// Panics if out of bounds.
+    /// ```
+    /// use extendr_api::prelude::*;
+    /// test! {
+    ///    let matrix = RArray::new_matrix3d(3, 2, 2, |r, c, d| (r + c + d) as f64);
+    ///     assert_eq!(matrix[[0, 0, 0]], 0.);
+    ///     assert_eq!(matrix[[1, 0, 1]], 2.);
+    ///     assert_eq!(matrix[[2, 1, 1]], 4.);
+    /// }
+    /// ```
+    fn index(&self, index: [usize; 3]) -> &Self::Output {
+        unsafe {
+            self.data()
+                .as_ptr()
+                .add(self.offset(index))
+                .as_ref()
+                .unwrap()
+        }
+    }
+}
+
+impl<T> IndexMut<[usize; 3]> for RArray<T, [usize; 3]>
+where
+    Robj: for<'a> AsTypedSlice<'a, T>,
+{
+    /// Zero-based mutable indexing in row, column order.
+    ///
+    /// Panics if out of bounds.
+    /// ```
+    /// use extendr_api::prelude::*;
+    /// test! {
+    ///    let mut matrix = RMatrix3D::new_matrix3d(3, 2, 2, |_, _, _| 0.);
+    ///    matrix[[0, 0, 0]] = 1.;
+    ///    matrix[[1, 0, 0]] = 2.;
+    ///    matrix[[2, 0, 0]] = 3.;
+    ///    matrix[[0, 1, 0]] = 4.;
+    ///    assert_eq!(matrix.as_real_slice().unwrap(),
+    ///        &[1., 2., 3., 4., 0., 0., 0., 0., 0., 0., 0., 0.]);
+    /// }
+    /// ```
+    fn index_mut(&mut self, index: [usize; 3]) -> &mut Self::Output {
+        unsafe {
+            self.data_mut()
+                .as_mut_ptr()
+                .add(self.offset(index))
+                .as_mut()
+                .unwrap()
+        }
+    }
+}
+
 impl<T, D> Deref for RArray<T, D> {
     type Target = Robj;
 
@@ -522,11 +665,21 @@ impl<T, D> DerefMut for RArray<T, D> {
     }
 }
 
+impl<T, D> From<Option<RArray<T, D>>> for Robj {
+    fn from(value: Option<RArray<T, D>>) -> Self {
+        match value {
+            None => nil_value(),
+            Some(value) => value.into(),
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate as extendr_api;
     use extendr_engine::with_r;
+    use extendr_ffi::Rf_PrintValue;
     use prelude::{Rcplx, Rfloat, Rint};
 
     #[test]
