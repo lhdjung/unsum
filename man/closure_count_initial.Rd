@@ -2,7 +2,7 @@
 % Please edit documentation in R/count.R
 \name{closure_count_initial}
 \alias{closure_count_initial}
-\title{Count CLOSURE combinations in advance}
+\title{Count CLOSURE samples in advance}
 \usage{
 closure_count_initial(scale_min, scale_max)
 }
@@ -14,15 +14,15 @@ the scales to which the reported statistics refer.}
 Integer (length 1).
 }
 \description{
-Determine how many combinations \code{\link[=closure_combine]{closure_combine()}} would find
-for a given set of summary statistics.
+Determine how many samples \code{\link[=closure_generate]{closure_generate()}} would find for
+a given set of summary statistics.
 \itemize{
-\item TODO: add a \code{closure_count_all()} function. Maybe get inspo from CORVIDS?
-\item \code{closure_count_initial()} only counts the first round of combinations,
-from which all other ones would be generated.
+\item \code{closure_count_initial()} only counts the first round of samples, from
+which all other ones would be generated.
+\item There is currently no \code{closure_count_all()} function.
 }
 
-This can help predict how much time \code{\link[=closure_combine]{closure_combine()}} would take, and
+This can help predict how much time \code{\link[=closure_generate]{closure_generate()}} would take, and
 avoid prohibitively long runs.
 }
 \examples{

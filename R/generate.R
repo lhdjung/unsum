@@ -1,24 +1,24 @@
-#' Create CLOSURE combinations
+#' Generate CLOSURE samples
 #'
-#' @description Call `closure_combine()` to run the CLOSURE algorithm on a given
-#'   set of summary statistics.
+#' @description Call `closure_generate()` to run the CLOSURE algorithm on a
+#'   given set of summary statistics.
 #'
 #'   This can take seconds, minutes, or longer, depending on the input. Wide
-#'   variance and large samples often lead to many combinations, i.e., long
-#'   runtimes. These effects interact dynamically. For example, with large `n`,
-#'   even very small increases in `sd` can greatly increase runtime and number
-#'   of values found.
+#'   variance and large `n` often lead to many samples, i.e., long runtimes.
+#'   These effects interact dynamically. For example, with large `n`, even very
+#'   small increases in `sd` can greatly increase runtime and number of values
+#'   found.
 #'
-#'   If the inputs are mutually inconsistent, there is a warning and an empty
-#'   data frame.
+#'   If the inputs are inconsistent, there is no solution. The function will
+#'   then return empty results and throw a warning.
 #'
 #' @param mean String (length 1). Reported mean.
 #' @param sd String (length 1). Reported sample standard deviation.
 #' @param n Numeric (length 1). Reported sample size.
 #' @param scale_min,scale_max Numeric (length 1 each). Minimal and maximal
-#'   possible values of the measurement scale (not the *empirical* min and
-#'   max!). For example, with a 1-7 Likert scale, use `scale_min = 1` and
-#'   `scale_max = 7`.
+#'   possible values of the measurement scale. For example, with a 1-7 Likert
+#'   scale, use `scale_min = 1` and `scale_max = 7`. Prefer the empirical min
+#'   and max if available: they constrain the possible values further.
 #' @param rounding String (length 1). Rounding method assumed to have created
 #'   `mean` and `sd`. See [*Rounding
 #'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
@@ -29,7 +29,14 @@
 #'   if `rounding` is any of `"up_or_down"`, `"up"`, and `"down"`. Default is
 #'   `5`.
 #' @param warn_if_empty Logical (length 1). Should a warning be shown if no
-#'   combinations are found? Default is `TRUE`.
+#'   samples are found? Default is `TRUE`.
+#' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
+#'   very long, should the function prompt you to proceed or abort in an
+#'   interactive setting? Default is `TRUE`.
+#' @param rounding_error_mean,rounding_error_sd Numeric (length 1 each). Option
+#'   to manually set the rounding error around `mean` and `sd`. This is meant
+#'   for development and might be removed in the future, so most users can
+#'   ignore it.
 #'
 #' @section Rounding limitations: The `rounding` and `threshold` arguments are
 #'   not fully implemented. For example, CLOSURE currently treats all rounding
@@ -42,12 +49,12 @@
 #' @return Named list of four tibbles (data frames):
 #'   - **`inputs`**: Arguments to this function.
 #'   - **`metrics`**:
-#'     - `combos_initial`: integer. The basis for computing CLOSURE results,
+#'     - `samples_initial`: integer. The basis for computing CLOSURE results,
 #'   based on scale range only. See [`closure_count_initial()`].
-#'     - `combos_all`: integer. Number of all combinations. Equal to the number
+#'     - `samples_all`: integer. Number of all samples. Equal to the number
 #'   of rows in `results`.
 #'     - `values_all`: integer. Number of all individual values found. Equal to
-#'   `n * combos_all`.
+#'   `n * samples_all`.
 #'     - `horns`: double. Measure of dispersion for bounded scales; see
 #'   [`horns()`].
 #'     - `horns_uniform`: double. Value `horns` would have if the reconstructed
@@ -55,27 +62,27 @@
 #'   - **`frequency`**:
 #'     - `value`: integer. Scale values derived from `scale_min` and
 #'   `scale_max`.
-#'     - `f_average`: Count of scale values in the mean `results` combination.
+#'     - `f_average`: Count of scale values in the mean `results` sample.
 #'     - `f_absolute`: integer. Count of individual scale values found in the
-#'   `results` combinations.
+#'   `results` samples.
 #'     - `f_relative`: double. Values' share of total values found.
 #'   - **`results`**:
-#'     - `id`: integer. Runs from `1` to `combos_all`.
-#'     - `combination`: list of integer vectors. Each of these vectors has
-#'   length `n`. It is a combination (or distribution) of individual scale
-#'   values found by CLOSURE.
+#'     - `id`: integer. Runs from `1` to `samples_all`.
+#'     - `sample`: list of integer vectors. Each of these vectors has
+#'   length `n`. It is a sample (or distribution) of individual scale values
+#'   found by CLOSURE.
 #'
-#' @include utils.R count.R horns.R extendr-wrappers.R
+#' @include utils.R count.R horns.R performance.R extendr-wrappers.R
 #'
 #' @export
 #'
 #' @examples
-#' # High spread often leads to many combinations --
-#' # here, 735.
-#' data_high <- closure_combine(
+#' # High spread often leads to many samples --
+#' # here, 3682.
+#' data_high <- closure_generate(
 #'   mean = "3.5",
-#'   sd = "2",
-#'   n = 52,
+#'   sd = "1.7",
+#'   n = 70,
 #'   scale_min = 1,
 #'   scale_max = 5
 #' )
@@ -86,12 +93,12 @@
 #' # by following up with `closure_plot_bar()`:
 #' closure_plot_bar(data_high)
 #'
-#' # Low spread, only 3 combinations, and not all
+#' # Low spread, only 3 samples, and not all
 #' # scale values are possible.
-#' data_low <- closure_combine(
-#'   mean = "3.5",
+#' data_low <- closure_generate(
+#'   mean = "2.9",
 #'   sd = "0.5",
-#'   n = 52,
+#'   n = 70,
 #'   scale_min = 1,
 #'   scale_max = 5
 #' )
@@ -101,11 +108,12 @@
 #' # This can also be shown by `closure_plot_bar()`:
 #' closure_plot_bar(data_low)
 
-# Note: most helper functions called here can be found in the R/utils.R file.
-# The only exception, `create_combinations()`, is in R/extendr-wrappers.R, but
-# all it does is to call into Rust code in scr/rust/src/lib.rs which, in turn,
-# accesses closure-core. The latter is a Rust crate (roughly analogous to an R
-# package) that contains the actual implementation of CLOSURE:
+# Note: some helper functions called here can be found in the R/utils.R file.
+# The most notable exception `create_combinations()`, is in
+# R/extendr-wrappers.R, but all it does is to call into Rust code in
+# scr/rust/src/lib.rs which, in turn, accesses closure-core. The latter is a
+# Rust crate (roughly analogous to an R package) that contains the actual
+# implementation of CLOSURE:
 # https://github.com/lhdjung/closure-core/blob/master/src/lib.rs
 
 # # For interactive testing:
@@ -117,10 +125,11 @@
 # scale_min <- 1
 # scale_max <- 8
 # warn_if_empty <- TRUE
+# ask_to_proceed <- TRUE
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
 
-closure_combine <- function(
+closure_generate <- function(
   mean,
   sd,
   n,
@@ -129,6 +138,7 @@ closure_combine <- function(
   rounding = "up_or_down",
   threshold = 5,
   warn_if_empty = TRUE,
+  ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 ) {
@@ -137,10 +147,11 @@ closure_combine <- function(
   # length 1, and is not `NA`.
   check_value(mean, "character")
   check_value(sd, "character")
-  check_value(n, c("double", "integer"))
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
+  check_value(n, "double")
+  check_value(scale_min, "double")
+  check_value(scale_max, "double")
   check_value(warn_if_empty, "logical")
+  check_value(ask_to_proceed, "logical")
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
@@ -168,7 +179,53 @@ closure_combine <- function(
     rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
   }
 
-  # Compute CLOSURE combinations by calling into pre-compiled Rust code.
+  # Make an educated guess about the complexity, and hence the runtime duration
+  complexity <- closure_gauge_complexity(
+    mean = mean_num,
+    sd = sd_num,
+    n = n,
+    scale_min = scale_min,
+    scale_max = scale_max
+  )
+
+  # This might be set to `TRUE` below
+  need_to_ask <- FALSE
+
+  msg_wait <- if (complexity < 1) {
+    NULL
+  } else if (complexity < 2) {
+    "Just a second..."
+  } else if (complexity < 3) {
+    "This could take a minute..."
+  } else {
+    # With very high complexity, the user may be asked whether to proceed. The
+    # need to ask will then depend on the `ask_to_proceed` argument, but there
+    # will be no prompt unless the setting is interactive.
+    need_to_ask <- ask_to_proceed && interactive()
+    "ATTENTION: Long runtime ahead!"
+  }
+
+  # Simplest case here: just a message (on the bottom). Otherwise, the
+  # complexity is so high that the user is asked whether to proceed.
+  if (!is.null(msg_wait)) {
+    if (need_to_ask) {
+      cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
+      selection <- utils::menu(
+        choices = c("Yes, wait", "No, abort"),
+        title = "Please enter 1 or 2:"
+      )
+      if (selection == 1L) {
+        cli::cli_alert_info("Running CLOSURE, please wait...")
+      } else {
+        cli::cli_alert_info("Aborting `closure_generate()`.")
+        return(invisible(NULL))
+      }
+    } else {
+      cli::cli_alert(msg_wait)
+    }
+  }
+
+  # Compute CLOSURE samples by calling into pre-compiled Rust code.
   results <- create_combinations(
     mean = mean_num,
     sd = sd_num,
@@ -179,10 +236,10 @@ closure_combine <- function(
     rounding_error_sd = rounding_error_sd
   )
 
-  n_combos_all <- length(results)
+  n_samples_all <- length(results)
 
   # By default, raise a warning if no results were found.
-  if (warn_if_empty && n_combos_all == 0L) {
+  if (warn_if_empty && n_samples_all == 0L) {
     cli::cli_warn(c(
       "No results found with these inputs.",
       "x" = "Data internally inconsistent.",
@@ -191,10 +248,10 @@ closure_combine <- function(
   }
 
   # Frequency table
-  freqs <- summarize_frequencies(results, scale_min, scale_max, n_combos_all)
+  freqs <- summarize_frequencies(results, scale_min, scale_max, n_samples_all)
 
-  # Insert the combinations into a data frame, along with summary statistics.
-  # The S3 class "closure_combine" will be recognized by downstream functions,
+  # Insert the samples into a data frame, along with summary statistics.
+  # The S3 class "closure_generate" will be recognized by downstream functions,
   # such as `closure_plot_bar()`. Three elements here are created using the
   # low-level `new_tibble()` instead of `tibble()`: once for passing the S3
   # class, and twice for performance.
@@ -205,16 +262,18 @@ closure_combine <- function(
         sd = sd,
         n = n,
         scale_min = scale_min,
-        scale_max = scale_max
+        scale_max = scale_max,
+        rounding = rounding,
+        threshold = threshold
       ),
       nrow = 1L,
-      class = "closure_combine"
+      class = "closure_generate"
     ),
     metrics = tibble::new_tibble(
       x = list(
-        combos_initial = closure_count_initial(scale_min, scale_max),
-        combos_all = n_combos_all,
-        values_all = n_combos_all * as.integer(n),
+        samples_initial = closure_count_initial(scale_min, scale_max),
+        samples_all = n_samples_all,
+        values_all = n_samples_all * as.integer(n),
         horns = horns(freqs$f_absolute, scale_min, scale_max),
         horns_uniform = horns_uniform(scale_min, scale_max)
       ),
@@ -223,10 +282,10 @@ closure_combine <- function(
     frequency = freqs,
     results = tibble::new_tibble(
       x = list(
-        id = seq_len(n_combos_all),
-        combination = results
+        id = seq_len(n_samples_all),
+        sample = results
       ),
-      nrow = n_combos_all
+      nrow = n_samples_all
     )
   )
 }

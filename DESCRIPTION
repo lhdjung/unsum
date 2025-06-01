@@ -1,8 +1,10 @@
 Package: unsum
-Title: Complete Listing of Original Samples of Underlying Raw Evidence
-Version: 0.0.0.9000
-Authors@R: 
-    person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre"))
+Title: Reconstruct Raw Data from Summary Statistics
+Version: 0.1.0
+Authors@R: c(
+    person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre")),
+    person("Nathanael", "Larigaldie", role = "ctb")
+  )
 Description: Reconstructs all possible raw data that could have led to reported
     summary statistics. Provides a wrapper for the Rust implementation of the
     'CLOSURE' algorithm.
@@ -15,21 +17,23 @@ Depends:
 Imports: 
     cli,
     ggplot2,
-    magrittr,
+    nanoparquet,
     readr,
     rlang,
     roundwork,
     scales,
-    tibble
+    tibble,
+    utils
 Collate: 
-    'extendr-wrappers.R'
-    'horns.R'
     'utils.R'
     'count.R'
-    'combine.R'
+    'extendr-wrappers.R'
+    'performance.R'
+    'horns.R'
+    'generate.R'
     'plot.R'
-    'utils-pipe.R'
-Config/rextendr/version: 0.3.1.9001
+    'read-write.R'
+Config/rextendr/version: 0.4.0.9000
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
 BugReports: https://github.com/lhdjung/unsum/issues
@@ -37,6 +41,7 @@ Suggests:
     devtools,
     knitr,
     rmarkdown,
-    testthat (>= 3.0.0)
+    testthat (>= 3.0.0),
+    waldo
 VignetteBuilder: knitr
 Config/testthat/edition: 3

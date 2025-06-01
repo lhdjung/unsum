@@ -23,14 +23,14 @@ devtools::load_all()
 library(unsum)
 ```
 
-Here is a brief walkthrough on using CLOSURE in unsum.
+Here is a brief walkthrough of using CLOSURE in unsum.
 
-Call `closure_combine()` to run the CLOSURE algorithm. Enter mean, SD, and sample size that you read in a paper. For `scale_min` and `scale_max`, use the empirical minimum and maximum if available. Otherwise, use the more fundamental scale bounds, e.g., `1` and `7` for a 1-7 scale.
+Call `closure_generate()` to run the CLOSURE algorithm. Enter mean, SD, and sample size that you read in a paper. For `scale_min` and `scale_max`, use the empirical minimum and maximum if available. Otherwise, use the more fundamental scale bounds, e.g., `1` and `7` for a 1-7 scale.
 
 The `mean` and `sd` arguments must be strings to preserve trailing zeros. Note that CLOSURE can only be used if the values must be integers: e.g., a value can be 2 or 3, but not 2.5.
 
 ```{r}
-data <- closure_combine(
+data <- closure_generate(
   mean = "3.5",
   sd = "2",
   n = 80,
@@ -50,6 +50,7 @@ First create a plot of the mean sample found by CLOSURE. This gives us a sense o
 #|   a strongly polarized distribution.
 closure_plot_bar(data)
 ```
+
 You can customize the plot, e.g., to show the sum of all samples found instead of the average sample, or only percentages, or different colors. See documentation at `closure_plot_bar()`. However, the default should be informative enough for a start.
 
 Now let's look at the results themselves:
@@ -58,9 +59,9 @@ Now let's look at the results themselves:
 data
 ```
 
--   `inputs` records the arguments in `closure_combine()`.
+-   `inputs` records the arguments in `closure_generate()`.
 
--   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`combos_all`) and the total number of all values found in them (`values_all`).
+-   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`samples_all`) and the total number of all values found in them (`values_all`).
 
     Importantly, it also features an index of variation in bounded scales (`horns`). It ranges from 0 to 1, where 0 means no variability and 1 would be a sample evenly split between the extremes — here, 1, and 5 — with no values in between. The reference value `horns_uniform` shows which value `horns` would have if the mean sample was uniformly distributed. This is 0.5 because of the 1-5 scale. See `horns()` for more details.
 
@@ -68,9 +69,9 @@ data
 
 -   `frequency` shows the absolute and relative frequencies of values found by CLOSURE at each scale point. It also gives us the (absolute) frequency of values in the average sample that we saw in the plot above.
 
--   `results` stores all the samples that CLOSURE found (`combination`). Each has a unique number (`id`).
+-   `results` stores all the samples that CLOSURE found (`sample`). Each has a unique number (`id`).
 
-See `closure_combine()` for more details.
+See `closure_generate()` for more details.
 
 In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
 
@@ -82,4 +83,26 @@ In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
 closure_plot_ecdf(data)
 ```
 
-A caveat: it is strongly discouraged to run custom data transformations on the output of `closure_combine()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
+What if you have a huge object with CLOSURE results that you want to save? Write it to disk with `closure_write()`:
+
+```{r}
+# Temporary folder just for this example --
+# use a real folder on your computer instead!
+fake_folder <- tempdir()
+
+# Saving the path in a variable
+path_new_folder <- closure_write(data, path = fake_folder)
+```
+
+This stores the results using the highly efficient Parquet format. It will only take a tiny fraction of a CSV file's disk space.
+
+In your later session, read the data in from the folder to get the same CLOSURE list back:
+
+```{r}
+data_new <- closure_read(path_new_folder)
+
+# Same as the original data:
+waldo::compare(data, data_new)
+```
+
+A caveat: don't modify the output of `closure_generate()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.

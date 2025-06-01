@@ -46,19 +46,8 @@ sort_cols <- function(x) {
   if (!is.data.frame(x)) {
     stop("`x` must be a data frame.")
   }
-  x %>%
-    lapply(sort) %>%
+  x |>
+    lapply(sort) |>
     tibble::as_tibble()
-}
-
-
-# Transform unsum's CLOSURE results into the "n"-column format of the CSV files
-# made by closure-core's test harness or the original Python implementation
-format_n_cols <- function(data) {
-  check_closure_combine(data)
-  data$results$combination %>%
-    tibble::as_tibble(.name_repair = "minimal") %>%
-    t() %>%
-    tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
 }
 
