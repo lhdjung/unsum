@@ -3,7 +3,7 @@
 #' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
 #'
 #'   For each scale value, the bars show how often this value appears in the
-#'   full list of possible raw data combinations found by the CLOSURE algorithm.
+#'   full list of possible raw data samples found by the CLOSURE algorithm.
 #'
 #' @param data List returned by [`closure_combine()`].
 #' @param frequency String (length 1). What should the bars display? The
@@ -287,9 +287,9 @@ closure_plot_ecdf <- function(
   # enable grouping the values by sample using a `sample_id` column.
   data <- tibble::new_tibble(
     x = list(
-      value = unlist(data$results$combination, use.names = FALSE),
+      value = unlist(data$results$sample, use.names = FALSE),
       sample_id = if (samples == "all") {
-        rep(seq_len(metrics$combos_all), each = inputs$n)
+        rep(seq_len(metrics$samples_all), each = inputs$n)
       } else {
         NULL
       }

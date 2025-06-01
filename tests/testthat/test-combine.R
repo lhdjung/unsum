@@ -9,7 +9,7 @@ data_r <- closure_combine(
 )
 
 # Adjust results of R wrapper to format of data saved on disk
-data_r <- format_n_cols(data_r$results$combination)
+data_r <- format_n_cols(data_r$results$sample)
 
 # Check results for identity after sorting columns. Different CLOSURE
 # implementations may yield results in different order (even though the samples

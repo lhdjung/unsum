@@ -1,11 +1,11 @@
-#' Count CLOSURE combinations in advance
+#' Count CLOSURE samples in advance
 #'
-#' @description Determine how many combinations [`closure_combine()`] would find
-#'   for a given set of summary statistics.
+#' @description Determine how many samples [`closure_combine()`] would find for
+#'   a given set of summary statistics.
 #'
-#'   - TODO: add a `closure_count_all()` function. Maybe get inspo from CORVIDS?
-#'   - `closure_count_initial()` only counts the first round of combinations,
-#'   from which all other ones would be generated.
+#'   - `closure_count_initial()` only counts the first round of samples, from
+#'   which all other ones would be generated.
+#'   - There is currently no `closure_count_all()` function.
 #'
 #'   This can help predict how much time [`closure_combine()`] would take, and
 #'   avoid prohibitively long runs.

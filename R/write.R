@@ -124,7 +124,7 @@ closure_write <- function(data, path = ".") {
 
   # Write the "results" tibble using the efficient Parquet format
   nanoparquet::write_parquet(
-    x = format_n_cols(data$results$combination),
+    x = format_n_cols(data$results$sample),
     file = paste0(path_new_dir, slash, "results.parquet")
   )
 
@@ -228,14 +228,14 @@ closure_read <- function(path) {
 
   tryCatch(
     expr = {
-      out$metrics$combos_initial <- as.integer(out$metrics$combos_initial)
-      out$metrics$combos_all <- as.integer(out$metrics$combos_all)
+      out$metrics$samples_initial <- as.integer(out$metrics$samples_initial)
+      out$metrics$samples_all <- as.integer(out$metrics$samples_all)
       out$metrics$values_all <- as.integer(out$metrics$values_all)
     },
     error = function(e) {
       cli::cli_abort(
-        " \"metrics\" must have \"combos_initial\", \
-        \"combos_all\", and \"values_all\" columns."
+        " \"metrics\" must have \"samples_initial\", \
+        \"samples_all\", and \"values_all\" columns."
       )
     }
   )
