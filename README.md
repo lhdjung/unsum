@@ -20,7 +20,7 @@ learn how to use it.
 
 CLOSURE is exhaustive, which makes it computationally intensive. If your
 code takes too long to run, consider using
-[SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see
+[SPRITE](https://lukaswallrich.github.io/rsprite2//) instead (see
 *Previous work* below).
 
 ## Installation
@@ -105,7 +105,7 @@ closure_plot_bar(data)
 
 ## Previous work
 
-[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random
+[SPRITE](https://lukaswallrich.github.io/rsprite2/) generates random
 datasets that could have led to the reported statistics. CLOSURE is
 exhaustive, so it always finds all possible datasets, not just a random
 sample of them. For the same reason, SPRITE runs fast when CLOSURE may
@@ -128,7 +128,7 @@ The CLOSURE algorithm was originally written [in
 Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael
 Larigaldie. The R package unsum provides easy access to an optimized
 implementation in Rust,
-[closure-core](https://crates.io/crates/closure-core), via the amazing
+[closure-core](https://github.com/lhdjung/closure-core), via the amazing
 [extendr](https://extendr.github.io/) framework. Rust code tends to run
 much faster than R or Python code, which is required for many
 applications of CLOSURE.

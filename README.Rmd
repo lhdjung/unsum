@@ -28,7 +28,7 @@ The goal of unsum is to **un**do **sum**marization: reconstruct all possible sam
 
 The package features *CLOSURE: Complete Listing of Original Samples of Underlying Raw Evidence*, a fast algorithm implemented in Rust. Go to [*Get started*](https://lhdjung.github.io/unsum/articles/unsum.html) to learn how to use it.
 
-CLOSURE is exhaustive, which makes it computationally intensive. If your code takes too long to run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2/) instead (see *Previous work* below).
+CLOSURE is exhaustive, which makes it computationally intensive. If your code takes too long to run, consider using [SPRITE](https://lukaswallrich.github.io/rsprite2//) instead (see *Previous work* below).
 
 ## Installation
 
@@ -74,7 +74,7 @@ closure_plot_bar(data)
 
 ## Previous work
 
-[SPRITE](https://lukaswallrich.github.io/rsprite2) generates random datasets that could have led to the reported statistics. CLOSURE is exhaustive, so it always finds all possible datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.
+[SPRITE](https://lukaswallrich.github.io/rsprite2/) generates random datasets that could have led to the reported statistics. CLOSURE is exhaustive, so it always finds all possible datasets, not just a random sample of them. For the same reason, SPRITE runs fast when CLOSURE may take too long.
 
 [GRIM and GRIMMER](https://lhdjung.github.io/scrutiny/) test reported summary statistics for consistency, but CLOSURE is the ultimate consistency test: if it finds at least one distribution, the statistics are consistent; and if not, they cannot all be correct.
 
@@ -82,4 +82,4 @@ closure_plot_bar(data)
 
 ## About
 
-The CLOSURE algorithm was originally written [in Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael Larigaldie. The R package unsum provides easy access to an optimized implementation in Rust, [closure-core](https://crates.io/crates/closure-core), via the amazing [extendr](https://extendr.github.io/) framework. Rust code tends to run much faster than R or Python code, which is required for many applications of CLOSURE.
+The CLOSURE algorithm was originally written [in Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael Larigaldie. The R package unsum provides easy access to an optimized implementation in Rust, [closure-core](https://github.com/lhdjung/closure-core), via the amazing [extendr](https://extendr.github.io/) framework. Rust code tends to run much faster than R or Python code, which is required for many applications of CLOSURE.
