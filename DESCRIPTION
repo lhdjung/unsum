@@ -1,6 +1,6 @@
 Package: unsum
 Title: Reconstruct Raw Data from Summary Statistics
-Version: 0.1.0
+Version: 0.2.0
 Authors@R: c(
     person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre")),
     person("Nathanael", "Larigaldie", role = "ctb")
