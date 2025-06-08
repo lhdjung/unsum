@@ -4,18 +4,21 @@ utils::globalVariables(c(".", "value", ".data"))
 
 # Error if input is not an unchanged CLOSURE list.
 check_closure_generate <- function(data) {
+  tibbles_all <- c("inputs", "metrics", "frequency", "results")
   top_level_is_correct <-
     is.list(data) &&
     length(data) == 4L &&
-    identical(names(data), c("inputs", "metrics", "frequency", "results")) &&
+    identical(names(data), tibbles_all) &&
     inherits(data$inputs, "closure_generate")
 
   if (!top_level_is_correct) {
+    msg_tibbles_all <- paste0("\"", tibbles_all, "\"")
     cli::cli_abort(
       message = c(
-        "Input must be the output of `closure_generate()`.",
+        "Input must be the output of `closure_generate()` \
+        or `closure_read()`.",
         "!" = "Such output is a list with the elements \
-        \"inputs\", \"metrics\", \"frequency\", and \"results\"."
+        {msg_tibbles_all}."
       ),
       call = rlang::caller_env()
     )
