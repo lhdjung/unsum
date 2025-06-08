@@ -151,7 +151,8 @@ closure_horns_plot <- function(
       "rounding" = c("character"),
       "threshold" = c("integer", "double")
     ),
-    msg_main = msg_analyze_output
+    msg_main = msg_analyze_output,
+    n = 1
   )
 
   check_component_tibble(
@@ -169,7 +170,8 @@ closure_horns_plot <- function(
       "max" = c("integer", "double"),
       "range" = c("integer", "double")
     ),
-    msg_main = msg_analyze_output
+    msg_main = msg_analyze_output,
+    n = 1
   )
 
   check_component_tibble(
@@ -180,7 +182,8 @@ closure_horns_plot <- function(
       "id" = "integer",
       "horns" = "double"
     ),
-    msg_main = msg_analyze_output
+    msg_main = msg_analyze_output,
+    n = 1
   )
 
   min <- data$horns_metrics$min
@@ -188,18 +191,12 @@ closure_horns_plot <- function(
 
   data <- data$horns_results
 
-  breaks_labels_x <- seq(from = min, to = max, by = 0.005)
-
   # Build the plot
   ggplot2::ggplot(data, ggplot2::aes(x = .data$horns)) +
     ggplot2::geom_bar(
       alpha = bar_alpha,
       fill = bar_color,
       position = ggplot2::position_dodge2()
-    ) +
-    ggplot2::scale_x_continuous(
-      breaks = breaks_labels_x,
-      labels = breaks_labels_x |> round(2)
     ) +
     ggplot2::labs(
       x = "Horns index",

@@ -162,7 +162,8 @@ check_component_tibble <- function(
   name,
   dims,
   col_names_types,
-  msg_main = NULL
+  msg_main = NULL,
+  n = 2
 ) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
@@ -200,7 +201,7 @@ check_component_tibble <- function(
         "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
         "*" = "{this_these}: {cols_msg}"
       ),
-      call = rlang::caller_env(2)
+      call = rlang::caller_env(n)
     )
   }
 }
