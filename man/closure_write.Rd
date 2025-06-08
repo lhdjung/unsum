@@ -75,12 +75,10 @@ data <- closure_generate(
   scale_max = 5
 )
 
-# Just for this example -- don't try at home
-fake_folder <- tempdir()
-
 # You should write to a real folder instead;
-# or just leave `path` unspecified.
-path_new_folder <- closure_write(data, path = fake_folder)
+# or just leave `path` unspecified. I use a
+# fake folder just for this example.
+path_new_folder <- closure_write(data, path = tempdir())
 
 # In a later session, conveniently read the files
 # back into R. This returns the original list,

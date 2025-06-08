@@ -6,7 +6,7 @@ Authors@R: c(
     person("Nathanael", "Larigaldie", role = "ctb")
   )
 Description: Reconstructs all possible raw data that could have led to reported
-    summary statistics. Provides a wrapper for the Rust implementation of the
+    summary statistics. Provides a wrapper for the 'Rust' implementation of the
     'CLOSURE' algorithm.
 License: MIT + file LICENSE
 Encoding: UTF-8

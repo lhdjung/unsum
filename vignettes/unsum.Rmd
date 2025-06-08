@@ -86,12 +86,9 @@ closure_plot_ecdf(data)
 What if you have a huge object with CLOSURE results that you want to save? Write it to disk with `closure_write()`:
 
 ```{r}
-# Temporary folder just for this example --
-# use a real folder on your computer instead!
-fake_folder <- tempdir()
-
-# Saving the path in a variable
-path_new_folder <- closure_write(data, path = fake_folder)
+# Using a temporary folder via `tempdir()` just for this example --
+# you should use a real folder on your computer instead!
+path_new_folder <- closure_write(data, path = tempdir())
 ```
 
 This stores the results using the highly efficient Parquet format. It will only take a tiny fraction of a CSV file's disk space.
