@@ -23,7 +23,7 @@ you don't want to re-run a lengthy closure_generate() call."></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">unsum</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,10 +33,7 @@ you don't want to re-run a lengthy closure_generate() call."></head><body>
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/unsum.html">Get started</a></li>
 <li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/install-rust.html">Installing Rust for unsum</a></li>
-  </ul></li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
 <li class="nav-item"><a class="external-link nav-link" href="https://github.com/lhdjung/unsum/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
@@ -126,65 +123,25 @@ periods. For example:</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="closure_generate.html">closure_generate</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  mean <span class="op">=</span> <span class="st">"2.7"</span>,</span></span>
-<span class="r-in"><span>  sd <span class="op">=</span> <span class="st">"0.6"</span>,</span></span>
-<span class="r-in"><span>  n <span class="op">=</span> <span class="fl">45</span>,</span></span>
-<span class="r-in"><span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="closure_generate.html">closure_generate</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    mean <span class="op">=</span> <span class="st">"2.7"</span>,</span></span>
+<span class="r-in"><span>    sd <span class="op">=</span> <span class="st">"0.6"</span>,</span></span>
+<span class="r-in"><span>    n <span class="op">=</span> <span class="fl">45</span>,</span></span>
+<span class="r-in"><span>    scale_min <span class="op">=</span> <span class="fl">1</span>,</span></span>
+<span class="r-in"><span>    scale_max <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span>  <span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Just for this example -- don't try at home</span></span></span>
-<span class="r-in"><span><span class="va">fake_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="co"># You should write to a real folder instead;</span></span></span>
+<span class="r-in"><span>  <span class="co"># or just leave `path` unspecified. I use a</span></span></span>
+<span class="r-in"><span>  <span class="co"># fake folder just for this example.</span></span></span>
+<span class="r-in"><span>  <span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu">closure_write</span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># You should write to a real folder instead;</span></span></span>
-<span class="r-in"><span><span class="co"># or just leave `path` unspecified.</span></span></span>
-<span class="r-in"><span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu">closure_write</span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="va">fake_folder</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All files written to:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> /tmp/Rtmptr0TYZ/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/</span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># In a later session, conveniently read the files</span></span></span>
-<span class="r-in"><span><span class="co"># back into R. This returns the original list,</span></span></span>
-<span class="r-in"><span><span class="co"># identical except for floating-point error.</span></span></span>
-<span class="r-in"><span><span class="fu">closure_read</span><span class="op">(</span><span class="va">path_new_folder</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $inputs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 7</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   mean  sd        n scale_min scale_max rounding   threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2.7   0.6      45         1         5 up_or_down         5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $metrics</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 5</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   samples_initial samples_all values_all  horns horns_uniform</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>              15          54       <span style="text-decoration: underline;">2</span>430 0.090<span style="text-decoration: underline;">6</span>           0.5</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $frequency</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 5 × 4</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   value f_average f_absolute f_relative</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span>     1     1.37          74    0.030<span style="text-decoration: underline;">5</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span>     2    12.7          685    0.282  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span>     3    29.4         <span style="text-decoration: underline;">1</span>585    0.652  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span>     4     1.37          74    0.030<span style="text-decoration: underline;">5</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span>     5     0.222         12    0.004<span style="text-decoration: underline;">94</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> $results</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 54 × 2</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>       id sample    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 1</span>     1 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 2</span>     2 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 3</span>     3 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 4</span>     4 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 5</span>     5 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 6</span>     6 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 7</span>     7 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 8</span>     8 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;"> 9</span>     9 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">10</span>    10 <span style="color: #949494;">&lt;int [45]&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 44 more rows</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span>  <span class="co"># In a later session, conveniently read the files</span></span></span>
+<span class="r-in"><span>  <span class="co"># back into R. This returns the original list,</span></span></span>
+<span class="r-in"><span>  <span class="co"># identical except for floating-point error.</span></span></span>
+<span class="r-in"><span>  <span class="fu">closure_read</span><span class="op">(</span><span class="va">path_new_folder</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
