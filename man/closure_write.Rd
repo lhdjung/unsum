@@ -67,23 +67,23 @@ The order is the same as in \code{closure_generate()}:
 }
 
 \examples{
-data <- closure_generate(
-  mean = "2.7",
-  sd = "0.6",
-  n = 45,
-  scale_min = 1,
-  scale_max = 5
-)
+if (interactive()) {
+  data <- closure_generate(
+    mean = "2.7",
+    sd = "0.6",
+    n = 45,
+    scale_min = 1,
+    scale_max = 5
+  )
 
-# Just for this example -- don't try at home
-fake_folder <- tempdir()
+  # You should write to a real folder instead;
+  # or just leave `path` unspecified. I use a
+  # fake folder just for this example.
+  path_new_folder <- closure_write(data, path = tempdir())
 
-# You should write to a real folder instead;
-# or just leave `path` unspecified.
-path_new_folder <- closure_write(data, path = fake_folder)
-
-# In a later session, conveniently read the files
-# back into R. This returns the original list,
-# identical except for floating-point error.
-closure_read(path_new_folder)
+  # In a later session, conveniently read the files
+  # back into R. This returns the original list,
+  # identical except for floating-point error.
+  closure_read(path_new_folder)
+}
 }
