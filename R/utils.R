@@ -411,19 +411,15 @@ format_n_cols <- function(samples_all) {
 # This is the reverse operation of `format_n_cols()` except it also constructs a
 # full "results" tibble
 format_results_list <- function(n_cols) {
-
-  out <- n_cols |>
-    t() |>
-    tibble::as_tibble(.name_repair = "minimal") |>
-    as.list() |>
-    unname()
-
-  n_samples_all <- length(out)
-
+  n_samples_all <- nrow(n_cols)
   tibble::new_tibble(
     x = list(
       id = seq_len(n_samples_all),
-      sample = out
+      sample = n_cols |>
+        t() |>
+        tibble::as_tibble(.name_repair = "minimal") |>
+        as.list() |>
+        unname()
     ),
     nrow = n_samples_all
   )
