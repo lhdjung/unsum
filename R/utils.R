@@ -4,18 +4,21 @@ utils::globalVariables(c(".", "value", ".data"))
 
 # Error if input is not an unchanged CLOSURE list.
 check_closure_generate <- function(data) {
+  tibbles_all <- c("inputs", "metrics", "frequency", "results")
   top_level_is_correct <-
     is.list(data) &&
     length(data) == 4L &&
-    identical(names(data), c("inputs", "metrics", "frequency", "results")) &&
+    identical(names(data), tibbles_all) &&
     inherits(data$inputs, "closure_generate")
 
   if (!top_level_is_correct) {
+    msg_tibbles_all <- paste0("\"", tibbles_all, "\"")
     cli::cli_abort(
       message = c(
-        "Input must be the output of `closure_generate()`.",
+        "Input must be the output of `closure_generate()` \
+        or `closure_read()`.",
         "!" = "Such output is a list with the elements \
-        \"inputs\", \"metrics\", \"frequency\", and \"results\"."
+        {msg_tibbles_all}."
       ),
       call = rlang::caller_env()
     )
@@ -25,7 +28,7 @@ check_closure_generate <- function(data) {
   # the output of `closure_generate()`:
 
   # Inputs (1 / 4)
-  check_closure_generate_tibble(
+  check_component_tibble(
     x = data$inputs,
     name = "inputs",
     dims = c(1L, 7L),
@@ -50,7 +53,7 @@ check_closure_generate <- function(data) {
   )
 
   # Metrics (2 / 4)
-  check_closure_generate_tibble(
+  check_component_tibble(
     x = data$metrics,
     name = "metrics",
     dims = c(1L, 5L),
@@ -64,7 +67,7 @@ check_closure_generate <- function(data) {
   )
 
   # Frequency (3 / 4)
-  check_closure_generate_tibble(
+  check_component_tibble(
     x = data$frequency,
     name = "frequency",
     dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 4),
@@ -77,7 +80,7 @@ check_closure_generate <- function(data) {
   )
 
   # Results (4 / 4)
-  check_closure_generate_tibble(
+  check_component_tibble(
     x = data$results,
     name = "results",
     dims = c(data$metrics$samples_all, 2L),
@@ -107,15 +110,14 @@ check_closure_generate <- function(data) {
     sum(data$frequency$f_relative),
     1
   ) || (
-    near(
-      sum(data$frequency$f_relative),
-      0
-    ) &&
       near(
-        sum(data$frequency$f_absolute),
+        sum(data$frequency$f_relative),
         0
-      )
-  )
+      ) && near(
+          sum(data$frequency$f_absolute),
+          0
+        )
+    )
 
   if (!f_relative_sums_up) {
     cli::cli_abort(
@@ -158,7 +160,14 @@ check_closure_generate <- function(data) {
 
 
 # Check each element of `closure_generate()` for correct format.
-check_closure_generate_tibble <- function(x, name, dims, col_names_types) {
+check_component_tibble <- function(
+  x,
+  name,
+  dims,
+  col_names_types,
+  msg_main = NULL,
+  n = 2
+) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
     all(dim(x) == dims) &&
@@ -184,15 +193,18 @@ check_closure_generate_tibble <- function(x, name, dims, col_names_types) {
     } else {
       "These column names and types"
     }
+    if (is.null(msg_main)) {
+      msg_main <- "CLOSURE data must not be changed before passing them \
+        to other `closure_*()` functions."
+    }
     cli::cli_abort(
       message = c(
-        "CLOSURE data must not be changed before passing them \
-        to other `closure_*()` functions.",
+        msg_main,
         "!" = "Specifically, `{name}` must be a tibble with:",
         "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
         "*" = "{this_these}: {cols_msg}"
       ),
-      call = rlang::caller_env(2)
+      call = rlang::caller_env(n)
     )
   }
 }
@@ -219,11 +231,11 @@ is_seq_linear_basic <- function(x) {
 # account also need to check that it is within these bounds. Such functions
 # include `closure_generate()` but not `closure_count_initial()`.
 check_scale <- function(
-    scale_min,
-    scale_max,
-    mean = NULL,
-    warning = NULL,
-    n = 1
+  scale_min,
+  scale_max,
+  mean = NULL,
+  warning = NULL,
+  n = 1
 ) {
   if (scale_min > scale_max) {
     cli::cli_abort(
@@ -390,8 +402,9 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 
 
 # Transform unsum's CLOSURE results into the "n"-column format of the CSV files
-# made by closure-core's test harness or the original Python implementation
-format_n_cols <- function(samples_all) {
+# made by closure-core's test harness or the original Python implementation.
+# This is also the format in which `closure_write()` saves the Parquet files.
+as_wide_n_tibble <- function(samples_all) {
   samples_all |>
     tibble::as_tibble(.name_repair = "minimal") |>
     t() |>
@@ -399,24 +412,19 @@ format_n_cols <- function(samples_all) {
 }
 
 
-# This is the reverse operation of `format_n_cols()` except it also constructs a
-# full "results" tibble
-format_results_list <- function(n_cols) {
-
-  out <- n_cols |>
-    t() |>
-    tibble::as_tibble(.name_repair = "minimal") |>
-    as.list() |>
-    unname()
-
-  n_samples_all <- length(out)
-
+# This is the reverse operation of `as_wide_n_tibble()` except it also
+# constructs a full "results" tibble, as in `closure_generate()`'s output.
+as_results_tibble <- function(n_cols) {
+  n_samples_all <- nrow(n_cols)
   tibble::new_tibble(
     x = list(
       id = seq_len(n_samples_all),
-      sample = out
+      sample = n_cols |>
+        t() |>
+        tibble::as_tibble(.name_repair = "minimal") |>
+        as.list() |>
+        unname()
     ),
     nrow = n_samples_all
   )
 }
-

@@ -55,31 +55,32 @@
 #' @export
 #'
 #' @examples
-#' data <- closure_generate(
-#'   mean = "2.7",
-#'   sd = "0.6",
-#'   n = 45,
-#'   scale_min = 1,
-#'   scale_max = 5
-#' )
+#' if (interactive()) {
+#'   data <- closure_generate(
+#'     mean = "2.7",
+#'     sd = "0.6",
+#'     n = 45,
+#'     scale_min = 1,
+#'     scale_max = 5
+#'   )
 #'
-#' # Just for this example -- don't try at home
-#' fake_folder <- tempdir()
+#'   # You should write to a real folder instead;
+#'   # or just leave `path` unspecified. I use a
+#'   # fake folder just for this example.
+#'   path_new_folder <- closure_write(data, path = tempdir())
 #'
-#' # You should write to a real folder instead;
-#' # or just leave `path` unspecified.
-#' path_new_folder <- closure_write(data, path = fake_folder)
-#'
-#' # In a later session, conveniently read the files
-#' # back into R. This returns the original list,
-#' # identical except for floating-point error.
-#' closure_read(path_new_folder)
+#'   # In a later session, conveniently read the files
+#'   # back into R. This returns the original list,
+#'   # identical except for floating-point error.
+#'   closure_read(path_new_folder)
+#' }
+
 closure_write <- function(data, path = ".") {
 
   check_closure_generate(data)
   check_value(path, "character")
 
-  slash <- if (Sys.info()[["sysname"]] == "Windows") "\\" else "/"
+  slash <- .Platform$file.sep
 
   # Prepare the name of the new directory to which `data` will be written.
   # Create a string where all the inputs (mean, SD, etc.) are connected through
@@ -124,7 +125,7 @@ closure_write <- function(data, path = ".") {
 
   # Write the "results" tibble using the efficient Parquet format
   nanoparquet::write_parquet(
-    x = format_n_cols(data$results$sample),
+    x = data$results$sample |> as_wide_n_tibble(),
     file = paste0(path_new_dir, slash, "results.parquet")
   )
 
@@ -148,8 +149,7 @@ closure_read <- function(path) {
     )
   }
 
-  # Seems to work on Windows, as well
-  slash <- "/"
+  slash <- .Platform$file.sep
 
   name_dir <- strsplit(path, slash)[[1]]
   name_dir <- name_dir[length(name_dir)]
@@ -172,26 +172,28 @@ closure_read <- function(path) {
     )
   }
 
+  # Read CSV files into tibbles
+  read_small_file <- function(name) {
+    path |>
+      paste0(slash, name, ".csv") |>
+      readr::read_csv(show_col_types = FALSE)
+  }
+
+  # Add an S3 class to an object
+  add_class <- function(x, new_class) {
+    `class<-`(x, value = c(new_class, class(x)))
+  }
+
   out <- list(
-    inputs = path |>
-      paste0(slash, "inputs.csv") |>
-      readr::read_csv(show_col_types = FALSE),
-
-    metrics = path |>
-      paste0(slash, "metrics.csv") |>
-      readr::read_csv(show_col_types = FALSE),
-
-    frequency = path |>
-      paste0(slash, "frequency.csv") |>
-      readr::read_csv(show_col_types = FALSE),
+    inputs = "inputs" |> read_small_file() |> add_class("closure_generate"),
+    metrics = "metrics" |> read_small_file(),
+    frequency = "frequency" |> read_small_file(),
 
     results = path |>
       paste0(slash, "results.parquet") |>
       nanoparquet::read_parquet() |>
-      format_results_list()
+      as_results_tibble()
   )
-
-  class(out$inputs) <- c("closure_generate", class(out$inputs))
 
   # Parse mean and SD from the folder name
   mean_sd_str <- strsplit(name_dir, "-")[[1]][2:3] |>
