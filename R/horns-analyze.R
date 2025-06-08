@@ -68,7 +68,7 @@ closure_horns_analyze <- function(data) {
   scale_max <- data$inputs$scale_max
   scale_length <- length(scale_min:scale_max)
 
-  out <- numeric(n_samples_all)
+  horns_values <- numeric(n_samples_all)
 
   # Calculate the horns index of every single sample
   for (i in seq_len(n_samples_all)) {
@@ -76,7 +76,7 @@ closure_horns_analyze <- function(data) {
       unlist(use.names = FALSE) |>
       tabulate(nbins = scale_length)
 
-    out[i] <- horns(
+    horns_values[i] <- horns(
       freqs = f_absolute,
       scale_min = scale_min,
       scale_max = scale_max
@@ -84,20 +84,21 @@ closure_horns_analyze <- function(data) {
   }
 
   mean <- data$metrics$horns
-  sd <- sd(out)
-  min <- min(out)
-  max <- max(out)
+  sd <- sd(horns_values)
+  min <- min(horns_values)
+  max <- max(horns_values)
 
-  list(
+  out <- list(
+    placeholder_name = data$inputs,
     horns_metrics = tibble::new_tibble(
       x = list(
         mean = mean,
         uniform = data$metrics$horns_uniform,
         sd = sd,
         cv = sd / mean,
-        mad = stats::mad(out, constant = 1),
+        mad = stats::mad(horns_values, constant = 1),
         min = min,
-        median = stats::median(out),
+        median = stats::median(horns_values),
         max = max,
         range = max - min
       ),
@@ -106,11 +107,22 @@ closure_horns_analyze <- function(data) {
     horns_results = tibble::new_tibble(
       x = list(
         id = seq_len(n_samples_all),
-        horns = out
+        horns = horns_values
       ),
       nrow = n_samples_all
     )
   )
+
+  # Anticipating a future parametrization of the technique's name
+  names_new <- names(out)
+  names_new <- c(
+    "closure_generate_inputs",
+    names_new[2L:length(names_new)]
+  )
+
+  names(out) <- names_new
+
+  out
 }
 
 
@@ -125,6 +137,22 @@ closure_horns_plot <- function(
 ) {
 
   msg_analyze_output <- "Need output of `closure_horns_analyze()`."
+
+  check_component_tibble(
+    x = data$closure_generate_inputs,
+    name = "closure_generate_inputs",
+    dims = c(1L, 7L),
+    col_names_types = list(
+      "mean" = c("character"),
+      "sd" = c("character"),
+      "n" = c("integer", "double"),
+      "scale_min" = c("integer", "double"),
+      "scale_max" = c("integer", "double"),
+      "rounding" = c("character"),
+      "threshold" = c("integer", "double")
+    ),
+    msg_main = msg_analyze_output
+  )
 
   check_component_tibble(
     x = data$horns_metrics,
