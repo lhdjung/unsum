@@ -399,8 +399,9 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 
 
 # Transform unsum's CLOSURE results into the "n"-column format of the CSV files
-# made by closure-core's test harness or the original Python implementation
-format_n_cols <- function(samples_all) {
+# made by closure-core's test harness or the original Python implementation.
+# This is also the format in which `closure_write()` saves the Parquet files.
+as_wide_n_tibble <- function(samples_all) {
   samples_all |>
     tibble::as_tibble(.name_repair = "minimal") |>
     t() |>
@@ -408,9 +409,9 @@ format_n_cols <- function(samples_all) {
 }
 
 
-# This is the reverse operation of `format_n_cols()` except it also constructs a
-# full "results" tibble
-format_results_list <- function(n_cols) {
+# This is the reverse operation of `as_wide_n_tibble()` except it also
+# constructs a full "results" tibble, as in `closure_generate()`'s output.
+as_results_tibble <- function(n_cols) {
   n_samples_all <- nrow(n_cols)
   tibble::new_tibble(
     x = list(
