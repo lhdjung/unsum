@@ -122,7 +122,7 @@ closure_write <- function(data, path = ".") {
 
   # Write the "results" tibble using the efficient Parquet format
   nanoparquet::write_parquet(
-    x = format_n_cols(data$results$sample),
+    x = data$results$sample |> as_wide_n_tibble(),
     file = paste0(path_new_dir, slash, "results.parquet")
   )
 
@@ -186,7 +186,7 @@ closure_read <- function(path) {
     results = path |>
       paste0(slash, "results.parquet") |>
       nanoparquet::read_parquet() |>
-      format_results_list()
+      as_results_tibble()
   )
 
   class(out$inputs) <- c("closure_generate", class(out$inputs))
