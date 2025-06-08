@@ -3,6 +3,7 @@
 ^src/\.cargo$
 ^LICENSE\.md$
 ^README\.Rmd$
+^vignettes$
 ^special-scripts$
 ^benchmark_.*$
 ^data-raw$
