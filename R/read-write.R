@@ -77,7 +77,7 @@ closure_write <- function(data, path = ".") {
   check_closure_generate(data)
   check_value(path, "character")
 
-  slash <- if (Sys.info()[["sysname"]] == "Windows") "\\" else "/"
+  slash <- .Platform$file.sep
 
   # Prepare the name of the new directory to which `data` will be written.
   # Create a string where all the inputs (mean, SD, etc.) are connected through
@@ -146,8 +146,7 @@ closure_read <- function(path) {
     )
   }
 
-  # Seems to work on Windows, as well
-  slash <- "/"
+  slash <- .Platform$file.sep
 
   name_dir <- strsplit(path, slash)[[1]]
   name_dir <- name_dir[length(name_dir)]
