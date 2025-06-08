@@ -9,7 +9,7 @@ data_r <- closure_generate(
 )
 
 # Adjust results of R wrapper to format of data saved on disk
-data_r <- format_n_cols(data_r$results$sample)
+data_r <- data_r$results$sample |> as_wide_n_tibble()
 
 # Check results for identity after sorting columns. Different CLOSURE
 # implementations may yield results in different order (even though the samples
