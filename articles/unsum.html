@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">unsum</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,12 +32,7 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/unsum.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="../articles/install-rust.html">Installing Rust for unsum</a></li>
-  </ul>
-</li>
+<li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
 <li class="nav-item"><form class="form-inline" role="search">
@@ -174,14 +169,11 @@ results:</p>
 <p>What if you have a huge object with CLOSURE results that you want to
 save? Write it to disk with <code><a href="../reference/closure_write.html">closure_write()</a></code>:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Temporary folder just for this example --</span></span>
-<span><span class="co"># use a real folder on your computer instead!</span></span>
-<span><span class="va">fake_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Saving the path in a variable</span></span>
-<span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_write</a></span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="va">fake_folder</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co"># Using a temporary folder via `tempdir()` just for this example --</span></span>
+<span><span class="co"># you should use a real folder on your computer instead!</span></span>
+<span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_write</a></span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All files written to:</span></span>
-<span><span class="co">#&gt; /tmp/RtmpKHg2yD/CLOSURE-3_5-2-80-1-5-up_or_down-5/</span></span></code></pre></div>
+<span><span class="co">#&gt; /tmp/RtmpEoEw7B/CLOSURE-3_5-2-80-1-5-up_or_down-5/</span></span></code></pre></div>
 <p>This stores the results using the highly efficient Parquet format. It
 will only take a tiny fraction of a CSV file’s disk space.</p>
 <p>In your later session, read the data in from the folder to get the
