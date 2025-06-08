@@ -170,26 +170,28 @@ closure_read <- function(path) {
     )
   }
 
+  # Read CSV files into tibbles
+  read_small_file <- function(name) {
+    path |>
+      paste0(slash, name, ".csv") |>
+      readr::read_csv(show_col_types = FALSE)
+  }
+
+  # Add an S3 class to an object
+  add_class <- function(x, new_class) {
+    `class<-`(x, value = c(new_class, class(x)))
+  }
+
   out <- list(
-    inputs = path |>
-      paste0(slash, "inputs.csv") |>
-      readr::read_csv(show_col_types = FALSE),
-
-    metrics = path |>
-      paste0(slash, "metrics.csv") |>
-      readr::read_csv(show_col_types = FALSE),
-
-    frequency = path |>
-      paste0(slash, "frequency.csv") |>
-      readr::read_csv(show_col_types = FALSE),
+    inputs = "inputs" |> read_small_file() |> add_class("closure_generate"),
+    metrics = "metrics" |> read_small_file(),
+    frequency = "frequency" |> read_small_file(),
 
     results = path |>
       paste0(slash, "results.parquet") |>
       nanoparquet::read_parquet() |>
       as_results_tibble()
   )
-
-  class(out$inputs) <- c("closure_generate", class(out$inputs))
 
   # Parse mean and SD from the folder name
   mean_sd_str <- strsplit(name_dir, "-")[[1]][2:3] |>
