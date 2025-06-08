@@ -25,18 +25,15 @@ code takes too long to run, consider using
 
 ## Installation
 
-You can install the development version of unsum from
-[GitHub](https://github.com/) with either of these:
+You can install unsum with either of these:
 
 ``` r
 remotes::install_github("lhdjung/unsum")
 # or
-pak::pak("lhdjung/unsum")
+pak::pkg_install("unsum")
 ```
 
-Your R version should be 4.2.0 or more recent. To run unsum, you also
-need a Rust installation; see [*Installing Rust for
-unsum*](https://lhdjung.github.io/unsum/articles/install-rust.html).
+Your R version should be 4.2.0 or more recent.
 
 ## Demo
 
