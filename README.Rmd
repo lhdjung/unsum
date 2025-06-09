@@ -13,10 +13,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r include=FALSE}
-devtools::load_all()
-```
-
 
 # unsum: reconstruct raw data from summary statistics
 

@@ -15,10 +15,6 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r include=FALSE}
-devtools::load_all()
-```
-
 ```{r setup}
 library(unsum)
 ```
