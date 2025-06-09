@@ -6,16 +6,16 @@ See horns() for the metric itself.
 This adds more detail to the "horns" and "horns_uniform" columns in the
 output of closure_generate(), where "horns" is the overall mean of the
 per-sample indices found here.
-closure_horns_plot() draws a quick barplot to reveal the pattern of horns
-values.'><meta property="og:description" content='Following up on closure_generate(), you can call
+closure_horns_histogram() draws a quick barplot to reveal the
+distribution of horns values. The scale is fixed between 0 and 1.'><meta property="og:description" content='Following up on closure_generate(), you can call
 closure_horns_analyze() to compute the horns index for each individual
 sample and compute summary statistics on the distribution of these indices.
 See horns() for the metric itself.
 This adds more detail to the "horns" and "horns_uniform" columns in the
 output of closure_generate(), where "horns" is the overall mean of the
 per-sample indices found here.
-closure_horns_plot() draws a quick barplot to reveal the pattern of horns
-values.'></head><body>
+closure_horns_histogram() draws a quick barplot to reveal the
+distribution of horns values. The scale is fixed between 0 and 1.'></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -58,18 +58,19 @@ See <code><a href="horns.html">horns()</a></code> for the metric itself.</p>
 <p>This adds more detail to the <code>"horns"</code> and <code>"horns_uniform"</code> columns in the
 output of <code><a href="closure_generate.html">closure_generate()</a></code>, where <code>"horns"</code> is the overall mean of the
 per-sample indices found here.</p>
-<p><code>closure_horns_plot()</code> draws a quick barplot to reveal the pattern of horns
-values.</p>
+<p><code>closure_horns_histogram()</code> draws a quick barplot to reveal the
+distribution of horns values. The scale is fixed between 0 and 1.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">closure_horns_analyze</span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">closure_horns_plot</span><span class="op">(</span></span>
+<span><span class="fu">closure_horns_histogram</span><span class="op">(</span></span>
 <span>  <span class="va">data</span>,</span>
-<span>  bar_alpha <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>  bar_alpha <span class="op">=</span> <span class="fl">0.8</span>,</span>
 <span>  bar_color <span class="op">=</span> <span class="st">"#5D3FD3"</span>,</span>
+<span>  bar_binwidth <span class="op">=</span> <span class="fl">0.0025</span>,</span>
 <span>  text_size <span class="op">=</span> <span class="fl">12</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -80,17 +81,22 @@ values.</p>
 
 <dl><dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
 <dd><p>For <code>closure_horns_analyze()</code>, a list returned by
-<code><a href="closure_generate.html">closure_generate()</a></code>. For <code>closure_horns_plot()</code>, a list returned by
+<code><a href="closure_generate.html">closure_generate()</a></code>. For <code>closure_horns_histogram()</code>, a list returned by
 <code>closure_horns_analyze()</code>.</p></dd>
 
 
 <dt id="arg-bar-alpha">bar_alpha<a class="anchor" aria-label="anchor" href="#arg-bar-alpha"></a></dt>
-<dd><p>Numeric (length 1). Opacity of the bars. Default is <code>0.75</code>.</p></dd>
+<dd><p>Numeric (length 1). Opacity of the bars. Default is <code>0.8</code>.</p></dd>
 
 
 <dt id="arg-bar-color">bar_color<a class="anchor" aria-label="anchor" href="#arg-bar-color"></a></dt>
 <dd><p>String (length 1). Color of the bars. Default is
 <code>"#5D3FD3"</code>, a purple color.</p></dd>
+
+
+<dt id="arg-bar-binwidth">bar_binwidth<a class="anchor" aria-label="anchor" href="#arg-bar-binwidth"></a></dt>
+<dd><p>Width of the bins that divide up the x-axis, passed on to
+<code><a href="https://ggplot2.tidyverse.org/reference/geom_histogram.html" class="external-link">ggplot2::geom_histogram()</a></code>. Default is <code>0.0025</code>.</p></dd>
 
 
 <dt id="arg-text-size">text_size<a class="anchor" aria-label="anchor" href="#arg-text-size"></a></dt>
@@ -114,7 +120,7 @@ index.</p></li>
 corresponding samples in <code><a href="closure_generate.html">closure_generate()</a></code>.</p></li>
 <li><p><code>horns</code>: double. Horns index for each individual sample.</p></li>
 </ul></li>
-</ul><p><code>closure_horns_plot()</code> returns a ggplot object.</p>
+</ul><p><code>closure_horns_histogram()</code> returns a ggplot object.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -165,7 +171,7 @@ horns index values. Here, the constant is set to 1.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 209 more rows</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="fu">closure_horns_plot</span><span class="op">(</span><span class="va">data_horns</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">closure_horns_histogram</span><span class="op">(</span><span class="va">data_horns</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="closure_horns_analyze-1.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>

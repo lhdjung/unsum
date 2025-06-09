@@ -64,7 +64,7 @@ you don't want to re-run a lengthy <code><a href="closure_generate.html">closure
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">closure_write</span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="st">"."</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">closure_write</span><span class="op">(</span><span class="va">data</span>, <span class="va">path</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">closure_read</span><span class="op">(</span><span class="va">path</span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -79,8 +79,9 @@ you don't want to re-run a lengthy <code><a href="closure_generate.html">closure
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
 <dd><p>String (length 1). File path where <code>closure_write()</code> will create
-a new folder with the results. By default, the current working directory.
-For <code>closure_read()</code>, the path to that new folder.</p></dd>
+a new folder with the results. Set it to <code>"."</code> to choose the current
+working directory. For <code>closure_read()</code>, the path to an existing folder
+with results.</p></dd>
 
 </dl></div>
     <div class="section level2">
