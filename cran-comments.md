@@ -1,3 +1,13 @@
+## R CMD check results
+
+0 errors | 0 warnings | 1 note
+
+* checking installed package size ... NOTE
+    installed size is  6.0Mb
+    sub-directories of 1Mb or more:
+      libs   5.7Mb
+
+
 ## Resubmission
 This is a resubmission. In this version I have:
 
@@ -16,10 +26,3 @@ Please also note:
 * There are currently no references describing the methods in the package. (I will add a reference once there is a manuscript.)
 
 * The package contains Rust code, which is why the 'libs' sub-directory is 5.7Mb in size.
-
-
-## R CMD check results
-
-0 errors | 0 warnings | 1 note
-
-* This is a new release.
