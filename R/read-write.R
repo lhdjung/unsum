@@ -14,8 +14,9 @@
 #'
 #' @param data List returned by `closure_generate()`.
 #' @param path String (length 1). File path where `closure_write()` will create
-#'   a new folder with the results. By default, the current working directory.
-#'   For `closure_read()`, the path to that new folder.
+#'   a new folder with the results. Set it to `"."` to choose the current
+#'   working directory. For `closure_read()`, the path to an existing folder
+#'   with results.
 #'
 #' @section Folder name: The new folder's name should be sufficient to recreate
 #'   its CLOSURE results. Dashes separate values, underscores replace decimal
@@ -75,7 +76,7 @@
 #'   closure_read(path_new_folder)
 #' }
 
-closure_write <- function(data, path = ".") {
+closure_write <- function(data, path) {
 
   check_closure_generate(data)
   check_value(path, "character")
