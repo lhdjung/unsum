@@ -51,6 +51,26 @@ jobs:
       image: ${{ matrix.config.container }}
 
     steps:
+      # Install system dependencies for Linux containers
+      - name: Install system dependencies (Linux)
+        run: |
+          # Update package lists first
+          if command -v apt-get >/dev/null 2>&1; then
+            # Debian/Ubuntu based systems
+            apt-get update
+            apt-get install -y xz-utils automake autoconf libtool
+          elif command -v yum >/dev/null 2>&1; then
+            # Red Hat/CentOS/Fedora systems
+            yum install -y xz automake autoconf libtool
+          elif command -v dnf >/dev/null 2>&1; then
+            # Newer Fedora systems
+            dnf install -y xz automake autoconf libtool
+          elif command -v apk >/dev/null 2>&1; then
+            # Alpine Linux
+            apk add --no-cache xz automake autoconf libtool
+          fi
+        continue-on-error: true
+
       - uses: r-hub/actions/checkout@v1
       - uses: r-hub/actions/platform-info@v1
         with:
@@ -76,10 +96,24 @@ jobs:
         config: ${{ fromJson(needs.setup.outputs.platforms) }}
 
     steps:
-      - name: Install automake (macOS ARM64)
+      # Install system dependencies for macOS
+      - name: Install system dependencies (macOS)
         if: runner.os == 'macOS'
         run: |
-          brew install automake
+          # Install automake and related tools needed for httpuv/libuv compilation
+          brew install automake autoconf libtool
+          # Also ensure xz is available (usually comes with macOS but just in case)
+          brew install xz
+
+      # Install system dependencies for Windows
+      - name: Install system dependencies (Windows)
+        if: runner.os == 'Windows'
+        run: |
+          # Install chocolatey packages if needed
+          # Most Windows runners should have necessary tools, but adding xz just in case
+          choco install 7zip -y
+        continue-on-error: true
+
       - uses: r-hub/actions/checkout@v1
       - uses: r-hub/actions/setup-r@v1
         with:
