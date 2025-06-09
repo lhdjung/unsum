@@ -9,12 +9,15 @@
 #'   output of `closure_generate()`, where `"horns"` is the overall mean of the
 #'   per-sample indices found here.
 #'
-#'   `closure_horns_plot()` draws a quick barplot to reveal the pattern of horns
-#'   values.
+#'   `closure_horns_histogram()` draws a quick barplot to reveal the
+#'   distribution of horns values. The scale is fixed between 0 and 1.
 #'
 #' @param data For `closure_horns_analyze()`, a list returned by
-#'   `closure_generate()`. For `closure_horns_plot()`, a list returned by
+#'   `closure_generate()`. For `closure_horns_histogram()`, a list returned by
 #'   `closure_horns_analyze()`.
+#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.8`.
+#' @param bar_binwidth Width of the bins that divide up the x-axis, passed on to
+#'   [`ggplot2::geom_histogram()`]. Default is `0.0025`.
 #' @inheritParams closure_plot_bar
 #'
 #' @details The `"mad"` column overrides a default of `stats::mad()`: adjusting
@@ -39,7 +42,7 @@
 #'   corresponding samples in `closure_generate()`.
 #'     - `horns`: double. Horns index for each individual sample.
 #'
-#'   `closure_horns_plot()` returns a ggplot object.
+#'   `closure_horns_histogram()` returns a ggplot object.
 #'
 #' @include utils.R
 #'
@@ -57,7 +60,7 @@
 #' data_horns <- closure_horns_analyze(data)
 #' data_horns
 #'
-#' closure_horns_plot(data_horns)
+#' closure_horns_histogram(data_horns)
 
 closure_horns_analyze <- function(data) {
   check_closure_generate(data)
@@ -129,10 +132,11 @@ closure_horns_analyze <- function(data) {
 #' @rdname closure_horns_analyze
 #' @export
 
-closure_horns_plot <- function(
+closure_horns_histogram <- function(
   data,
-  bar_alpha = 0.75,
+  bar_alpha = 0.8,
   bar_color = "#5D3FD3",
+  bar_binwidth = 0.0025,
   text_size = 12
 ) {
 
@@ -191,15 +195,20 @@ closure_horns_plot <- function(
 
   data <- data$horns_results
 
-  # Build the plot
-  ggplot2::ggplot(data, ggplot2::aes(x = .data$horns)) +
-    ggplot2::geom_bar(
+  # Construct the plot
+  ggplot2::ggplot(data) +
+    ggplot2::geom_histogram(
+      ggplot2::aes(x = horns),
       alpha = bar_alpha,
       fill = bar_color,
-      position = ggplot2::position_dodge2()
+      binwidth = bar_binwidth
+    ) +
+    ggplot2::scale_x_continuous(
+      limits = c(0, 1),
+      oob = function(x, limits) x
     ) +
     ggplot2::labs(
-      x = "Horns index",
+      x = "Horns index (h)",
       y = "Count in all horns index values"
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
