@@ -28,7 +28,7 @@ The `mean` and `sd` arguments must be strings to preserve trailing zeros. Note t
 ```{r}
 data <- closure_generate(
   mean = "3.5",
-  sd = "2",
+  sd = "1.8",
   n = 80,
   scale_min = 1,
   scale_max = 5
@@ -49,6 +49,8 @@ closure_plot_bar(data)
 
 You can customize the plot, e.g., to show the sum of all samples found instead of the average sample, or only percentages, or different colors. See documentation at `closure_plot_bar()`. However, the default should be informative enough for a start.
 
+## CLOSURE results
+
 Now let's look at the results themselves:
 
 ```{r}
@@ -61,7 +63,7 @@ data
 
     Importantly, it also features an index of variation in bounded scales (`horns`). It ranges from 0 to 1, where 0 means no variability and 1 would be a sample evenly split between the extremes — here, 1, and 5 — with no values in between. The reference value `horns_uniform` shows which value `horns` would have if the mean sample was uniformly distributed. This is 0.5 because of the 1-5 scale. See `horns()` for more details.
 
-    The actual `horns` value is 0.65, which is a moderate to high degree of variability in the abstract. However, in practice, 0.65 might be extremely high compared to theoretical expectations: if the sample should have a roughly normal shape, even the hypothetical 0.5 uniform value would be surprisingly high, let alone the 0.65 actual value.
+    The actual `horns` value is 0.79, which is a high degree of variability even in the abstract. However, in practice, 0.79 might be extremely high compared to theoretical expectations: if the sample should have a roughly normal shape, even the hypothetical 0.5 uniform value would be surprisingly high, let alone the 0.79 actual value.
 
 -   `frequency` shows the absolute and relative frequencies of values found by CLOSURE at each scale point. It also gives us the (absolute) frequency of values in the average sample that we saw in the plot above.
 
@@ -79,6 +81,30 @@ In addition to the bar plot, unsum offers an ECDF plot for CLOSURE results:
 closure_plot_ecdf(data)
 ```
 
+## Horns index variation
+
+You may wonder about variability between the samples. Couldn't there be some with a much lower or higher horns index than the overall mean `horns`? In this case, there would be a chance that the original data looked quite different from the average. Check this using `closure_horns_analyze()`:
+
+```{r}
+data_horns <- closure_horns_analyze(data)
+data_horns
+```
+
+Also, `closure_horns_histogram()` visualizes the distribution of horns values across all samples:
+
+```{r}
+#| fig.alt: >
+#|   Barplot of horns values distribution.
+#|   The scale limits range from 0 to 1,
+#|   but values only start after 0.75
+#|   and end before 0.90.
+closure_horns_histogram(data_horns)
+```
+
+In sum, the horns values are quite tightly confined. Wide variation among them seems to occur only if `mean` and `sd` have no decimal places.
+
+## Read and write
+
 What if you have a huge object with CLOSURE results that you want to save? Write it to disk with `closure_write()`:
 
 ```{r}
@@ -93,9 +119,6 @@ In your later session, read the data in from the folder to get the same CLOSURE 
 
 ```{r}
 data_new <- closure_read(path_new_folder)
-
-# Same as the original data:
-waldo::compare(data, data_new)
 ```
 
 A caveat: don't modify the output of `closure_generate()` before passing it into other `closure_*()` functions. The latter need input with a very specific format, and if you manipulate the data between two `closure_*()` calls, these assumptions may no longer hold. Some checks are in place to detect alterations, but they may not catch all of them.
