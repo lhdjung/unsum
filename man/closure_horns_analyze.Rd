@@ -2,27 +2,31 @@
 % Please edit documentation in R/horns-analyze.R
 \name{closure_horns_analyze}
 \alias{closure_horns_analyze}
-\alias{closure_horns_plot}
+\alias{closure_horns_histogram}
 \title{Horns index for each CLOSURE sample}
 \usage{
 closure_horns_analyze(data)
 
-closure_horns_plot(
+closure_horns_histogram(
   data,
-  bar_alpha = 0.75,
+  bar_alpha = 0.8,
   bar_color = "#5D3FD3",
+  bar_binwidth = 0.0025,
   text_size = 12
 )
 }
 \arguments{
 \item{data}{For \code{closure_horns_analyze()}, a list returned by
-\code{closure_generate()}. For \code{closure_horns_plot()}, a list returned by
+\code{closure_generate()}. For \code{closure_horns_histogram()}, a list returned by
 \code{closure_horns_analyze()}.}
 
-\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
+\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
 
 \item{bar_color}{String (length 1). Color of the bars. Default is
 \code{"#5D3FD3"}, a purple color.}
+
+\item{bar_binwidth}{Width of the bins that divide up the x-axis, passed on to
+\code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.0025}.}
 
 \item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 }
@@ -50,7 +54,7 @@ corresponding samples in \code{closure_generate()}.
 }
 }
 
-\code{closure_horns_plot()} returns a ggplot object.
+\code{closure_horns_histogram()} returns a ggplot object.
 }
 \description{
 Following up on \code{\link[=closure_generate]{closure_generate()}}, you can call
@@ -62,8 +66,8 @@ This adds more detail to the \code{"horns"} and \code{"horns_uniform"} columns i
 output of \code{closure_generate()}, where \code{"horns"} is the overall mean of the
 per-sample indices found here.
 
-\code{closure_horns_plot()} draws a quick barplot to reveal the pattern of horns
-values.
+\code{closure_horns_histogram()} draws a quick barplot to reveal the
+distribution of horns values. The scale is fixed between 0 and 1.
 }
 \details{
 The \code{"mad"} column overrides a default of \code{stats::mad()}: adjusting
@@ -83,5 +87,5 @@ data <- closure_generate(
 data_horns <- closure_horns_analyze(data)
 data_horns
 
-closure_horns_plot(data_horns)
+closure_horns_histogram(data_horns)
 }
