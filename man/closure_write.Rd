@@ -5,7 +5,7 @@
 \alias{closure_read}
 \title{Write CLOSURE results to disk (and read them back in)}
 \usage{
-closure_write(data, path = ".")
+closure_write(data, path)
 
 closure_read(path)
 }
@@ -13,8 +13,9 @@ closure_read(path)
 \item{data}{List returned by \code{closure_generate()}.}
 
 \item{path}{String (length 1). File path where \code{closure_write()} will create
-a new folder with the results. By default, the current working directory.
-For \code{closure_read()}, the path to that new folder.}
+a new folder with the results. Set it to \code{"."} to choose the current
+working directory. For \code{closure_read()}, the path to an existing folder
+with results.}
 }
 \value{
 \code{closure_write()} returns the path to the new folder it created,

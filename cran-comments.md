@@ -3,6 +3,8 @@ This is a resubmission. In this version I have:
 
 * Used single quotes in the description field.
 
+* Removed the default path in closure_write().
+
 * Used tempdir() directly to write results to disk in the examples of R/read-write.R, and in vignettes/unsum.Rmd (which was not flagged but contained similar code).
 
 * Added some new features.
