@@ -85,6 +85,11 @@ horns <- function(freqs, scale_min, scale_max) {
 
   check_scale(scale_min, scale_max)
 
+  horns_internal(freqs, scale_min, scale_max)
+}
+
+
+horns_internal <- function(freqs, scale_min, scale_max) {
   scale_complete <- scale_min:scale_max
 
   # Error if arguments are incompatible in terms of length
