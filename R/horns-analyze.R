@@ -44,7 +44,7 @@
 #'
 #'   `closure_horns_histogram()` returns a ggplot object.
 #'
-#' @include utils.R
+#' @include horns.R utils.R
 #'
 #' @export
 #'
@@ -79,53 +79,106 @@ closure_horns_analyze <- function(data) {
       unlist(use.names = FALSE) |>
       tabulate(nbins = scale_length)
 
-    horns_values[i] <- horns(
+    # Using the internal helper instead of the exported `horns()` because the
+    # latter conducts a number of checks that slow it down by about 10x compared
+    # to the helper, which would often lead to long runtimes in this loop.
+    horns_values[i] <- horns_internal(
       freqs = f_absolute,
       scale_min = scale_min,
       scale_max = scale_max
     )
   }
 
-  mean <- data$metrics$horns
+  mean <- mean(horns_values)
+
+  if (!near(mean, data$metrics$horns, tol = 0.01)) {
+    cli::cli_abort(
+      message = c(
+        "Mean not the same as the \"horns\" column \
+        in the output of `closure_generate()`.",
+        "x" = "Mean: {mean}",
+        "x" = "\"horns\" column: {data$metrics$horns}"
+      )
+    )
+  }
+
   sd <- sd(horns_values)
   min <- min(horns_values)
   max <- max(horns_values)
 
-  out <- list(
-    placeholder_name = data$inputs,
-    horns_metrics = tibble::new_tibble(
-      x = list(
-        mean = mean,
-        uniform = data$metrics$horns_uniform,
-        sd = sd,
-        cv = sd / mean,
-        mad = stats::mad(horns_values, constant = 1),
-        min = min,
-        median = stats::median(horns_values),
-        max = max,
-        range = max - min
-      ),
-      nrow = 1L
-    ),
-    horns_results = tibble::new_tibble(
-      x = list(
-        id = seq_len(n_samples_all),
-        horns = horns_values
-      ),
-      nrow = n_samples_all
-    )
-  )
+  inputs <- list(data$inputs)
 
   # Anticipating a future parametrization of the technique's name
-  names_new <- names(out)
-  names_new <- c(
-    "closure_generate_inputs",
-    names_new[2L:length(names_new)]
+  names(inputs) <- "closure_generate_inputs"
+
+  freqs_horns_min_max <- vector("list", 2)
+
+  # For each extreme of the distribution of horns values (min and max), identify
+  # the samples with this extreme horns value. Then create a frequency table for
+  # all the values in this subset of samples, as in `closure_generate()`.
+  for (i in 1:2) {
+    extreme <- c(min, max)[i]
+
+    indices <- extreme |>
+      near(horns_values) |>
+      which()
+
+    freqs_horns_min_max[[i]] <- summarize_frequencies(
+      results = data$results$sample[indices],
+      scale_min = data$inputs$scale_min,
+      scale_max = data$inputs$scale_max,
+      samples_all = length(indices)
+    )
+  }
+
+  names(freqs_horns_min_max) <- c(
+    "frequency_horns_min",
+    "frequency_horns_max"
   )
 
-  names(out) <- names_new
+  inputs <- list(data$inputs)
+  names(inputs) <- "closure_generate_inputs"
 
-  out
+  # Combine the list of `closure_generate()` inputs with a new list that
+  # contains the horns-specific statistics
+  c(
+    inputs,
+    list(
+      horns_metrics = tibble::new_tibble(
+        x = list(
+          mean = mean,
+          uniform = data$metrics$horns_uniform,
+          sd = sd,
+          cv = sd / mean,
+          mad = stats::mad(horns_values, constant = 1),
+          min = min,
+          median = stats::median(horns_values),
+          max = max,
+          range = max - min
+        ),
+        nrow = 1L
+      )
+    ),
+    freqs_horns_min_max,
+    list(
+      horns_results = tibble::new_tibble(
+        x = list(
+          id = seq_len(n_samples_all),
+          horns = horns_values
+        ),
+        nrow = n_samples_all
+      )
+    )
+  )
+}
+
+
+# TODO: Figure out a way to use `closure_plot_bar()` here. This will require
+# circumventing the checks there.
+
+closure_horns_min_max_bar <- function(data, min_max = c("both", "min", "max")) {
+  # TODO: Check for output of `closure_horns_min_max()`
+  min_max <- rlang::arg_match(min_max)
 }
 
 

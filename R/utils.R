@@ -428,3 +428,10 @@ as_results_tibble <- function(n_cols) {
     nrow = n_samples_all
   )
 }
+
+
+# Copied from `dplyr::near()`
+near <- function(x, y, tol = .Machine$double.eps^0.5) {
+  abs(x - y) < tol
+}
+
