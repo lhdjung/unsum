@@ -435,3 +435,18 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
   abs(x - y) < tol
 }
 
+
+# Use an existing function, take its list of arguments, and return it.
+# Optionally, replace one or more defaults by new values.
+formals_new_defaults <- function(fn, new_defaults = NULL) {
+  formals_fn <- formals(fn)
+  if (is.null(new_defaults)) {
+    return(formals_fn)
+  }
+  if (!all(names(new_defaults) %in% names(formals_fn))) {
+    cli::cli_abort("Can only choose new defaults for existing arguments.")
+  }
+  formals_fn[names(formals_fn) %in% names(new_defaults)] <- new_defaults
+  formals_fn
+}
+

@@ -1,51 +1,3 @@
-#' Visualize CLOSURE data in a histogram
-#'
-#' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
-#'
-#'   For each scale value, the bars show how often this value appears in the
-#'   full list of possible raw data samples found by the CLOSURE algorithm.
-#'
-#' @param data List returned by [`closure_generate()`].
-#' @param frequency String (length 1). What should the bars display? The
-#'   default, `"absolute-percent"`, displays the count of each scale value and
-#'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
-#'   and `"percent"`.
-#' @param samples String (length 1). How to aggregate the samples? Either take
-#'   the average sample (`"mean"`, the default) or the sum of all samples
-#'   (`"all"`). This only matters if absolute frequencies are shown.
-#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
-#' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"#5D3FD3"`, a purple color.
-#' @param show_text Logical (length 1). Should the bars be labeled with the
-#'   corresponding frequencies? Default is `TRUE`.
-#' @param text_color String (length 1). Color of the frequency labels. By
-#'   default, the same as `bar_color`.
-#' @param text_size Numeric. Base font size in pt. Default is `12`.
-#' @param text_offset Numeric (length 1). Distance between the text labels and
-#'   the bars. Default is `0.05`.
-#' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
-#'   groups of digits in text labels. Defaults are `","` for `mark_thousand`
-#'   (e.g., `"20,000"`) and `"."` for `mark_decimal` (e.g., `"0.15"`).
-#'
-#' @return A ggplot object.
-#'
-#' @seealso [`closure_plot_ecdf()`], an alternative visualization.
-#'
-#' @export
-#'
-#' @examples
-#' # Create CLOSURE data first:
-#' data <- closure_generate(
-#'   mean = "3.5",
-#'   sd = "2",
-#'   n = 52,
-#'   scale_min = 1,
-#'   scale_max = 5
-#' )
-#'
-#' # Visualize:
-#' closure_plot_bar(data)
-
 # TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#880808",
 # "#341d5c" or similar to distinguish CLOSURE plots from SPRITE plots;
 # especially if and when SPRITE gets implemented in unsum!
@@ -63,7 +15,7 @@
 # mark_decimal <- "."
 # text_size <- 12
 
-closure_plot_bar <- function(
+plot_frequency_bar <- function(
   data,
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
   # TODO: Which one should be the default here -- all
@@ -71,7 +23,7 @@ closure_plot_bar <- function(
   samples = c("mean", "all"),
   bar_alpha = 0.75,
   # TODO: Choose favorite -- #880808, #960019, #5D3FD3
-  bar_color = "#5D3FD3",
+  bar_color = "black",
   show_text = TRUE,
   text_color = bar_color,
   text_size = 12,
@@ -79,9 +31,7 @@ closure_plot_bar <- function(
   mark_thousand = ",",
   mark_decimal = "."
 ) {
-
   # Check inputs
-  check_closure_generate(data)
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
 
@@ -208,6 +158,83 @@ closure_plot_bar <- function(
       panel.grid.minor.x = ggplot2::element_blank()
     )
 }
+
+
+#' Visualize CLOSURE data in a histogram
+#'
+#' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
+#'
+#'   For each scale value, the bars show how often this value appears in the
+#'   full list of possible raw data samples found by the CLOSURE algorithm.
+#'
+#' @param data List returned by [`closure_generate()`].
+#' @param frequency String (length 1). What should the bars display? The
+#'   default, `"absolute-percent"`, displays the count of each scale value and
+#'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
+#'   and `"percent"`.
+#' @param samples String (length 1). How to aggregate the samples? Either take
+#'   the average sample (`"mean"`, the default) or the sum of all samples
+#'   (`"all"`). This only matters if absolute frequencies are shown.
+#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
+#' @param bar_color String (length 1). Color of the bars. Default is
+#'   `"#5D3FD3"`, a purple color.
+#' @param show_text Logical (length 1). Should the bars be labeled with the
+#'   corresponding frequencies? Default is `TRUE`.
+#' @param text_color String (length 1). Color of the frequency labels. By
+#'   default, the same as `bar_color`.
+#' @param text_size Numeric. Base font size in pt. Default is `12`.
+#' @param text_offset Numeric (length 1). Distance between the text labels and
+#'   the bars. Default is `0.05`.
+#' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
+#'   groups of digits in text labels. Defaults are `","` for `mark_thousand`
+#'   (e.g., `"20,000"`) and `"."` for `mark_decimal` (e.g., `"0.15"`).
+#'
+#' @return A ggplot object.
+#'
+#' @seealso [`closure_plot_ecdf()`], an alternative visualization.
+#'
+#' @export
+#'
+#' @examples
+#' # Create CLOSURE data first:
+#' data <- closure_generate(
+#'   mean = "3.5",
+#'   sd = "2",
+#'   n = 52,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' # Visualize:
+#' closure_plot_bar(data)
+
+# Arguments for this function are generated below the definition
+closure_plot_bar <- function() {
+  check_closure_generate(data)
+
+  plot_frequency_bar(
+    data = data,
+    frequency = frequency,
+    samples = samples,
+    bar_alpha = bar_alpha,
+    bar_color = bar_color,
+    show_text = show_text,
+    text_color = text_color,
+    text_size = text_size,
+    text_offset = text_offset,
+    mark_thousand = mark_thousand,
+    mark_decimal = mark_decimal
+  )
+}
+
+# Use the arguments of the basic plot function to create a list of arguments for
+# this function, but change one default
+formals(closure_plot_bar) <- formals_new_defaults(
+  fn = plot_frequency_bar,
+  new_defaults = list(
+    bar_color = "#5D3FD3"
+  )
+)
 
 
 #' Visualize CLOSURE data in an ECDF plot
