@@ -45,10 +45,12 @@ plot_frequency_bar <- function(
   if (is.null(name_frequency_table)) {
     data <- data[[name_frequency_table[1L]]]
     nrow_table_single <- nrow(data)
+    n_tables <- 1L
   } else {
     tables_all <- NULL
     nrow_tables_all <- integer(length(name_frequency_table))
     nrow_table_single <- nrow(data[[name_frequency_table[1L]]])
+    n_tables <- length(name_frequency_table)
 
     for (i in seq_along(name_frequency_table)) {
       table_current <- data[[name_frequency_table[i]]]
@@ -115,7 +117,7 @@ plot_frequency_bar <- function(
       scales::label_number(
         accuracy = 1,
         big.mark = mark_thousand
-      )(sum(data$f_absolute)),
+      )(sum(data$f_absolute) / n_tables),
       label_values,
       if (frequency == "absolute-percent") "(%)" else NULL
     )
