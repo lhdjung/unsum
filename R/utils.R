@@ -325,6 +325,23 @@ check_type <- function(x, t, n = 1, name = NULL) {
 }
 
 
+check_length <- function(x, l, n = 1, name = NULL) {
+  if (length(x) == l) {
+    return(invisible(NULL))
+  }
+  if (is.null(name)) {
+    name <- deparse(substitute(x))
+  }
+  cli::cli_abort(
+    message = c(
+      `!` = "`{name}` must have length {l}.",
+      x = "It has length {length(x)}."
+    ),
+    call = rlang::caller_env(n)
+  )
+}
+
+
 # This helper creates the `frequency` part of `closure_generate()`'s output.
 summarize_frequencies <- function(results, scale_min, scale_max, samples_all) {
   # Flatten the list of integer vectors into a single integer vector, then
@@ -438,9 +455,9 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 
 # Use an existing function, take its list of arguments, and return it.
 # Optionally, replace one or more defaults by new values.
-formals_new_defaults <- function(fn, new_defaults = NULL) {
-  formals_fn <- formals(fn)
-  if (is.null(new_defaults)) {
+formals_change_defaults <- function(formals_fn, ...) {
+  new_defaults <- list(...)
+  if (length(new_defaults) == 0L) {
     return(formals_fn)
   }
   if (!all(names(new_defaults) %in% names(formals_fn))) {
@@ -448,5 +465,20 @@ formals_new_defaults <- function(fn, new_defaults = NULL) {
   }
   formals_fn[names(formals_fn) %in% names(new_defaults)] <- new_defaults
   formals_fn
+}
+
+
+formals_add <- function(formals_fn, ..., .after) {
+  new_formals <- list(...)
+  c(
+    formals_fn[seq_len(.after)],
+    new_formals,
+    formals_fn[(.after + 1L):length(formals_fn)]
+  )
+}
+
+
+formals_remove <- function(formals_fn, ...) {
+  formals_fn[!(names(formals_fn) %in% c(...) )]
 }
 
