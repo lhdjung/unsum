@@ -14,6 +14,8 @@
 # mark_thousand <- ","
 # mark_decimal <- "."
 # text_size <- 12
+# name_frequency_table <- c("frequency_horns_min", "frequency_horns_max")
+# facet_labels <- c("Minimal variability", "Maximal variability")
 
 plot_frequency_bar <- function(
   data,
@@ -21,6 +23,8 @@ plot_frequency_bar <- function(
   # TODO: Which one should be the default here -- all
   # samples or the average sample?
   samples = c("mean", "all"),
+  name_frequency_table = NULL,
+  facet_labels = NULL,
   bar_alpha = 0.75,
   # TODO: Choose favorite -- #880808, #960019, #5D3FD3
   bar_color = "black",
@@ -35,8 +39,32 @@ plot_frequency_bar <- function(
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
 
-  # Zoom in on the frequency table -- the only element of `data` needed here
-  data <- data$frequency
+  # Zoom in on the frequency table -- the only element of `data` needed here. If
+  # there are multiple tables, combine them to a single one while keeping track
+  # of the original tables.
+  if (is.null(name_frequency_table)) {
+    data <- data[[name_frequency_table[1L]]]
+    nrow_table_single <- nrow(data)
+  } else {
+    tables_all <- NULL
+    nrow_tables_all <- integer(length(name_frequency_table))
+    nrow_table_single <- nrow(data[[name_frequency_table[1L]]])
+
+    for (i in seq_along(name_frequency_table)) {
+      table_current <- data[[name_frequency_table[i]]]
+      tables_all <- rbind(tables_all, table_current)
+      nrow_tables_all[i] <- nrow(table_current)
+    }
+
+    # This would enable tables of different dimensions, which is currently not
+    # possible for other reasons (and probably not needed)
+    tables_all$group_frequency_table <- name_frequency_table |>
+      seq_along() |>
+      rep(nrow_tables_all)
+
+    data <- tables_all
+    rm(table_current, tables_all)
+  }
 
   # In terms of absolute frequencies, the user may choose to show the average
   # number of observations per bin instead of the full count. If so, replace the
@@ -104,13 +132,17 @@ plot_frequency_bar <- function(
   }
 
   # Ensure consistent column names to be referenced later
-  names(data) <- c("value", "frequency")
+  names(data)[names(data) != "group_frequency_table"] <- c(
+    "value",
+    "frequency"
+  )
 
   # The text geom is pre-defined here because whether it has a non-`NULL` value
   # depends on a logical argument.
   if (show_text) {
     # Prepare a percent label if the frequency display should be a percentage,
     # at least in part. Otherwise, `label_percent` is `NULL`, so it's ignored.
+    # With multiple combined tables, only one set of labels is created.
     label_percent <- switch(
       frequency,
       "absolute-percent" = paste0(
@@ -139,10 +171,22 @@ plot_frequency_bar <- function(
     geom_text_frequency <- NULL
   }
 
+
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
     geom_text_frequency +
+    {
+      if (is.null(facet_labels)) {
+        NULL
+      } else {
+        names(facet_labels) <- seq_along(facet_labels)
+        ggplot2::facet_grid(
+          cols = ggplot2::vars(group_frequency_table),
+          labeller = ggplot2::as_labeller(facet_labels)
+        )
+      }
+    } +
     ggplot2::scale_x_continuous(breaks = data$value, labels = data$value) +
     ggplot2::scale_y_continuous(
       labels = format_number_label,
@@ -223,18 +267,22 @@ closure_plot_bar <- function() {
     text_size = text_size,
     text_offset = text_offset,
     mark_thousand = mark_thousand,
-    mark_decimal = mark_decimal
+    mark_decimal = mark_decimal,
+    name_frequency_table = "frequency"
   )
 }
 
 # Use the arguments of the basic plot function to create a list of arguments for
 # this function, but change one default
-formals(closure_plot_bar) <- formals_new_defaults(
-  fn = plot_frequency_bar,
-  new_defaults = list(
+formals(closure_plot_bar) <- plot_frequency_bar |>
+  formals() |>
+  formals_change_defaults(
     bar_color = "#5D3FD3"
+  ) |>
+  formals_remove(
+    "facet_labels",
+    "name_frequency_table"
   )
-)
 
 
 #' Visualize CLOSURE data in an ECDF plot

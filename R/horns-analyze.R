@@ -44,7 +44,7 @@
 #'
 #'   `closure_horns_histogram()` returns a ggplot object.
 #'
-#' @include horns.R utils.R
+#' @include horns.R plot.R utils.R
 #'
 #' @export
 #'
@@ -173,13 +173,53 @@ closure_horns_analyze <- function(data) {
 }
 
 
-# TODO: Figure out a way to use `closure_plot_bar()` here. This will require
-# circumventing the checks there.
+# Arguments for this function are generated below the definition
+closure_horns_min_max_bar <- function() {
+  check_length(facet_labels, 2L)
 
-closure_horns_min_max_bar <- function(data, min_max = c("both", "min", "max")) {
   # TODO: Check for output of `closure_horns_min_max()`
   min_max <- rlang::arg_match(min_max)
+
+  names_min_max <- c(
+    "frequency_horns_min",
+    "frequency_horns_max"
+  )
+
+  plot_frequency_bar(
+    data = data,
+    frequency = frequency,
+    samples = samples,
+    name_frequency_table = switch(
+      min_max,
+      "both" = names_min_max,
+      "min" = names_min_max[1L],
+      "max" = names_min_max[2L]
+    ),
+    facet_labels = facet_labels,
+    bar_alpha = bar_alpha,
+    bar_color = bar_color,
+    show_text = show_text,
+    text_color = text_color,
+    text_size = text_size,
+    text_offset = text_offset,
+    mark_thousand = mark_thousand,
+    mark_decimal = mark_decimal
+  )
 }
+
+formals(closure_horns_min_max_bar) <- plot_frequency_bar |>
+  formals() |>
+  formals_change_defaults(
+    bar_color = "#5D3FD3"
+  ) |>
+  formals_change_defaults(
+    facet_labels = c("Minimal variability", "Maximal variability")
+  ) |>
+  formals_add(
+    min_max = c("both", "min", "max"),
+    .after = 1L
+  ) |>
+  formals_remove("name_frequency_table")
 
 
 #' @rdname closure_horns_analyze
