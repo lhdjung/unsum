@@ -175,9 +175,10 @@ closure_horns_analyze <- function(data) {
 
 # Arguments for this function are generated below the definition
 closure_horns_min_max_bar <- function() {
+
+  check_closure_horns_analyze(data)
   check_length(facet_labels, 2L)
 
-  # TODO: Check for output of `closure_horns_min_max()`
   min_max <- rlang::arg_match(min_max)
 
   names_min_max <- c(
@@ -233,55 +234,7 @@ closure_horns_histogram <- function(
   text_size = 12
 ) {
 
-  msg_analyze_output <- "Need output of `closure_horns_analyze()`."
-
-  check_component_tibble(
-    x = data$closure_generate_inputs,
-    name = "closure_generate_inputs",
-    dims = c(1L, 7L),
-    col_names_types = list(
-      "mean" = c("character"),
-      "sd" = c("character"),
-      "n" = c("integer", "double"),
-      "scale_min" = c("integer", "double"),
-      "scale_max" = c("integer", "double"),
-      "rounding" = c("character"),
-      "threshold" = c("integer", "double")
-    ),
-    msg_main = msg_analyze_output,
-    n = 1
-  )
-
-  check_component_tibble(
-    x = data$horns_metrics,
-    name = "horns_metrics",
-    dims = c(1L, 9L),
-    col_names_types = list(
-      "mean" = c("integer", "double"),
-      "uniform" = c("integer", "double"),
-      "sd" = c("integer", "double"),
-      "cv" = c("integer", "double"),
-      "mad" = c("integer", "double"),
-      "min" = c("integer", "double"),
-      "median" = c("integer", "double"),
-      "max" = c("integer", "double"),
-      "range" = c("integer", "double")
-    ),
-    msg_main = msg_analyze_output,
-    n = 1
-  )
-
-  check_component_tibble(
-    x = data$horns_results,
-    name = "horns_results",
-    dims = c(nrow(data$horns_results), 2L),
-    col_names_types = list(
-      "id" = "integer",
-      "horns" = "double"
-    ),
-    msg_main = msg_analyze_output,
-    n = 1
-  )
+  check_closure_horns_analyze(data)
 
   min <- data$horns_metrics$min
   max <- data$horns_metrics$max
