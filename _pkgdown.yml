@@ -16,6 +16,7 @@ reference:
 - contents:
   - closure_plot_bar
   - closure_plot_ecdf
+  - horns_plot
 - title: Metrics
 - contents:
   - closure_horns_analyze
