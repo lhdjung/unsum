@@ -189,7 +189,10 @@ plot_frequency_bar <- function(
         )
       }
     } +
-    ggplot2::scale_x_continuous(breaks = data$value, labels = data$value) +
+    ggplot2::scale_x_continuous(
+      breaks = data$value,
+      labels = data$value
+    ) +
     ggplot2::scale_y_continuous(
       labels = format_number_label,
       expand = ggplot2::expansion(c(0.01, 0.05))
@@ -275,7 +278,8 @@ closure_plot_bar <- function() {
 }
 
 # Use the arguments of the basic plot function to create a list of arguments for
-# this function, but change one default
+# this function, but change one default (to use the CLOSURE-specific color) and
+# remove two other arguments (to prevent abstraction leaks)
 formals(closure_plot_bar) <- plot_frequency_bar |>
   formals() |>
   formals_change_defaults(

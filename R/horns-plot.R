@@ -117,9 +117,6 @@ closure_horns_histogram <- function(
 
   check_closure_horns_analyze(data)
 
-  min <- data$horns_metrics$min
-  max <- data$horns_metrics$max
-
   data <- data$horns_results
 
   # Construct the plot
