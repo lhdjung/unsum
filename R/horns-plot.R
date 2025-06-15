@@ -72,7 +72,12 @@ closure_horns_min_max_bar <- function() {
       "min" = names_min_max[1L],
       "max" = names_min_max[2L]
     ),
-    facet_labels = facet_labels,
+    facet_labels = switch(
+      min_max,
+      "both" = facet_labels,
+      "min" = facet_labels[1L],
+      "max" = facet_labels[2L]
+    ),
     bar_alpha = bar_alpha,
     bar_color = bar_color,
     show_text = show_text,
