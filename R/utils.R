@@ -563,6 +563,6 @@ formals_add <- function(formals_fn, ..., .after) {
 
 
 formals_remove <- function(formals_fn, ...) {
-  formals_fn[!(names(formals_fn) %in% c(...) )]
+  formals_fn[!(names(formals_fn) %in% c(...))]
 }
 
