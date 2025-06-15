@@ -95,11 +95,6 @@ closure_horns_analyze <- function(data) {
   min <- min(horns_values)
   max <- max(horns_values)
 
-  inputs <- list(data$inputs)
-
-  # Anticipating a future parametrization of the technique's name
-  names(inputs) <- "closure_generate_inputs"
-
   freqs_horns_min_max <- vector("list", 2)
 
   # For each extreme of the distribution of horns values (min and max), identify
@@ -125,6 +120,7 @@ closure_horns_analyze <- function(data) {
     "frequency_horns_max"
   )
 
+  # Anticipating a future parametrization of the technique's name
   inputs <- list(data$inputs)
   names(inputs) <- "closure_generate_inputs"
 
