@@ -2,50 +2,38 @@
 % Please edit documentation in R/horns-analyze.R
 \name{closure_horns_analyze}
 \alias{closure_horns_analyze}
-\alias{closure_horns_histogram}
 \title{Horns index for each CLOSURE sample}
 \usage{
 closure_horns_analyze(data)
-
-closure_horns_histogram(
-  data,
-  bar_alpha = 0.8,
-  bar_color = "#5D3FD3",
-  bar_binwidth = 0.0025,
-  text_size = 12
-)
 }
 \arguments{
-\item{data}{For \code{closure_horns_analyze()}, a list returned by
-\code{closure_generate()}. For \code{closure_horns_histogram()}, a list returned by
-\code{closure_horns_analyze()}.}
-
-\item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.8}.}
-
-\item{bar_color}{String (length 1). Color of the bars. Default is
-\code{"#5D3FD3"}, a purple color.}
-
-\item{bar_binwidth}{Width of the bins that divide up the x-axis, passed on to
-\code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.0025}.}
-
-\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
+\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
 }
 \value{
-\code{closure_horns_analyze()} returns a named list of two tibbles (data
-frames):
+Named list of five tibbles (data frames):
 \itemize{
+\item \strong{closure_generate_inputs}: Adopted from the input.
 \item \strong{horns_metrics}: Summary statistics of the distribution of horns index
 values:
 \itemize{
-\item \code{mean}, \code{uniform}: same as \code{horns} and \code{horns_uniform} from
-\code{closure_generate()}'s output.
+\item \code{mean}, \code{uniform}: arithmetic mean.
+\item \code{uniform}: horns value of a hypothetical uniform distribution. Equal to
+\code{horns_uniform} from the results of \code{closure_generate()}.
 \item \code{sd}: double. Standard deviation.
 \item \code{cv}: double. Coefficient of variation, i.e., \code{sd / mean}.
-\item \code{mad}: double. Median absolute deviation; see \code{\link[stats:mad]{stats::mad()}}.
+\item \code{mad}: double. Median absolute deviation; see \code{\link[stats:mad]{stats::mad()}} but also
+details here.
 \item \code{min}, \code{median}, \code{max}: double. Minimum, median, and maximum horns
 index.
 \item \code{range}: double. Equal to \code{max - min}.
 }
+\item \strong{frequency_horns_min}, \strong{frequency_horns_max}: Frequency tables of the
+samples with the minimum or maximum horns values. They are structured like
+the \code{frequency} table in the output of \code{closure_generate()}. However, note
+that the \code{f_absolute} column here can include values from multiple samples,
+so it is better to focus on \code{f_average} or \code{f_relative}. These two refer to
+the average sample from the subset of samples with the minimum or maximum
+horns value.
 \item \strong{horns_results}:
 \itemize{
 \item \code{id}: integer. Uniquely identifies each horns index, just like their
@@ -53,27 +41,28 @@ corresponding samples in \code{closure_generate()}.
 \item \code{horns}: double. Horns index for each individual sample.
 }
 }
-
-\code{closure_horns_histogram()} returns a ggplot object.
 }
 \description{
 Following up on \code{\link[=closure_generate]{closure_generate()}}, you can call
 \code{closure_horns_analyze()} to compute the horns index for each individual
-sample and compute summary statistics on the distribution of these indices.
-See \code{\link[=horns]{horns()}} for the metric itself.
+sample and calculate summary statistics on the distribution of these
+indices. See \code{\link[=horns]{horns()}} for the metric itself.
 
-This adds more detail to the \code{"horns"} and \code{"horns_uniform"} columns in the
-output of \code{closure_generate()}, where \code{"horns"} is the overall mean of the
-per-sample indices found here.
-
-\code{closure_horns_histogram()} draws a quick barplot to reveal the
-distribution of horns values. The scale is fixed between 0 and 1.
+See \link{horns_plot} for follow-up visualizations.
 }
 \details{
-The \code{"mad"} column overrides a default of \code{stats::mad()}: adjusting
-the result via multiplication by a constant (about 1.48). This assumes a
-normal distribution, which generally does not seem to be the case with
-horns index values. Here, the constant is set to 1.
+The results of \code{closure_generate()} already include a \code{"horns"}
+metric that is computed from the frequencies of scale values in the mean
+sample. This is different from the \code{"mean"} metric found here, which is the
+mean of the horns indices of all samples. These two values can differ
+because the horns index is based on squared deviations, which can result in
+non-linearities.
+
+The \code{"mad"} column is created by \code{\link[stats:mad]{stats::mad()}}, but it does not rely on
+this function's default of adjusting the result via multiplication by a
+constant (about 1.48). This assumes a normal distribution, which is not
+generally the case with horns index values. Here, the constant is set to
+\code{1}.
 }
 \examples{
 data <- closure_generate(
@@ -84,8 +73,5 @@ data <- closure_generate(
   scale_max = 5
 )
 
-data_horns <- closure_horns_analyze(data)
-data_horns
-
-closure_horns_histogram(data_horns)
+closure_horns_analyze(data)
 }
