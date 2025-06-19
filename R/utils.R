@@ -409,8 +409,8 @@ check_type <- function(x, t, n = 1, name = NULL) {
 }
 
 
-check_length <- function(x, l, n = 1, name = NULL) {
-  if (length(x) == l) {
+check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
+  if (length(x) == l || (allow_null && is.null(x))) {
     return(invisible(NULL))
   }
   if (is.null(name)) {
@@ -554,6 +554,9 @@ formals_change_defaults <- function(formals_fn, ...) {
 
 formals_add <- function(formals_fn, ..., .after) {
   new_formals <- list(...)
+  if (is.character(.after)) {
+    .after <- match(.after, names(formals_fn))
+  }
   c(
     formals_fn[seq_len(.after)],
     new_formals,

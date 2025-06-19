@@ -23,8 +23,10 @@ plot_frequency_bar <- function(
   # TODO: Which one should be the default here -- all
   # samples or the average sample?
   samples = c("mean", "all"),
+  min_max_values = NULL,
   name_frequency_table = NULL,
   facet_labels = NULL,
+  facet_labels_parens = NULL,
   bar_alpha = 0.75,
   # TODO: Choose favorite -- #880808, #960019, #5D3FD3
   bar_color = "black",
@@ -178,14 +180,46 @@ plot_frequency_bar <- function(
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
     geom_text_frequency +
+    # Conditionally facet the plot -- needed for `closure_horns_min_max_bar()`
     {
       if (is.null(facet_labels)) {
+        # Warn in case the arguments don't quite fit together
+        if (!is.null(facet_labels_parens)) {
+          cli::cli_warn(
+            "`facet_labels_parens` has no effect \
+            because `facet_labels` is `NULL`."
+          )
+        }
         NULL
       } else {
+        # Construct the part of the label inside the parentheses; for example,
+        # "(h = 0.12)" with the "h" in italics
+        part_parens <- if (is.null(facet_labels_parens)) {
+          NULL
+        } else {
+          inside_parens <- scales::label_number(
+            accuracy = 0.01,
+            decimal.mark = mark_decimal
+          )(min_max_values)
+          paste0(
+            "~(italic(",
+            facet_labels_parens,
+            ")~`=`~",
+            inside_parens,
+            ")"
+          )
+        }
+        facet_labels <- paste0(
+          gsub(" ", "~", facet_labels),
+          part_parens
+        )
         names(facet_labels) <- seq_along(facet_labels)
         ggplot2::facet_grid(
           cols = ggplot2::vars(group_frequency_table),
-          labeller = ggplot2::as_labeller(facet_labels)
+          labeller = ggplot2::labeller(
+            group_frequency_table = facet_labels,
+            .default = ggplot2::label_parsed
+          )
         )
       }
     } +
@@ -287,7 +321,9 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
   ) |>
   formals_remove(
     "facet_labels",
-    "name_frequency_table"
+    "facet_labels_parens",
+    "name_frequency_table",
+    "min_max_values"
   )
 
 

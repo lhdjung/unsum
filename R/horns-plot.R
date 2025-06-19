@@ -17,6 +17,9 @@
 #' @param facet_labels String (length 2). Only in `closure_horns_min_max_bar()`.
 #'   Labels of the two individual plots. Default is `c("Minimal variability",
 #'   "Maximal variability")`.
+#' @param facet_labels_parens String (length 1). Italicized part of the facet
+#'   labels inside the parentheses. Set it to `NULL` to remove the parentheses
+#'   altogether. Default is `"h"`.
 #' @param bar_binwidth Numeric (length 1). Only in `closure_horns_histogram()`.
 #'   Width of the bins that divide up the x-axis, passed on to
 #'   [`ggplot2::geom_histogram()`]. Default is `0.0025`.
@@ -51,9 +54,10 @@
 
 # Arguments for this function are generated below the definition
 closure_horns_min_max_bar <- function() {
-
   check_closure_horns_analyze(data)
+
   check_length(facet_labels, 2L)
+  check_length(facet_labels_parens, 1L, allow_null = TRUE)
 
   min_max <- rlang::arg_match(min_max)
 
@@ -66,6 +70,10 @@ closure_horns_min_max_bar <- function() {
     data = data,
     frequency = frequency,
     samples = samples,
+    min_max_values = c(
+      data$horns_metrics$min,
+      data$horns_metrics$max
+    ),
     name_frequency_table = switch(
       min_max,
       "both" = names_min_max,
@@ -78,6 +86,7 @@ closure_horns_min_max_bar <- function() {
       "min" = facet_labels[1L],
       "max" = facet_labels[2L]
     ),
+    facet_labels_parens = facet_labels_parens,
     bar_alpha = bar_alpha,
     bar_color = bar_color,
     show_text = show_text,
@@ -97,11 +106,17 @@ formals(closure_horns_min_max_bar) <- plot_frequency_bar |>
   formals_change_defaults(
     facet_labels = c("Minimal variability", "Maximal variability")
   ) |>
+  formals_change_defaults(
+    facet_labels_parens = "h"
+  ) |>
   formals_add(
     min_max = c("both", "min", "max"),
-    .after = 1L
+    .after = "data"
   ) |>
-  formals_remove("name_frequency_table")
+  formals_remove(
+    "min_max_values",
+    "name_frequency_table"
+  )
 
 
 #' @rdname horns_plot

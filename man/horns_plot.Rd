@@ -12,6 +12,7 @@ closure_horns_min_max_bar(
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
   samples = c("mean", "all"),
   facet_labels = c("Minimal variability", "Maximal variability"),
+  facet_labels_parens = "h",
   bar_alpha = 0.75,
   bar_color = "#5D3FD3",
   show_text = TRUE,
@@ -48,6 +49,10 @@ the average sample (\code{"mean"}, the default) or the sum of all samples
 
 \item{facet_labels}{String (length 2). Only in \code{closure_horns_min_max_bar()}.
 Labels of the two individual plots. Default is \code{c("Minimal variability", "Maximal variability")}.}
+
+\item{facet_labels_parens}{String (length 1). Italicized part of the facet
+labels inside the parentheses. Set it to \code{NULL} to remove the parentheses
+altogether. Default is \code{"h"}.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
