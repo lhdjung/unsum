@@ -13,10 +13,10 @@ currently supports sets of mean, SD, sample size, and scale bounds. This
 can be useful in forensic metascience to identify impossible or
 implausible reported numbers.
 
-The package features *CLOSURE: Complete Listing of Original Samples of
-Underlying Raw Evidence*, a fast algorithm implemented in Rust. Go to
-[*Get started*](https://lhdjung.github.io/unsum/articles/unsum.html) to
-learn how to use it.
+The package features *CLOSURE: complete listing of original samples of
+underlying raw evidence*, a fast algorithm implemented in Rust. Go to
+[**Get started**](https://lhdjung.github.io/unsum/articles/unsum.html)
+to learn how to use it.
 
 CLOSURE is exhaustive, which makes it computationally intensive. If your
 code takes too long to run, consider using
@@ -28,7 +28,7 @@ code takes too long to run, consider using
 You can install unsum with either of these:
 
 ``` r
-remotes::install_github("lhdjung/unsum")
+install.packages("unsum")
 # or
 pak::pkg_install("unsum")
 ```
