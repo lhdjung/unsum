@@ -76,13 +76,16 @@ data <- closure_generate(
   scale_max = 5
 )
 
-# You should write to a real folder instead;
-# or just leave `path` unspecified. I use a
-# fake folder just for this example.
+# Writing to a temporary folder just for this example.
+# You should write to a real folder instead.
+# A simple way is `path = "."` for your current directory.
 path_new_folder <- closure_write(data, path = tempdir())
 
 # In a later session, conveniently read the files
 # back into R. This returns the original list,
 # identical except for floating-point error.
+# (Of course, the `path_new_folder` variable will
+# no longer be available -- instead, paste the path
+# to your folder here.)
 closure_read(path_new_folder)
 }
