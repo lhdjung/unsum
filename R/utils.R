@@ -1,6 +1,10 @@
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 
+# Load helpers that are only needed at build-time. Storing them under inst/
+# rather than R/ avoids unnecessarily including them in the final binary.
+source("inst/build-helpers/fn-formals.R")
+
 
 # Error if input is not an unchanged CLOSURE list.
 check_closure_generate <- function(data) {
@@ -528,44 +532,5 @@ as_results_tibble <- function(n_cols) {
     ),
     nrow = n_samples_all
   )
-}
-
-
-# Copied from `dplyr::near()`
-near <- function(x, y, tol = .Machine$double.eps^0.5) {
-  abs(x - y) < tol
-}
-
-
-# Use an existing function, take its list of arguments, and return it.
-# Optionally, replace one or more defaults by new values.
-formals_change_defaults <- function(formals_fn, ...) {
-  new_defaults <- list(...)
-  if (length(new_defaults) == 0L) {
-    return(formals_fn)
-  }
-  if (!all(names(new_defaults) %in% names(formals_fn))) {
-    cli::cli_abort("Can only choose new defaults for existing arguments.")
-  }
-  formals_fn[names(formals_fn) %in% names(new_defaults)] <- new_defaults
-  formals_fn
-}
-
-
-formals_add <- function(formals_fn, ..., .after) {
-  new_formals <- list(...)
-  if (is.character(.after)) {
-    .after <- match(.after, names(formals_fn))
-  }
-  c(
-    formals_fn[seq_len(.after)],
-    new_formals,
-    formals_fn[(.after + 1L):length(formals_fn)]
-  )
-}
-
-
-formals_remove <- function(formals_fn, ...) {
-  formals_fn[!(names(formals_fn) %in% c(...))]
 }
 
