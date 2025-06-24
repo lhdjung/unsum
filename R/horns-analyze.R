@@ -72,11 +72,14 @@ closure_horns_analyze <- function(data) {
   scale_max <- data$inputs$scale_max
   scale_length <- length(scale_min:scale_max)
 
+  before_scale_min <- scale_min - 1
+
   horns_values <- numeric(n_samples_all)
 
   # Calculate the horns index of every single sample
   for (i in seq_len(n_samples_all)) {
-    f_absolute <- data$results$sample[[i]] |>
+    f_absolute <-
+      (data$results$sample[[i]] - before_scale_min) |>
       unlist(use.names = FALSE) |>
       tabulate(nbins = scale_length)
 
