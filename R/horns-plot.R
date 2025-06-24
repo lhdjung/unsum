@@ -1,10 +1,11 @@
 #' Visualize horns values distribution
 #'
-#' @description Two functions that follow up on [`closure_horns_analyze()`]:
+#' @description Two plot functions that follow up on
+#'   [`closure_horns_analyze()`]:
 #' - `closure_horns_min_max_bar()` draws barplots of the mean samples from among
-#'   those with the minimum or maximum horns index. It displays the typical
-#'   sample with the least or most amount of variability from among all CLOSURE
-#'   samples.
+#'   those with the minimum or maximum horns index (\eqn{h}). It displays the
+#'   typical sample with the least or most amount of variability from among all
+#'   CLOSURE samples.
 #' - `closure_horns_histogram()` draws a quick barplot of the distribution of
 #'   horns values. The scale is fixed between 0 and 1, so it is aligned with the
 #'   range of the horns index. This reveals the big picture, putting any
@@ -15,17 +16,29 @@
 #'   Which plot(s) to show? Options are `"both"` (the default), `"min"`, and
 #'   `"max"`.
 #' @param facet_labels String (length 2). Only in `closure_horns_min_max_bar()`.
-#'   Labels of the two individual plots. Default is `c("Minimal variability",
-#'   "Maximal variability")`.
-#' @param facet_labels_parens String (length 1). Italicized part of the facet
-#'   labels inside the parentheses. Set it to `NULL` to remove the parentheses
-#'   altogether. Default is `"h"`.
+#'   Labels of the two individual plots. Set it to `NULL` to remove the labels.
+#'   Default is `c("Minimal variability", "Maximal variability")`.
+#' @param facet_labels_parens String (length 1). Only in
+#'   `closure_horns_min_max_bar()`. Italicized part of the facet labels inside
+#'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
+#'   details. Default is `"h"`.
 #' @param bar_binwidth Numeric (length 1). Only in `closure_horns_histogram()`.
 #'   Width of the bins that divide up the x-axis, passed on to
 #'   [`ggplot2::geom_histogram()`]. Default is `0.0025`.
 #' @inheritParams closure_plot_bar
 #'
+#' @details By default, both faceted plots in `closure_horns_min_max_bar()` have
+#'   a label that includes their horns index (\eqn{h}); see [`horns()`]. You can
+#'   remove the parenthesized part using `facet_labels_parens = NULL` or the
+#'   entire label using `facet_labels = NULL`.
+#'
+#'   Although `facet_labels_parens` enables you to choose a different string
+#'   inside the parentheses than the default `"h"`, this might not be advisable:
+#'   if the parentheses are present, they will always display the horns index.
+#'
 #' @name horns_plot
+#'
+#' @return A ggplot object.
 #'
 #' @examples
 #' # Preparation (1 / 2): run CLOSURE
@@ -56,10 +69,16 @@
 closure_horns_min_max_bar <- function() {
   check_closure_horns_analyze(data)
 
-  check_length(facet_labels, 2L)
+  check_length(facet_labels, 2L, allow_null = TRUE)
   check_length(facet_labels_parens, 1L, allow_null = TRUE)
 
   min_max <- rlang::arg_match(min_max)
+
+  # Enable plots without facet labels
+  if (is.null(facet_labels)) {
+    facet_labels <- rep("\"\"", 2)
+    facet_labels_parens <- NULL
+  }
 
   names_min_max <- c(
     "frequency_horns_min",
