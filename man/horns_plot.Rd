@@ -48,11 +48,13 @@ the average sample (\code{"mean"}, the default) or the sum of all samples
 (\code{"all"}). This only matters if absolute frequencies are shown.}
 
 \item{facet_labels}{String (length 2). Only in \code{closure_horns_min_max_bar()}.
-Labels of the two individual plots. Default is \code{c("Minimal variability", "Maximal variability")}.}
+Labels of the two individual plots. Set it to \code{NULL} to remove the labels.
+Default is \code{c("Minimal variability", "Maximal variability")}.}
 
-\item{facet_labels_parens}{String (length 1). Italicized part of the facet
-labels inside the parentheses. Set it to \code{NULL} to remove the parentheses
-altogether. Default is \code{"h"}.}
+\item{facet_labels_parens}{String (length 1). Only in
+\code{closure_horns_min_max_bar()}. Italicized part of the facet labels inside
+the parentheses. Set it to \code{NULL} to remove the parentheses altogether. See
+details. Default is \code{"h"}.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
@@ -78,18 +80,32 @@ groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand
 Width of the bins that divide up the x-axis, passed on to
 \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.0025}.}
 }
+\value{
+A ggplot object.
+}
 \description{
-Two functions that follow up on \code{\link[=closure_horns_analyze]{closure_horns_analyze()}}:
+Two plot functions that follow up on
+\code{\link[=closure_horns_analyze]{closure_horns_analyze()}}:
 \itemize{
 \item \code{closure_horns_min_max_bar()} draws barplots of the mean samples from among
-those with the minimum or maximum horns index. It displays the typical
-sample with the least or most amount of variability from among all CLOSURE
-samples.
+those with the minimum or maximum horns index (\eqn{h}). It displays the
+typical sample with the least or most amount of variability from among all
+CLOSURE samples.
 \item \code{closure_horns_histogram()} draws a quick barplot of the distribution of
 horns values. The scale is fixed between 0 and 1, so it is aligned with the
 range of the horns index. This reveals the big picture, putting any
 variability among horns values into perspective.
 }
+}
+\details{
+By default, both faceted plots in \code{closure_horns_min_max_bar()} have
+a label that includes their horns index (\eqn{h}); see \code{\link[=horns]{horns()}}. You can
+remove the parenthesized part using \code{facet_labels_parens = NULL} or the
+entire label using \code{facet_labels = NULL}.
+
+Although \code{facet_labels_parens} enables you to choose a different string
+inside the parentheses than the default \code{"h"}, this might not be advisable:
+if the parentheses are present, they will always display the horns index.
 }
 \examples{
 # Preparation (1 / 2): run CLOSURE
