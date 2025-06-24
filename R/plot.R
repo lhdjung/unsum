@@ -442,7 +442,7 @@ closure_plot_ecdf <- function(
       geom = "segment",
       linetype = 2,
       alpha = reference_line_alpha,
-      x = 0,
+      x = values_unique[1L],
       xend = values_unique[length(values_unique)],
       y = 0,
       yend = 1
