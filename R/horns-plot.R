@@ -166,8 +166,8 @@ closure_horns_histogram <- function(
       oob = function(x, limits) x
     ) +
     ggplot2::labs(
-      x = "Horns index (h)",
-      y = "Count in all horns index values"
+      x = expression(paste("Horns index (", italic("h"), ")")),
+      y = expression(paste("Count in all ", italic("h"), " values"))
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
