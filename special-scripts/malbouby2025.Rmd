@@ -1,5 +1,5 @@
 ---
-title: "malbouby2025"
+title: "Comment on Malbouby et al. (2025)"
 output: html_document
 ---
 
@@ -11,6 +11,8 @@ devtools::load_all(".")
 
 Among the concerns raised by Malbouby et al. (2025) was the shape of the sample reconstructed from summary statistics in the original paper using the SPRITE technique. The average reconstructed sample showed a large amount of variation approximating a bimodal distribution, and indeed what [Heathers (2017)](https://jamesheathers.medium.com/sprite-case-study-3-soup-is-good-albeit-extremely-confusing-food-96ea526c488d) referred to as the "horns of no confidence": a much larger degree of polarization towards the scale limits than what would be expected on theoretical grounds (in this case, human body mass index).
 
+## CLOSURE analysis
+
 Here, I want to use CLOSURE, a complete generalization of the probabilistic SPRITE algorithm, to assess the SPRITE analysis by Malbouby et al. (2025). Whereas SPRITE only creates a random assortment of samples that could have lead to the reported summary statistics, CLOSURE always finds all of those possible samples.
 
 ```{r}
@@ -19,7 +21,8 @@ result <- closure_generate(
   sd = "3.1",
   n = 30,
   scale_min = 27,
-  scale_max = 34
+  scale_max = 34,
+  ask_to_proceed = FALSE
 )
 ```
 
@@ -36,6 +39,30 @@ This is remarkable given that one would not expect a uniform distribution, let a
 Visualizing the results:
 
 ```{r}
-closure_plot_bar(result, frequency = "percent")
+closure_plot_bar(result)
 closure_plot_ecdf(result)
 ```
+
+## Minimal and maximal variability
+
+However, one possible response by the authors might be that their original sample looked very different. CLOSURE might provide the average sample that is possible given the summary statistics, but it cannot rule out substantial variability.
+
+This claim can be tested as follows:
+
+```{r}
+result_horns <- closure_horns_analyze(result)
+result_horns
+```
+
+This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability is negligible. In particular, the original sample cannot have had less variability than the left panel, which also shows a starkly bimodal distribution where observations are concentrated at the extremes.
+
+```{r}
+closure_horns_min_max_bar(result_horns, frequency = "absolute")
+```
+
+The lack of meaningful differences between the samples is also demonstrated by a histogram of the $h$ values across all samples, plotted on the 0-1 range of $h$:
+
+```{r}
+closure_horns_histogram(result_horns)
+```
+
