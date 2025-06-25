@@ -54,7 +54,7 @@ result_horns <- closure_horns_analyze(result)
 result_horns
 ```
 
-This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability is negligible. In particular, the original sample cannot have had less variability than the left panel, which also shows a starkly bimodal distribution where observations are concentrated at the extremes.
+This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability seem negligible. In particular, the original sample cannot have had less variability than the left panel, and even this graph shows a starkly bimodal distribution where observations are concentrated at the extremes. Correspondingly, the horns indices of the two extreme distributions only differ by 0.04 (the range is 0 to 1).
 
 ```{r}
 closure_horns_min_max_bar(result_horns, frequency = "absolute")
@@ -65,4 +65,3 @@ The lack of meaningful differences between the samples is also demonstrated by a
 ```{r}
 closure_horns_histogram(result_horns)
 ```
-
