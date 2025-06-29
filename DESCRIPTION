@@ -35,7 +35,7 @@ Collate:
     'horns-analyze.R'
     'horns-plot.R'
     'read-write.R'
-Config/rextendr/version: 0.4.0.9000
+Config/rextendr/version: 0.4.1
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
 BugReports: https://github.com/lhdjung/unsum/issues
