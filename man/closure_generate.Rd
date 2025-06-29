@@ -12,6 +12,7 @@ closure_generate(
   scale_max,
   rounding = "up_or_down",
   threshold = 5,
+  path = NULL,
   warn_if_empty = TRUE,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
