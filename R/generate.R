@@ -137,6 +137,7 @@ closure_generate <- function(
   scale_max,
   rounding = "up_or_down",
   threshold = 5,
+  path = NULL,
   warn_if_empty = TRUE,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
@@ -177,6 +178,15 @@ closure_generate <- function(
 
   if (is.null(rounding_error_sd)) {
     rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
+  }
+
+  # TODO: Reuse the folder / file creation code from `closure_write()` except
+  # not writing things directly right away but waiting for
+  # `create_combinations()` to write the results incrementally.
+  parquet_config <- if (is.null(path)) {
+    NULL
+  } else {
+    list(file_path = path, batch_size = 1000)
   }
 
   # Make an educated guess about the complexity, and hence the runtime duration
@@ -233,7 +243,8 @@ closure_generate <- function(
     scale_min = scale_min,
     scale_max = scale_max,
     rounding_error_mean = rounding_error_mean,
-    rounding_error_sd = rounding_error_sd
+    rounding_error_sd = rounding_error_sd,
+    write = parquet_config
   )
 
   n_samples_all <- length(results)
