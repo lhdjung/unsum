@@ -11,4 +11,7 @@ name = 'unsum'
 
 [dependencies]
 extendr-api = '*'
-closure-core = "1.0.0"
+closure-core = { git = "https://github.com/lhdjung/closure-core.git", branch = "optimize" }
+
+[profile.release]
+lto = "fat"
