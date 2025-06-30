@@ -94,13 +94,16 @@ horns_internal <- function(freqs, scale_min, scale_max) {
 
   # Error if arguments are incompatible in terms of length
   if (length(scale_complete) != length(freqs)) {
-    cli::cli_abort(c(
-      "Scale implied by `scale_min` ({scale_min}) \
-      and `scale_max` ({scale_max}) must match `freqs` in length.",
-      "x" = " Scale: length {length(scale_complete)} (i.e., {scale_min} \
-      through {scale_max})",
-      "x" = "`freqs`: length {length(freqs)}"
-    ))
+    cli::cli_abort(
+      message = c(
+        "Scale implied by `scale_min` ({scale_min}) \
+        and `scale_max` ({scale_max}) must match `freqs` in length.",
+        "x" = " Scale: length {length(scale_complete)} (i.e., {scale_min} \
+        through {scale_max})",
+        "x" = "`freqs`: length {length(freqs)}"
+      ),
+      call = rlang::caller_env()
+    )
   }
 
   freqs_relative <- freqs / sum(freqs)
