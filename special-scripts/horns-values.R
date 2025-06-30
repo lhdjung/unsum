@@ -5,7 +5,7 @@ library(dplyr)
 theme_set(theme_minimal(base_size = 12))
 
 # Borrowed from scrutiny's internals
-censor <- function (x, left, right) {
+censor <- function(x, left, right) {
   x[x < left] <- left
   x[x > right] <- right
   x
@@ -156,11 +156,13 @@ ggplot(df1, aes(x = sd, y = horns)) +
 
 # Uniform distribution ----------------------------------------------------
 
+# Create many different scale endpoints (i.e., `scale_max` values), but always
+# start at 1, so that the endpoint is equal to the scale length
 df2 <- tibble::tibble(
   scale_length = 2:20,
   horns_uniform = vapply(
     scale_length,
-    function(x) horns_uniform(scale_points = x),
+    function(endpoint) horns_uniform(1, endpoint),
     numeric(1)
   )
 )
