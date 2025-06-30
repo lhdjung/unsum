@@ -13,7 +13,7 @@ Among the concerns raised by Malbouby et al. (2025) was the shape of the sample 
 
 ## CLOSURE analysis
 
-Here, I want to use CLOSURE, a complete generalization of the probabilistic SPRITE algorithm, to assess the SPRITE analysis by Malbouby et al. (2025). Whereas SPRITE only creates a random assortment of samples that could have lead to the reported summary statistics, CLOSURE always finds all of those possible samples.
+Here, I want to use CLOSURE, a complete and exhaustive alternative to the probabilistic SPRITE algorithm, to assess the SPRITE analysis by Malbouby et al. (2025). Whereas SPRITE only creates a random assortment of samples that could have lead to the reported summary statistics, CLOSURE always finds all of those possible samples.
 
 ```{r}
 result <- closure_generate(
@@ -32,7 +32,7 @@ The results in detail:
 result
 ```
 
-Among the metrics, a particularly interesting quantity is the horns index, $h$. It ranges from 0 to 1, where 0 means that all observations have the same value, and 1 represents a sample that is evenly split between the scale limits, with no observations in between. In this way, $h$ quantifies the variability among the reconstructed values given their scale limits. Here, $h$ is 0.76, a relatively high value. For reference, a uniform distribution with 8 scale values, such as those from 27 to 34 here, would only have an $h$ of 0.43, as the `horns_uniform` column shows.
+Among the metrics, a particularly interesting quantity is the horns index ($h$). It ranges from 0 to 1, where 0 means that all observations have the same value, and 1 represents a sample that is evenly split between the scale limits, with no observations in between. In this way, $h$ quantifies the variability among the reconstructed values given their scale limits. Here, $h$ is 0.76, a relatively high value. For reference, a uniform distribution with 8 scale values, such as those from 27 to 34 here, would only have an $h$ of 0.43, as the `horns_uniform` column shows.
 
 This is remarkable given that one would not expect a uniform distribution, let alone a sample as polarized as the one implied by the summary statistics, to result from a BMI measurement. Rather, one would expect a stronger central tendency.
 
@@ -45,7 +45,7 @@ closure_plot_ecdf(result)
 
 ## Minimal and maximal variability
 
-However, one possible response by the authors might be that their original sample looked very different. CLOSURE might provide the average sample that is possible given the summary statistics, but it cannot rule out substantial variability.
+However, one possible response by the authors might be that their original sample looked very different. CLOSURE provides the average sample that is possible given the summary statistics but, one may object, it cannot rule out important differences between the samples.
 
 This claim can be tested as follows:
 
