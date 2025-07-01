@@ -159,6 +159,7 @@ closure_read <- function(path) {
 
   files_all <- dir(path)
   files_expected <- c(
+    "info.txt",
     "inputs.csv",
     "metrics.csv",
     "frequency.csv",

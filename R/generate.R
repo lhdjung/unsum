@@ -1,113 +1,3 @@
-#' Generate CLOSURE samples
-#'
-#' @description Call `closure_generate()` to run the CLOSURE algorithm on a
-#'   given set of summary statistics.
-#'
-#'   This can take seconds, minutes, or longer, depending on the input. Wide
-#'   variance and large `n` often lead to many samples, i.e., long runtimes.
-#'   These effects interact dynamically. For example, with large `n`, even very
-#'   small increases in `sd` can greatly increase runtime and number of values
-#'   found.
-#'
-#'   If the inputs are inconsistent, there is no solution. The function will
-#'   then return empty results and throw a warning.
-#'
-#' @param mean String (length 1). Reported mean.
-#' @param sd String (length 1). Reported sample standard deviation.
-#' @param n Numeric (length 1). Reported sample size.
-#' @param scale_min,scale_max Numeric (length 1 each). Minimal and maximal
-#'   possible values of the measurement scale. For example, with a 1-7 Likert
-#'   scale, use `scale_min = 1` and `scale_max = 7`. Prefer the empirical min
-#'   and max if available: they constrain the possible values further.
-#' @param rounding String (length 1). Rounding method assumed to have created
-#'   `mean` and `sd`. See [*Rounding
-#'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
-#'   but also the *Rounding limitations* section below. Default is
-#'   `"up_or_down"` which, e.g., unrounds `0.12` to `0.115` as a lower bound and
-#'   `0.125` as an upper bound.
-#' @param threshold Numeric (length 1). Number from which to round up or down,
-#'   if `rounding` is any of `"up_or_down"`, `"up"`, and `"down"`. Default is
-#'   `5`.
-#' @param warn_if_empty Logical (length 1). Should a warning be shown if no
-#'   samples are found? Default is `TRUE`.
-#' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
-#'   very long, should the function prompt you to proceed or abort in an
-#'   interactive setting? Default is `TRUE`.
-#' @param rounding_error_mean,rounding_error_sd Numeric (length 1 each). Option
-#'   to manually set the rounding error around `mean` and `sd`. This is meant
-#'   for development and might be removed in the future, so most users can
-#'   ignore it.
-#'
-#' @section Rounding limitations: The `rounding` and `threshold` arguments are
-#'   not fully implemented. For example, CLOSURE currently treats all rounding
-#'   bounds as inclusive, even if the `rounding` specification would imply
-#'   otherwise.
-#'
-#'   Many specifications of the two arguments will not make any difference, and
-#'   those that do will most likely lead to empty results.
-#'
-#' @return Named list of four tibbles (data frames):
-#'   - **`inputs`**: Arguments to this function.
-#'   - **`metrics`**:
-#'     - `samples_initial`: integer. The basis for computing CLOSURE results,
-#'   based on scale range only. See [`closure_count_initial()`].
-#'     - `samples_all`: integer. Number of all samples. Equal to the number
-#'   of rows in `results`.
-#'     - `values_all`: integer. Number of all individual values found. Equal to
-#'   `n * samples_all`.
-#'     - `horns`: double. Measure of dispersion for bounded scales; see
-#'   [`horns()`].
-#'     - `horns_uniform`: double. Value `horns` would have if the reconstructed
-#'   sample was uniformly distributed.
-#'   - **`frequency`**:
-#'     - `value`: integer. Scale values derived from `scale_min` and
-#'   `scale_max`.
-#'     - `f_average`: Count of scale values in the mean `results` sample.
-#'     - `f_absolute`: integer. Count of individual scale values found in the
-#'   `results` samples.
-#'     - `f_relative`: double. Values' share of total values found.
-#'   - **`results`**:
-#'     - `id`: integer. Runs from `1` to `samples_all`.
-#'     - `sample`: list of integer vectors. Each of these vectors has
-#'   length `n`. It is a sample (or distribution) of individual scale values
-#'   found by CLOSURE.
-#'
-#' @include utils.R count.R horns.R performance.R extendr-wrappers.R
-#'
-#' @export
-#'
-#' @examples
-#' # High spread often leads to many samples --
-#' # here, 3682.
-#' data_high <- closure_generate(
-#'   mean = "3.5",
-#'   sd = "1.7",
-#'   n = 70,
-#'   scale_min = 1,
-#'   scale_max = 5
-#' )
-#'
-#' data_high
-#'
-#' # Get a clear picture of the distribution
-#' # by following up with `closure_plot_bar()`:
-#' closure_plot_bar(data_high)
-#'
-#' # Low spread, only 3 samples, and not all
-#' # scale values are possible.
-#' data_low <- closure_generate(
-#'   mean = "2.9",
-#'   sd = "0.5",
-#'   n = 70,
-#'   scale_min = 1,
-#'   scale_max = 5
-#' )
-#'
-#' data_low
-#'
-#' # This can also be shown by `closure_plot_bar()`:
-#' closure_plot_bar(data_low)
-
 # Note: some helper functions called here can be found in the R/utils.R file.
 # The most notable exception `create_combinations()`, is in
 # R/extendr-wrappers.R, but all it does is to call into Rust code in
@@ -130,15 +20,15 @@
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
 
-closure_generate <- function(
+generate_from_mean_sd_n <- function(
   mean,
   sd,
   n,
   scale_min,
   scale_max,
+  path,
   rounding = "up_or_down",
   threshold = 5,
-  path = NULL,
   warn_if_empty = TRUE,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
@@ -181,9 +71,6 @@ closure_generate <- function(
     rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
   }
 
-  # TODO: Reuse the folder / file creation code from `closure_write()` except
-  # not writing things directly right away but waiting for
-  # `create_combinations()` to write the results incrementally.
   if (is.null(path)) {
     parquet_config <- NULL
   } else {
@@ -307,10 +194,9 @@ closure_generate <- function(
     nrow = 1L
   )
 
-  # TODO: Maybe make the function type-safe by abstracting away from this
-  # implementation. Turn the current function into a helper and call it by two
-  # new ones -- one called `closure_generate()`, the other
-  # `closure_generate_write()` or similar.
+  # In writing mode, the results were written already, so all that is left is to
+  # create the small CSV files, overwrite info.txt, and issue an alert. Finally,
+  # return the path of the new folder to which all of this has been written.
   if (!is.null(path)) {
     write_mean_sd_n_files_csv(
       data = list(
@@ -320,7 +206,7 @@ closure_generate <- function(
       ),
       path = path_new_dir
     )
-    return(invisible(NULL))
+    return(path_new_dir)
   }
 
   # Insert the samples into a data frame, along with summary statistics.
@@ -341,3 +227,184 @@ closure_generate <- function(
     )
   )
 }
+
+
+#' Generate CLOSURE samples
+#'
+#' @description Call `closure_generate()` to run the CLOSURE algorithm on a
+#'   given set of summary statistics. To write results to disk, call
+#'   `closure_generate_write()` instead.
+#'
+#'   This can take seconds, minutes, or longer, depending on the input. Wide
+#'   variance and large `n` often lead to many samples, i.e., long runtimes.
+#'   These effects interact dynamically. For example, with large `n`, even very
+#'   small increases in `sd` can greatly increase runtime and number of values
+#'   found. We recommend using `closure_generate_write()` in these cases; see
+#'   details.
+#'
+#'   If the inputs are inconsistent, there is no solution. The function will
+#'   then return empty results and throw a warning.
+#'
+#' @param mean String (length 1). Reported mean.
+#' @param sd String (length 1). Reported sample standard deviation.
+#' @param n Numeric (length 1). Reported sample size.
+#' @param scale_min,scale_max Numeric (length 1 each). Minimal and maximal
+#'   possible values of the measurement scale. For example, with a 1-7 Likert
+#'   scale, use `scale_min = 1` and `scale_max = 7`. Prefer the empirical min
+#'   and max if available: they constrain the possible values further.
+#' @param path String (length 1). Only in `closure_generate_write()`. Directory
+#'   where the new folder with CLOSURE results should be created. Use `path =
+#'   "."` for your current working directory.
+#' @param rounding String (length 1). Rounding method assumed to have created
+#'   `mean` and `sd`. See [*Rounding
+#'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
+#'   but also the *Rounding limitations* section below. Default is
+#'   `"up_or_down"` which, e.g., unrounds `0.12` to `0.115` as a lower bound and
+#'   `0.125` as an upper bound.
+#' @param threshold Numeric (length 1). Number from which to round up or down,
+#'   if `rounding` is any of `"up_or_down"`, `"up"`, and `"down"`. Default is
+#'   `5`.
+#' @param warn_if_empty Logical (length 1). Should a warning be shown if no
+#'   samples are found? Default is `TRUE`.
+#' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
+#'   very long, should the function prompt you to proceed or abort in an
+#'   interactive setting? Default is `TRUE`.
+#' @param rounding_error_mean,rounding_error_sd Numeric (length 1 each). Option
+#'   to manually set the rounding error around `mean` and `sd`. This is meant
+#'   for development and might be removed in the future, so most users can
+#'   ignore it.
+#'
+#' @details Use `closure_generate_write()` if the expected runtime is very long.
+#'   This makes sure the results are preserved by incrementally writing them to
+#'   disk. Otherwise, you might run into an out-of-memory error because
+#'   `closure_generate()` accumulates more data than your computer can hold in
+#'   memory.
+#'
+#'   Since the small summary tables are also written to disk, you can then
+#'   access the key outcomes even without loading the generated samples. You
+#'   could also try [`closure_read()`] to load all the results back into R. See
+#'   docs there for the structure of the folder.
+#'
+#'   If you are not sure about the path, use `path = "."` for your current
+#'   working directory.
+#'
+#' @section Rounding limitations: The `rounding` and `threshold` arguments are
+#'   not fully implemented. For example, CLOSURE currently treats all rounding
+#'   bounds as inclusive, even if the `rounding` specification would imply
+#'   otherwise.
+#'
+#'   Many specifications of the two arguments will not make any difference, and
+#'   those that do will most likely lead to empty results.
+#'
+#' @return `closure_generate()` returns a named list of four tibbles (data
+#'   frames):
+#'   - **`inputs`**: Arguments to this function.
+#'   - **`metrics`**:
+#'     - `samples_initial`: integer. The basis for computing CLOSURE results,
+#'   based on scale range only. See [`closure_count_initial()`].
+#'     - `samples_all`: integer. Number of all samples. Equal to the number
+#'   of rows in `results`.
+#'     - `values_all`: integer. Number of all individual values found. Equal to
+#'   `n * samples_all`.
+#'     - `horns`: double. Measure of dispersion for bounded scales; see
+#'   [`horns()`].
+#'     - `horns_uniform`: double. Value `horns` would have if the reconstructed
+#'   sample was uniformly distributed.
+#'   - **`frequency`**:
+#'     - `value`: integer. Scale values derived from `scale_min` and
+#'   `scale_max`.
+#'     - `f_average`: Count of scale values in the mean `results` sample.
+#'     - `f_absolute`: integer. Count of individual scale values found in the
+#'   `results` samples.
+#'     - `f_relative`: double. Values' share of total values found.
+#'   - **`results`**:
+#'     - `id`: integer. Runs from `1` to `samples_all`.
+#'     - `sample`: list of integer vectors. Each of these vectors has
+#'   length `n`. It is a sample (or distribution) of individual scale values
+#'   found by CLOSURE.
+#'
+#'   `closure_generate_write()` has no return value; it is called  for side
+#'   effects.
+#'
+#' @include utils.R count.R horns.R performance.R extendr-wrappers.R
+#'
+#' @export
+#'
+#' @examples
+#' # High spread often leads to many samples --
+#' # here, 3682.
+#' data_high <- closure_generate(
+#'   mean = "3.5",
+#'   sd = "1.7",
+#'   n = 70,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' data_high
+#'
+#' # Get a clear picture of the distribution
+#' # by following up with `closure_plot_bar()`:
+#' closure_plot_bar(data_high)
+#'
+#' # Low spread, only 3 samples, and not all
+#' # scale values are possible.
+#' data_low <- closure_generate(
+#'   mean = "2.9",
+#'   sd = "0.5",
+#'   n = 70,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' data_low
+#'
+#' # This can also be shown by `closure_plot_bar()`:
+#' closure_plot_bar(data_low)
+
+
+closure_generate <- function() {
+  generate_from_mean_sd_n(
+    mean = mean,
+    sd = sd,
+    n = n,
+    scale_min = scale_min,
+    scale_max = scale_max,
+    path = NULL,
+    rounding = rounding,
+    threshold = threshold,
+    warn_if_empty = warn_if_empty,
+    ask_to_proceed = ask_to_proceed,
+    rounding_error_mean = rounding_error_mean,
+    rounding_error_sd = rounding_error_sd
+  )
+}
+
+formals(closure_generate) <- generate_from_mean_sd_n |>
+  formals() |>
+  formals_remove("path")
+
+
+#' @rdname closure_generate
+#' @export
+
+closure_generate_write <- function() {
+  generate_from_mean_sd_n(
+    mean = mean,
+    sd = sd,
+    n = n,
+    scale_min = scale_min,
+    scale_max = scale_max,
+    path = path,
+    rounding = rounding,
+    threshold = threshold,
+    warn_if_empty = warn_if_empty,
+    ask_to_proceed = ask_to_proceed,
+    rounding_error_mean = rounding_error_mean,
+    rounding_error_sd = rounding_error_sd
+  )
+}
+
+formals(closure_generate_write) <- generate_from_mean_sd_n |>
+  formals()
+

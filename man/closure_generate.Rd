@@ -2,6 +2,7 @@
 % Please edit documentation in R/generate.R
 \name{closure_generate}
 \alias{closure_generate}
+\alias{closure_generate_write}
 \title{Generate CLOSURE samples}
 \usage{
 closure_generate(
@@ -12,7 +13,21 @@ closure_generate(
   scale_max,
   rounding = "up_or_down",
   threshold = 5,
-  path = NULL,
+  warn_if_empty = TRUE,
+  ask_to_proceed = TRUE,
+  rounding_error_mean = NULL,
+  rounding_error_sd = NULL
+)
+
+closure_generate_write(
+  mean,
+  sd,
+  n,
+  scale_min,
+  scale_max,
+  path,
+  rounding = "up_or_down",
+  threshold = 5,
   warn_if_empty = TRUE,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
@@ -52,9 +67,13 @@ interactive setting? Default is \code{TRUE}.}
 to manually set the rounding error around \code{mean} and \code{sd}. This is meant
 for development and might be removed in the future, so most users can
 ignore it.}
+
+\item{path}{String (length 1). Only in \code{closure_generate_write()}. Directory
+where the new folder with CLOSURE results should be created. Use \code{path = "."} for your current working directory.}
 }
 \value{
-Named list of four tibbles (data frames):
+\code{closure_generate()} returns a named list of four tibbles (data
+frames):
 \itemize{
 \item \strong{\code{inputs}}: Arguments to this function.
 \item \strong{\code{metrics}}:
@@ -87,19 +106,39 @@ length \code{n}. It is a sample (or distribution) of individual scale values
 found by CLOSURE.
 }
 }
+
+\code{closure_generate_write()} has no return value; it is called  for side
+effects.
 }
 \description{
 Call \code{closure_generate()} to run the CLOSURE algorithm on a
-given set of summary statistics.
+given set of summary statistics. To write results to disk, call
+\code{closure_generate_write()} instead.
 
 This can take seconds, minutes, or longer, depending on the input. Wide
 variance and large \code{n} often lead to many samples, i.e., long runtimes.
 These effects interact dynamically. For example, with large \code{n}, even very
 small increases in \code{sd} can greatly increase runtime and number of values
-found.
+found. We recommend using \code{closure_generate_write()} in these cases; see
+details.
 
 If the inputs are inconsistent, there is no solution. The function will
 then return empty results and throw a warning.
+}
+\details{
+Use \code{closure_generate_write()} if the expected runtime is very long.
+This makes sure the results are preserved by incrementally writing them to
+disk. Otherwise, you might run into an out-of-memory error because
+\code{closure_generate()} accumulates more data than your computer can hold in
+memory.
+
+Since the small summary tables are also written to disk, you can then
+access the key outcomes even without loading the generated samples. You
+could also try \code{\link[=closure_read]{closure_read()}} to load all the results back into R. See
+docs there for the structure of the folder.
+
+If you are not sure about the path, use \code{path = "."} for your current
+working directory.
 }
 \section{Rounding limitations}{
  The \code{rounding} and \code{threshold} arguments are
