@@ -7,16 +7,16 @@ output: html_document
 devtools::load_all(".")
 ```
 
-[Malbouby et al. (2025)](https://nutrition.bmj.com/content/early/2025/02/06/bmjnph-2024-000997) reported red flags in a paper published by a BMJ journal. The publication process of this comment inspired James Heathers, one of its authors, to pen a remarkable testimony ([Heathers 2025](https://jamesclaims.substack.com/p/research-integrity-is-a-clown-car?r=6xosj&utm_campaign=post&utm_medium=web&triedRedirect=true)).
+[Malbouby et al. (2025)](https://nutrition.bmj.com/content/8/1/356) reported red flags in a paper published by a BMJ journal. The publication process of this comment inspired James Heathers, one of its authors, to pen a remarkable testimony ([Heathers 2025](https://jamesclaims.substack.com/p/research-integrity-is-a-clown-car?r=6xosj&utm_campaign=post&utm_medium=web&triedRedirect=true)).
 
 Among the concerns raised by Malbouby et al. (2025) was the shape of the sample reconstructed from summary statistics in the original paper using the SPRITE technique. The average reconstructed sample showed a large amount of variation approximating a bimodal distribution, and indeed what [Heathers (2017)](https://jamesheathers.medium.com/sprite-case-study-3-soup-is-good-albeit-extremely-confusing-food-96ea526c488d) referred to as the "horns of no confidence": a much larger degree of polarization towards the scale limits than what would be expected on theoretical grounds (in this case, human body mass index).
 
-## CLOSURE analysis
+## CLOSURE analysis: BMI
 
 Here, I want to use CLOSURE, a complete and exhaustive alternative to the probabilistic SPRITE algorithm, to assess the SPRITE analysis by Malbouby et al. (2025). Whereas SPRITE only creates a random assortment of samples that could have lead to the reported summary statistics, CLOSURE always finds all of those possible samples.
 
 ```{r}
-result <- closure_generate(
+data_bmi <- closure_generate(
   mean = "30.6",
   sd = "3.1",
   n = 30,
@@ -29,7 +29,7 @@ result <- closure_generate(
 The results in detail:
 
 ```{r}
-result
+data_bmi
 ```
 
 Among the metrics, a particularly interesting quantity is the horns index ($h$). It ranges from 0 to 1, where 0 means that all observations have the same value, and 1 represents a sample that is evenly split between the scale limits, with no observations in between. In this way, $h$ quantifies the variability among the reconstructed values given their scale limits. Here, $h$ is 0.76, a relatively high value. For reference, a uniform distribution with 8 scale values, such as those from 27 to 34 here, would only have an $h$ of 0.43, as the `horns_uniform` column shows.
@@ -39,8 +39,8 @@ This is remarkable given that one would not expect a uniform distribution, let a
 Visualizing the results:
 
 ```{r}
-closure_plot_bar(result)
-closure_plot_ecdf(result)
+closure_plot_bar(data_bmi)
+closure_plot_ecdf(data_bmi)
 ```
 
 ## Minimal and maximal variability
@@ -50,18 +50,55 @@ However, one possible response by the authors might be that their original sampl
 This claim can be tested as follows:
 
 ```{r}
-result_horns <- closure_horns_analyze(result)
-result_horns
+data_bmi_horns <- closure_horns_analyze(data_bmi)
+data_bmi_horns
 ```
 
 This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability seem negligible. In particular, the original sample cannot have had less variability than the left panel, and even this graph shows a starkly bimodal distribution where observations are concentrated at the extremes. Correspondingly, the horns indices of the two extreme distributions only differ by 0.04 (the range is 0 to 1).
 
 ```{r}
-closure_horns_min_max_bar(result_horns, frequency = "absolute")
+closure_horns_min_max_bar(data_bmi_horns, frequency = "absolute")
 ```
 
 The lack of meaningful differences between the samples is also demonstrated by a histogram of the $h$ values across all samples, plotted on the 0-1 range of $h$:
 
 ```{r}
-closure_horns_histogram(result_horns)
+closure_horns_histogram(data_bmi_horns)
+```
+
+## CLOSURE analysis: age
+
+We can try to conduct a similar analysis with regards to the reported age values:
+
+*samples of n=30 with a mean of 17.2, SD of 5.2, minimum of 12 and maximum of 25*
+
+```{r}
+data_age <- closure_generate(
+  mean = "17.2",
+  sd = "5.2",
+  n = 30,
+  scale_min = 12,
+  scale_max = 25,
+  ask_to_proceed = FALSE
+)
+```
+
+The average sample is similarly polarized as the one for BMI, although its horns index is somewhat lower (0.61 versus 0.76) and it is slightly left-skewed, with twice as many observations at the lower bound than at the upper bound.
+
+```{r}
+closure_plot_bar(data_age)
+```
+
+Determining the lower and upper limits of variability reveals that, as above, the samples with minimal variability are hard to distinguish from those with maximal variability:
+
+```{r}
+data_age_horns <- closure_horns_analyze(data_age)
+data_age_horns
+```
+
+...
+
+```{r}
+closure_horns_min_max_bar(data_age_horns, frequency = "absolute", text_size = 10)
+closure_horns_histogram(data_age_horns)
 ```
