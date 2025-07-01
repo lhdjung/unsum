@@ -2,7 +2,9 @@ use extendr_api::prelude::*;
 use extendr_api::Robj;
 use closure_core::{
     dfs_parallel,
+    dfs_parallel_streaming,
     ParquetConfig,
+    StreamingConfig,
 };
 
 /// Local wrapper for ParquetConfig to allow TryFrom<Robj> implementation.
@@ -44,10 +46,10 @@ fn create_combinations(
     rounding_error_sd: f64,
     write: Robj, // Accept Robj directly
 ) -> Robj {
+    let need_to_write = !write.is_null();
+
     // Convert the write parameter to Option<ParquetConfig>
-    let write_config = if write.is_null() {
-        None
-    } else {
+    let write_config = if need_to_write {
         // Try to convert the R object to our wrapper type, then extract the inner ParquetConfig
         match ParquetConfigR::try_from(write) {
             Ok(config_wrapper) => Some(config_wrapper.0),
@@ -56,7 +58,30 @@ fn create_combinations(
                 panic!("Invalid ParquetConfig: {}", e);
             }
         }
+    } else {
+        None
     };
+
+    // If we are writing, we can use the streaming version
+    // This will handle writing to Parquet in parallel
+    // Convert ParquetConfig to StreamingConfig before calling dfs_parallel_streaming
+    if need_to_write {
+        let streaming_config = StreamingConfig::from(write_config.unwrap());
+        return dfs_parallel_streaming(
+            mean,
+            sd,
+            n,
+            scale_min,
+            scale_max,
+            rounding_error_mean,
+            rounding_error_sd,
+            streaming_config,
+        )
+        .into_robj();
+    }
+
+
+    //dfs_parallel_streaming
 
     // Call the core function with the converted parameters
     let results = dfs_parallel(
