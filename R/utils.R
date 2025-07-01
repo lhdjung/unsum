@@ -606,8 +606,10 @@ write_mean_sd_n_files_csv <- function(data, path) {
     x = paste0(
       "This folder contains the results of CLOSURE, created by ",
       "the R package unsum.\n\n",
-      "To open results.parquet, use the R function ",
-      "unsum::closure_read() or some other Parquet reader.\n\n",
+      "To load these files into R, use:\n",
+      "unsum::closure_read(\"", path, "\")\n\n",
+      "Use a different path if the folder was moved. ",
+      "In any case, opening results.parquet will require a Parquet reader.\n\n",
       "For more information, visit:\n",
       "https://lhdjung.github.io/unsum/reference/closure_generate.html"
     ),
