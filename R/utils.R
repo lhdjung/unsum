@@ -506,6 +506,119 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 }
 
 
+# Where `inputs` is of the form `list(mean, sd, n, scale_min, scale_max)`
+write_mean_sd_n_folder <- function(
+    mean,
+    sd,
+    n,
+    scale_min,
+    scale_max,
+    rounding,
+    threshold,
+    path
+  ) {
+  slash <- .Platform$file.sep
+
+  # All arguments except `path` will form the new folder's name
+  inputs <- list(
+    mean,
+    sd,
+    n,
+    scale_min,
+    scale_max,
+    rounding,
+    threshold
+  )
+
+  # Prepare the name of the new directory to which `data` will later be written.
+  # Create a string where all the inputs (mean, SD, etc.) are connected through
+  # dashes. Then, replace the decimal periods by underscores.
+  name_new_dir <- inputs |>
+    paste(collapse = "-") |>
+    gsub("\\.", "_", x = _)
+
+  # Prefix with the name of the technique to make the origin very clear
+  name_new_dir <- paste0("CLOSURE-", name_new_dir)
+
+  path_current <- if (path == ".") getwd() else path
+
+  # Full path of the new directory, not just the name
+  path_new_dir <- paste0(
+    path_current,
+    slash,
+    name_new_dir
+  )
+
+  if (dir.exists(path_new_dir)) {
+    cli::cli_abort(
+      message = c(
+        "Name of new folder must not be taken.",
+        "x" = "Folder already exists:",
+        "x" = "{path_new_dir}"
+      ),
+      call = rlang::caller_env()
+    )
+  }
+
+  path_info_txt <- paste0(path_new_dir, slash, "info.txt")
+
+  dir.create(path_new_dir)
+  file.create(path_info_txt)
+
+  # While the results are written, provide a message to that effect in info.txt
+  connection <- file(path_info_txt)
+  write(
+    x = paste0(
+      "DO NOT CHANGE THIS FOLDER OR ITS CONTENTS.\n\n",
+      "Results of the CLOSURE technique are currently being written ",
+      "to the results.parquet file (unless the process was interrupted). ",
+      "This message will be overwritten once the process has finished.\n\n",
+      "For more information, visit:\n",
+      "https://lhdjung.github.io/unsum/reference/closure_generate.html"
+    ),
+    file = connection
+  )
+  close(connection)
+
+  # Return the path of the new folder
+  path_new_dir
+}
+
+
+# Write the small tibbles: those other than the "results" samples. In this case,
+# `data` is of the form `list(inputs, metrics, frequency)`; with these names.
+write_mean_sd_n_files_csv <- function(data, path) {
+  slash <- .Platform$file.sep
+
+  for (tibble in names(data)) {
+    readr::write_csv(
+      x = data[[tibble]],
+      file = paste0(path, slash, tibble, ".csv")
+    )
+  }
+
+  path_info_txt <- paste0(path, slash, "info.txt")
+
+  # Overwrite text in info.txt -- it has been a placeholder saying that CLOSURE
+  # results are currently being written. Not it says writing them has finished.
+  connection <- file(path_info_txt)
+  write(
+    x = paste0(
+      "This folder contains the results of CLOSURE, created by ",
+      "the R package unsum.\n\n",
+      "To open results.parquet, use the R function ",
+      "unsum::closure_read() or some other Parquet reader.\n\n",
+      "For more information, visit:\n",
+      "https://lhdjung.github.io/unsum/reference/closure_generate.html"
+    ),
+    file = connection
+  )
+  close(connection)
+
+  cli::cli_alert_success(paste0("All files written to:\n", path))
+}
+
+
 # Transform unsum's CLOSURE results into the "n"-column format of the CSV files
 # made by closure-core's test harness or the original Python implementation.
 # This is also the format in which `closure_write()` saves the Parquet files.

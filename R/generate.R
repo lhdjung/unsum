@@ -122,6 +122,7 @@
 # n <- 30
 # rounding = "up_or_down"
 # threshold = 5
+# path <- "."
 # scale_min <- 1
 # scale_max <- 8
 # warn_if_empty <- TRUE
@@ -183,10 +184,23 @@ closure_generate <- function(
   # TODO: Reuse the folder / file creation code from `closure_write()` except
   # not writing things directly right away but waiting for
   # `create_combinations()` to write the results incrementally.
-  parquet_config <- if (is.null(path)) {
-    NULL
+  if (is.null(path)) {
+    parquet_config <- NULL
   } else {
-    list(file_path = path, batch_size = 1000)
+    path_new_dir <- write_mean_sd_n_folder(
+      mean,
+      sd,
+      n,
+      scale_min,
+      scale_max,
+      rounding,
+      threshold,
+      path
+    )
+    parquet_config <- list(
+      file_path = paste0(path_new_dir, .Platform$file.sep, "results.parquet"),
+      batch_size = 1000
+    )
   }
 
   # Make an educated guess about the complexity, and hence the runtime duration
@@ -258,8 +272,56 @@ closure_generate <- function(
     ))
   }
 
+  # Gather arguments to the present function in a tibble
+  inputs <- tibble::new_tibble(
+    x = list(
+      mean = mean,
+      sd = sd,
+      n = n,
+      scale_min = scale_min,
+      scale_max = scale_max,
+      rounding = rounding,
+      threshold = threshold
+    ),
+    nrow = 1L,
+    class = "closure_generate"
+  )
+
   # Frequency table
-  freqs <- summarize_frequencies(results, scale_min, scale_max, n_samples_all)
+  frequency <- summarize_frequencies(
+    results,
+    scale_min,
+    scale_max,
+    n_samples_all
+  )
+
+  # Statistics about the generated samples
+  metrics <- tibble::new_tibble(
+    x = list(
+      samples_initial = closure_count_initial(scale_min, scale_max),
+      samples_all = n_samples_all,
+      values_all = n_samples_all * as.integer(n),
+      horns = horns(frequency$f_absolute, scale_min, scale_max),
+      horns_uniform = horns_uniform(scale_min, scale_max)
+    ),
+    nrow = 1L
+  )
+
+  # TODO: Maybe make the function type-safe by abstracting away from this
+  # implementation. Turn the current function into a helper and call it by two
+  # new ones -- one called `closure_generate()`, the other
+  # `closure_generate_write()` or similar.
+  if (!is.null(path)) {
+    write_mean_sd_n_files_csv(
+      data = list(
+        inputs = inputs,
+        metrics = metrics,
+        frequency = frequency
+      ),
+      path = path_new_dir
+    )
+    return(invisible(NULL))
+  }
 
   # Insert the samples into a data frame, along with summary statistics.
   # The S3 class "closure_generate" will be recognized by downstream functions,
@@ -267,30 +329,9 @@ closure_generate <- function(
   # low-level `new_tibble()` instead of `tibble()`: once for passing the S3
   # class, and twice for performance.
   list(
-    inputs = tibble::new_tibble(
-      x = list(
-        mean = mean,
-        sd = sd,
-        n = n,
-        scale_min = scale_min,
-        scale_max = scale_max,
-        rounding = rounding,
-        threshold = threshold
-      ),
-      nrow = 1L,
-      class = "closure_generate"
-    ),
-    metrics = tibble::new_tibble(
-      x = list(
-        samples_initial = closure_count_initial(scale_min, scale_max),
-        samples_all = n_samples_all,
-        values_all = n_samples_all * as.integer(n),
-        horns = horns(freqs$f_absolute, scale_min, scale_max),
-        horns_uniform = horns_uniform(scale_min, scale_max)
-      ),
-      nrow = 1L
-    ),
-    frequency = freqs,
+    inputs = inputs,
+    metrics = metrics,
+    frequency = frequency,
     results = tibble::new_tibble(
       x = list(
         id = seq_len(n_samples_all),
