@@ -41,6 +41,12 @@ name = "test-harness"
 path = "src/bin/test-harness.rs"
 required-features = ["test-harness"]
 
+[dependencies]
+arrow = "55.1.0"
+num = "0.4.3"
+parquet = "55.1.0"
+rayon = "1.8"
+
 [dependencies.csv]
 version = "1.3"
 optional = true
@@ -48,9 +54,3 @@ optional = true
 [dependencies.indicatif]
 version = "0.17"
 optional = true
-
-[dependencies.num]
-version = "0.4.3"
-
-[dependencies.rayon]
-version = "1.8"

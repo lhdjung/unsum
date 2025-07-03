@@ -10,8 +10,5 @@ crate-type = [ 'staticlib' ]
 name = 'unsum'
 
 [dependencies]
-extendr-api = '*'
 closure-core = { git = "https://github.com/lhdjung/closure-core.git", branch = "optimize" }
-
-[profile.release]
-lto = "fat"
+extendr-api = '*'

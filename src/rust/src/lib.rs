@@ -35,6 +35,38 @@ impl TryFrom<Robj> for ParquetConfigR {
     }
 }
 
+/// Local wrapper for StreamingConfig to allow TryFrom<Robj> implementation.
+pub struct StreamingConfigR(pub StreamingConfig);
+
+impl TryFrom<Robj> for StreamingConfigR {
+    type Error = Error;
+
+    fn try_from(robj: Robj) -> Result<Self> {
+        // Extract the fields from the R list/object
+        let file_path = robj.dollar("file_path")?
+            .as_str()
+            .ok_or_else(|| Error::Other("file_path must be a string".into()))?
+            .to_string();
+
+        let batch_size = robj.dollar("batch_size")?
+            .as_real()
+            .ok_or_else(|| Error::Other("batch_size must be numeric".into()))?
+            as usize;
+
+        // Optional show_progress field, defaults to false if not provided
+        let show_progress = robj.dollar("show_progress")
+            .ok()
+            .and_then(|r| r.as_bool())
+            .unwrap_or(false);
+
+        Ok(StreamingConfigR(StreamingConfig {
+            file_path,
+            batch_size,
+            show_progress,
+        }))
+    }
+}
+
 #[extendr]
 fn create_combinations(
     mean: f64,
@@ -48,26 +80,17 @@ fn create_combinations(
 ) -> Robj {
     let need_to_write = !write.is_null();
 
-    // Convert the write parameter to Option<ParquetConfig>
-    let write_config = if need_to_write {
-        // Try to convert the R object to our wrapper type, then extract the inner ParquetConfig
-        match ParquetConfigR::try_from(write) {
-            Ok(config_wrapper) => Some(config_wrapper.0),
-            Err(e) => {
-                // You might want to handle this error differently
-                panic!("Invalid ParquetConfig: {}", e);
-            }
-        }
-    } else {
-        None
-    };
-
-    // If we are writing, we can use the streaming version
-    // This will handle writing to Parquet in parallel
-    // Convert ParquetConfig to StreamingConfig before calling dfs_parallel_streaming
     if need_to_write {
-        let streaming_config = StreamingConfig::from(write_config.unwrap());
-        return dfs_parallel_streaming(
+        // Parse the write parameter as StreamingConfig for streaming mode
+        let streaming_config = match StreamingConfigR::try_from(write) {
+            Ok(config_wrapper) => config_wrapper.0,
+            Err(e) => {
+                return Robj::from(format!("Error parsing write configuration: {}", e));
+            }
+        };
+
+        // Use streaming mode - writes directly to disk without keeping results in memory
+        let result = dfs_parallel_streaming(
             mean,
             sd,
             n,
@@ -76,14 +99,19 @@ fn create_combinations(
             rounding_error_mean,
             rounding_error_sd,
             streaming_config,
-        )
-        .into_robj();
+        );
+
+        // Return information about the streaming operation as an R list
+        let result_list = list!(
+            total_combinations = result.total_combinations,
+            file_path = result.file_path,
+            streaming_mode = true
+        );
+
+        return result_list.into();
     }
 
-
-    //dfs_parallel_streaming
-
-    // Call the core function with the converted parameters
+    // Default mode: use dfs_parallel without writing to disk
     let results = dfs_parallel(
         mean,
         sd,
@@ -92,7 +120,7 @@ fn create_combinations(
         scale_max,
         rounding_error_mean,
         rounding_error_sd,
-        write_config,
+        None, // No parquet config - just return results in memory
     );
 
     // Convert the results back to R objects
