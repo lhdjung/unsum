@@ -194,10 +194,14 @@ generate_from_mean_sd_n <- function(
     nrow = 1L
   )
 
+  # In memory mode (i.e., without writing to disk), a message about successful
+  # completion is left to display after the rest of the function has finished.
   # In writing mode, the results were written already, so all that is left is to
   # create the small CSV files, overwrite info.txt, and issue an alert. Finally,
   # return the path of the new folder to which all of this has been written.
-  if (!is.null(path)) {
+  if (is.null(path)) {
+    on.exit(cli::cli_alert_success("All CLOSURE results found"))
+  } else {
     write_mean_sd_n_files_csv(
       data = list(
         inputs = inputs,
