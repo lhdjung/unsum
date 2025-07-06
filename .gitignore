@@ -12,3 +12,7 @@ src/Makevars
 src/Makevars.win
 special-scripts/*.html
 special-scripts/*.pdf
+
+src/vendor/
+src/._vendor
+src/rust/vendor/
