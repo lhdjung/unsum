@@ -21,3 +21,6 @@ special-scripts/*.pdf
 
 # Don't ignore the vendor archive itself, but ignore extracted vendor dirs with ._* files
 **/._*
+src/vendor/
+src/._vendor
+src/rust/vendor/
