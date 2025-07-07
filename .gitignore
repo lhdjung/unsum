@@ -12,3 +12,12 @@ src/Makevars
 src/Makevars.win
 special-scripts/*.html
 special-scripts/*.pdf
+
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes
+
+# Don't ignore the vendor archive itself, but ignore extracted vendor dirs with ._* files
+**/._*
