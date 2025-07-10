@@ -367,9 +367,14 @@ check_scale <- function(
 # Make sure a value has the right type (or one of multiple allowed types), has
 # length 1, and is not `NA`. Multiple allowed types are often `c("double",
 # "integer")` which allows any numeric value, but no values of any other types.
-check_value <- function(x, type) {
+check_value <- function(x, type, allow_null = FALSE) {
   name <- deparse(substitute(x))
-  check_type(x, type, n = 2, name = name)
+  check_type(x, type, n = 2, name = name, allow_null = allow_null)
+
+  if (allow_null && is.null(x)) {
+    return(invisible(NULL))
+  }
+
   if (length(x) != 1L) {
     cli::cli_abort(
       message = c(
@@ -379,6 +384,7 @@ check_value <- function(x, type) {
       call = rlang::caller_env()
     )
   }
+
   if (is.na(x)) {
     cli::cli_abort(
       message = "`{name}` can't be `NA`.",
@@ -388,8 +394,12 @@ check_value <- function(x, type) {
 }
 
 
-check_type <- function(x, t, n = 1, name = NULL) {
-  if (any(typeof(x) == t) || (is.integer(x) && t == "double")) {
+check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
+  if (
+    any(t == typeof(x)) ||
+    (allow_null && is.null(x)) ||
+    (is.integer(x) && any(t == "double"))
+  ) {
     return(invisible(NULL))
   }
   if (is.null(name)) {
