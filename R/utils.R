@@ -516,29 +516,12 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 }
 
 
-# Where `inputs` is of the form `list(mean, sd, n, scale_min, scale_max)`
-write_mean_sd_n_folder <- function(
-    mean,
-    sd,
-    n,
-    scale_min,
-    scale_max,
-    rounding,
-    threshold,
-    path
-  ) {
+# Where `inputs` is of the form `list(mean, sd, n, scale_min, scale_max)`. It
+# creates a folder named after these summary statistics and returns the path to
+# that new folder. It also writes two files into it: a general info.txt that
+# will be overwritten later, and an inputs.parquet file with the inputs.
+write_mean_sd_n_folder <- function(inputs, path) {
   slash <- .Platform$file.sep
-
-  # All arguments except `path` will form the new folder's name
-  inputs <- list(
-    mean,
-    sd,
-    n,
-    scale_min,
-    scale_max,
-    rounding,
-    threshold
-  )
 
   # Prepare the name of the new directory to which `data` will later be written.
   # Create a string where all the inputs (mean, SD, etc.) are connected through
@@ -590,27 +573,29 @@ write_mean_sd_n_folder <- function(
   )
   close(connection)
 
+  # Parquet file with the inputs
+  nanoparquet::write_parquet(
+    tibble::new_tibble(
+      x = inputs,
+      nrow = 1L,
+      class = "closure_generate"
+    ),
+    file = paste0(path_new_dir, slash, "inputs.parquet")
+  )
+
   # Return the path of the new folder
   path_new_dir
 }
 
 
-# Write the small tibbles: those other than the "results" samples. In this case,
-# `data` is of the form `list(inputs, metrics, frequency)`; with these names.
-write_mean_sd_n_files_csv <- function(data, path) {
+# After writing results to disk, the info.txt file should be updated
+overwrite_info_txt <- function(path) {
   slash <- .Platform$file.sep
-
-  for (tibble in names(data)) {
-    readr::write_csv(
-      x = data[[tibble]],
-      file = paste0(path, slash, tibble, ".csv")
-    )
-  }
 
   path_info_txt <- paste0(path, slash, "info.txt")
 
   # Overwrite text in info.txt -- it has been a placeholder saying that CLOSURE
-  # results are currently being written. Not it says writing them has finished.
+  # results are currently being written. Now it says writing them has finished.
   connection <- file(path_info_txt)
   write(
     x = paste0(
@@ -619,7 +604,7 @@ write_mean_sd_n_files_csv <- function(data, path) {
       "To load these files into R, use:\n",
       "unsum::closure_read(\"", path, "\")\n\n",
       "Use a different path if the folder was moved. ",
-      "In any case, opening results.parquet will require a Parquet reader.\n\n",
+      "In any case, opening the files will require a Parquet reader.\n\n",
       "For more information, visit:\n",
       "https://lhdjung.github.io/unsum/reference/closure_generate.html"
     ),

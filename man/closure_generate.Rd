@@ -80,9 +80,9 @@ frames):
 \itemize{
 \item \code{samples_initial}: integer. The basis for computing CLOSURE results,
 based on scale range only. See \code{\link[=closure_count_initial]{closure_count_initial()}}.
-\item \code{samples_all}: integer. Number of all samples. Equal to the number
+\item \code{samples_all}: double. Number of all samples. Equal to the number
 of rows in \code{results}.
-\item \code{values_all}: integer. Number of all individual values found. Equal to
+\item \code{values_all}: double. Number of all individual values found. Equal to
 \code{n * samples_all}.
 \item \code{horns}: double. Measure of dispersion for bounded scales; see
 \code{\link[=horns]{horns()}}.
@@ -94,7 +94,7 @@ sample was uniformly distributed.
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
 \item \code{f_average}: Count of scale values in the mean \code{results} sample.
-\item \code{f_absolute}: integer. Count of individual scale values found in the
+\item \code{f_absolute}: double. Count of individual scale values found in the
 \code{results} samples.
 \item \code{f_relative}: double. Values' share of total values found.
 }
@@ -120,17 +120,17 @@ variance and large \code{n} often lead to many samples, i.e., long runtimes.
 These effects interact dynamically. For example, with large \code{n}, even very
 small increases in \code{sd} can greatly increase runtime and number of values
 found. We recommend using \code{closure_generate_write()} in these cases; see
-details.
+"Writing to disk" below.
 
 If the inputs are inconsistent, there is no solution. The function will
 then return empty results and throw a warning.
 }
-\details{
-Use \code{closure_generate_write()} if the expected runtime is very long.
-This makes sure the results are preserved by incrementally writing them to
-disk. Otherwise, you might run into an out-of-memory error because
-\code{closure_generate()} accumulates more data than your computer can hold in
-memory.
+\section{Writing to disk}{
+ Use \code{closure_generate_write()} if the expected
+runtime is very long. This makes sure the results are preserved by
+incrementally writing them to disk. Otherwise, you might encounter an
+out-of-memory error because \code{closure_generate()} accumulates more data than
+your computer can hold in memory.
 
 Since the small summary tables are also written to disk, you can then
 access the key outcomes even without loading the generated samples. You
@@ -140,6 +140,14 @@ docs there for the structure of the folder.
 If you are not sure about the path, use \code{path = "."} for your current
 working directory.
 }
+
+\section{More about memory}{
+ Some output columns that contain counts, such as
+\code{f_absolute}, are double instead of integer. This is because doubles can be
+much larger numbers. When counting CLOSURE results, it is not unrealistic
+to reach the limit of 32-bit integers in R, which is roughly two billion.
+}
+
 \section{Rounding limitations}{
  The \code{rounding} and \code{threshold} arguments are
 not fully implemented. For example, CLOSURE currently treats all rounding
