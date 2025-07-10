@@ -42,6 +42,9 @@ generate_from_mean_sd_n <- function(
   check_value(n, "double")
   check_value(scale_min, "double")
   check_value(scale_max, "double")
+  check_value(path, "character", allow_null = TRUE)
+  check_value(rounding, "character")
+  check_value(threshold, "double")
   check_value(warn_if_empty, "logical")
   check_value(ask_to_proceed, "logical")
 
@@ -71,21 +74,25 @@ generate_from_mean_sd_n <- function(
     rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
   }
 
+  # If files should be written to disk, prepare a new folder for them, write
+  # info.txt and inputs.parquet into it, and record the new path.
   if (is.null(path)) {
     parquet_config <- NULL
   } else {
     path_new_dir <- write_mean_sd_n_folder(
-      mean,
-      sd,
-      n,
-      scale_min,
-      scale_max,
-      rounding,
-      threshold,
-      path
+      inputs = list(
+        mean = mean,
+        sd = sd,
+        n = n,
+        scale_min = scale_min,
+        scale_max = scale_max,
+        rounding = rounding,
+        threshold = threshold
+      ),
+      path = path
     )
     parquet_config <- list(
-      file_path = paste0(path_new_dir, .Platform$file.sep, "results.parquet"),
+      file_path = path_new_dir,
       batch_size = 1000
     )
   }
@@ -120,6 +127,14 @@ generate_from_mean_sd_n <- function(
   # complexity is so high that the user is asked whether to proceed.
   if (!is.null(msg_wait)) {
     if (need_to_ask) {
+      # In memory mode, make sure the user known there is also the option to
+      # write large results to disk.
+      if (is.null(path)) {
+        msg_wait <- paste(
+          msg_wait,
+          "Consider using {.fn closure_generate_write} instead."
+        )
+      }
       cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
       selection <- utils::menu(
         choices = c("Yes, wait", "No, abort"),
@@ -128,7 +143,8 @@ generate_from_mean_sd_n <- function(
       if (selection == 1L) {
         cli::cli_alert_info("Running CLOSURE, please wait...")
       } else {
-        cli::cli_alert_info("Aborting `closure_generate()`.")
+        fn_name <- as.character(rlang::caller_call()[[1L]])
+        cli::cli_alert_info("Aborting {.fn {fn_name}}.")
         return(invisible(NULL))
       }
     } else {
@@ -137,7 +153,7 @@ generate_from_mean_sd_n <- function(
   }
 
   # Compute CLOSURE samples by calling into pre-compiled Rust code.
-  results <- create_combinations(
+  out <- create_combinations(
     mean = mean_num,
     sd = sd_num,
     n = n,
@@ -148,9 +164,17 @@ generate_from_mean_sd_n <- function(
     write = parquet_config
   )
 
-  n_samples_all <- length(results)
+  n_samples_all <- if (is.null(path)) {
+    # TODO: Fix this in closure-core; it should be "sample", not "samples"
+    names(out$results)[2] <- "sample"
+    length(out$results$sample)
+  } else {
+    out$total_combinations
+  }
 
-  # By default, raise a warning if no results were found.
+  # By default, raise a warning if no results were found. Invalid when writing
+  # to disk (hence the last check) because, in this case, the samples won't be
+  # stored in `results`.
   if (warn_if_empty && n_samples_all == 0L) {
     cli::cli_warn(c(
       "No results found with these inputs.",
@@ -159,75 +183,83 @@ generate_from_mean_sd_n <- function(
     ))
   }
 
-  # Gather arguments to the present function in a tibble
-  inputs <- tibble::new_tibble(
-    x = list(
-      mean = mean,
-      sd = sd,
-      n = n,
-      scale_min = scale_min,
-      scale_max = scale_max,
-      rounding = rounding,
-      threshold = threshold
-    ),
-    nrow = 1L,
-    class = "closure_generate"
-  )
+  # TODO: Write inputs.parquet to disk!
 
-  # Frequency table
-  frequency <- summarize_frequencies(
-    results,
-    scale_min,
-    scale_max,
-    n_samples_all
-  )
-
-  # Statistics about the generated samples
-  metrics <- tibble::new_tibble(
-    x = list(
-      samples_initial = closure_count_initial(scale_min, scale_max),
-      samples_all = n_samples_all,
-      values_all = n_samples_all * as.integer(n),
-      horns = horns(frequency$f_absolute, scale_min, scale_max),
-      horns_uniform = horns_uniform(scale_min, scale_max)
-    ),
-    nrow = 1L
-  )
+  # Insert the samples into a data frame, along with summary statistics. The S3
+  # class "closure_generate" will be recognized by downstream functions, such as
+  # `closure_plot_bar()`. All elements here are created using the low-level
+  # `new_tibble()` instead of `tibble()`: once for passing the S3 class, and
+  # three times for performance.
+  out_summary <- if (is.null(path)) {
+    list(
+      inputs = tibble::new_tibble(
+        x = list(
+          mean = mean,
+          sd = sd,
+          n = n,
+          scale_min = scale_min,
+          scale_max = scale_max,
+          rounding = rounding,
+          threshold = threshold
+        ),
+        nrow = 1L,
+        class = "closure_generate"
+      ),
+      metrics_main = tibble::new_tibble(
+        x = out$metrics_main |> as.vector("list"),
+        nrow = 1L
+      ),
+      metrics_horns = tibble::new_tibble(
+        x = out$metrics_horns |> as.vector("list"),
+        nrow = 1L
+      ),
+      frequency = tibble::new_tibble(
+        x = out$frequency |> as.vector("list"),
+        nrow = nrow(out$frequency)
+      )
+    )
+  } else {
+    closure_read(path_new_dir)
+  }
 
   # In memory mode (i.e., without writing to disk), a message about successful
   # completion is left to display after the rest of the function has finished.
   # In writing mode, the results were written already, so all that is left is to
-  # create the small CSV files, overwrite info.txt, and issue an alert. Finally,
-  # return the path of the new folder to which all of this has been written.
+  # overwrite info.txt (now informing about how to import the files, etc.), and
+  # issue an alert. Finally, return the path of the new folder to which all of
+  # this has been written.
   if (is.null(path)) {
     on.exit(cli::cli_alert_success("All CLOSURE results found"))
   } else {
-    write_mean_sd_n_files_csv(
-      data = list(
-        inputs = inputs,
-        metrics = metrics,
-        frequency = frequency
-      ),
-      path = path_new_dir
+    nanoparquet::write_parquet(
+      x = inputs,
+      file = paste0(path, slash, "inputs.parquet")
     )
-    return(path_new_dir)
+    out_with_placeholder <- c(
+      out_summary,
+      list(
+        results_reference = tibble::new_tibble(
+          x = list(path = path_new_dir),
+          nrow = 1L
+        )
+      )
+    )
+    overwrite_info_txt(path_new_dir)
+    return(out_with_placeholder)
   }
 
-  # Insert the samples into a data frame, along with summary statistics.
-  # The S3 class "closure_generate" will be recognized by downstream functions,
-  # such as `closure_plot_bar()`. Three elements here are created using the
-  # low-level `new_tibble()` instead of `tibble()`: once for passing the S3
-  # class, and twice for performance.
-  list(
-    inputs = inputs,
-    metrics = metrics,
-    frequency = frequency,
-    results = tibble::new_tibble(
-      x = list(
-        id = seq_len(n_samples_all),
-        sample = results
-      ),
-      nrow = n_samples_all
+  # Insert the samples into a data frame, along with summary statistics. The S3
+  # class "closure_generate" will be recognized by downstream functions, such as
+  # `closure_plot_bar()`. All elements here are created using the low-level
+  # `new_tibble()` instead of `tibble()`: once for passing the S3 class, and
+  # four times for performance.
+  c(
+    out_summary,
+    list(
+      results = tibble::new_tibble(
+        x = out$results,
+        nrow = n_samples_all
+      )
     )
   )
 }
@@ -244,7 +276,7 @@ generate_from_mean_sd_n <- function(
 #'   These effects interact dynamically. For example, with large `n`, even very
 #'   small increases in `sd` can greatly increase runtime and number of values
 #'   found. We recommend using `closure_generate_write()` in these cases; see
-#'   details.
+#'   "Writing to disk" below.
 #'
 #'   If the inputs are inconsistent, there is no solution. The function will
 #'   then return empty results and throw a warning.
@@ -278,11 +310,11 @@ generate_from_mean_sd_n <- function(
 #'   for development and might be removed in the future, so most users can
 #'   ignore it.
 #'
-#' @details Use `closure_generate_write()` if the expected runtime is very long.
-#'   This makes sure the results are preserved by incrementally writing them to
-#'   disk. Otherwise, you might run into an out-of-memory error because
-#'   `closure_generate()` accumulates more data than your computer can hold in
-#'   memory.
+#' @section Writing to disk: Use `closure_generate_write()` if the expected
+#'   runtime is very long. This makes sure the results are preserved by
+#'   incrementally writing them to disk. Otherwise, you might encounter an
+#'   out-of-memory error because `closure_generate()` accumulates more data than
+#'   your computer can hold in memory.
 #'
 #'   Since the small summary tables are also written to disk, you can then
 #'   access the key outcomes even without loading the generated samples. You
@@ -291,6 +323,11 @@ generate_from_mean_sd_n <- function(
 #'
 #'   If you are not sure about the path, use `path = "."` for your current
 #'   working directory.
+#'
+#' @section More about memory: Some output columns that contain counts, such as
+#'   `f_absolute`, are double instead of integer. This is because doubles can be
+#'   much larger numbers. When counting CLOSURE results, it is not unrealistic
+#'   to reach the limit of 32-bit integers in R, which is roughly two billion.
 #'
 #' @section Rounding limitations: The `rounding` and `threshold` arguments are
 #'   not fully implemented. For example, CLOSURE currently treats all rounding
@@ -306,9 +343,9 @@ generate_from_mean_sd_n <- function(
 #'   - **`metrics`**:
 #'     - `samples_initial`: integer. The basis for computing CLOSURE results,
 #'   based on scale range only. See [`closure_count_initial()`].
-#'     - `samples_all`: integer. Number of all samples. Equal to the number
+#'     - `samples_all`: double. Number of all samples. Equal to the number
 #'   of rows in `results`.
-#'     - `values_all`: integer. Number of all individual values found. Equal to
+#'     - `values_all`: double. Number of all individual values found. Equal to
 #'   `n * samples_all`.
 #'     - `horns`: double. Measure of dispersion for bounded scales; see
 #'   [`horns()`].
@@ -318,7 +355,7 @@ generate_from_mean_sd_n <- function(
 #'     - `value`: integer. Scale values derived from `scale_min` and
 #'   `scale_max`.
 #'     - `f_average`: Count of scale values in the mean `results` sample.
-#'     - `f_absolute`: integer. Count of individual scale values found in the
+#'     - `f_absolute`: double. Count of individual scale values found in the
 #'   `results` samples.
 #'     - `f_relative`: double. Values' share of total values found.
 #'   - **`results`**:

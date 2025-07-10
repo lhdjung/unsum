@@ -160,27 +160,30 @@ closure_read <- function(path) {
   files_all <- dir(path)
   files_expected <- c(
     "info.txt",
-    "inputs.csv",
-    "metrics.csv",
-    "frequency.csv",
+    "inputs.parquet",
+    "metrics_main.parquet",
+    "metrics_horns.parquet",
+    "frequency.parquet",
     "results.parquet"
   )
 
   if (!setequal(files_all, files_expected)) {
+    files_expected_sorted <- sort(files_expected)
+    files_all_sorted <- sort(files_all)
     cli::cli_abort(
       message = c(
         "Folder must contain all correct files (and no others).",
-        "x" = "Expected files: {files_expected}",
-        "x" = "Actual files: {files_all}"
+        "x" = "Expected files: {files_expected_sorted}",
+        "x" = "Actual files: {files_all_sorted}"
       )
     )
   }
 
-  # Read CSV files into tibbles
-  read_small_file <- function(name) {
+  # Read Parquet files into tibbles (silently so the end user won't be confused)
+  read_file <- function(name) {
     path |>
-      paste0(slash, name, ".csv") |>
-      readr::read_csv(show_col_types = FALSE)
+      paste0(slash, name, ".parquet") |>
+      nanoparquet::read_parquet()
   }
 
   # Add an S3 class to an object
@@ -188,15 +191,15 @@ closure_read <- function(path) {
     `class<-`(x, value = c(new_class, class(x)))
   }
 
+  # TODO: DEBUG results.parquet; THERE IS A LOT OF WEIRD AND UNNECESSARY STUFF
+  # CURRENTLY WRITTEN INTO IT. BUT MAYBE NANOPARQUET WON'T BE ABLE TO READ IT
+  # EVEN THEN? IN THAT CASE, USE EITHER CLOSURE-CORE OR UNSUM'S RUST PORTION
   out <- list(
-    inputs = "inputs" |> read_small_file() |> add_class("closure_generate"),
-    metrics = "metrics" |> read_small_file(),
-    frequency = "frequency" |> read_small_file(),
-
-    results = path |>
-      paste0(slash, "results.parquet") |>
-      nanoparquet::read_parquet() |>
-      as_results_tibble()
+    inputs = "inputs" |> read_file() |> add_class("closure_generate"),
+    metrics_main = "metrics_main" |> read_file(),
+    metrics_horns = "metrics_horns" |> read_file(),
+    frequency = "frequency" |> read_file(),
+    results = "results" |> read_file() #|> as_results_tibble()
   )
 
   # Parse mean and SD from the folder name
