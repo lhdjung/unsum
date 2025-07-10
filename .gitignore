@@ -8,6 +8,9 @@ inst/doc
 benchmark_*.csv
 docs
 src/rust/vendor
+src/rust/vendor*
+src/rust/vendor/*
+src/rust/vendor/
 src/Makevars
 src/Makevars.win
 special-scripts/*.html
@@ -23,4 +26,3 @@ special-scripts/*.pdf
 **/._*
 src/vendor/
 src/._vendor
-src/rust/vendor/
