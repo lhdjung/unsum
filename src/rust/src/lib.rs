@@ -68,9 +68,11 @@ impl TryFrom<Robj> for StreamingConfigR {
 }
 
 /// Helper function to convert FrequencyTable to R data frame
+/// The frequency table now includes a 'samples' column as the first column
 fn frequency_table_to_robj(freq_table: &closure_core::FrequencyTable) -> Robj {
-    // Create a data frame with columns: value, f_average, f_absolute, f_relative
+    // Create a data frame with columns: samples, value, f_average, f_absolute, f_relative
     let df = data_frame!(
+        samples = freq_table.samples.clone(),
         value = freq_table.value.clone(),
         f_average = freq_table.f_average.clone(),
         f_absolute = freq_table.f_absolute.clone(),
@@ -78,6 +80,47 @@ fn frequency_table_to_robj(freq_table: &closure_core::FrequencyTable) -> Robj {
     );
 
     df.into()
+}
+
+/// Helper function to convert ResultsTable to R list
+/// Returns a simple list that can be converted to a data frame on the R side
+fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Robj {
+    // Convert id from usize to i32 for R compatibility
+    let id_vec: Vec<i32> = results_table.id
+        .iter()
+        .map(|&id| id as i32)
+        .collect();
+
+    // Convert each sample to an R integer vector and collect into a list
+    let samples_robjs: Vec<Robj> = results_table.samples
+        .iter()
+        .map(|sample| {
+            // Each sample becomes an R integer vector
+            let sample_clone: Vec<i32> = sample.clone();
+            sample_clone.into_robj()
+        })
+        .collect();
+
+    // Create a list of samples (each element is a vector)
+    let samples_list: Robj = samples_robjs.into_robj();
+
+    // Get the horns values as a numeric vector
+    let horns_vec = results_table.horns_values.clone();
+
+    // Return as a simple list with named elements
+    // R users can convert this to a data frame using:
+    // df <- data.frame(
+    //   id = results$id,
+    //   samples = I(results$samples),  # I() preserves the list structure
+    //   horns = results$horns
+    // )
+    let results_list = list!(
+        id = id_vec,
+        samples = samples_list,
+        horns = horns_vec
+    );
+
+    results_list.into()
 }
 
 #[extendr]
@@ -125,7 +168,7 @@ fn create_combinations(
     }
 
     // Default mode: use dfs_parallel without writing to disk
-    let results = dfs_parallel(
+    let closure_results = dfs_parallel(
         mean,
         sd,
         n,
@@ -136,48 +179,39 @@ fn create_combinations(
         None, // No parquet config - just return results in memory
     );
 
-    // Convert the samples to R format
-    // Each inner Vec<i32> becomes an R integer vector
-    let samples_r: Vec<Robj> = results.samples
-        .into_iter()
-        .map(|vec| vec.into_robj())
-        .collect();
-
     // Create the main metrics list
     let metrics_main = list!(
-        samples_initial = results.metrics_main.samples_initial,
-        samples_all = results.metrics_main.samples_all,
-        values_all = results.metrics_main.values_all
+        samples_initial = closure_results.metrics_main.samples_initial,
+        samples_all = closure_results.metrics_main.samples_all,
+        values_all = closure_results.metrics_main.values_all
     );
 
     // Create the horns metrics list
     let metrics_horns = list!(
-        mean = results.metrics_horns.mean,
-        uniform = results.metrics_horns.uniform,
-        sd = results.metrics_horns.sd,
-        cv = results.metrics_horns.cv,
-        mad = results.metrics_horns.mad,
-        min = results.metrics_horns.min,
-        median = results.metrics_horns.median,
-        max = results.metrics_horns.max,
-        range = results.metrics_horns.range
+        mean = closure_results.metrics_horns.mean,
+        uniform = closure_results.metrics_horns.uniform,
+        sd = closure_results.metrics_horns.sd,
+        cv = closure_results.metrics_horns.cv,
+        mad = closure_results.metrics_horns.mad,
+        min = closure_results.metrics_horns.min,
+        median = closure_results.metrics_horns.median,
+        max = closure_results.metrics_horns.max,
+        range = closure_results.metrics_horns.range
     );
 
-    // Convert frequency tables to R data frames
-    let frequency_all = frequency_table_to_robj(&results.frequency_all);
-    let frequency_horns_min = frequency_table_to_robj(&results.frequency_horns_min);
-    let frequency_horns_max = frequency_table_to_robj(&results.frequency_horns_max);
+    // Convert frequency table to R data frame
+    let frequency = frequency_table_to_robj(&closure_results.frequency);
 
-    // Create the comprehensive result list
-    // This structure provides R users with all the rich information from CLOSURE
+    // Convert results table to R data frame
+    let results = results_table_to_robj(&closure_results.results);
+
+    // Create the comprehensive result list following the new API structure
+    // The order matches the ClosureResults struct: metrics_main, metrics_horns, frequency, results
     let result_list = list!(
-        samples = samples_r,
-        horns_values = results.horns_values,
         metrics_main = metrics_main,
         metrics_horns = metrics_horns,
-        frequency_all = frequency_all,
-        frequency_horns_min = frequency_horns_min,
-        frequency_horns_max = frequency_horns_max,
+        frequency = frequency,
+        results = results,
         streaming_mode = false
     );
 
