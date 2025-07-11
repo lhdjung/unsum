@@ -10,6 +10,7 @@ crate-type = [ 'staticlib' ]
 name = 'unsum'
 
 [dependencies]
+arrow = "43.0.0"
 closure-core = { git = "https://github.com/lhdjung/closure-core.git", branch = "optimize" }
 extendr-api = '*'
 
