@@ -129,7 +129,7 @@ closure_write <- function(data, path) {
   # Write the "results" tibble using the efficient Parquet format
   nanoparquet::write_parquet(
     x = data$results$sample |> as_wide_n_tibble(),
-    file = paste0(path_new_dir, slash, "results.parquet")
+    file = paste0(path_new_dir, slash, "samples.parquet")
   )
 
   cli::cli_alert_success("All files written to:\n{path_new_dir}{slash}")
@@ -164,7 +164,8 @@ closure_read <- function(path) {
     "metrics_main.parquet",
     "metrics_horns.parquet",
     "frequency.parquet",
-    "results.parquet"
+    "horns.parquet",
+    "samples.parquet"
   )
 
   if (!setequal(files_all, files_expected)) {
@@ -179,11 +180,13 @@ closure_read <- function(path) {
     )
   }
 
-  # Read Parquet files into tibbles (silently so the end user won't be confused)
+  # Read the small Parquet files into tibbles. Add the "tbl_df" class which is
+  # not included by `read_parquet()` but is needed for regular tibbles.
   read_file <- function(name) {
     path |>
       paste0(slash, name, ".parquet") |>
-      nanoparquet::read_parquet()
+      nanoparquet::read_parquet() |>
+      add_class("tbl_df")
   }
 
   # Add an S3 class to an object
@@ -191,21 +194,23 @@ closure_read <- function(path) {
     `class<-`(x, value = c(new_class, class(x)))
   }
 
-  # TODO: DEBUG results.parquet; THERE IS A LOT OF WEIRD AND UNNECESSARY STUFF
-  # CURRENTLY WRITTEN INTO IT. BUT MAYBE NANOPARQUET WON'T BE ABLE TO READ IT
-  # EVEN THEN? IN THAT CASE, USE EITHER CLOSURE-CORE OR UNSUM'S RUST PORTION
+  # Carry out these two steps
   out <- list(
     inputs = "inputs" |> read_file() |> add_class("closure_generate"),
     metrics_main = "metrics_main" |> read_file(),
     metrics_horns = "metrics_horns" |> read_file(),
-    frequency = "frequency" |> read_file(),
-    results = "results" |> read_file() #|> as_results_tibble()
+    frequency = "frequency" |> read_file()
   )
+
+  # For consistency with `closure_generate()`
+  out$metrics_main$samples_all <- as.double(out$metrics_main$samples_all)
+  out$metrics_main$values_all <- as.double(out$metrics_main$values_all)
 
   # Parse mean and SD from the folder name
   mean_sd_str <- strsplit(name_dir, "-")[[1]][2:3] |>
     gsub("_", "\\.", x = _)
 
+  # Check that files read  from disk are correct
   if (
     !near(as.numeric(mean_sd_str[1]), as.numeric(out$inputs$mean)) ||
     !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
@@ -228,29 +233,33 @@ closure_read <- function(path) {
 
   tryCatch(
     expr = {
-      out$metrics$samples_initial <- as.integer(out$metrics$samples_initial)
-      out$metrics$samples_all <- as.integer(out$metrics$samples_all)
-      out$metrics$values_all <- as.integer(out$metrics$values_all)
+      out$frequency$value <- as.integer(out$frequency$value)
     },
     error = function(e) {
-      cli::cli_abort(
-        " \"metrics\" must have \"samples_initial\", \
-        \"samples_all\", and \"values_all\" columns."
-      )
+      cli::cli_abort("\"frequency\" must have a \"value\" column.")
     }
   )
 
-  tryCatch(
-    expr = {
-      out$frequency$value <- as.integer(out$frequency$value)
-      out$frequency$f_absolute <- as.integer(out$frequency$f_absolute)
-    },
-    error = function(e) {
-      cli::cli_abort(
-        "\"frequency\" must have \"value\" and \"f_absolute\" columns."
-      )
-    }
-  )
+  n_samples_all <- out$metrics_main$samples_all
+
+  # Read in the results separately. This requires transposing the samples via
+  # `t()` because of the way they are stored on disk, which in turn is because
+  # of the special requirements imposed by streaming in closure-core. Also, read
+  # in the horns values, add an ID column, and construct the final tibble.
+  out$results <- path |>
+    paste0(slash, "samples.parquet") |>
+    nanoparquet::read_parquet() |>
+    t() |>
+    tibble::as_tibble(.name_repair = "minimal") |>
+    unclass() |>
+    unname() |>
+    list(
+      id = seq_len(n_samples_all),
+      sample = _,
+      horns =
+        nanoparquet::read_parquet(paste0(path, slash, "horns.parquet"))[[1]]
+    ) |>
+    tibble::new_tibble(nrow = n_samples_all)
 
   # Final check -- is the reconstructed list correct?
   tryCatch(

@@ -8,10 +8,17 @@ source("inst/build-helpers/fn-formals.R")
 
 # Error if input is not an unchanged CLOSURE list.
 check_closure_generate <- function(data) {
-  tibbles_all <- c("inputs", "metrics", "frequency", "results")
+  tibbles_all <- c(
+    "inputs",
+    "metrics_main",
+    "metrics_horns",
+    "frequency",
+    "results"
+  )
+
   top_level_is_correct <-
     is.list(data) &&
-    length(data) == 4L &&
+    length(data) == 5L &&
     identical(names(data), tibbles_all) &&
     inherits(data$inputs, "closure_generate")
 
@@ -31,7 +38,7 @@ check_closure_generate <- function(data) {
   # Check the formats of the three tibbles that are elements of `data`, i.e., of
   # the output of `closure_generate()`:
 
-  # Inputs (1 / 4)
+  # Inputs (1 / 5)
   check_component_tibble(
     x = data$inputs,
     name = "inputs",
@@ -56,63 +63,75 @@ check_closure_generate <- function(data) {
     n = 2
   )
 
-  # Metrics (2 / 4)
+  # Main metrics (2 / 5)
   check_component_tibble(
-    x = data$metrics,
-    name = "metrics",
-    dims = c(1L, 5L),
+    x = data$metrics_main,
+    name = "metrics_main",
+    dims = c(1L, 3L),
     col_names_types = list(
       "samples_initial" = "integer",
-      "samples_all" = "integer",
-      "values_all" = "integer",
-      "horns" = "double",
-      "horns_uniform" = "double"
+      "samples_all" = "double",
+      "values_all" = "double"
     )
   )
 
-  # Frequency (3 / 4)
+  # Horns metrics (3 / 5)
+  check_component_tibble(
+    x = data$metrics_horns,
+    name = "metrics_horns",
+    dims = c(1L, 9L),
+    col_names_types = list(
+      "mean" = "double",
+      "uniform" = "double",
+      "sd" = "double",
+      "cv" = "double",
+      "mad" = "double",
+      "min" = "double",
+      "median" = "double",
+      "max" = "double",
+      "range" = "double"
+    )
+  )
+
+  # Frequency (4 / 5)
   check_component_tibble(
     x = data$frequency,
     name = "frequency",
-    dims = c(data$inputs$scale_max - data$inputs$scale_min + 1, 4),
+    dims = c(
+      3 * (data$inputs$scale_max - data$inputs$scale_min + 1),
+      5
+    ),
     col_names_types = list(
+      "samples" = "character",
       "value" = "integer",
       "f_average" = "double",
-      "f_absolute" = "integer",
+      "f_absolute" = "double",
       "f_relative" = "double"
     )
   )
 
-  # Results (4 / 4)
+  # Results (5 / 5)
   check_component_tibble(
     x = data$results,
     name = "results",
-    dims = c(data$metrics$samples_all, 2L),
+    dims = c(data$metrics_main$samples_all, 3L),
     col_names_types = list(
       "id" = "integer",
-      "sample" = "list"
+      "sample" = "list",
+      "horns" = "double"
     )
   )
 
   # Additional checks:
 
-  if (!is_seq_linear_basic(data$frequency$value)) {
-    cli::cli_abort(
-      message = c(
-        "The `value` column in `frequency` must be a linear sequence.",
-        "x" = "It is actually {data$frequency$value}."
-      ),
-      call = rlang::caller_env()
-    )
-  }
-
-  # The relative frequencies must sum up to 1 or 0. In the latter case, the
-  # absolute frequencies must also sum up to 0: it only makes sense if no values
-  # at all were found. These comparisons use `near()`, copied from dplyr, to
-  # account for accidental floating-point inaccuracies.
+  # The relative frequencies must sum up to 1 or 0 per group. As there are 3
+  # groups, they must sum up to 3 in total. If they sum up to 0, the absolute
+  # frequencies must also sum up to 0: it only makes sense if no values at all
+  # were found. These comparisons use `near()`, copied from dplyr, to account
+  # for accidental floating-point inaccuracies.
   f_relative_sums_up <- near(
     sum(data$frequency$f_relative),
-    1
+    3
   ) || (
       near(
         sum(data$frequency$f_relative),
@@ -234,9 +253,9 @@ check_closure_horns_analyze <- function(data) {
   )
 
   check_component_tibble(
-    x = data$horns_results,
-    name = "horns_results",
-    dims = c(nrow(data$horns_results), 2L),
+    x = data$results,
+    name = "results",
+    dims = c(nrow(data$results), 3L),
     col_names_types = list(
       "id" = "integer",
       "horns" = "double"
@@ -295,22 +314,6 @@ check_component_tibble <- function(
       call = rlang::caller_env(n)
     )
   }
-}
-
-
-# Borrowed from scrutiny's internals and used within `check_closure_generate()`,
-# this checks whether a vector is a linear sequence (1, 2, 3) or not (3, 1, 7).
-is_seq_linear_basic <- function(x) {
-  if (length(x) < 3L) {
-    return(TRUE)
-  }
-  diff_first <- x[2L] - x[1L]
-  for (i in 3L:length(x)) {
-    if (x[i] - x[i - 1L] != diff_first) {
-      return(FALSE)
-    }
-  }
-  TRUE
 }
 
 
