@@ -18,8 +18,14 @@ check_closure_generate <- function(data) {
 
   top_level_is_correct <-
     is.list(data) &&
-    length(data) == 5L &&
-    identical(names(data), tibbles_all) &&
+    any(c(5L, 6L) == length(data)) &&
+    any(
+      names(data) %in% c(
+        tibbles_all,
+        c(tibbles_all, "directory"),
+        c(tibbles_all[!tibbles_all == "results"], "directory")
+      )
+    ) &&
     inherits(data$inputs, "closure_generate")
 
   if (!top_level_is_correct) {
@@ -110,17 +116,57 @@ check_closure_generate <- function(data) {
     )
   )
 
-  # Results (5 / 5)
-  check_component_tibble(
-    x = data$results,
-    name = "results",
-    dims = c(data$metrics_main$samples_all, 3L),
-    col_names_types = list(
-      "id" = "integer",
-      "sample" = "list",
-      "horns" = "double"
+  is_reading_class <- data$inputs |>
+    class() |>
+    grepl("^closure_read_include_", x = _)
+
+  if (any(is_reading_class)) {
+    reading_class <- class(data$inputs)[is_reading_class]
+    reading_class <- sub("^closure_read_include_", "", reading_class)
+
+    if (length(reading_class) > 1) {
+      cli::cli_abort("Cannot handle manipulated S3 classes.")
+    }
+
+    # Contradictory data
+    if (reading_class == "stats_only" && any(names(data) == "results")) {
+      cli::cli_abort(
+        message = c(
+          "Cannot hold \"results\" tibble because reading function \
+          was called with `include == \"stats_only\"`."
+        )
+      )
+    }
+
+    # Check for "results" tibble without a "sample" column
+    if (reading_class == "stats_and_horns") {
+      check_component_tibble(
+        x = data$results,
+        name = "results",
+        dims = c(data$metrics_main$samples_all, 2L),
+        col_names_types = list(
+          "id" = "integer",
+          "horns" = "double"
+        )
+      )
+    }
+  }
+
+  # In case the "results" tibble was returned directly by `closure_generate()`
+  # or by a reading function with a setting that makes for equivalent "results"
+  if (!any(is_reading_class) || reading_class == "capped_error") {
+    # Results (5 / 5)
+    check_component_tibble(
+      x = data$results,
+      name = "results",
+      dims = c(data$metrics_main$samples_all, 3L),
+      col_names_types = list(
+        "id" = "integer",
+        "sample" = "list",
+        "horns" = "double"
+      )
     )
-  )
+  }
 
   # Additional checks:
 
@@ -151,6 +197,12 @@ check_closure_generate <- function(data) {
       ),
       call = rlang::caller_env()
     )
+  }
+
+  # The remaining checks assume that a "samples" column is present, which is not
+  # the case with all settings of a reading function like `closure_read()`.
+  if (!any(names(data$results) == "sample")) {
+    return(invisible(NULL))
   }
 
   all_results_integer <- data$results$sample |>

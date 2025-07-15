@@ -77,9 +77,7 @@
 #' # to your folder here.)
 #' closure_read(path_new_folder)
 
-
 closure_write <- function(data, path) {
-
   check_closure_generate(data)
   check_value(path, "character")
 
@@ -138,9 +136,45 @@ closure_write <- function(data, path) {
 }
 
 
+# path <- "/home/lukas/Documents/r_projects/packages/unsum/CLOSURE-5_00-2_78-30-1-8-up_or_down-5"
+# include <- "stats_only"
+# samples_cap <- NULL
+
 #' @rdname closure_write
 #' @export
-closure_read <- function(path) {
+closure_read <- function(
+  path,
+  include = c("all", "stats_only", "stats_and_horns", "capped_error"),
+  samples_cap = NULL
+) {
+  include <- rlang::arg_match(include)
+
+  check_type(path, "character")
+  check_type(samples_cap, "double", allow_null = TRUE)
+
+  # Check whether the `samples` and `samples_cap` arguments are consistent -- if
+  # the former has either of these two values, the latter must be specified.
+  # samples == "capped_error" <- samples == "capped_error"
+
+  if (include == "capped_error" && is.null(samples_cap)) {
+    cli::cli_abort(
+      message = c(
+        "If `include` is \"{include}\", `samples_cap` must be specified.",
+        "i" = "Use `samples_cap` to state a threshold -- if there are \
+        more than this many samples, there will be an error."
+      )
+    )
+  }
+
+  if (include != "capped_error" && !is.null(samples_cap)) {
+    cli::cli_abort(
+      message = c(
+        "If `samples_cap` is specified, `include` must be \"capped_error\".",
+        "x" = "`include` is: \"{include}\"",
+        "x" = "`samples_cap` is: `{samples_cap}`"
+      )
+    )
+  }
 
   if (!dir.exists(path)) {
     cli::cli_abort(
@@ -194,9 +228,17 @@ closure_read <- function(path) {
     `class<-`(x, value = c(new_class, class(x)))
   }
 
-  # Carry out these two steps
+  # Carry out these two steps. At this point in time, `out` corresponds to
+  # `include == "stats_only"` because all of the additions further below
+  # correspond to other variants of `include`.
   out <- list(
-    inputs = "inputs" |> read_file() |> add_class("closure_generate"),
+    inputs = "inputs" |>
+      read_file() |>
+      add_class(c(
+        paste0("closure_read_include_", include),
+        "closure_generate"
+      )),
+
     metrics_main = "metrics_main" |> read_file(),
     metrics_horns = "metrics_horns" |> read_file(),
     frequency = "frequency" |> read_file()
@@ -210,7 +252,7 @@ closure_read <- function(path) {
   mean_sd_str <- strsplit(name_dir, "-")[[1]][2:3] |>
     gsub("_", "\\.", x = _)
 
-  # Check that files read  from disk are correct
+  # Check that files read from disk are correct
   if (
     !near(as.numeric(mean_sd_str[1]), as.numeric(out$inputs$mean)) ||
     !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
@@ -241,25 +283,70 @@ closure_read <- function(path) {
   )
 
   n_samples_all <- out$metrics_main$samples_all
+  path_horns <- paste0(path, slash, "horns.parquet")
 
-  # Read in the results separately. This requires transposing the samples via
-  # `t()` because of the way they are stored on disk, which in turn is because
-  # of the special requirements imposed by streaming in closure-core. Also, read
-  # in the horns values, add an ID column, and construct the final tibble.
-  out$results <- path |>
-    paste0(slash, "samples.parquet") |>
-    nanoparquet::read_parquet() |>
-    t() |>
-    tibble::as_tibble(.name_repair = "minimal") |>
-    unclass() |>
-    unname() |>
-    list(
-      id = seq_len(n_samples_all),
-      sample = _,
-      horns =
-        nanoparquet::read_parquet(paste0(path, slash, "horns.parquet"))[[1]]
-    ) |>
-    tibble::new_tibble(nrow = n_samples_all)
+
+  # Adjudicate which additional parts of the results to read from disk, if any
+  if (include == "stats_and_horns") {
+    out$results <- tibble::new_tibble(
+      x = list(
+        id = seq_len(n_samples_all),
+        horns = nanoparquet::read_parquet(path_horns)[[1]]
+      ),
+      nrow = n_samples_all
+    )
+  } else if (include == "capped_error" && n_samples_all > samples_cap) {
+    cli::cli_abort(
+      message = c(
+        "Number of samples exceeds the cap.",
+        "x" = "`samples_cap` is: {samples_cap}",
+        "x" = "Number of samples is: {n_samples_all}"
+      )
+    )
+  } else if (include %in% c("all", "capped_error")) {
+    # Read in the results separately. This requires transposing the samples via
+    # `t()` because of the way they are stored on disk, which in turn is because
+    # of the special requirements imposed by streaming in closure-core. Also,
+    # read the horns values, add an ID column, and construct the final tibble.
+    out$results <- tibble::new_tibble(
+      x = list(
+        id = seq_len(n_samples_all),
+        sample = path |>
+          paste0(slash, "samples.parquet") |>
+          nanoparquet::read_parquet() |>
+          t() |>
+          tibble::as_tibble(.name_repair = "minimal") |>
+          unclass() |>
+          unname() |>
+          tryCatch(
+            error = function(e) {
+              cli::cli_abort(
+                message = c(
+                  "Reading samples.parquet from disk failed.",
+                  "x" = "Original error:",
+                  "x" = "{e}",
+                  "i" = "If memory is lacking, try \
+                  `include = \"stats_only\"` or \
+                  `include = \"stats_and_horns\"`."
+                )
+              )
+            }
+          ),
+        horns = nanoparquet::read_parquet(path_horns)[[1]]
+      ),
+      nrow = n_samples_all
+    )
+  } else if (include != "stats_only") {
+    cli::cli_abort(
+      message = "Invalid `include` variant: \"{include}\""
+    )
+  }
+
+  # Add a record of the folder's path
+  out$directory <- tibble::new_tibble(
+    x = list(path = path),
+    nrow = 1L
+  )
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
@@ -277,4 +364,3 @@ closure_read <- function(path) {
 
   out
 }
-
