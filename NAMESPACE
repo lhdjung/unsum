@@ -3,7 +3,6 @@
 export(closure_count_initial)
 export(closure_gauge_complexity)
 export(closure_generate)
-export(closure_horns_analyze)
 export(closure_horns_histogram)
 export(closure_horns_min_max_bar)
 export(closure_plot_bar)

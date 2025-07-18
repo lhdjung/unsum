@@ -38,6 +38,8 @@
 #'
 #' @name horns_plot
 #'
+#' @include plot.R
+#'
 #' @return A ggplot object.
 #'
 #' @examples
@@ -81,7 +83,6 @@
 
 # Arguments for this function are generated below the definition
 closure_horns_min_max_bar <- function() {
-  # check_closure_horns_analyze(data)
 
   check_length(facet_labels, 2L, allow_null = TRUE)
   check_length(facet_labels_parens, 1L, allow_null = TRUE)
