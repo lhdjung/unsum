@@ -65,9 +65,23 @@
 #' @rdname horns_plot
 #' @export
 
+# min_max = "both"
+# frequency = "absolute-percent"
+# samples = "mean"
+# facet_labels = c("Minimal variability", "Maximal variability")
+# facet_labels_parens = "h"
+# bar_alpha = 0.75
+# bar_color = "#5D3FD3"
+# show_text = TRUE
+# text_color = bar_color
+# text_size = 12
+# text_offset = 0.05
+# mark_thousand = ","
+# mark_decimal = "."
+
 # Arguments for this function are generated below the definition
 closure_horns_min_max_bar <- function() {
-  check_closure_horns_analyze(data)
+  # check_closure_horns_analyze(data)
 
   check_length(facet_labels, 2L, allow_null = TRUE)
   check_length(facet_labels_parens, 1L, allow_null = TRUE)
@@ -80,24 +94,19 @@ closure_horns_min_max_bar <- function() {
     facet_labels_parens <- NULL
   }
 
-  names_min_max <- c(
-    "frequency_horns_min",
-    "frequency_horns_max"
-  )
-
   plot_frequency_bar(
     data = data,
     frequency = frequency,
     samples = samples,
     min_max_values = c(
-      data$horns_metrics$min,
-      data$horns_metrics$max
+      data$metrics_horns$min,
+      data$metrics_horns$max
     ),
-    name_frequency_table = switch(
+    frequency_rows_subset = switch(
       min_max,
-      "both" = names_min_max,
-      "min" = names_min_max[1L],
-      "max" = names_min_max[2L]
+      "both" = c("horns_min", "horns_max"),
+      "min" = "horns_min",
+      "max" = "horns_max"
     ),
     facet_labels = switch(
       min_max,
@@ -134,7 +143,7 @@ formals(closure_horns_min_max_bar) <- plot_frequency_bar |>
   ) |>
   formals_remove(
     "min_max_values",
-    "name_frequency_table"
+    "frequency_rows_subset"
   )
 
 

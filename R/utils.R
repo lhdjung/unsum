@@ -647,19 +647,19 @@ write_mean_sd_n_folder <- function(inputs, path) {
 overwrite_info_txt <- function(path) {
   slash <- .Platform$file.sep
 
-  path_info_txt <- paste0(path, slash, "info.txt")
-
   # Overwrite text in info.txt -- it has been a placeholder saying that CLOSURE
   # results are currently being written. Now it says writing them has finished.
-  connection <- file(path_info_txt)
+  connection <- file(paste0(path, slash, "info.txt"))
   write(
     x = paste0(
       "This folder contains the results of CLOSURE, created by ",
       "the R package unsum.\n\n",
-      "To load these files into R, use:\n",
+      "To load a summary of these results into R, use:\n",
       "unsum::closure_read(\"", path, "\")\n\n",
+      "For options to load the results themselves, see ",
+      "documentation for `closure_read()`.\n\n",
       "Use a different path if the folder was moved. ",
-      "In any case, opening the files will require a Parquet reader.\n\n",
+      "In any case, opening the files will require a Parquet reader. ",
       "For more information, visit:\n",
       "https://lhdjung.github.io/unsum/reference/closure_generate.html"
     ),
