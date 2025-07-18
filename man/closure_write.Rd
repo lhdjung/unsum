@@ -7,7 +7,11 @@
 \usage{
 closure_write(data, path)
 
-closure_read(path)
+closure_read(
+  path,
+  include = c("stats_only", "stats_and_horns", "capped_error", "all"),
+  samples_cap = NULL
+)
 }
 \arguments{
 \item{data}{List returned by \code{closure_generate()}.}
@@ -16,6 +20,20 @@ closure_read(path)
 a new folder with the results. Set it to \code{"."} to choose the current
 working directory. For \code{closure_read()}, the path to an existing folder
 with results.}
+
+\item{include}{String (length 1). Which parts of the detailed results should
+be read in?
+\itemize{
+\item With \code{"stats_only"}, the default, no results are read.
+\item \code{"stats_and_horns"} reads the horns index values, but not the samples.
+\item \code{"capped_error"} checks whether the number of samples are higher than a
+given threshold (see \code{samples_cap}). If so, it throws an error; but if not,
+it reads both the samples and the horns values.
+\item \code{"all"} reads both the samples and the horns values.
+}}
+
+\item{samples_cap}{Numeric (length 1). When using \code{include = "capped_error"},
+enter a whole number here to specify a cap. Default is \code{NULL}.}
 }
 \value{
 \code{closure_write()} returns the path to the new folder it created,

@@ -17,6 +17,16 @@
 #'   a new folder with the results. Set it to `"."` to choose the current
 #'   working directory. For `closure_read()`, the path to an existing folder
 #'   with results.
+#' @param include String (length 1). Which parts of the detailed results should
+#'   be read in?
+#'   - With `"stats_only"`, the default, no results are read.
+#'   - `"stats_and_horns"` reads the horns index values, but not the samples.
+#'   - `"capped_error"` checks whether the number of samples are higher than a
+#'   given threshold (see `samples_cap`). If so, it throws an error; but if not,
+#'   it reads both the samples and the horns values.
+#'   - `"all"` reads both the samples and the horns values.
+#' @param samples_cap Numeric (length 1). When using `include = "capped_error"`,
+#'   enter a whole number here to specify a cap. Default is `NULL`.
 #'
 #' @section Folder name: The new folder's name should be sufficient to recreate
 #'   its CLOSURE results. Dashes separate values, underscores replace decimal
@@ -144,7 +154,7 @@ closure_write <- function(data, path) {
 #' @export
 closure_read <- function(
   path,
-  include = c("all", "stats_only", "stats_and_horns", "capped_error"),
+  include = c("stats_only", "stats_and_horns", "capped_error", "all"),
   samples_cap = NULL
 ) {
   include <- rlang::arg_match(include)
@@ -310,7 +320,9 @@ closure_read <- function(
     # read the horns values, add an ID column, and construct the final tibble.
     out$results <- tibble::new_tibble(
       x = list(
+        # ID numbers (1 / 3)
         id = seq_len(n_samples_all),
+        # Result samples (2 / 3)
         sample = path |>
           paste0(slash, "samples.parquet") |>
           nanoparquet::read_parquet() |>
@@ -332,13 +344,14 @@ closure_read <- function(
               )
             }
           ),
+        # Horns index values (3 / 3)
         horns = nanoparquet::read_parquet(path_horns)[[1]]
       ),
       nrow = n_samples_all
     )
   } else if (include != "stats_only") {
     cli::cli_abort(
-      message = "Invalid `include` variant: \"{include}\""
+      message = "Internal error: invalid `include` variant \"{include}\""
     )
   }
 
