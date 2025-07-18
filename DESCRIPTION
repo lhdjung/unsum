@@ -33,7 +33,6 @@ Collate:
     'horns.R'
     'generate.R'
     'plot.R'
-    'horns-analyze.R'
     'horns-plot.R'
 Config/rextendr/version: 0.4.1
 SystemRequirements: Cargo (Rust's package manager), rustc

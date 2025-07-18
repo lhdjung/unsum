@@ -2,7 +2,6 @@
 % Please edit documentation in R/generate.R
 \name{closure_generate}
 \alias{closure_generate}
-\alias{closure_generate_write}
 \title{Generate CLOSURE samples}
 \usage{
 closure_generate(
@@ -11,24 +10,9 @@ closure_generate(
   n,
   scale_min,
   scale_max,
+  path = NULL,
   rounding = "up_or_down",
   threshold = 5,
-  warn_if_empty = TRUE,
-  ask_to_proceed = TRUE,
-  rounding_error_mean = NULL,
-  rounding_error_sd = NULL
-)
-
-closure_generate_write(
-  mean,
-  sd,
-  n,
-  scale_min,
-  scale_max,
-  path,
-  rounding = "up_or_down",
-  threshold = 5,
-  warn_if_empty = TRUE,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
@@ -46,6 +30,10 @@ possible values of the measurement scale. For example, with a 1-7 Likert
 scale, use \code{scale_min = 1} and \code{scale_max = 7}. Prefer the empirical min
 and max if available: they constrain the possible values further.}
 
+\item{path}{String (length 1). Optionally, choose the directory where a new
+folder with CLOSURE results should be created. Use \code{path = "."} for your
+current working directory. See "Writing to disk" below.}
+
 \item{rounding}{String (length 1). Rounding method assumed to have created
 \code{mean} and \code{sd}. See \href{https://lhdjung.github.io/roundwork/articles/rounding-options.html}{\emph{Rounding options}},
 but also the \emph{Rounding limitations} section below. Default is
@@ -56,9 +44,6 @@ but also the \emph{Rounding limitations} section below. Default is
 if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}. Default is
 \code{5}.}
 
-\item{warn_if_empty}{Logical (length 1). Should a warning be shown if no
-samples are found? Default is \code{TRUE}.}
-
 \item{ask_to_proceed}{Logical (length 1). If the runtime is predicted to be
 very long, should the function prompt you to proceed or abort in an
 interactive setting? Default is \code{TRUE}.}
@@ -67,16 +52,13 @@ interactive setting? Default is \code{TRUE}.}
 to manually set the rounding error around \code{mean} and \code{sd}. This is meant
 for development and might be removed in the future, so most users can
 ignore it.}
-
-\item{path}{String (length 1). Only in \code{closure_generate_write()}. Directory
-where the new folder with CLOSURE results should be created. Use \code{path = "."} for your current working directory.}
 }
 \value{
-\code{closure_generate()} returns a named list of four tibbles (data
+\code{closure_generate()} returns a named list of five tibbles (data
 frames):
 \itemize{
 \item \strong{\code{inputs}}: Arguments to this function.
-\item \strong{\code{metrics}}:
+\item \strong{\code{metrics_main}}:
 \itemize{
 \item \code{samples_initial}: integer. The basis for computing CLOSURE results,
 based on scale range only. See \code{\link[=closure_count_initial]{closure_count_initial()}}.
@@ -84,10 +66,18 @@ based on scale range only. See \code{\link[=closure_count_initial]{closure_count
 of rows in \code{results}.
 \item \code{values_all}: double. Number of all individual values found. Equal to
 \code{n * samples_all}.
-\item \code{horns}: double. Measure of dispersion for bounded scales; see
-\code{\link[=horns]{horns()}}.
-\item \code{horns_uniform}: double. Value \code{horns} would have if the reconstructed
-sample was uniformly distributed.
+}
+\item \strong{\code{metrics_horns}}:
+\itemize{
+\item \code{mean}: Average horns value of all samples. The horns index is a
+measure of dispersion for bounded scales; see \code{\link[=horns]{horns()}}.
+\item \code{uniform}: the value that \code{mean} would have if all samples were
+uniformly distributed; see \code{\link[=horns_uniform]{horns_uniform()}}.
+\item \code{sd}, \code{cv}, \code{mad}, \code{min}, \code{median}, \code{max}: double. Standard deviation,
+coefficient of variation, median absolute deviation, minimum, median, and
+maximum of the horns index values across all samples. Note that \code{mad} is
+not scaled using a constant, as \code{\link[stats:mad]{stats::mad()}} is by default.
+\item \code{range}: double. Equal to \code{max - min}.
 }
 \item \strong{\code{frequency}}:
 \itemize{
@@ -101,44 +91,39 @@ sample was uniformly distributed.
 \item \strong{\code{results}}:
 \itemize{
 \item \code{id}: integer. Runs from \code{1} to \code{samples_all}.
-\item \code{sample}: list of integer vectors. Each of these vectors has
-length \code{n}. It is a sample (or distribution) of individual scale values
-found by CLOSURE.
+\item \code{sample} (only if \code{path} was not specified): list of integer vectors.
+Each of these vectors has length \code{n}. It is a sample (or distribution) of
+individual scale values found by CLOSURE.
+\item \code{horns}: double. Horns index of each sample.
 }
 }
-
-\code{closure_generate_write()} has no return value; it is called  for side
-effects.
 }
 \description{
 Call \code{closure_generate()} to run the CLOSURE algorithm on a
-given set of summary statistics. To write results to disk, call
-\code{closure_generate_write()} instead.
+given set of summary statistics.
 
 This can take seconds, minutes, or longer, depending on the input. Wide
 variance and large \code{n} often lead to many samples, i.e., long runtimes.
 These effects interact dynamically. For example, with large \code{n}, even very
 small increases in \code{sd} can greatly increase runtime and number of values
-found. We recommend using \code{closure_generate_write()} in these cases; see
-"Writing to disk" below.
+found. Consider specifying \code{path} in these cases; see "Writing to disk"
+below.
 
 If the inputs are inconsistent, there is no solution. The function will
 then return empty results and throw a warning.
 }
 \section{Writing to disk}{
- Use \code{closure_generate_write()} if the expected
-runtime is very long. This makes sure the results are preserved by
+ Specify \code{path} if the expected runtime is very
+long. (In case you have trouble choosing a path, use \code{path = "."} for your
+current working directory.) This makes sure the results are preserved by
 incrementally writing them to disk. Otherwise, you might encounter an
 out-of-memory error because \code{closure_generate()} accumulates more data than
 your computer can hold in memory.
 
-Since the small summary tables are also written to disk, you can then
-access the key outcomes even without loading the generated samples. You
-could also try \code{\link[=closure_read]{closure_read()}} to load all the results back into R. See
-docs there for the structure of the folder.
-
-If you are not sure about the path, use \code{path = "."} for your current
-working directory.
+If \code{path} is specified, the output in R will not include the \code{"sample"}
+column in the \code{results} tibble. Even so, you can load the detailed results
+including the samples from disk using \code{\link[=closure_read]{closure_read()}} and its \code{include}
+argument. Note that memory errors are possible there, as well.
 }
 
 \section{More about memory}{
