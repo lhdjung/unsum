@@ -7,28 +7,27 @@
 # frequency <- "absolute-percent"
 # samples <- "mean"
 # bar_alpha <- 0.75
-# bar_color <- "#960019"
+# bar_color <- "#5D3FD3"
 # show_text <- TRUE
 # text_offset <- 0.05
 # text_color <- bar_color
 # mark_thousand <- ","
 # mark_decimal <- "."
 # text_size <- 12
-# name_frequency_table <- c("frequency_horns_min", "frequency_horns_max")
+# frequency_rows_subset <- c("horns_min", "horns_max")
 # facet_labels <- c("Minimal variability", "Maximal variability")
+# facet_labels_parens <- "h"
+# min_max_values <- c(0.41, 0.42)
 
 plot_frequency_bar <- function(
   data,
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
-  # TODO: Which one should be the default here -- all
-  # samples or the average sample?
   samples = c("mean", "all"),
   min_max_values = NULL,
-  name_frequency_table = NULL,
+  frequency_rows_subset = NULL,
   facet_labels = NULL,
   facet_labels_parens = NULL,
   bar_alpha = 0.75,
-  # TODO: Choose favorite -- #880808, #960019, #5D3FD3
   bar_color = "black",
   show_text = TRUE,
   text_color = bar_color,
@@ -41,34 +40,42 @@ plot_frequency_bar <- function(
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
 
-  # Zoom in on the frequency table -- the only element of `data` needed here. If
-  # there are multiple tables, combine them to a single one while keeping track
-  # of the original tables.
-  if (is.null(name_frequency_table)) {
-    data <- data[[name_frequency_table[1L]]]
-    nrow_table_single <- nrow(data)
-    n_tables <- 1L
-  } else {
-    tables_all <- NULL
-    nrow_tables_all <- integer(length(name_frequency_table))
-    nrow_table_single <- nrow(data[[name_frequency_table[1L]]])
-    n_tables <- length(name_frequency_table)
+  # Zoom in on the frequency table -- the only element of `data` needed here.
+  # Filter its rows to only keep those with a specific subset of samples, such
+  # as "horns_min" and "horns_max", or "all" for all samples taken together.
+  data <- data$frequency
+  data <- data[data$samples %in% frequency_rows_subset, ]
 
-    for (i in seq_along(name_frequency_table)) {
-      table_current <- data[[name_frequency_table[i]]]
-      tables_all <- rbind(tables_all, table_current)
-      nrow_tables_all[i] <- nrow(table_current)
-    }
-
-    # This would enable tables of different dimensions, which is currently not
-    # possible for other reasons (and probably not needed)
-    tables_all$group_frequency_table <- name_frequency_table |>
-      seq_along() |>
-      rep(nrow_tables_all)
-
-    data <- tables_all
-    rm(table_current, tables_all)
-  }
+  # # Zoom in on the frequency table -- the only element of `data` needed here. If
+  # # there are multiple tables, combine them to a single one while keeping track
+  # # of the original tables.
+  # if (is.null(frequency_rows_subset)) {
+  #   data <- data[[frequency_rows_subset[1L]]]
+  #   nrow_table_single <- nrow(data)
+  #   n_tables <- 1L
+  # } else {
+  #   tables_all <- NULL
+  #   nrow_tables_all <- integer(length(frequency_rows_subset))
+  #   nrow_table_single <- nrow(
+  #     data$frequency[data$frequency$samples == frequency_rows_subset[1L], ]
+  #   )
+  #   n_tables <- length(frequency_rows_subset)
+  #
+  #   for (i in seq_along(frequency_rows_subset)) {
+  #     table_current <- data[[frequency_rows_subset[i]]]
+  #     tables_all <- rbind(tables_all, table_current)
+  #     nrow_tables_all[i] <- nrow(table_current)
+  #   }
+  #
+  #   # This would enable tables of different dimensions, which is currently not
+  #   # possible for other reasons (and probably not needed)
+  #   tables_all$group_frequency_table <- frequency_rows_subset |>
+  #     seq_along() |>
+  #     rep(nrow_tables_all)
+  #
+  #   data <- tables_all
+  #   rm(table_current, tables_all)
+  # }
 
   # In terms of absolute frequencies, the user may choose to show the average
   # number of observations per bin instead of the full count. If so, replace the
@@ -119,7 +126,7 @@ plot_frequency_bar <- function(
       scales::label_number(
         accuracy = 1,
         big.mark = mark_thousand
-      )(sum(data$f_absolute) / n_tables),
+      )(sum(data$f_absolute) / length(unique(data$samples))),
       label_values,
       if (frequency == "absolute-percent") "(%)" else NULL
     )
@@ -136,10 +143,16 @@ plot_frequency_bar <- function(
   }
 
   # Ensure consistent column names to be referenced later
-  names(data)[names(data) != "group_frequency_table"] <- c(
+  names(data)[!(names(data) %in% c("samples", "group_frequency_table"))] <- c(
     "value",
     "frequency"
   )
+
+  data$samples <- data$samples |>
+    factor(
+      levels = frequency_rows_subset,
+      labels = seq_along(frequency_rows_subset)
+    )
 
   # The text geom is pre-defined here because whether it has a non-`NULL` value
   # depends on a logical argument.
@@ -215,9 +228,9 @@ plot_frequency_bar <- function(
         )
         names(facet_labels) <- seq_along(facet_labels)
         ggplot2::facet_grid(
-          cols = ggplot2::vars(group_frequency_table),
+          cols = ggplot2::vars(samples),
           labeller = ggplot2::labeller(
-            group_frequency_table = facet_labels,
+            samples = facet_labels,
             .default = ggplot2::label_parsed
           )
         )
@@ -307,7 +320,7 @@ closure_plot_bar <- function() {
     text_offset = text_offset,
     mark_thousand = mark_thousand,
     mark_decimal = mark_decimal,
-    name_frequency_table = "frequency"
+    frequency_rows_subset = "all"
   )
 }
 
@@ -322,7 +335,7 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
   formals_remove(
     "facet_labels",
     "facet_labels_parens",
-    "name_frequency_table",
+    "frequency_rows_subset",
     "min_max_values"
   )
 

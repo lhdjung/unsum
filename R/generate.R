@@ -10,12 +10,12 @@
 # mean <- "5.00"
 # sd <- "2.78"
 # n <- 30
+# scale_min <- 1
+# scale_max <- 8
 # rounding = "up_or_down"
 # threshold = 5
 # path <- "."
-# scale_min <- 1
-# scale_max <- 8
-# warn_if_empty <- TRUE
+# include <- "stats_and_horns"
 # ask_to_proceed <- TRUE
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
@@ -26,10 +26,9 @@ generate_from_mean_sd_n <- function(
   n,
   scale_min,
   scale_max,
-  path,
+  path = NULL,
   rounding = "up_or_down",
   threshold = 5,
-  warn_if_empty = TRUE,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
@@ -45,7 +44,6 @@ generate_from_mean_sd_n <- function(
   check_value(path, "character", allow_null = TRUE)
   check_value(rounding, "character")
   check_value(threshold, "double")
-  check_value(warn_if_empty, "logical")
   check_value(ask_to_proceed, "logical")
 
   mean_num <- as.numeric(mean)
@@ -127,12 +125,13 @@ generate_from_mean_sd_n <- function(
   # complexity is so high that the user is asked whether to proceed.
   if (!is.null(msg_wait)) {
     if (need_to_ask) {
-      # In memory mode, make sure the user known there is also the option to
+      # In memory mode, make sure the user knows there is also the option to
       # write large results to disk.
       if (is.null(path)) {
         msg_wait <- paste(
           msg_wait,
-          "Consider using {.fn closure_generate_write} instead."
+          "Consider specifying `path` to safely write results to disk.",
+          "You will then get"
         )
       }
       cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
@@ -175,15 +174,13 @@ generate_from_mean_sd_n <- function(
   # By default, raise a warning if no results were found. Invalid when writing
   # to disk (hence the last check) because, in this case, the samples won't be
   # stored in `results`.
-  if (warn_if_empty && n_samples_all == 0L) {
+  if (n_samples_all == 0) {
     cli::cli_warn(c(
       "No results found with these inputs.",
       "x" = "Data internally inconsistent.",
       "x" = "These statistics can't describe the same distribution."
     ))
   }
-
-  # TODO: Write inputs.parquet to disk!
 
   # Insert the samples into a data frame, along with summary statistics. The S3
   # class "closure_generate" will be recognized by downstream functions, such as
@@ -205,21 +202,21 @@ generate_from_mean_sd_n <- function(
         nrow = 1L,
         class = "closure_generate"
       ),
-      metrics_main = tibble::new_tibble(
-        x = out$metrics_main |> as.vector("list"),
-        nrow = 1L
-      ),
-      metrics_horns = tibble::new_tibble(
-        x = out$metrics_horns |> as.vector("list"),
-        nrow = 1L
-      ),
-      frequency = tibble::new_tibble(
-        x = out$frequency |> as.vector("list"),
-        nrow = nrow(out$frequency)
-      )
+
+      metrics_main = out$metrics_main |>
+        as.vector("list") |>
+        tibble::new_tibble(nrow = 1L),
+
+      metrics_horns = out$metrics_horns |>
+        as.vector("list") |>
+        tibble::new_tibble(nrow = 1L),
+
+      frequency = out$frequency |>
+        as.vector("list") |>
+        tibble::new_tibble(nrow = nrow(out$frequency))
     )
   } else {
-    closure_read(path_new_dir)
+    closure_read(path_new_dir, include = "stats_and_horns")
   }
 
   # In memory mode (i.e., without writing to disk), a message about successful
@@ -231,21 +228,8 @@ generate_from_mean_sd_n <- function(
   if (is.null(path)) {
     on.exit(cli::cli_alert_success("All CLOSURE results found"))
   } else {
-    nanoparquet::write_parquet(
-      x = inputs,
-      file = paste0(path, slash, "inputs.parquet")
-    )
-    out_with_placeholder <- c(
-      out_summary,
-      list(
-        results_reference = tibble::new_tibble(
-          x = list(path = path_new_dir),
-          nrow = 1L
-        )
-      )
-    )
     overwrite_info_txt(path_new_dir)
-    return(out_with_placeholder)
+    return(out_summary)
   }
 
   # Insert the samples into a data frame, along with summary statistics. The S3
@@ -268,15 +252,14 @@ generate_from_mean_sd_n <- function(
 #' Generate CLOSURE samples
 #'
 #' @description Call `closure_generate()` to run the CLOSURE algorithm on a
-#'   given set of summary statistics. To write results to disk, call
-#'   `closure_generate_write()` instead.
+#'   given set of summary statistics.
 #'
 #'   This can take seconds, minutes, or longer, depending on the input. Wide
 #'   variance and large `n` often lead to many samples, i.e., long runtimes.
 #'   These effects interact dynamically. For example, with large `n`, even very
 #'   small increases in `sd` can greatly increase runtime and number of values
-#'   found. We recommend using `closure_generate_write()` in these cases; see
-#'   "Writing to disk" below.
+#'   found. Consider specifying `path` in these cases; see "Writing to disk"
+#'   below.
 #'
 #'   If the inputs are inconsistent, there is no solution. The function will
 #'   then return empty results and throw a warning.
@@ -288,9 +271,9 @@ generate_from_mean_sd_n <- function(
 #'   possible values of the measurement scale. For example, with a 1-7 Likert
 #'   scale, use `scale_min = 1` and `scale_max = 7`. Prefer the empirical min
 #'   and max if available: they constrain the possible values further.
-#' @param path String (length 1). Only in `closure_generate_write()`. Directory
-#'   where the new folder with CLOSURE results should be created. Use `path =
-#'   "."` for your current working directory.
+#' @param path String (length 1). Optionally, choose the directory where a new
+#'   folder with CLOSURE results should be created. Use `path = "."` for your
+#'   current working directory. See "Writing to disk" below.
 #' @param rounding String (length 1). Rounding method assumed to have created
 #'   `mean` and `sd`. See [*Rounding
 #'   options*](https://lhdjung.github.io/roundwork/articles/rounding-options.html),
@@ -300,8 +283,6 @@ generate_from_mean_sd_n <- function(
 #' @param threshold Numeric (length 1). Number from which to round up or down,
 #'   if `rounding` is any of `"up_or_down"`, `"up"`, and `"down"`. Default is
 #'   `5`.
-#' @param warn_if_empty Logical (length 1). Should a warning be shown if no
-#'   samples are found? Default is `TRUE`.
 #' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
 #'   very long, should the function prompt you to proceed or abort in an
 #'   interactive setting? Default is `TRUE`.
@@ -310,19 +291,17 @@ generate_from_mean_sd_n <- function(
 #'   for development and might be removed in the future, so most users can
 #'   ignore it.
 #'
-#' @section Writing to disk: Use `closure_generate_write()` if the expected
-#'   runtime is very long. This makes sure the results are preserved by
+#' @section Writing to disk: Specify `path` if the expected runtime is very
+#'   long. (In case you have trouble choosing a path, use `path = "."` for your
+#'   current working directory.) This makes sure the results are preserved by
 #'   incrementally writing them to disk. Otherwise, you might encounter an
 #'   out-of-memory error because `closure_generate()` accumulates more data than
 #'   your computer can hold in memory.
 #'
-#'   Since the small summary tables are also written to disk, you can then
-#'   access the key outcomes even without loading the generated samples. You
-#'   could also try [`closure_read()`] to load all the results back into R. See
-#'   docs there for the structure of the folder.
-#'
-#'   If you are not sure about the path, use `path = "."` for your current
-#'   working directory.
+#'   If `path` is specified, the output in R will not include the `"sample"`
+#'   column in the `results` tibble. Even so, you can load the detailed results
+#'   including the samples from disk using [`closure_read()`] and its `include`
+#'   argument. Note that memory errors are possible there, as well.
 #'
 #' @section More about memory: Some output columns that contain counts, such as
 #'   `f_absolute`, are double instead of integer. This is because doubles can be
@@ -337,20 +316,26 @@ generate_from_mean_sd_n <- function(
 #'   Many specifications of the two arguments will not make any difference, and
 #'   those that do will most likely lead to empty results.
 #'
-#' @return `closure_generate()` returns a named list of four tibbles (data
+#' @return `closure_generate()` returns a named list of five tibbles (data
 #'   frames):
 #'   - **`inputs`**: Arguments to this function.
-#'   - **`metrics`**:
+#'   - **`metrics_main`**:
 #'     - `samples_initial`: integer. The basis for computing CLOSURE results,
 #'   based on scale range only. See [`closure_count_initial()`].
 #'     - `samples_all`: double. Number of all samples. Equal to the number
 #'   of rows in `results`.
 #'     - `values_all`: double. Number of all individual values found. Equal to
 #'   `n * samples_all`.
-#'     - `horns`: double. Measure of dispersion for bounded scales; see
-#'   [`horns()`].
-#'     - `horns_uniform`: double. Value `horns` would have if the reconstructed
-#'   sample was uniformly distributed.
+#'   - **`metrics_horns`**:
+#'     - `mean`: Average horns value of all samples. The horns index is a
+#'   measure of dispersion for bounded scales; see [`horns()`].
+#'     - `uniform`: the value that `mean` would have if all samples were
+#'   uniformly distributed; see [`horns_uniform()`].
+#'     - `sd`, `cv`, `mad`, `min`, `median`, `max`: double. Standard deviation,
+#'   coefficient of variation, median absolute deviation, minimum, median, and
+#'   maximum of the horns index values across all samples. Note that `mad` is
+#'   not scaled using a constant, as [`stats::mad()`] is by default.
+#'     - `range`: double. Equal to `max - min`.
 #'   - **`frequency`**:
 #'     - `value`: integer. Scale values derived from `scale_min` and
 #'   `scale_max`.
@@ -360,14 +345,13 @@ generate_from_mean_sd_n <- function(
 #'     - `f_relative`: double. Values' share of total values found.
 #'   - **`results`**:
 #'     - `id`: integer. Runs from `1` to `samples_all`.
-#'     - `sample`: list of integer vectors. Each of these vectors has
-#'   length `n`. It is a sample (or distribution) of individual scale values
-#'   found by CLOSURE.
+#'     - `sample` (only if `path` was not specified): list of integer vectors.
+#'   Each of these vectors has length `n`. It is a sample (or distribution) of
+#'   individual scale values found by CLOSURE.
+#'     - `horns`: double. Horns index of each sample.
 #'
-#'   `closure_generate_write()` has no return value; it is called  for side
-#'   effects.
-#'
-#' @include utils.R count.R horns.R performance.R extendr-wrappers.R
+#' @include utils.R count.R horns.R performance.R read-write.R
+#'   extendr-wrappers.R
 #'
 #' @export
 #'
@@ -411,10 +395,9 @@ closure_generate <- function() {
     n = n,
     scale_min = scale_min,
     scale_max = scale_max,
-    path = NULL,
+    path = path,
     rounding = rounding,
     threshold = threshold,
-    warn_if_empty = warn_if_empty,
     ask_to_proceed = ask_to_proceed,
     rounding_error_mean = rounding_error_mean,
     rounding_error_sd = rounding_error_sd
@@ -422,30 +405,5 @@ closure_generate <- function() {
 }
 
 formals(closure_generate) <- generate_from_mean_sd_n |>
-  formals() |>
-  formals_remove("path")
-
-
-#' @rdname closure_generate
-#' @export
-
-closure_generate_write <- function() {
-  generate_from_mean_sd_n(
-    mean = mean,
-    sd = sd,
-    n = n,
-    scale_min = scale_min,
-    scale_max = scale_max,
-    path = path,
-    rounding = rounding,
-    threshold = threshold,
-    warn_if_empty = warn_if_empty,
-    ask_to_proceed = ask_to_proceed,
-    rounding_error_mean = rounding_error_mean,
-    rounding_error_sd = rounding_error_sd
-  )
-}
-
-formals(closure_generate_write) <- generate_from_mean_sd_n |>
   formals()
 
