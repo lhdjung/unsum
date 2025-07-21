@@ -28,7 +28,7 @@ code takes too long to run, consider using
 You can install unsum with either of these:
 
 ``` r
-remotes::install_github("lhdjung/unsum")
+install.packages("unsum")
 # or
 pak::pkg_install("unsum")
 ```
