@@ -19,7 +19,6 @@ reference:
   - horns_plot
 - title: Metrics
 - contents:
-  - closure_horns_analyze
   - closure_count_initial
   - closure_gauge_complexity
   - horns
