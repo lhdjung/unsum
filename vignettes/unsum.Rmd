@@ -13,11 +13,15 @@ knitr::opts_chunk$set(
   comment = "#>",
   out.width = "100%"
 )
+
+devtools::load_all(".")
 ```
 
 ```{r setup}
 library(unsum)
 ```
+
+TODO: INTRODUCE WRITE MODE IN `closure_generate()` AND UPDATE "READ AND WRITE"
 
 Here is a brief walkthrough of using CLOSURE in unsum.
 
@@ -59,15 +63,25 @@ data
 
 -   `inputs` records the arguments in `closure_generate()`.
 
--   `metrics` shows the number of possible samples that could have led to the reported summary statistics (`samples_all`) and the total number of all values found in them (`values_all`).
+-   `metrics_main` shows the number of initial samples that form the basis of CLOSURE (`samples_initial`), the total number of possible samples that could have led to the reported summary statistics (`samples_all`), and the total number of all values found in them (`values_all`).
 
-    Importantly, it also features an index of variation in bounded scales (`horns`). It ranges from 0 to 1, where 0 means no variability and 1 would be a sample evenly split between the extremes — here, 1, and 5 — with no values in between. The reference value `horns_uniform` shows which value `horns` would have if the mean sample was uniformly distributed. This is 0.5 because of the 1-5 scale. See `horns()` for more details.
+-   `metrics_horns` contains statistics about the "horns index" of each sample, a measure of variation in bounded scales. It ranges from 0 to 1, where 0 means no variability and 1 would be a sample evenly split between the extremes — here, 1, and 5 — with no values in between. In particular:
 
-    The actual `horns` value is 0.79, which is a high degree of variability even in the abstract. However, in practice, 0.79 might be extremely high compared to theoretical expectations: if the sample should have a roughly normal shape, even the hypothetical 0.5 uniform value would be surprisingly high, let alone the 0.79 actual value.
+    -   `mean` is the average horns index across all samples. The reference value `uniform` shows which value `mean` would have if the mean sample was uniformly distributed. This is 0.5 because of the 1-5 scale. See `horns()` for more details.
 
--   `frequency` shows the absolute and relative frequencies of values found by CLOSURE at each scale point. It also gives us the (absolute) frequency of values in the average sample that we saw in the plot above.
+    -   The actual `mean` horns index is 0.79, which is a high degree of variability even in the abstract. In practice, 0.79 might be extremely high compared to theoretical expectations: if the sample should have a roughly normal shape, even the hypothetical 0.5 uniform value would be surprisingly high, let alone the 0.79 actual value.
 
--   `results` stores all the samples that CLOSURE found (`sample`). Each has a unique number (`id`).
+    -   The remaining statistics provide some clues about the variability among horns values. More on this below.
+
+-   `frequency` shows the absolute and relative frequencies of values found by CLOSURE at each scale point. It also contains the (absolute) frequency of values in the average sample that we saw in the plot above. The `samples` column indicates to which subset of the samples a row belongs:
+
+    -   `all` is aggregated across all samples.
+
+    -   `horns_min` concerns the subset of samples that have the lowest horns index from among all samples.
+
+    -   `horns_max`, conversely, is about the subset of samples with the highest horns index.
+
+-   `results` stores all the samples that CLOSURE found (`sample`) and the corresponding horns index values (`horns`). Each has a unique number (`id`).
 
 See `closure_generate()` for more details.
 
@@ -83,14 +97,17 @@ closure_plot_ecdf(data)
 
 ## Horns index variation
 
-You may wonder about variability between the samples. Couldn't there be some with a much lower or higher horns index than the overall mean `horns`? In this case, there would be a chance that the original data looked quite different from the average. Check this using `closure_horns_analyze()`:
+You may wonder about variability between the samples. Couldn't there be some with a much lower or higher horns index than the overall mean `horns`? In this case, there would be a chance that the original data looked quite different from the average.
+
+To check this, first use `closure_horns_min_max_bar()`. It shows the minimum and maximum possible variability as measured by the horns index, i.e., the average distributions of those samples with the lowest and highest horns index values:
 
 ```{r}
-data_horns <- closure_horns_analyze(data)
-data_horns
+closure_horns_min_max_bar(data, frequency = "percent")
 ```
 
-Also, `closure_horns_histogram()` visualizes the distribution of horns values across all samples:
+As you can see, the variability does not change very much. The distribution is starkly bimodal even with the lowest possible amount of variability.
+
+You could also run `closure_horns_histogram()`. It visualizes the distribution of horns values across all samples:
 
 ```{r}
 #| fig.alt: >
@@ -98,7 +115,7 @@ Also, `closure_horns_histogram()` visualizes the distribution of horns values ac
 #|   The scale limits range from 0 to 1,
 #|   but values only start after 0.75
 #|   and end before 0.90.
-closure_horns_histogram(data_horns)
+closure_horns_histogram(data)
 ```
 
 In sum, the horns values are quite tightly confined. Wide variation among them seems to occur only if `mean` and `sd` have no decimal places.
