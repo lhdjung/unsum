@@ -286,10 +286,6 @@ generate_from_mean_sd_n <- function(
 #' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
 #'   very long, should the function prompt you to proceed or abort in an
 #'   interactive setting? Default is `TRUE`.
-#' @param rounding_error_mean,rounding_error_sd Numeric (length 1 each). Option
-#'   to manually set the rounding error around `mean` and `sd`. This is meant
-#'   for development and might be removed in the future, so most users can
-#'   ignore it.
 #'
 #' @section Writing to disk: Specify `path` if the expected runtime is very
 #'   long. (In case you have trouble choosing a path, use `path = "."` for your
@@ -399,11 +395,15 @@ closure_generate <- function() {
     rounding = rounding,
     threshold = threshold,
     ask_to_proceed = ask_to_proceed,
-    rounding_error_mean = rounding_error_mean,
-    rounding_error_sd = rounding_error_sd
+    rounding_error_mean = NULL,
+    rounding_error_sd = NULL
   )
 }
 
 formals(closure_generate) <- generate_from_mean_sd_n |>
-  formals()
+  formals() |>
+  formals_remove(
+    "rounding_error_mean",
+    "rounding_error_sd"
+  )
 

@@ -13,9 +13,7 @@ closure_generate(
   path = NULL,
   rounding = "up_or_down",
   threshold = 5,
-  ask_to_proceed = TRUE,
-  rounding_error_mean = NULL,
-  rounding_error_sd = NULL
+  ask_to_proceed = TRUE
 )
 }
 \arguments{
@@ -47,11 +45,6 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 \item{ask_to_proceed}{Logical (length 1). If the runtime is predicted to be
 very long, should the function prompt you to proceed or abort in an
 interactive setting? Default is \code{TRUE}.}
-
-\item{rounding_error_mean, rounding_error_sd}{Numeric (length 1 each). Option
-to manually set the rounding error around \code{mean} and \code{sd}. This is meant
-for development and might be removed in the future, so most users can
-ignore it.}
 }
 \value{
 \code{closure_generate()} returns a named list of five tibbles (data
