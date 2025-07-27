@@ -158,10 +158,10 @@ closure_horns_histogram <- function(
     bar_binwidth = 0.0025,
     text_size = 12
 ) {
+  check_closure_generate(data)
 
-  check_closure_horns_analyze(data)
-
-  data <- data$horns_results
+  # Reduce the input to a tibble that only includes the horns values
+  data <- data$results["horns"]
 
   # Construct the plot
   ggplot2::ggplot(data) +
