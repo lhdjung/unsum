@@ -1,6 +1,8 @@
 
 library(ggplot2)
 library(dplyr)
+library(unsum)
+library(agrmt)
 
 theme_set(theme_minimal(base_size = 12))
 
@@ -11,17 +13,21 @@ censor <- function(x, left, right) {
   x
 }
 
+dissention <- function(freqs, ...) 1 - consensus(freqs)
+
 
 # This is needed in case none of the values has any observations on it, so the
 # zeroes need to be added here. Also, the output is formatted consistently.
 complete_scale_by_zeroes <- function(x, endpoint) {
   names_complete <- as.character(seq_len(endpoint))
   x_is_present <- names_complete %in% names(x)
+
   if (all(x_is_present)) {
     x <- as.integer(x)
     names(x) <- names_complete
     return(x)
   }
+
   x_new <- integer(endpoint)
   x_new[which(x_is_present)] <- x
   names(x_new) <- names_complete
@@ -29,148 +35,102 @@ complete_scale_by_zeroes <- function(x, endpoint) {
 }
 
 
-# df1 <- tibble::tibble(
-#   frequencies = sd_all |>
-#     vapply(
-#       function(x) rnorm(n, mean = 3, sd = x),
-#       numeric(n)
-#     ) |>
-#     table() |>
-#     as.list()
-# )
 
-# probs_all <- list(
-#   c(0.5, 0, 0, 0, 0.5),
-#   c(0.4, 0.1, 0, 0.1, 0.4),
-#   c(0.3, 0.2, 0, 0.2, 0.3),
-#   c(0.1, 0.2, 0.4, 0.2, 0.1),
-#   c(0, 0.2, 0.6, 0.2, 0),
-#   c(0, 0, 1, 0, 0)
-# )
-
-
-# Must be a whole number -- maximal SD to include
-endpoint <- 6
+# Must be a whole number
+endpoint <- 7
 
 sd_all <- seq(from = 0, to = endpoint, by = 0.1)
-n_sds <- length(sd_all)
-
-freqs_all <- vector("list", n_sds)
-probs_all <- vector("list", n_sds)
-horns_all <- numeric(n_sds)
-horns_rescaled_all <- numeric(n_sds)
-
-n <- 100000
+n <- 500000
 
 
-for (i in seq_along(sd_all)) {
+dispersion_by_metric <- function(fn) {    # sd_all, n, endpoint
 
-  freqs_current <- n |>
-    rnorm(mean = 3, sd = sd_all[i]) |>
-    round() |>
-    censor(left = 1, right = endpoint) |>
-    table() |>
-    complete_scale_by_zeroes(endpoint)
+  n_sds <- length(sd_all)
 
-  horns_all[i] <- horns(freqs_current, 1, endpoint)
-  horns_rescaled_all[i] <- horns_rescaled(freqs_current, 1, endpoint)
+  freqs_all <- vector("list", n_sds)
+  probs_all <- vector("list", n_sds)
+  disp_all <- numeric(n_sds)
 
-  # freqs_all[[i]] <- freqs_current
-  #
-  # probs_all[[i]] <- endpoint |>
-  #   seq_len() |>
-  #   sample(
-  #     size = n,
-  #     replace = TRUE,
-  #     prob = freqs_current / sum(freqs_current)
-  #   ) |>
-  #   table()
+  for (i in seq_along(sd_all)) {
+    freqs_current <- n |>
+      rnorm(mean = 3, sd = sd_all[i]) |>
+      round() |>
+      censor(left = 1, right = endpoint) |>
+      table() |>
+      complete_scale_by_zeroes(endpoint)
 
+    disp_all[i] <- fn(freqs_current, 1, endpoint)
+  }
 
-  # names_complete <- as.character(seq_len(endpoint))
-  #
-  # if (identical(names(freqs_current), names_complete)) {
-  #   freqs_current <- as.integer(freqs_current)
-  #   names(freqs_current) <- names_complete
-  # } else {
-  #   values_complete <- integer(endpoint)
-  #   names(values_complete) <- names_complete
-  #   values_complete[names_complete %in% names(freqs_current)] <- freqs_current
-  #   freqs_current <- values_complete
-  # }
-  #
-  # probs_current <- freqs_current / sum(freqs_current)
-  #
-  # if (!near(sum(probs_current), 1)) {
-  #   cli::cli_abort("All `probs_current` elements must sum up to 1.")
-  # }
-  #
-  # freqs_all[[i]] <- probs_current
-  #
-  # sample_current <- endpoint |>
-  #   seq_len() |>
-  #   sample(
-  #     size = n,
-  #     replace = TRUE,
-  #     prob = probs_current
-  #   ) |>
-  #   table()
+  disp_all
 }
+
 
 df1 <- tibble(
   sd = sd_all,
-  horns = horns_all,
-  horns_rescaled = horns_rescaled_all
+  horns = dispersion_by_metric(horns),
+  # horns_rescaled = dispersion_by_metric(horns_rescaled),
+  dissention = dispersion_by_metric(dissention)
 )
 
+df1
 
-ggplot(df1, aes(x = sd, y = horns)) +
-  geom_point() +
-  geom_point(aes(y = horns_rescaled_all), color = "red") +
+
+# Visualize the metrics, comparing them against each other as the SD rises
+ggplot(df1, aes(x = sd)) +
+  geom_point(aes(y = horns), color = "black") +
+  # geom_point(aes(y = horns_rescaled), color = "royalblue2") +
+  geom_point(aes(y = dissention), color = "brown2") +
+  scale_x_continuous(
+    breaks = 0:endpoint,
+    labels = 0:endpoint
+  ) +
   labs(
     x = "Standard deviation",
-    y = "Horns index"
+    y = "Dispersion metric",
+    title = "Comparing measures of ordinal dispersion",
+    subtitle = paste(
+      "Black: horns index,",
+      # "blue: rescaled horns index,",
+      "red: dissention (i.e., 1 - consensus)"
+    )
   )
 
 
-
-# horns_results_all <- probs_all |>
-#   lapply(function(x) sample(1:5, size = 5000, replace = TRUE, prob = x)) |>
-#   lapply(
-#     function(x) {
-#       out <- tibble::as_tibble(table(x))
-#       x_is_present <- as.character(1:5) %in% out$x
-#       freqs <- if (all(x_is_present)) {
-#         out$n
-#       } else {
-#         n_new <- integer(5)
-#         n_new[which(x_is_present)] <- out$n
-#         n_new
-#       }
-#       horns(freqs, 1, 5)
-#     }
-#   ) |>
-#   as.numeric()
-
-
-
 # Uniform distribution ----------------------------------------------------
+
+dissention_uniform <- function(scale_min, scale_max) {
+  dissention(
+    freqs = rep(1, length(scale_min:scale_max))
+  )
+}
+
+dispersion_by_endpoint <- function(fn, x) {
+  vapply(
+    x,
+    function(endpoint) fn(1, endpoint),
+    numeric(1)
+  )
+}
+
 
 # Create many different scale endpoints (i.e., `scale_max` values), but always
 # start at 1, so that the endpoint is equal to the scale length
 df2 <- tibble::tibble(
   scale_length = 2:20,
-  horns_uniform = vapply(
-    scale_length,
-    function(endpoint) horns_uniform(1, endpoint),
-    numeric(1)
-  )
+  horns_uniform = dispersion_by_endpoint(horns_uniform, scale_length),
+  dissention_uniform = dispersion_by_endpoint(dissention_uniform, scale_length)
 )
+
 
 decimal_seq <- seq(from = 0.1, to = 1, by = 0.1)
 
-ggplot(df2, aes(x = scale_length, y = horns_uniform)) +
-  geom_line() +
+
+# Visualize the decline of dispersion metrics as the number of scale points
+# increases
+ggplot(df2, aes(x = scale_length)) +
+  geom_line(aes(y = horns_uniform), color = "black") +
+  geom_line(aes(y = dissention_uniform), color = "brown2") +
   scale_x_continuous(breaks = df2$scale_length) +
   scale_y_continuous(
     breaks = decimal_seq,
@@ -178,11 +138,17 @@ ggplot(df2, aes(x = scale_length, y = horns_uniform)) +
   ) +
   labs(
     x = "Number of scale points",
-    y = "Horns index of a uniform sample"
+    y = "Dispersion in a uniform sample",
+    title = "Comparing measures of ordinal dispersion in the uniform case",
+    subtitle = paste(
+      "Black: horns index,",
+      "red: dissention (i.e., 1 - consensus)"
+    )
   ) +
   theme(
     panel.grid.minor.x = element_blank(),
     panel.grid.minor.y = element_blank()
   )
+
 
 print(df2, n = Inf)
