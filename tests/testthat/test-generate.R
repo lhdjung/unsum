@@ -8,6 +8,10 @@ data_r <- closure_generate(
   scale_max = 5
 )
 
+test_that("The results pass unsum's internal check for `closure_generate()` output", {
+  data_r |> check_closure_generate() |> expect_no_error()
+})
+
 # Adjust results of R wrapper to format of data saved on disk
 data_r <- data_r$results$sample |> as_wide_n_tibble()
 
