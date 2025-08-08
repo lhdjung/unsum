@@ -77,7 +77,7 @@ generate_from_mean_sd_n <- function(
   if (is.null(path)) {
     parquet_config <- NULL
   } else {
-    path_new_dir <- write_mean_sd_n_folder(
+    path_new_dir <- prepare_folder_mean_sd_n(
       inputs = list(
         mean = mean,
         sd = sd,
@@ -87,7 +87,8 @@ generate_from_mean_sd_n <- function(
         rounding = rounding,
         threshold = threshold
       ),
-      path = path
+      path = path,
+      technique = technique
     )
     parquet_config <- list(
       file_path = path_new_dir,
@@ -418,6 +419,7 @@ closure_generate <- function() {
 formals(closure_generate) <- generate_from_mean_sd_n |>
   formals() |>
   formals_remove(
+    "technique",
     "rounding_error_mean",
     "rounding_error_sd"
   )

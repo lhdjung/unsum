@@ -488,11 +488,26 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 }
 
 
+create_results_folder <- function(path, n = 1) {
+  if (dir.exists(path)) {
+    cli::cli_abort(
+      message = c(
+        "Name of new folder must not be taken.",
+        "x" = "Folder already exists:",
+        "x" = path
+      ),
+      call = rlang::caller_env(n)
+    )
+  }
+  dir.create(path)
+}
+
+
 # Where `inputs` is of the form `list(mean, sd, n, scale_min, scale_max)`. It
 # creates a folder named after these summary statistics and returns the path to
 # that new folder. It also writes two files into it: a general info.txt that
 # will be overwritten later, and an inputs.parquet file with the inputs.
-write_mean_sd_n_folder <- function(inputs, path) {
+prepare_folder_mean_sd_n <- function(inputs, path, technique) {
   slash <- .Platform$file.sep
 
   # Prepare the name of the new directory to which `data` will later be written.
@@ -503,7 +518,7 @@ write_mean_sd_n_folder <- function(inputs, path) {
     gsub("\\.", "_", x = _)
 
   # Prefix with the name of the technique to make the origin very clear
-  name_new_dir <- paste0("CLOSURE-", name_new_dir)
+  name_new_dir <- paste0(technique, "-", name_new_dir)
 
   path_current <- if (path == ".") getwd() else path
 
@@ -514,20 +529,14 @@ write_mean_sd_n_folder <- function(inputs, path) {
     name_new_dir
   )
 
-  if (dir.exists(path_new_dir)) {
-    cli::cli_abort(
-      message = c(
-        "Name of new folder must not be taken.",
-        "x" = "Folder already exists:",
-        "x" = "{path_new_dir}"
-      ),
-      call = rlang::caller_env()
-    )
-  }
+  create_results_folder(path_new_dir, n = 3)
 
   path_info_txt <- paste0(path_new_dir, slash, "info.txt")
 
-  dir.create(path_new_dir)
+  # "CLOSURE" --> "closure" etc.
+  lowtech <- tolower(technique)
+
+  # dir.create(path_new_dir)
   file.create(path_info_txt)
 
   # While the results are written, provide a message to that effect in info.txt
@@ -535,11 +544,11 @@ write_mean_sd_n_folder <- function(inputs, path) {
   write(
     x = paste0(
       "DO NOT CHANGE THIS FOLDER OR ITS CONTENTS.\n\n",
-      "Results of the CLOSURE technique are currently being written ",
+      "Results of the ", technique, " technique are currently being written ",
       "to the results.parquet file (unless the process was interrupted). ",
       "This message will be overwritten once the process has finished.\n\n",
       "For more information, visit:\n",
-      "https://lhdjung.github.io/unsum/reference/closure_generate.html"
+      "https://lhdjung.github.io/unsum/reference/", lowtech, "_generate.html"
     ),
     file = connection
   )
@@ -550,7 +559,7 @@ write_mean_sd_n_folder <- function(inputs, path) {
     tibble::new_tibble(
       x = inputs,
       nrow = 1L,
-      class = "closure_generate"
+      class = paste0(lowtech, "_generate")
     ),
     file = paste0(path_new_dir, slash, "inputs.parquet")
   )
@@ -563,10 +572,15 @@ write_mean_sd_n_folder <- function(inputs, path) {
 # After writing results to disk, the info.txt file should be updated
 overwrite_info_txt <- function(path, technique) {
   # "CLOSURE" --> "closure" etc.
-  t_low <- tolower(technique)
+  lowtech <- tolower(technique)
 
   # Open a connection to info.txt via a path like path/to/your/info.txt
-  connection <- file(paste0(path, .Platform$file.sep, "info.txt"))
+
+  # connection <- file(paste0(path, .Platform$file.sep, "info.txt"))
+
+  connection <- path |>
+    paste0(.Platform$file.sep, "info.txt") |>
+    file()
 
   # Overwrite text in info.txt -- it has been a placeholder saying that CLOSURE
   # results are currently being written. Now it says writing them has finished.
@@ -575,13 +589,13 @@ overwrite_info_txt <- function(path, technique) {
       "This folder contains the results of ", technique, " created by ",
       "the R package unsum.\n\n",
       "To load a summary of these results into R, use:\n",
-      "unsum::", t_low, "_read(\"", path, "\")\n\n",
+      "unsum::", lowtech, "_read(\"", path, "\")\n\n",
       "For options to load the results themselves, see ",
-      "documentation for `", t_low, "_read()`.\n\n",
+      "documentation for `", lowtech, "_read()`.\n\n",
       "Use a different path if the folder was moved. ",
       "In any case, opening the files will require a Parquet reader. ",
       "For more information, visit:\n",
-      "https://lhdjung.github.io/unsum/reference/", t_low, "_generate.html"
+      "https://lhdjung.github.io/unsum/reference/", lowtech, "_generate.html"
     ),
     file = connection
   )
