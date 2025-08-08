@@ -616,3 +616,12 @@ as_results_tibble <- function(n_cols) {
   )
 }
 
+
+# Get the name of the calling function as a string. By default, this is the
+# function immediately calling the one within which `caller_fn_name()` is
+# called. Choose the next-higher function with `n = 2` etc; or the current
+# function with `n = 0`.
+caller_fn_name <- function(n = 1) {
+  as.character(rlang::caller_call(n + 1)[[1L]])
+}
+
