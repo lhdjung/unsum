@@ -26,6 +26,7 @@ generate_from_mean_sd_n <- function(
   n,
   scale_min,
   scale_max,
+  technique,
   path = NULL,
   rounding = "up_or_down",
   threshold = 5,
@@ -95,13 +96,17 @@ generate_from_mean_sd_n <- function(
   }
 
   # Make an educated guess about the complexity, and hence the runtime duration
-  complexity <- closure_gauge_complexity(
-    mean = mean_num,
-    sd = sd_num,
-    n = n,
-    scale_min = scale_min,
-    scale_max = scale_max
-  )
+  complexity <- if (technique == "CLOSURE") {
+    closure_gauge_complexity(
+      mean = mean_num,
+      sd = sd_num,
+      n = n,
+      scale_min = scale_min,
+      scale_max = scale_max
+    )
+  } else {
+    0
+  }
 
   # This might be set to `TRUE` below
   need_to_ask <- FALSE
@@ -145,7 +150,7 @@ generate_from_mean_sd_n <- function(
       )
 
       if (selection == 1L) {
-        cli::cli_alert_info("Running CLOSURE, please wait...")
+        cli::cli_alert_info("Running {technique}, please wait...")
       } else {
         fn_name <- caller_fn_name()
         cli::cli_alert_info("Aborting {.fn {fn_name}}.")
@@ -205,7 +210,8 @@ generate_from_mean_sd_n <- function(
           threshold = threshold
         ),
         nrow = 1L,
-        class = "closure_generate"
+        # The class is, e.g., "closure_generate"
+        class = paste0(tolower(technique), "_generate")
       ),
 
       metrics_main = out$metrics_main |>
@@ -234,10 +240,10 @@ generate_from_mean_sd_n <- function(
     on.exit({
       # Empty line before the alert
       message()
-      cli::cli_alert_success("All CLOSURE results found")
+      cli::cli_alert_success("All {technique} results found")
     })
   } else {
-    overwrite_info_txt(path_new_dir)
+    overwrite_info_txt(path_new_dir, technique)
     return(out_summary)
   }
 
@@ -399,6 +405,7 @@ closure_generate <- function() {
     n = n,
     scale_min = scale_min,
     scale_max = scale_max,
+    technique = "CLOSURE",
     path = path,
     rounding = rounding,
     threshold = threshold,

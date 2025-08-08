@@ -561,27 +561,31 @@ write_mean_sd_n_folder <- function(inputs, path) {
 
 
 # After writing results to disk, the info.txt file should be updated
-overwrite_info_txt <- function(path) {
-  slash <- .Platform$file.sep
+overwrite_info_txt <- function(path, technique) {
+  # "CLOSURE" --> "closure" etc.
+  t_low <- tolower(technique)
+
+  # Open a connection to info.txt via a path like path/to/your/info.txt
+  connection <- file(paste0(path, .Platform$file.sep, "info.txt"))
 
   # Overwrite text in info.txt -- it has been a placeholder saying that CLOSURE
   # results are currently being written. Now it says writing them has finished.
-  connection <- file(paste0(path, slash, "info.txt"))
   write(
     x = paste0(
-      "This folder contains the results of CLOSURE, created by ",
+      "This folder contains the results of ", technique, " created by ",
       "the R package unsum.\n\n",
       "To load a summary of these results into R, use:\n",
-      "unsum::closure_read(\"", path, "\")\n\n",
+      "unsum::", t_low, "_read(\"", path, "\")\n\n",
       "For options to load the results themselves, see ",
-      "documentation for `closure_read()`.\n\n",
+      "documentation for `", t_low, "_read()`.\n\n",
       "Use a different path if the folder was moved. ",
       "In any case, opening the files will require a Parquet reader. ",
       "For more information, visit:\n",
-      "https://lhdjung.github.io/unsum/reference/closure_generate.html"
+      "https://lhdjung.github.io/unsum/reference/", t_low, "_generate.html"
     ),
     file = connection
   )
+
   close(connection)
 
   cli::cli_alert_success(paste0("All files written to:\n", path))
