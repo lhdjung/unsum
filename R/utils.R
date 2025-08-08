@@ -339,12 +339,13 @@ check_scale <- function(
 # length 1, and is not `NA`. Multiple allowed types are often `c("double",
 # "integer")` which allows any numeric value, but no values of any other types.
 check_value <- function(x, type, allow_null = FALSE) {
-  name <- deparse(substitute(x))
-  check_type(x, type, n = 2, name = name, allow_null = allow_null)
 
   if (allow_null && is.null(x)) {
     return(invisible(NULL))
   }
+
+  name <- deparse(substitute(x))
+  check_type(x, type, n = 2, name = name, allow_null = allow_null)
 
   if (length(x) != 1L) {
     cli::cli_abort(
