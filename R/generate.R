@@ -33,7 +33,6 @@ generate_from_mean_sd_n <- function(
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 ) {
-
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
   check_value(mean, "character")
@@ -128,21 +127,27 @@ generate_from_mean_sd_n <- function(
       # In memory mode, make sure the user knows there is also the option to
       # write large results to disk.
       if (is.null(path)) {
-        msg_wait <- paste(
-          msg_wait,
-          "Consider specifying `path` to safely write results to disk.",
-          "You will then get"
-        )
+        cli::cli_alert_info(paste0(
+          "Consider safely writing results to disk by specifying `path` in `",
+          caller_fn_name(),
+          "()`."
+        ))
+        cli::cli_alert_info("You would still obtain summary statistics in R.")
+        # Empty line before the next alert
+        message()
       }
+
       cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
+
       selection <- utils::menu(
         choices = c("Yes, wait", "No, abort"),
         title = "Please enter 1 or 2:"
       )
+
       if (selection == 1L) {
         cli::cli_alert_info("Running CLOSURE, please wait...")
       } else {
-        fn_name <- as.character(rlang::caller_call()[[1L]])
+        fn_name <- caller_fn_name()
         cli::cli_alert_info("Aborting {.fn {fn_name}}.")
         return(invisible(NULL))
       }
@@ -226,7 +231,11 @@ generate_from_mean_sd_n <- function(
   # issue an alert. Finally, return the path of the new folder to which all of
   # this has been written.
   if (is.null(path)) {
-    on.exit(cli::cli_alert_success("All CLOSURE results found"))
+    on.exit({
+      # Empty line before the alert
+      message()
+      cli::cli_alert_success("All CLOSURE results found")
+    })
   } else {
     overwrite_info_txt(path_new_dir)
     return(out_summary)
@@ -383,7 +392,6 @@ generate_from_mean_sd_n <- function(
 #' # This can also be shown by `closure_plot_bar()`:
 #' closure_plot_bar(data_low)
 
-
 closure_generate <- function() {
   generate_from_mean_sd_n(
     mean = mean,
@@ -406,4 +414,3 @@ formals(closure_generate) <- generate_from_mean_sd_n |>
     "rounding_error_mean",
     "rounding_error_sd"
   )
-
