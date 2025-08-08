@@ -112,17 +112,7 @@ closure_write <- function(data, path) {
     name_new_dir
   )
 
-  if (dir.exists(path_new_dir)) {
-    cli::cli_abort(
-      message = c(
-        "Name of new folder must not be taken.",
-        "x" = "Folder already exists:",
-        "x" = "{path_new_dir}"
-      )
-    )
-  }
-
-  dir.create(path_new_dir)
+  create_results_folder(path_new_dir, 1)
 
   tibbles_all <- names(data)
 
