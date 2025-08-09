@@ -1,8 +1,9 @@
 #' Horns index (\eqn{h})
 #'
-#' @description `horns()` measures the dispersion in a sample of clamped
-#'   observations based on the scale limits. It ranges from 0 to 1:
-#'   - 0 means no variation, i.e., all observations have the same value.
+#' @description `horns()` measures the dispersion in ordinal data based on the
+#'   scale limits. The value is the actual variance as a proportion of the
+#'   maximum possible variance. It ranges from 0 to 1:
+#'   - 0 means no variance, i.e., all observations have the same value.
 #'   - 1 means that the observations are evenly split between the extremes, with
 #'   none in between.
 #'
@@ -10,46 +11,74 @@
 #'   uniform distribution within given scale limits. This can be useful as a
 #'   point of reference for `horns()`.
 #'
-#'   These two functions create the `horns` and `horns_uniform` columns in
-#'   [`closure_generate()`].
+#'   These two functions correspond to the `horns` and `horns_uniform` columns
+#'   in [`closure_generate()`].
 #'
 #'   `horns_rescaled()` is a version of `horns()` that  is normalized by scale
 #'   length, such that `0.5` always indicates a uniform distribution,
 #'   independent of the number of scale points. It is meant to enable comparison
 #'   across scales of different lengths, but it is harder to interpret for an
-#'   individual scale. Even so, the range and the meaning of `0` and `1` are the
-#'   same as for `horns()`.
+#'   individual scale. This makes it unlikely to be useful in most cases. Even
+#'   so, the range and the meaning of `0` and `1` are the same as for `horns()`.
 #'
 #' @param freqs Numeric. Vector with the frequencies (relative or absolute) of
 #'   binned observations; e.g., a vector with 5 elements for a 1-5 scale.
-#' @param scale_min,scale_max Numeric (length 1 each). Minimum and maximum of
-#'   the scale on which the values were measured. These can be lower and upper
-#'   bounds (e.g., with a 1-5 Likert scale) or empirical min and max reported in
-#'   an article. The latter should be preferred if available because they
-#'   constrain the scale further.
+#' @inheritParams closure_generate
 #'
 #' @details The horns index \eqn{h} is defined as:
 #'
 #'   \deqn{
-#'      h = \frac
-#'      {\sum_{i=1}^{k} f_i (s_i - \bar{s})^2}
-#'      {\frac{1}{4} (s_{\max} - s_{\min})^2}
+#'      h = 4 \frac
+#'      {\sum_{i=1}^{k} f_i (i - \bar{s})^2}
+#'      {(k - 1)^2}
 #'   }
 #'
 #'   where \eqn{k} is the number of scale points (i.e., the length of `freqs`
-#'   here), \eqn{f_i} is the relative frequency of the \eqn{i}th scale point,
-#'   \eqn{s_i}; \eqn{\bar{s}} is the sample mean, \eqn{s_{\max}} is the upper
-#'   bound of the scale, and \eqn{s_{\min}} is its lower bound.
+#'   here), \eqn{f_i} is the relative frequency of the \eqn{i}th point on an
+#'   integer scale from \eqn{1} to \eqn{k}, and \eqn{\bar{s}} is the mean
+#'   frequency on that scale. This mean can likewise be derived from the
+#'   relative frequencies:
 #'
-#'   Its name was inspired by [Heathers
-#'   (2017a)](https://jamesheathers.medium.com/sprite-case-study-3-soup-is-good-albeit-extremely-confusing-food-96ea526c488d)
+#'   \deqn{ \bar{s} = \sum_{i=1}^{k} i \ f_i }
+#'
+#'   Note that \eqn{h} only depends on the frequency distribution, not the
+#'   actual values of the scale points. This is why both formulas invariably use
+#'   a scale from \eqn{1} to \eqn{k}. The only reason why the `horns()` function
+#'   still takes `scale_min` and `scale_max` arguments is safety: if `freqs` is
+#'   misstated such that its length is different from the number of points on
+#'   the scale implied by those two arguments, there will be an error.
+#'
+#'   ## Uniform distribution
+#'
+#'   Although `horns_uniform()` is implemented as a wrapper around `horns()`
+#'   that constructs a perfect uniform distribution internally, an equivalent
+#'   closed-form solution can be given as
+#'
+#'   \deqn{
+#'      h_u = 4 \frac
+#'      {\sum_{i=1}^{k} (i - \bar{s})^2}
+#'      {k \ (k - 1)^2}
+#'   }
+#'
+#'   In the uniform case, the mean is simply the scale midpoint, i.e.,
+#'
+#'   \deqn{
+#'      \bar{s}
+#'      = \sum_{i=1}^{k} \frac{i}{k}
+#'      = \frac{k + 1}{2}
+#'   }
+#'
+#'   ## "Horns of no confidence"
+#'
+#'   The term *horns index* was inspired by [Heathers
+#'   (2017)](https://jamesheathers.medium.com/sprite-case-study-3-soup-is-good-albeit-extremely-confusing-food-96ea526c488d)
 #'   which defines the "horns of no confidence" as a reconstructed sample "where
 #'   an incorrect, impossible or unlikely value set has all its constituents
 #'   stacked into its highest or lowest bins to try meet a ludicrously high SD".
 #'   In its purest form, this is a case where `horns()` returns `1`. However,
 #'   note that the implications for the plausibility of any given set of summary
-#'   statistics depend on the substantive context of the data ([Heathers
-#'   2017b](https://jamesheathers.medium.com/sprite-interlude-the-umbrella-graph-connecting-grim-and-sprite-also-brunch-sucks-1266c629c974)).
+#'   statistics depend on the substantive context of the data ([Heathers et al.
+#'   2018](https://peerj.com/preprints/26968/)).
 #'
 #' @returns Numeric (length 1).
 #'
@@ -85,15 +114,11 @@ horns <- function(freqs, scale_min, scale_max) {
 
   check_scale(scale_min, scale_max)
 
-  horns_internal(freqs, scale_min, scale_max)
-}
-
-
-horns_internal <- function(freqs, scale_min, scale_max) {
-  scale_complete <- scale_min:scale_max
+  scale_complete <- seq_along(freqs)
+  k <- length(scale_complete)
 
   # Error if arguments are incompatible in terms of length
-  if (length(scale_complete) != length(freqs)) {
+  if (length(scale_complete) != length(scale_min:scale_max)) {
     cli::cli_abort(
       message = c(
         "Scale implied by `scale_min` ({scale_min}) \
@@ -108,15 +133,16 @@ horns_internal <- function(freqs, scale_min, scale_max) {
 
   freqs_relative <- freqs / sum(freqs)
 
-  scale_mean <- sum(freqs_relative * scale_complete)
+  # Using a 1-k scale and weighting it by the relative frequencies
+  scale_mean <- sum(scale_complete * freqs_relative)
 
   # Weighted sum of squared deviations
   numerator <- sum(freqs_relative * (scale_complete - scale_mean)^2)
 
   # Maximum possible variance given scale limits
-  denominator <- ((scale_max - scale_min)^2) / 4
+  denominator <- (k - 1)^2
 
-  numerator / denominator
+  4 * numerator / denominator
 }
 
 
@@ -124,7 +150,7 @@ horns_internal <- function(freqs, scale_min, scale_max) {
 #' @export
 
 # The function uses `1` for the uniform frequency, but any other non-zero
-# definite number (no `NA`, no `NaN`) would lead to the same results.
+# definite number (no `NA`, `Inf`, or `NaN`) would lead to the same results.
 horns_uniform <- function(scale_min, scale_max) {
   horns(
     freqs = rep(1, length(scale_min:scale_max)),
@@ -132,6 +158,25 @@ horns_uniform <- function(scale_min, scale_max) {
     scale_max = scale_max
   )
 }
+
+
+# # Closed-form solution of `horns_uniform()` with a 1-7 scale:
+# h_u == 4 * (1 / 7) * sum(c(3, 2, 1, 0, 1, 2, 3)^2) / (7 - 1)^2
+#     == 4 * sum(c(3, 2, 1, 0, 1, 2, 3)^2) / (7 * (7 - 1)^2)
+#
+# # Not necessary, just interesting:
+# horns_uniform_closed <- function(scale_min, scale_max) {
+#   check_scale(scale_min, scale_max)
+#
+#   scale_complete <- seq_along(scale_min:scale_max)
+#   k <- length(scale_complete)
+#
+#   scale_mean <- (k + 1) / 2
+#
+#   deviations <- scale_complete - scale_mean
+#
+#   4 * sum(deviations^2) / (k * (k - 1)^2)
+# }
 
 
 #' @rdname horns
@@ -150,3 +195,4 @@ horns_rescaled <- function(freqs, scale_min, scale_max) {
     0.5 + 0.5 * ((h_actual - h_uniform) / (1 - h_uniform))
   }
 }
+

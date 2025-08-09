@@ -16,20 +16,20 @@ horns_rescaled(freqs, scale_min, scale_max)
 \item{freqs}{Numeric. Vector with the frequencies (relative or absolute) of
 binned observations; e.g., a vector with 5 elements for a 1-5 scale.}
 
-\item{scale_min, scale_max}{Numeric (length 1 each). Minimum and maximum of
-the scale on which the values were measured. These can be lower and upper
-bounds (e.g., with a 1-5 Likert scale) or empirical min and max reported in
-an article. The latter should be preferred if available because they
-constrain the scale further.}
+\item{scale_min, scale_max}{Numeric (length 1 each). Minimal and maximal
+possible values of the measurement scale. For example, with a 1-7 Likert
+scale, use \code{scale_min = 1} and \code{scale_max = 7}. Prefer the empirical min
+and max if available: they constrain the possible values further.}
 }
 \value{
 Numeric (length 1).
 }
 \description{
-\code{horns()} measures the dispersion in a sample of clamped
-observations based on the scale limits. It ranges from 0 to 1:
+\code{horns()} measures the dispersion in ordinal data based on the
+scale limits. The value is the actual variance as a proportion of the
+maximum possible variance. It ranges from 0 to 1:
 \itemize{
-\item 0 means no variation, i.e., all observations have the same value.
+\item 0 means no variance, i.e., all observations have the same value.
 \item 1 means that the observations are evenly split between the extremes, with
 none in between.
 }
@@ -38,37 +38,70 @@ none in between.
 uniform distribution within given scale limits. This can be useful as a
 point of reference for \code{horns()}.
 
-These two functions create the \code{horns} and \code{horns_uniform} columns in
-\code{\link[=closure_generate]{closure_generate()}}.
+These two functions correspond to the \code{horns} and \code{horns_uniform} columns
+in \code{\link[=closure_generate]{closure_generate()}}.
 
 \code{horns_rescaled()} is a version of \code{horns()} that  is normalized by scale
 length, such that \code{0.5} always indicates a uniform distribution,
 independent of the number of scale points. It is meant to enable comparison
 across scales of different lengths, but it is harder to interpret for an
-individual scale. Even so, the range and the meaning of \code{0} and \code{1} are the
-same as for \code{horns()}.
+individual scale. This makes it unlikely to be useful in most cases. Even
+so, the range and the meaning of \code{0} and \code{1} are the same as for \code{horns()}.
 }
 \details{
 The horns index \eqn{h} is defined as:
 
 \deqn{
-     h = \frac
-     {\sum_{i=1}^{k} f_i (s_i - \bar{s})^2}
-     {\frac{1}{4} (s_{\max} - s_{\min})^2}
+     h = 4 \frac
+     {\sum_{i=1}^{k} f_i (i - \bar{s})^2}
+     {(k - 1)^2}
   }
 
 where \eqn{k} is the number of scale points (i.e., the length of \code{freqs}
-here), \eqn{f_i} is the relative frequency of the \eqn{i}th scale point,
-\eqn{s_i}; \eqn{\bar{s}} is the sample mean, \eqn{s_{\max}} is the upper
-bound of the scale, and \eqn{s_{\min}} is its lower bound.
+here), \eqn{f_i} is the relative frequency of the \eqn{i}th point on an
+integer scale from \eqn{1} to \eqn{k}, and \eqn{\bar{s}} is the mean
+frequency on that scale. This mean can likewise be derived from the
+relative frequencies:
 
-Its name was inspired by \href{https://jamesheathers.medium.com/sprite-case-study-3-soup-is-good-albeit-extremely-confusing-food-96ea526c488d}{Heathers (2017a)}
+\deqn{ \bar{s} = \sum_{i=1}^{k} i \ f_i }
+
+Note that \eqn{h} only depends on the frequency distribution, not the
+actual values of the scale points. This is why both formulas invariably use
+a scale from \eqn{1} to \eqn{k}. The only reason why the \code{horns()} function
+still takes \code{scale_min} and \code{scale_max} arguments is safety: if \code{freqs} is
+misstated such that its length is different from the number of points on
+the scale implied by those two arguments, there will be an error.
+\subsection{Uniform distribution}{
+
+Although \code{horns_uniform()} is implemented as a wrapper around \code{horns()}
+that constructs a perfect uniform distribution internally, an equivalent
+closed-form solution can be given as
+
+\deqn{
+     h_u = 4 \frac
+     {\sum_{i=1}^{k} (i - \bar{s})^2}
+     {k \ (k - 1)^2}
+  }
+
+In the uniform case, the mean is simply the scale midpoint, i.e.,
+
+\deqn{
+     \bar{s}
+     = \sum_{i=1}^{k} \frac{i}{k}
+     = \frac{k + 1}{2}
+  }
+}
+
+\subsection{"Horns of no confidence"}{
+
+The term \emph{horns index} was inspired by \href{https://jamesheathers.medium.com/sprite-case-study-3-soup-is-good-albeit-extremely-confusing-food-96ea526c488d}{Heathers (2017)}
 which defines the "horns of no confidence" as a reconstructed sample "where
 an incorrect, impossible or unlikely value set has all its constituents
 stacked into its highest or lowest bins to try meet a ludicrously high SD".
 In its purest form, this is a case where \code{horns()} returns \code{1}. However,
 note that the implications for the plausibility of any given set of summary
-statistics depend on the substantive context of the data (\href{https://jamesheathers.medium.com/sprite-interlude-the-umbrella-graph-connecting-grim-and-sprite-also-brunch-sucks-1266c629c974}{Heathers 2017b}).
+statistics depend on the substantive context of the data (\href{https://peerj.com/preprints/26968/}{Heathers et al. 2018}).
+}
 }
 \examples{
 # For simplicity, all examples use a 1-5 scale and a total N of 300.
