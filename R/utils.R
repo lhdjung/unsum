@@ -120,6 +120,7 @@ check_closure_generate <- function(data) {
     class() |>
     grepl("^closure_read_include_", x = _)
 
+  # Data that were already written to disk and read back into R -- special case
   if (any(is_reading_class)) {
     reading_class <- class(data$inputs)[is_reading_class]
     reading_class <- sub("^closure_read_include_", "", reading_class)
@@ -127,6 +128,19 @@ check_closure_generate <- function(data) {
     if (length(reading_class) > 1) {
       cli::cli_abort("Cannot handle manipulated S3 classes.")
     }
+
+    if (!any(names(data) == "directory")) {
+      cli::cli_abort("Cannot handle manipulated output; \"directory\" missing.")
+    }
+
+    check_component_tibble(
+      x = data$directory,
+      name = "directory",
+      dims = c(1L, 1L),
+      col_names_types = list(
+        "path" = "character"
+      )
+    )
 
     # Contradictory data
     if (reading_class == "stats_only" && any(names(data) == "results")) {
@@ -154,7 +168,7 @@ check_closure_generate <- function(data) {
 
   # In case the "results" tibble was returned directly by `closure_generate()`
   # or by a reading function with a setting that makes for equivalent "results"
-  if (!any(is_reading_class) || reading_class == "capped_error") {
+  if (!any(is_reading_class) || any(reading_class == "capped_error")) {
     # Results (5 / 5)
     check_component_tibble(
       x = data$results,
