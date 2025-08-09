@@ -91,6 +91,32 @@ closure_write <- function(data, path) {
   check_closure_generate(data)
   check_value(path, "character")
 
+  has_reading_class <- data$inputs |>
+    class() |>
+    grepl("^closure_read_include_", x = _) |>
+    any()
+
+  # Refuse to rewrite data that were already saved to disk
+  if (
+    has_reading_class &&
+      any(names(data) == "directory") &&
+      any(names(data$directory) == "path")
+  ) {
+    path_old <- data$directory$path
+    classes_all <- class(data$inputs)
+
+    technique <- classes_all[grepl("_generate$", classes_all)]
+    technique <- toupper(technique)
+
+    cli::cli_abort(
+      message = c(
+        "Results already saved on disk.",
+        "x" = "Folder with {technique} results present at:",
+        "x" = path_old
+      )
+    )
+  }
+
   slash <- .Platform$file.sep
 
   # Prepare the name of the new directory to which `data` will be written.
@@ -284,7 +310,6 @@ closure_read <- function(
 
   n_samples_all <- out$metrics_main$samples_all
   path_horns <- paste0(path, slash, "horns.parquet")
-
 
   # Adjudicate which additional parts of the results to read from disk, if any
   if (include == "stats_and_horns") {
