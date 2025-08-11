@@ -164,7 +164,13 @@ plot_frequency_bar <- function(
       frequency,
       "absolute-percent" = paste0(
         " (",
-        100 * round(data$frequency / sum(data$frequency), 2),
+        # Group by `samples` and apply the anonymous function to `frequency` by
+        # group (i.e., separately for "horns_min" and "horns_max", if present)
+        ave(
+          data$frequency,
+          data$samples,
+          FUN = function(x) 100 * round(x / sum(x), 2)
+        ),
         "%)"
       ),
       "percent" = "%"
