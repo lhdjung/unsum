@@ -11,6 +11,7 @@ closure_generate(
   scale_min,
   scale_max,
   path = NULL,
+  include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
   ask_to_proceed = TRUE
@@ -24,13 +25,22 @@ closure_generate(
 \item{n}{Numeric (length 1). Reported sample size.}
 
 \item{scale_min, scale_max}{Numeric (length 1 each). Minimal and maximal
-possible values of the measurement scale. For example, with a 1-7 Likert
-scale, use \code{scale_min = 1} and \code{scale_max = 7}. Prefer the empirical min
-and max if available: they constrain the possible values further.}
+possible values. For example, with a 1-7 Likert scale, use \code{scale_min = 1}
+and \code{scale_max = 7}. Prefer the empirical min and max if available: they
+constrain the possible values further.}
 
 \item{path}{String (length 1). Optionally, choose the directory where a new
 folder with CLOSURE results should be created. Use \code{path = "."} for your
 current working directory. See "Writing to disk" below.}
+
+\item{include}{String (length 1). If results are written to disk, which parts
+of them should be included in the R output?
+\itemize{
+\item With \code{"stats_and_horns"}, the default, all parts except for the samples
+are included.
+\item \code{"stats_only"} excludes the \code{"results"} tibble, i.e., samples and horns.
+\item \code{"all"} reads the full results, including the samples and horns values.
+}}
 
 \item{rounding}{String (length 1). Rounding method assumed to have created
 \code{mean} and \code{sd}. See \href{https://lhdjung.github.io/roundwork/articles/rounding-options.html}{\emph{Rounding options}},
@@ -43,12 +53,11 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 \code{5}.}
 
 \item{ask_to_proceed}{Logical (length 1). If the runtime is predicted to be
-very long, should the function prompt you to proceed or abort in an
-interactive setting? Default is \code{TRUE}.}
+very long in an interactive setting, should the function prompt you to
+proceed or abort? Default is \code{TRUE}.}
 }
 \value{
-\code{closure_generate()} returns a named list of five tibbles (data
-frames):
+\code{closure_generate()} returns a named list of tibbles (data frames):
 \itemize{
 \item \strong{\code{inputs}}: Arguments to this function.
 \item \strong{\code{metrics_main}}:
@@ -62,21 +71,26 @@ of rows in \code{results}.
 }
 \item \strong{\code{metrics_horns}}:
 \itemize{
-\item \code{mean}: Average horns value of all samples. The horns index is a
-measure of dispersion for bounded scales; see \code{\link[=horns]{horns()}}.
-\item \code{uniform}: the value that \code{mean} would have if all samples were
+\item \code{mean}: double. Average horns value of all samples. The horns index is
+a measure of dispersion for bounded scales; see \code{\link[=horns]{horns()}}.
+\item \code{uniform}: double. The value that \code{mean} would have if all samples were
 uniformly distributed; see \code{\link[=horns_uniform]{horns_uniform()}}.
-\item \code{sd}, \code{cv}, \code{mad}, \code{min}, \code{median}, \code{max}: double. Standard deviation,
-coefficient of variation, median absolute deviation, minimum, median, and
-maximum of the horns index values across all samples. Note that \code{mad} is
-not scaled using a constant, as \code{\link[stats:mad]{stats::mad()}} is by default.
-\item \code{range}: double. Equal to \code{max - min}.
+\item \code{sd}, \code{cv}, \code{mad}, \code{min}, \code{median}, \code{max}, \code{range}: double. Standard
+deviation, coefficient of variation, median absolute deviation, minimum,
+median, maximum, and range of the horns index values across all samples.
+Note that \code{mad} is not scaled using a constant, as \code{\link[stats:mad]{stats::mad()}} is by
+default.
 }
 \item \strong{\code{frequency}}:
 \itemize{
+\item \code{samples}: string. Frequencies apply to one of three subsets of
+samples: \code{"all"} for all samples, \code{"horns_min"} for those samples with the
+lowest horns index among all samples, and \code{"horns_max"} for those samples
+with the highest horns index.
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
-\item \code{f_average}: Count of scale values in the mean \code{results} sample.
+\item \code{f_average}: double. Count of scale values in the mean \code{results}
+sample.
 \item \code{f_absolute}: double. Count of individual scale values found in the
 \code{results} samples.
 \item \code{f_relative}: double. Values' share of total values found.
@@ -84,10 +98,14 @@ not scaled using a constant, as \code{\link[stats:mad]{stats::mad()}} is by defa
 \item \strong{\code{results}}:
 \itemize{
 \item \code{id}: integer. Runs from \code{1} to \code{samples_all}.
-\item \code{sample} (only if \code{path} was not specified): list of integer vectors.
-Each of these vectors has length \code{n}. It is a sample (or distribution) of
-individual scale values found by CLOSURE.
+\item \code{sample} (not present by default if \code{path} was specified): list of
+integer vectors. Each of these vectors has length \code{n}. It is a sample (or
+distribution) of individual scale values found by CLOSURE.
 \item \code{horns}: double. Horns index of each sample.
+}
+\item \strong{\code{directory}} (only present if \code{path} was specified):
+\itemize{
+\item \code{path}: string. Location of the folder in which the results were saved.
 }
 }
 }
@@ -114,31 +132,34 @@ out-of-memory error because \code{closure_generate()} accumulates more data than
 your computer can hold in memory.
 
 If \code{path} is specified, the output in R will not include the \code{"sample"}
-column in the \code{results} tibble. Even so, you can load the detailed results
-including the samples from disk using \code{\link[=closure_read]{closure_read()}} and its \code{include}
-argument. Note that memory errors are possible there, as well.
+column in the \code{results} tibble by default; but it will feature a
+\code{directory} tibble with the file path. If you choose to load the samples
+using \code{include = "all"}, you incur the risk of a memory error. Even so, the
+results are safe because they are written to disk first; and you can later
+try to load the full detailed results from disk using \code{\link[=closure_read]{closure_read()}}
+and its \code{include} argument. This would separate saving the data to disk
+from an uncertain attempt to load them into R.
 }
 
 \section{More about memory}{
  Some output columns that contain counts, such as
-\code{f_absolute}, are double instead of integer. This is because doubles can be
-much larger numbers. When counting CLOSURE results, it is not unrealistic
-to reach the limit of 32-bit integers in R, which is roughly two billion.
+\code{f_absolute}, are doubles instead of integers. This is because doubles are
+able to contain much larger numbers. When counting CLOSURE results, it is
+not unrealistic to reach the limit of 32-bit integers in R, which is
+roughly two billion.
 }
 
 \section{Rounding limitations}{
  The \code{rounding} and \code{threshold} arguments are
 not fully implemented. For example, CLOSURE currently treats all rounding
-bounds as inclusive, even if the \code{rounding} specification would imply
-otherwise.
-
+bounds as inclusive, even if the \code{rounding} value would imply otherwise.
 Many specifications of the two arguments will not make any difference, and
 those that do will most likely lead to empty results.
 }
 
 \examples{
 # High spread often leads to many samples --
-# here, 3682.
+# here, 2492.
 data_high <- closure_generate(
   mean = "3.5",
   sd = "1.7",
@@ -153,12 +174,12 @@ data_high
 # by following up with `closure_plot_bar()`:
 closure_plot_bar(data_high)
 
-# Low spread, only 3 samples, and not all
+# Low spread, only 4 samples, and not all
 # scale values are possible.
 data_low <- closure_generate(
   mean = "2.9",
   sd = "0.5",
-  n = 70,
+  n = 25,
   scale_min = 1,
   scale_max = 5
 )
