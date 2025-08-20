@@ -321,6 +321,7 @@ check_scale <- function(
       call = rlang::caller_env(n)
     )
   }
+
   # Coercing mean and scale bounds to avoid a false-positive error
   if (!is.null(mean)) {
     if (as.numeric(mean) < as.numeric(scale_min)) {
@@ -388,17 +389,21 @@ check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
   ) {
     return(invisible(NULL))
   }
+
   if (is.null(name)) {
     name <- deparse(substitute(x))
   }
+
   msg_type <- if (length(t) == 1L) {
     "be of type"
   } else {
     "be one of the types"
   }
+
   if (length(t) == 1 && t == "double") {
     t <- "double or integer"
   }
+
   cli::cli_abort(
     message = c(
       `!` = "`{name}` must {msg_type} {t}.",
@@ -422,76 +427,6 @@ check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
       x = "It has length {length(x)}."
     ),
     call = rlang::caller_env(n)
-  )
-}
-
-
-# This helper creates the `frequency` part of `closure_generate()`'s output.
-summarize_frequencies <- function(results, scale_min, scale_max, samples_all) {
-  # Flatten the list of integer vectors into a single integer vector, then
-  # create a frequency table for the values in that vector.
-  f_absolute <- results |>
-    unlist(use.names = FALSE) |>
-    table()
-
-  # Extract the scale values found in the samples. Then, remove them from
-  # their source, `f_absolute`, as they are no longer needed.
-  value <- as.integer(names(f_absolute))
-  f_absolute <- as.integer(f_absolute)
-
-  # Compute the share of each individual value in the sum of all values.
-  f_relative <- f_absolute / sum(f_absolute)
-
-  # Divide by the number of samples instead to get the average number of values
-  # in each bin.
-  f_average <- f_absolute / samples_all
-
-  # Reconstruct the complete vector of possible scale values as a sequence from
-  # scale minimum to scale maximum.
-  value_completed <- scale_min:scale_max
-  n_completed <- length(value_completed)
-
-  # If each possible value is instantiated in the values that were found in the
-  # samples, the results are complete and will be returned here. If not,
-  # the zero counts of the uninstantiated values must be added to `value`, and
-  # their zero frequencies to `f_absolute` and `f_relative`. This is what the
-  # rest of the function will then do.
-  if (length(value) == n_completed) {
-    return(
-      tibble::new_tibble(
-        x = list(
-          value = value,
-          f_average = f_average,
-          f_absolute = f_absolute,
-          f_relative = f_relative
-        ),
-        nrow = n_completed
-      )
-    )
-  }
-
-  # At which indices in the complete vector of possible values are those values
-  # that were actually found?
-  indices_found <- which(value_completed %in% value)
-
-  # Construct full-length vectors where each value is zero
-  f_average_completed <- double(n_completed)
-  f_absolute_completed <- integer(n_completed)
-  f_relative_completed <- double(n_completed)
-
-  # Fill in the non-zero values where appropriate
-  f_average_completed[indices_found] <- f_average
-  f_absolute_completed[indices_found] <- f_absolute
-  f_relative_completed[indices_found] <- f_relative
-
-  tibble::new_tibble(
-    x = list(
-      value = value_completed,
-      f_average = f_average_completed,
-      f_absolute = f_absolute_completed,
-      f_relative = f_relative_completed
-    ),
-    nrow = n_completed
   )
 }
 
@@ -550,11 +485,12 @@ prepare_folder_mean_sd_n <- function(inputs, path, technique) {
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)
 
-  # dir.create(path_new_dir)
+  # Create an info.txt file -- empty for now
   file.create(path_info_txt)
 
-  # While the results are written, provide a message to that effect in info.txt
   connection <- file(path_info_txt)
+
+  # While the results are written, provide a message to that effect in info.txt
   write(
     x = paste0(
       "DO NOT CHANGE THIS FOLDER OR ITS CONTENTS.\n\n",
@@ -566,17 +502,18 @@ prepare_folder_mean_sd_n <- function(inputs, path, technique) {
     ),
     file = connection
   )
+
   close(connection)
 
   # Parquet file with the inputs
-  nanoparquet::write_parquet(
+  inputs |>
     tibble::new_tibble(
-      x = inputs,
       nrow = 1L,
       class = paste0(lowtech, "_generate")
-    ),
-    file = paste0(path_new_dir, slash, "inputs.parquet")
-  )
+    ) |>
+    nanoparquet::write_parquet(
+      file = paste0(path_new_dir, slash, "inputs.parquet")
+    )
 
   # Return the path of the new folder
   path_new_dir
@@ -589,9 +526,6 @@ overwrite_info_txt <- function(path, technique) {
   lowtech <- tolower(technique)
 
   # Open a connection to info.txt via a path like path/to/your/info.txt
-
-  # connection <- file(paste0(path, .Platform$file.sep, "info.txt"))
-
   connection <- path |>
     paste0(.Platform$file.sep, "info.txt") |>
     file()
@@ -600,7 +534,7 @@ overwrite_info_txt <- function(path, technique) {
   # results are currently being written. Now it says writing them has finished.
   write(
     x = paste0(
-      "This folder contains the results of ", technique, " created by ",
+      "This folder contains the results of ", technique, ", created by ",
       "the R package unsum.\n\n",
       "To load a summary of these results into R, use:\n",
       "unsum::", lowtech, "_read(\"", path, "\")\n\n",
@@ -616,36 +550,20 @@ overwrite_info_txt <- function(path, technique) {
 
   close(connection)
 
-  cli::cli_alert_success(paste0("All files written to:\n", path))
+  cli::cli_alert_success(paste0("All {technique} files written to:\n", path))
 }
 
 
 # Transform unsum's CLOSURE results into the "n"-column format of the CSV files
 # made by closure-core's test harness or the original Python implementation.
 # This is also the format in which `closure_write()` saves the Parquet files.
+# If the `closure_generate()` output was assigned to `data`, call:
+# `as_wide_n_tibble(data$results$sample)`
 as_wide_n_tibble <- function(samples_all) {
   samples_all |>
     tibble::as_tibble(.name_repair = "minimal") |>
     t() |>
     tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
-}
-
-
-# This is the reverse operation of `as_wide_n_tibble()` except it also
-# constructs a full "results" tibble, as in `closure_generate()`'s output.
-as_results_tibble <- function(n_cols) {
-  n_samples_all <- nrow(n_cols)
-  tibble::new_tibble(
-    x = list(
-      id = seq_len(n_samples_all),
-      sample = n_cols |>
-        t() |>
-        tibble::as_tibble(.name_repair = "minimal") |>
-        as.list() |>
-        unname()
-    ),
-    nrow = n_samples_all
-  )
 }
 
 
