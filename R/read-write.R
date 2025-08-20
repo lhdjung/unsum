@@ -21,22 +21,26 @@
 #'   be read in?
 #'   - With `"stats_only"`, the default, no results are read.
 #'   - `"stats_and_horns"` reads the horns index values, but not the samples.
-#'   - `"capped_error"` checks whether the number of samples are higher than a
+#'   - `"capped_error"` checks whether the number of samples is higher than a
 #'   given threshold (see `samples_cap`). If so, it throws an error; but if not,
 #'   it reads both the samples and the horns values.
 #'   - `"all"` reads both the samples and the horns values.
 #' @param samples_cap Numeric (length 1). When using `include = "capped_error"`,
 #'   enter a whole number here to specify a cap. Default is `NULL`.
 #'
-#' @section Folder name: The new folder's name should be sufficient to recreate
-#'   its CLOSURE results. Dashes separate values, underscores replace decimal
-#'   periods. For example:
+#' @section Folder name: The new folder's name will contain all the inputs that
+#'   determine the CLOSURE results. Dashes separate values and underscores
+#'   replace decimal periods. For example:
 #'
-#'   \preformatted{CLOSURE-3_5-1_0-90-1-5-up_or_down-5}
+#'   \preformatted{
+#'
+#'   CLOSURE-3_5-1_0-90-1-5-up_or_down-5
+#'   }
 #'
 #'   The order is the same as in `closure_generate()`:
 #'
 #'   \preformatted{
+#'
 #'   closure_generate(
 #'     mean = "3.5",
 #'     sd = "1.0",
@@ -48,18 +52,19 @@
 #'   )
 #'  }
 #'
-#' @details `closure_write()` saves the first three tibbles as CSVs, but the
-#'   `"results"` tibble becomes a Parquet file. This is much faster and takes up
-#'   far less disk space --- roughly 1% of a CSV file with the same data. Speed
-#'   and disk space can be relevant with large result sets.
+#' @details `closure_write()` saves all tibbles as Parquet files. This is much
+#'   faster and takes up far less disk space --- roughly 1% of a CSV file with
+#'   the same data. Speed and disk space can be relevant with large result sets.
 #'
 #'   Use `closure_read()` to recreate the CLOSURE list from the folder. One of
 #'   the reasons why it is convenient is that opening a Parquet file requires a
 #'   special reader. For a more general tool, see
 #'   [`nanoparquet::read_parquet()`].
 #'
-#' @returns `closure_write()` returns the path to the new folder it created,
-#'   `closure_read()` returns a list.
+#' @returns
+#'   - `closure_write()` returns the path to the new folder it created.
+#'   - `closure_read()` returns a list of the same kind as
+#' [`closure_generate()`].
 #'
 #' @include utils.R
 #'
@@ -76,7 +81,7 @@
 #'
 #' # Writing to a temporary folder just for this example.
 #' # You should write to a real folder instead.
-#' # A simple way is `path = "."` for your current directory.
+#' # A simple way is path = "." for your current directory.
 #' path_new_folder <- closure_write(data, path = tempdir())
 #'
 #' # In a later session, conveniently read the files
@@ -91,6 +96,17 @@ closure_write <- function(data, path) {
   check_closure_generate(data)
   check_value(path, "character")
 
+  if (path == ".") {
+    path <- getwd()
+  }
+
+  # "closure_generate" --> "CLOSURE" etc.
+  technique <- data$inputs |>
+    class() |>
+    (function(x) x[grepl("_generate$", x)])() |>
+    sub("_generate$", "", x = _) |>
+    toupper()
+
   has_reading_class <- data$inputs |>
     class() |>
     grepl("^closure_read_include_", x = _) |>
@@ -102,17 +118,23 @@ closure_write <- function(data, path) {
       any(names(data) == "directory") &&
       any(names(data$directory) == "path")
   ) {
-    path_old <- data$directory$path
-    classes_all <- class(data$inputs)
-
-    technique <- classes_all[grepl("_generate$", classes_all)]
-    technique <- toupper(technique)
-
     cli::cli_abort(
       message = c(
         "Results already saved on disk.",
         "x" = "Folder with {technique} results present at:",
-        "x" = path_old
+        "x" = data$directory$path
+      )
+    )
+  }
+
+  if (
+    !any(names(data) == "results") ||
+    !identical(names(data$results), c("id", "sample", "horns"))
+  ) {
+    cli::cli_abort(
+      c(
+        "{technique} list must include a full `results` tibble.",
+        "!" = "Results include samples and horns index values."
       )
     )
   }
@@ -127,36 +149,46 @@ closure_write <- function(data, path) {
     gsub("\\.", "_", x = _)
 
   # Prefix with the name of the technique to make the origin very clear
-  name_new_dir <- paste0("CLOSURE-", name_new_dir)
-
-  path_current <- if (path == ".") getwd() else path
+  name_new_dir <- paste0(technique, "-", name_new_dir)
 
   # Full path of the new directory, not just the name
   path_new_dir <- paste0(
-    path_current,
+    path,
     slash,
-    name_new_dir
+    name_new_dir,
+    slash
   )
 
-  create_results_folder(path_new_dir, 1)
+  create_results_folder(path_new_dir)
 
   tibbles_all <- names(data)
 
-  # Write the small tibbles: those other than the "results" samples
+  # Write the small tibbles: those other than the "results"
   for (tibble in tibbles_all[tibbles_all != "results"]) {
-    readr::write_csv(
-      x = data[[tibble]],
-      file = paste0(path_new_dir, slash, tibble, ".csv")
+    nanoparquet::write_parquet(
+      data[[tibble]],
+      file = paste0(path_new_dir, tibble, ".parquet")
     )
   }
 
-  # Write the "results" tibble using the efficient Parquet format
+  # Write the horns values separately; they are stored as a column, not a tibble
   nanoparquet::write_parquet(
-    x = data$results$sample |> as_wide_n_tibble(),
-    file = paste0(path_new_dir, slash, "samples.parquet")
+    data$results["horns"],
+    file = paste0(path_new_dir, "horns.parquet")
   )
 
-  cli::cli_alert_success("All files written to:\n{path_new_dir}{slash}")
+  # The samples are also a column, but before writing them, they need to be
+  # transformed into the same format used for streaming results to disk
+  data$results$sample |>
+    as_wide_n_tibble() |>
+    nanoparquet::write_parquet(
+      file = paste0(path_new_dir, "samples.parquet")
+    )
+
+  # Create info.txt (not actually overwriting -- file is new here). Leave an
+  # empty line before the alert.
+  message()
+  overwrite_info_txt(path_new_dir, technique)
 
   path_new_dir
 }
@@ -180,7 +212,6 @@ closure_read <- function(
 
   # Check whether the `samples` and `samples_cap` arguments are consistent -- if
   # the former has either of these two values, the latter must be specified.
-  # samples == "capped_error" <- samples == "capped_error"
 
   if (include == "capped_error" && is.null(samples_cap)) {
     cli::cli_abort(
@@ -207,7 +238,7 @@ closure_read <- function(
       message = c(
         "Must choose an existing folder.",
         "x" = "Chosen folder does not exist:",
-        "x" = "{path}"
+        "x" = path
       )
     )
   }
@@ -228,30 +259,50 @@ closure_read <- function(
     "samples.parquet"
   )
 
+  # Error if the folder contains other files than those needed, or if it does
+  # not contain all of those needed. A bespoke message is shown in each case.
   if (!setequal(files_all, files_expected)) {
-    files_expected_sorted <- sort(files_expected)
-    files_all_sorted <- sort(files_all)
+    files_expected <- sort(files_expected)
+    files_all <- sort(files_all)
+
+    offenders_missing <- setdiff(files_expected, files_all)
+    offenders_not_needed <- setdiff(files_all, files_expected)
+
+    msg_missing <- if (length(offenders_missing) == 0) {
+      NULL
+    } else {
+      c("x" = "Missing files: {offenders_missing}")
+    }
+
+    msg_not_needed <- if (length(offenders_not_needed) == 0) {
+      NULL
+    } else {
+      c("x" = "Unnecessary files: {offenders_not_needed}")
+    }
+
     cli::cli_abort(
       message = c(
         "Folder must contain all correct files (and no others).",
-        "x" = "Expected files: {files_expected_sorted}",
-        "x" = "Actual files: {files_all_sorted}"
+        "!" = "Expected files: {files_expected}",
+        msg_missing,
+        msg_not_needed
       )
     )
   }
 
-  # Read the small Parquet files into tibbles. Add the "tbl_df" class which is
-  # not included by `read_parquet()` but is needed for regular tibbles.
+  # Function to add an S3 class to an object
+  add_class <- function(x, new_class) {
+    `class<-`(x, value = c(new_class, class(x)))
+  }
+
+  # Function to read the small Parquet files into tibbles. Add the "tbl_df"
+  # class which is not included by `read_parquet()` but is needed for regular
+  # tibbles.
   read_file <- function(name) {
     path |>
       paste0(slash, name, ".parquet") |>
       nanoparquet::read_parquet() |>
       add_class("tbl_df")
-  }
-
-  # Add an S3 class to an object
-  add_class <- function(x, new_class) {
-    `class<-`(x, value = c(new_class, class(x)))
   }
 
   # Carry out these two steps. At this point in time, `out` corresponds to
@@ -275,7 +326,9 @@ closure_read <- function(
   out$metrics_main$values_all <- as.double(out$metrics_main$values_all)
 
   # Parse mean and SD from the folder name
-  mean_sd_str <- strsplit(name_dir, "-")[[1]][2:3] |>
+  mean_sd_str <- name_dir |>
+    strsplit("-") |>
+    (function(x) x[[1]][2:3])() |>
     gsub("_", "\\.", x = _)
 
   # Check that files read from disk are correct
@@ -337,6 +390,7 @@ closure_read <- function(
       x = list(
         # ID numbers (1 / 3)
         id = seq_len(n_samples_all),
+
         # Result samples (2 / 3)
         sample = path |>
           paste0(slash, "samples.parquet") |>
@@ -351,7 +405,7 @@ closure_read <- function(
                 message = c(
                   "Reading samples.parquet from disk failed.",
                   "x" = "Original error:",
-                  "x" = "{e}",
+                  "x" = e,
                   "i" = "If memory is lacking, try \
                   `include = \"stats_only\"` or \
                   `include = \"stats_and_horns\"`."
@@ -359,6 +413,7 @@ closure_read <- function(
               )
             }
           ),
+
         # Horns index values (3 / 3)
         horns = nanoparquet::read_parquet(path_horns)[[1]]
       ),

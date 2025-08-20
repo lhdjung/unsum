@@ -26,7 +26,7 @@ be read in?
 \itemize{
 \item With \code{"stats_only"}, the default, no results are read.
 \item \code{"stats_and_horns"} reads the horns index values, but not the samples.
-\item \code{"capped_error"} checks whether the number of samples are higher than a
+\item \code{"capped_error"} checks whether the number of samples is higher than a
 given threshold (see \code{samples_cap}). If so, it throws an error; but if not,
 it reads both the samples and the horns values.
 \item \code{"all"} reads both the samples and the horns values.
@@ -36,8 +36,11 @@ it reads both the samples and the horns values.
 enter a whole number here to specify a cap. Default is \code{NULL}.}
 }
 \value{
-\code{closure_write()} returns the path to the new folder it created,
-\code{closure_read()} returns a list.
+\itemize{
+\item \code{closure_write()} returns the path to the new folder it created.
+\item \code{closure_read()} returns a list of the same kind as
+\code{\link[=closure_generate]{closure_generate()}}.
+}
 }
 \description{
 You can use \code{closure_write()} to save the results of
@@ -53,10 +56,9 @@ recreating the original CLOSURE list. This is useful for later analyses if
 you don't want to re-run a lengthy \code{closure_generate()} call.
 }
 \details{
-\code{closure_write()} saves the first three tibbles as CSVs, but the
-\code{"results"} tibble becomes a Parquet file. This is much faster and takes up
-far less disk space --- roughly 1\% of a CSV file with the same data. Speed
-and disk space can be relevant with large result sets.
+\code{closure_write()} saves all tibbles as Parquet files. This is much
+faster and takes up far less disk space --- roughly 1\% of a CSV file with
+the same data. Speed and disk space can be relevant with large result sets.
 
 Use \code{closure_read()} to recreate the CLOSURE list from the folder. One of
 the reasons why it is convenient is that opening a Parquet file requires a
@@ -64,15 +66,19 @@ special reader. For a more general tool, see
 \code{\link[nanoparquet:read_parquet]{nanoparquet::read_parquet()}}.
 }
 \section{Folder name}{
- The new folder's name should be sufficient to recreate
-its CLOSURE results. Dashes separate values, underscores replace decimal
-periods. For example:
+ The new folder's name will contain all the inputs that
+determine the CLOSURE results. Dashes separate values and underscores
+replace decimal periods. For example:
 
-\preformatted{CLOSURE-3_5-1_0-90-1-5-up_or_down-5}
+\preformatted{
+
+  CLOSURE-3_5-1_0-90-1-5-up_or_down-5
+  }
 
 The order is the same as in \code{closure_generate()}:
 
 \preformatted{
+
   closure_generate(
     mean = "3.5",
     sd = "1.0",
@@ -96,7 +102,7 @@ data <- closure_generate(
 
 # Writing to a temporary folder just for this example.
 # You should write to a real folder instead.
-# A simple way is `path = "."` for your current directory.
+# A simple way is path = "." for your current directory.
 path_new_folder <- closure_write(data, path = tempdir())
 
 # In a later session, conveniently read the files
