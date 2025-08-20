@@ -1,8 +1,8 @@
 #' Horns index (\eqn{h})
 #'
-#' @description `horns()` measures the dispersion in ordinal data based on the
-#'   scale limits. The value is the actual variance as a proportion of the
-#'   maximum possible variance. It ranges from 0 to 1:
+#' @description `horns()` measures the dispersion in ordinal data based on scale
+#'   limits or min/max values. The result is the actual variance as a proportion
+#'   of the maximum possible variance. It ranges from 0 to 1:
 #'   - 0 means no variance, i.e., all observations have the same value.
 #'   - 1 means that the observations are evenly split between the extremes, with
 #'   none in between.
@@ -35,9 +35,8 @@
 #'
 #'   where \eqn{k} is the number of scale points (i.e., the length of `freqs`
 #'   here), \eqn{f_i} is the relative frequency of the \eqn{i}th point on an
-#'   integer scale from \eqn{1} to \eqn{k}, and \eqn{\bar{s}} is the mean
-#'   frequency on that scale. This mean can likewise be derived from the
-#'   relative frequencies:
+#'   integer scale from \eqn{1} to \eqn{k}, and \eqn{\bar{s}} is the weighted
+#'   mean frequency. The mean is derived as follows:
 #'
 #'   \deqn{ \bar{s} = \sum_{i=1}^{k} i \ f_i }
 #'
@@ -60,10 +59,10 @@
 #'      {k \ (k - 1)^2}
 #'   }
 #'
-#'   In the uniform case, the mean is simply the scale midpoint, i.e.,
+#'   In the uniform case, the weighted mean is simply the scale midpoint, i.e.,
 #'
 #'   \deqn{
-#'      \bar{s}
+#'      \bar{s}_u
 #'      = \sum_{i=1}^{k} \frac{i}{k}
 #'      = \frac{k + 1}{2}
 #'   }
@@ -75,10 +74,19 @@
 #'   which defines the "horns of no confidence" as a reconstructed sample "where
 #'   an incorrect, impossible or unlikely value set has all its constituents
 #'   stacked into its highest or lowest bins to try meet a ludicrously high SD".
-#'   In its purest form, this is a case where `horns()` returns `1`. However,
-#'   note that the implications for the plausibility of any given set of summary
-#'   statistics depend on the substantive context of the data ([Heathers et al.
-#'   2018](https://peerj.com/preprints/26968/)).
+#'   In its purest form, this is a case where \eqn{h = 1}, so `horns()` would
+#'   return `1`. However, note that the implications for the plausibility of any
+#'   given set of summary statistics depend on the substantive context of the
+#'   data ([Heathers et al. 2018](https://peerj.com/preprints/26968/)).
+#'
+#'   ## Rust implementation
+#'
+#'   The `metrics_horns` tibble that is part of the output of
+#'   [`closure_generate()`] is not based on the R functions presented here.
+#'   Instead, it relies on efficient Rust implementations of the above formulas.
+#'   These Rust functions are part of
+#'   [closure-core](https://crates.io/crates/closure-core), which mainly
+#'   implements CLOSURE but does not currently export horns functions for users.
 #'
 #' @returns Numeric (length 1).
 #'
@@ -140,6 +148,7 @@ horns <- function(freqs, scale_min, scale_max) {
   numerator <- sum(freqs_relative * (scale_complete - scale_mean)^2)
 
   # Maximum possible variance given scale limits
+  # (inflated by a factor of 4, which is canceled out below)
   denominator <- (k - 1)^2
 
   4 * numerator / denominator
@@ -163,6 +172,7 @@ horns_uniform <- function(scale_min, scale_max) {
 # # Closed-form solution of `horns_uniform()` with a 1-7 scale:
 # h_u == 4 * (1 / 7) * sum(c(3, 2, 1, 0, 1, 2, 3)^2) / (7 - 1)^2
 #     == 4 * sum(c(3, 2, 1, 0, 1, 2, 3)^2) / (7 * (7 - 1)^2)
+#     == 0.4444444
 #
 # # Not necessary, just interesting:
 # horns_uniform_closed <- function(scale_min, scale_max) {
