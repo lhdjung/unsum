@@ -210,6 +210,12 @@ closure_read <- function(
   check_type(path, "character")
   check_type(samples_cap, "double", allow_null = TRUE)
 
+  # Prevent errors of accidentally included line breaks. These can be insidious
+  # because the break can easily be at the end of a path copied from the console
+  # after double-clicking to select it. However, it is invisible to the user
+  # because it is not printed in the error message.
+  path <- sub("\n$", "", path)
+
   # Check whether the `samples` and `samples_cap` arguments are consistent -- if
   # the former has either of these two values, the latter must be specified.
 
