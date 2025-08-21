@@ -37,12 +37,14 @@ Your R version should be 4.2.0 or more recent.
 
 ## Demo
 
+``` r
+library(unsum)
+```
+
 Start with `closure_generate()`, the package’s main function. It creates
 all possible samples:
 
 ``` r
-library(unsum)
-
 data <- closure_generate(
   mean = "2.7",
   sd = "1.9",
@@ -51,6 +53,8 @@ data <- closure_generate(
   scale_max = 5
 )
 #> → Just a second...
+#> 
+#> ✔ All CLOSURE results found
 
 data
 #> $inputs
@@ -59,36 +63,52 @@ data
 #>   <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
 #> 1 2.7   1.9     130         1         5 up_or_down         5
 #> 
-#> $metrics
-#> # A tibble: 1 × 5
-#>   samples_initial samples_all values_all horns horns_uniform
-#>             <int>       <int>      <int> <dbl>         <dbl>
-#> 1              15        5359     696670 0.881           0.5
+#> $metrics_main
+#> # A tibble: 1 × 3
+#>   samples_initial samples_all values_all
+#>             <int>       <dbl>      <dbl>
+#> 1              15        5359     696670
+#> 
+#> $metrics_horns
+#> # A tibble: 1 × 9
+#>    mean uniform     sd     cv    mad   min median   max  range
+#>   <dbl>   <dbl>  <dbl>  <dbl>  <dbl> <dbl>  <dbl> <dbl>  <dbl>
+#> 1 0.881     0.5 0.0237 0.0269 0.0171 0.849  0.876 0.943 0.0940
 #> 
 #> $frequency
-#> # A tibble: 5 × 4
-#>   value f_average f_absolute f_relative
-#>   <int>     <dbl>      <int>      <dbl>
-#> 1     1     67.0      358972     0.515 
-#> 2     2      5.63      30170     0.0433
-#> 3     3      4.09      21940     0.0315
-#> 4     4      5.63      30162     0.0433
-#> 5     5     47.7      255426     0.367 
+#> # A tibble: 15 × 5
+#>    samples   value f_average f_absolute f_relative
+#>    <chr>     <int>     <dbl>      <dbl>      <dbl>
+#>  1 all           1     67.0      358972     0.515 
+#>  2 all           2      5.63      30170     0.0433
+#>  3 all           3      4.09      21940     0.0315
+#>  4 all           4      5.63      30162     0.0433
+#>  5 all           5     47.7      255426     0.367 
+#>  6 horns_min     1     63.1        2651     0.486 
+#>  7 horns_min     2      8.10        340     0.0623
+#>  8 horns_min     3      5           210     0.0385
+#>  9 horns_min     4      8.24        346     0.0634
+#> 10 horns_min     5     45.5        1913     0.350 
+#> 11 horns_max     1     71.2         285     0.548 
+#> 12 horns_max     2      2.25          9     0.0173
+#> 13 horns_max     3      1.75          7     0.0135
+#> 14 horns_max     4      1.75          7     0.0135
+#> 15 horns_max     5     53           212     0.408 
 #> 
 #> $results
-#> # A tibble: 5,359 × 2
-#>       id sample     
-#>    <int> <list>     
-#>  1     1 <int [130]>
-#>  2     2 <int [130]>
-#>  3     3 <int [130]>
-#>  4     4 <int [130]>
-#>  5     5 <int [130]>
-#>  6     6 <int [130]>
-#>  7     7 <int [130]>
-#>  8     8 <int [130]>
-#>  9     9 <int [130]>
-#> 10    10 <int [130]>
+#> # A tibble: 5,359 × 3
+#>       id sample      horns
+#>    <int> <list>      <dbl>
+#>  1     1 <int [130]> 0.851
+#>  2     2 <int [130]> 0.851
+#>  3     3 <int [130]> 0.855
+#>  4     4 <int [130]> 0.856
+#>  5     5 <int [130]> 0.849
+#>  6     6 <int [130]> 0.851
+#>  7     7 <int [130]> 0.851
+#>  8     8 <int [130]> 0.855
+#>  9     9 <int [130]> 0.859
+#> 10    10 <int [130]> 0.852
 #> # ℹ 5,349 more rows
 ```
 
@@ -98,7 +118,7 @@ Visualize the overall distribution of values found in the samples:
 closure_plot_bar(data)
 ```
 
-<img src="man/figures/README-unnamed-chunk-2-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a somewhat polarized distribution." width="100%" />
+<img src="man/figures/README-unnamed-chunk-3-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a somewhat polarized distribution." width="100%" />
 
 ## Previous work
 

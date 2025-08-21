@@ -11,8 +11,9 @@ knitr::opts_chunk$set(
   fig.path = "man/figures/README-",
   out.width = "100%"
 )
-```
 
+devtools::load_all(".")
+```
 
 # unsum: reconstruct raw data from summary statistics
 
@@ -40,11 +41,13 @@ Your R version should be 4.2.0 or more recent.
 
 ## Demo
 
+```{r eval=FALSE}
+library(unsum)
+```
+
 Start with `closure_generate()`, the package's main function. It creates all possible samples:
 
 ```{r example}
-library(unsum)
-
 data <- closure_generate(
   mean = "2.7",
   sd = "1.9",
