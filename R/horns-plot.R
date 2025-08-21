@@ -6,15 +6,14 @@
 #'   those with the minimum or maximum horns index (\eqn{h}). It displays the
 #'   typical sample with the least or most amount of variability from among all
 #'   CLOSURE samples.
-#' - `closure_horns_histogram()` draws a quick barplot of the distribution of
-#'   horns values. The scale is fixed between 0 and 1, so it is aligned with the
-#'   range of the horns index. This reveals the big picture, putting any
+#' - `closure_plot_horns_histogram()` draws a quick barplot of the distribution
+#'   of horns values. The scale is fixed between 0 and 1, so it is aligned with
+#'   the range of the horns index. This reveals the big picture, putting any
 #'   variability among horns values into perspective.
 #'
 #' @param data List returned by [`closure_horns_analyze()`].
-#' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`.
-#'   Which plot(s) to show? Options are `"both"` (the default), `"min"`, and
-#'   `"max"`.
+#' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`. Which
+#'   plot(s) to show? Options are `"both"` (the default), `"min"`, and `"max"`.
 #' @param facet_labels String (length 2). Only in `closure_plot_bar_min_max()`.
 #'   Labels of the two individual plots. Set it to `NULL` to remove the labels.
 #'   Default is `c("Minimal variability", "Maximal variability")`.
@@ -22,9 +21,9 @@
 #'   `closure_plot_bar_min_max()`. Italicized part of the facet labels inside
 #'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
 #'   details. Default is `"h"`.
-#' @param bar_binwidth Numeric (length 1). Only in `closure_horns_histogram()`.
-#'   Width of the bins that divide up the x-axis, passed on to
-#'   [`ggplot2::geom_histogram()`]. Default is `0.0025`.
+#' @param bar_binwidth Numeric (length 1). Only in
+#'   `closure_plot_horns_histogram()`. Width of the bins that divide up the
+#'   x-axis, passed on to [`ggplot2::geom_histogram()`]. Default is `0.0025`.
 #' @inheritParams closure_plot_bar
 #'
 #' @details By default, both faceted plots in `closure_plot_bar_min_max()` have
@@ -61,7 +60,7 @@
 #'
 #' # They cluster in a narrow slice of the 0-1 range
 #' # of the horns index:
-#' closure_horns_histogram(data_horns)
+#' closure_plot_horns_histogram(data_horns)
 
 
 #' @rdname horns_plot
@@ -151,7 +150,7 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
 #' @rdname horns_plot
 #' @export
 
-closure_horns_histogram <- function(
+closure_plot_horns_histogram <- function(
     data,
     bar_alpha = 0.75,
     bar_color = "#5D3FD3",
