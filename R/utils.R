@@ -520,8 +520,10 @@ prepare_folder_mean_sd_n <- function(inputs, path, technique) {
 }
 
 
-# After writing results to disk, the info.txt file should be updated
-overwrite_info_txt <- function(path, technique) {
+# Write the final version of info.txt in a results folder. In `*_generate()`,
+# this overwrites the placeholder text from `prepare_folder_mean_sd_n()`; and in
+# `*_write()`, it creates info.txt in the first place. Also, issue an alert.
+write_final_info_txt <- function(path, technique) {
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)
 
@@ -530,8 +532,7 @@ overwrite_info_txt <- function(path, technique) {
     paste0(.Platform$file.sep, "info.txt") |>
     file()
 
-  # Overwrite text in info.txt -- it has been a placeholder saying that CLOSURE
-  # results are currently being written. Now it says writing them has finished.
+  # Create or overwrite info.txt
   write(
     x = paste0(
       "This folder contains the results of ", technique, ", created by ",
@@ -539,7 +540,8 @@ overwrite_info_txt <- function(path, technique) {
       "To load a summary of these results into R, use:\n",
       "unsum::", lowtech, "_read(\"", path, "\")\n\n",
       "For options to load the results themselves, see ",
-      "documentation for `", lowtech, "_read()`.\n\n",
+      "documentation for `", lowtech, "_read()` at:\n",
+      "https://lhdjung.github.io/unsum/reference/", lowtech, "_write.html\n\n",
       "Use a different path if the folder was moved. ",
       "In any case, opening the files will require a Parquet reader. ",
       "For more information, visit:\n",
@@ -550,7 +552,7 @@ overwrite_info_txt <- function(path, technique) {
 
   close(connection)
 
-  cli::cli_alert_success(paste0("All {technique} files written to:\n", path))
+  cli::cli_alert_success("All {technique} files written to:\n{path}")
 }
 
 

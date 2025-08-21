@@ -266,7 +266,7 @@ generate_from_mean_sd_n <- function(
       cli::cli_alert_success("All {technique} results found")
     })
   } else {
-    overwrite_info_txt(path_new_dir, technique)
+    write_final_info_txt(path_new_dir, technique)
     return(out_summary)
   }
 
