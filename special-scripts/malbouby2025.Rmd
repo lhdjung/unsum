@@ -63,7 +63,7 @@ closure_plot_bar_min_max(data_bmi_horns, frequency = "absolute")
 The lack of meaningful differences between the samples is also demonstrated by a histogram of the $h$ values across all samples, plotted on the 0-1 range of $h$:
 
 ```{r}
-closure_horns_histogram(data_bmi_horns)
+closure_plot_horns_histogram(data_bmi_horns)
 ```
 
 ## CLOSURE analysis: age
@@ -100,5 +100,5 @@ data_age_horns
 
 ```{r}
 closure_plot_bar_min_max(data_age_horns, frequency = "absolute", text_size = 10)
-closure_horns_histogram(data_age_horns)
+closure_plot_horns_histogram(data_age_horns)
 ```

@@ -3,7 +3,7 @@
 \name{horns_plot}
 \alias{horns_plot}
 \alias{closure_plot_bar_min_max}
-\alias{closure_horns_histogram}
+\alias{closure_plot_horns_histogram}
 \title{Visualize horns values distribution}
 \usage{
 closure_plot_bar_min_max(
@@ -23,7 +23,7 @@ closure_plot_bar_min_max(
   mark_decimal = "."
 )
 
-closure_horns_histogram(
+closure_plot_horns_histogram(
   data,
   bar_alpha = 0.75,
   bar_color = "#5D3FD3",
@@ -34,9 +34,8 @@ closure_horns_histogram(
 \arguments{
 \item{data}{List returned by \code{\link[=closure_horns_analyze]{closure_horns_analyze()}}.}
 
-\item{min_max}{String (length 1). Only in \code{closure_plot_bar_min_max()}.
-Which plot(s) to show? Options are \code{"both"} (the default), \code{"min"}, and
-\code{"max"}.}
+\item{min_max}{String (length 1). Only in \code{closure_plot_bar_min_max()}. Which
+plot(s) to show? Options are \code{"both"} (the default), \code{"min"}, and \code{"max"}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
 default, \code{"absolute-percent"}, displays the count of each scale value and
@@ -76,9 +75,9 @@ the bars. Default is \code{0.05}.}
 groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand}
 (e.g., \code{"20,000"}) and \code{"."} for \code{mark_decimal} (e.g., \code{"0.15"}).}
 
-\item{bar_binwidth}{Numeric (length 1). Only in \code{closure_horns_histogram()}.
-Width of the bins that divide up the x-axis, passed on to
-\code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.0025}.}
+\item{bar_binwidth}{Numeric (length 1). Only in
+\code{closure_plot_horns_histogram()}. Width of the bins that divide up the
+x-axis, passed on to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.0025}.}
 }
 \value{
 A ggplot object.
@@ -91,9 +90,9 @@ Two plot functions that follow up on
 those with the minimum or maximum horns index (\eqn{h}). It displays the
 typical sample with the least or most amount of variability from among all
 CLOSURE samples.
-\item \code{closure_horns_histogram()} draws a quick barplot of the distribution of
-horns values. The scale is fixed between 0 and 1, so it is aligned with the
-range of the horns index. This reveals the big picture, putting any
+\item \code{closure_plot_horns_histogram()} draws a quick barplot of the distribution
+of horns values. The scale is fixed between 0 and 1, so it is aligned with
+the range of the horns index. This reveals the big picture, putting any
 variability among horns values into perspective.
 }
 }
@@ -126,5 +125,5 @@ closure_plot_bar_min_max(data_horns)
 
 # They cluster in a narrow slice of the 0-1 range
 # of the horns index:
-closure_horns_histogram(data_horns)
+closure_plot_horns_histogram(data_horns)
 }
