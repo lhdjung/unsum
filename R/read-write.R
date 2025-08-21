@@ -191,7 +191,7 @@ closure_write <- function(data, path) {
 
   # Create info.txt and issue an alert. Leave an empty line before.
   message()
-  overwrite_info_txt(path_new_dir, technique)
+  write_final_info_txt(path_new_dir, technique)
 
   path_new_dir
 }
