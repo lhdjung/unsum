@@ -14,9 +14,9 @@ closure_gauge_complexity(mean, sd, n, scale_min, scale_max)
 \item{n}{Numeric (length 1). Reported sample size.}
 
 \item{scale_min, scale_max}{Numeric (length 1 each). Minimal and maximal
-possible values of the measurement scale. For example, with a 1-7 Likert
-scale, use \code{scale_min = 1} and \code{scale_max = 7}. Prefer the empirical min
-and max if available: they constrain the possible values further.}
+possible values. For example, with a 1-7 Likert scale, use \code{scale_min = 1}
+and \code{scale_max = 7}. Prefer the empirical min and max if available: they
+constrain the possible values further.}
 }
 \value{
 Numeric (length 1).
