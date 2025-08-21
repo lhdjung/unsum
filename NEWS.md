@@ -6,7 +6,7 @@
 
 -   Modified `closure_generate()`'s output to incorporate the horns index values for each generated sample, summary statistics about them, and frequencies based on the minimal and maximal horns values.
 
--   Added `closure_horns_min_max_bar()` to compare the subsets of samples with minimal and maximal variability, as measured by `horns()`.
+-   Added `closure_plot_bar_min_max()` to compare the subsets of samples with minimal and maximal variability, as measured by `horns()`.
 
 ## Breaking changes
 
