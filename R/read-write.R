@@ -96,8 +96,12 @@ closure_write <- function(data, path) {
   check_closure_generate(data)
   check_value(path, "character")
 
-  if (path == ".") {
-    path <- getwd()
+  # Translate "." to the user's working directory. If the path was manually
+  # supplied, remove leading or trailing whitespace, including linebreaks.
+  path <- if (path == ".") {
+    getwd()
+  } else {
+    trimws(path)
   }
 
   # "closure_generate" --> "CLOSURE" etc.
@@ -185,8 +189,7 @@ closure_write <- function(data, path) {
       file = paste0(path_new_dir, "samples.parquet")
     )
 
-  # Create info.txt (not actually overwriting -- file is new here). Leave an
-  # empty line before the alert.
+  # Create info.txt and issue an alert. Leave an empty line before.
   message()
   overwrite_info_txt(path_new_dir, technique)
 
@@ -210,15 +213,15 @@ closure_read <- function(
   check_type(path, "character")
   check_type(samples_cap, "double", allow_null = TRUE)
 
-  # Prevent errors of accidentally included line breaks. These can be insidious
-  # because the break can easily be at the end of a path copied from the console
-  # after double-clicking to select it. However, it is invisible to the user
-  # because it is not printed in the error message.
-  path <- sub("\n$", "", path)
+  # Prevent errors of accidentally included spaces or line breaks by removing
+  # any such pattern from the start or end of the path. Breaks in particular can
+  # be insidious because double-clicking on a path in the console and then
+  # copying it will include a spurious trailing line break. However, this would
+  # be invisible to the user because it is not printed in an error message.
+  path <- trimws(path)
 
   # Check whether the `samples` and `samples_cap` arguments are consistent -- if
   # the former has either of these two values, the latter must be specified.
-
   if (include == "capped_error" && is.null(samples_cap)) {
     cli::cli_abort(
       message = c(
