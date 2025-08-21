@@ -57,7 +57,7 @@ data_bmi_horns
 This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability seem negligible. In particular, the original sample cannot have had less variability than the left panel, and even this graph shows a starkly bimodal distribution where observations are concentrated at the extremes. Correspondingly, the horns indices of the two extreme distributions only differ by 0.04 (the range is 0 to 1).
 
 ```{r}
-closure_horns_min_max_bar(data_bmi_horns, frequency = "absolute")
+closure_plot_bar_min_max(data_bmi_horns, frequency = "absolute")
 ```
 
 The lack of meaningful differences between the samples is also demonstrated by a histogram of the $h$ values across all samples, plotted on the 0-1 range of $h$:
@@ -99,6 +99,6 @@ data_age_horns
 ...
 
 ```{r}
-closure_horns_min_max_bar(data_age_horns, frequency = "absolute", text_size = 10)
+closure_plot_bar_min_max(data_age_horns, frequency = "absolute", text_size = 10)
 closure_horns_histogram(data_age_horns)
 ```

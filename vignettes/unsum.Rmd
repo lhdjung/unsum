@@ -99,10 +99,10 @@ closure_plot_ecdf(data)
 
 You may wonder about variability between the samples. Couldn't there be some with a much lower or higher horns index than the overall mean `horns`? In this case, there would be a chance that the original data looked quite different from the average.
 
-To check this, first use `closure_horns_min_max_bar()`. It shows the minimum and maximum possible variability as measured by the horns index, i.e., the average distributions of those samples with the lowest and highest horns index values:
+To check this, first use `closure_plot_bar_min_max()`. It shows the minimum and maximum possible variability as measured by the horns index, i.e., the average distributions of those samples with the lowest and highest horns index values:
 
 ```{r}
-closure_horns_min_max_bar(data, frequency = "percent")
+closure_plot_bar_min_max(data, frequency = "percent")
 ```
 
 As you can see, the variability does not change very much. The distribution is starkly bimodal even with the lowest possible amount of variability.

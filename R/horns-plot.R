@@ -2,7 +2,7 @@
 #'
 #' @description Two plot functions that follow up on
 #'   [`closure_horns_analyze()`]:
-#' - `closure_horns_min_max_bar()` draws barplots of the mean samples from among
+#' - `closure_plot_bar_min_max()` draws barplots of the mean samples from among
 #'   those with the minimum or maximum horns index (\eqn{h}). It displays the
 #'   typical sample with the least or most amount of variability from among all
 #'   CLOSURE samples.
@@ -12,14 +12,14 @@
 #'   variability among horns values into perspective.
 #'
 #' @param data List returned by [`closure_horns_analyze()`].
-#' @param min_max String (length 1). Only in `closure_horns_min_max_bar()`.
+#' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`.
 #'   Which plot(s) to show? Options are `"both"` (the default), `"min"`, and
 #'   `"max"`.
-#' @param facet_labels String (length 2). Only in `closure_horns_min_max_bar()`.
+#' @param facet_labels String (length 2). Only in `closure_plot_bar_min_max()`.
 #'   Labels of the two individual plots. Set it to `NULL` to remove the labels.
 #'   Default is `c("Minimal variability", "Maximal variability")`.
 #' @param facet_labels_parens String (length 1). Only in
-#'   `closure_horns_min_max_bar()`. Italicized part of the facet labels inside
+#'   `closure_plot_bar_min_max()`. Italicized part of the facet labels inside
 #'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
 #'   details. Default is `"h"`.
 #' @param bar_binwidth Numeric (length 1). Only in `closure_horns_histogram()`.
@@ -27,7 +27,7 @@
 #'   [`ggplot2::geom_histogram()`]. Default is `0.0025`.
 #' @inheritParams closure_plot_bar
 #'
-#' @details By default, both faceted plots in `closure_horns_min_max_bar()` have
+#' @details By default, both faceted plots in `closure_plot_bar_min_max()` have
 #'   a label that includes their horns index (\eqn{h}); see [`horns()`]. You can
 #'   remove the parenthesized part using `facet_labels_parens = NULL` or the
 #'   entire label using `facet_labels = NULL`.
@@ -57,7 +57,7 @@
 #'
 #' # Even with minimal and maximal variability,
 #' # the results are almost the same:
-#' closure_horns_min_max_bar(data_horns)
+#' closure_plot_bar_min_max(data_horns)
 #'
 #' # They cluster in a narrow slice of the 0-1 range
 #' # of the horns index:
@@ -82,7 +82,7 @@
 # mark_decimal = "."
 
 # Arguments for this function are generated below the definition
-closure_horns_min_max_bar <- function() {
+closure_plot_bar_min_max <- function() {
 
   check_length(facet_labels, 2L, allow_null = TRUE)
   check_length(facet_labels_parens, 1L, allow_null = TRUE)
@@ -127,7 +127,7 @@ closure_horns_min_max_bar <- function() {
   )
 }
 
-formals(closure_horns_min_max_bar) <- plot_frequency_bar |>
+formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
   formals() |>
   formals_change_defaults(
     bar_color = "#5D3FD3"

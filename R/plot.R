@@ -199,7 +199,7 @@ plot_frequency_bar <- function(
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
     geom_text_frequency +
-    # Conditionally facet the plot -- needed for `closure_horns_min_max_bar()`
+    # Conditionally facet the plot -- needed for `closure_plot_bar_min_max()`
     {
       if (is.null(facet_labels)) {
         # Warn in case the arguments don't quite fit together

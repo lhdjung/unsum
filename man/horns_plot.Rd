@@ -2,11 +2,11 @@
 % Please edit documentation in R/horns-plot.R
 \name{horns_plot}
 \alias{horns_plot}
-\alias{closure_horns_min_max_bar}
+\alias{closure_plot_bar_min_max}
 \alias{closure_horns_histogram}
 \title{Visualize horns values distribution}
 \usage{
-closure_horns_min_max_bar(
+closure_plot_bar_min_max(
   data,
   min_max = c("both", "min", "max"),
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
@@ -34,7 +34,7 @@ closure_horns_histogram(
 \arguments{
 \item{data}{List returned by \code{\link[=closure_horns_analyze]{closure_horns_analyze()}}.}
 
-\item{min_max}{String (length 1). Only in \code{closure_horns_min_max_bar()}.
+\item{min_max}{String (length 1). Only in \code{closure_plot_bar_min_max()}.
 Which plot(s) to show? Options are \code{"both"} (the default), \code{"min"}, and
 \code{"max"}.}
 
@@ -47,12 +47,12 @@ and \code{"percent"}.}
 the average sample (\code{"mean"}, the default) or the sum of all samples
 (\code{"all"}). This only matters if absolute frequencies are shown.}
 
-\item{facet_labels}{String (length 2). Only in \code{closure_horns_min_max_bar()}.
+\item{facet_labels}{String (length 2). Only in \code{closure_plot_bar_min_max()}.
 Labels of the two individual plots. Set it to \code{NULL} to remove the labels.
 Default is \code{c("Minimal variability", "Maximal variability")}.}
 
 \item{facet_labels_parens}{String (length 1). Only in
-\code{closure_horns_min_max_bar()}. Italicized part of the facet labels inside
+\code{closure_plot_bar_min_max()}. Italicized part of the facet labels inside
 the parentheses. Set it to \code{NULL} to remove the parentheses altogether. See
 details. Default is \code{"h"}.}
 
@@ -87,7 +87,7 @@ A ggplot object.
 Two plot functions that follow up on
 \code{\link[=closure_horns_analyze]{closure_horns_analyze()}}:
 \itemize{
-\item \code{closure_horns_min_max_bar()} draws barplots of the mean samples from among
+\item \code{closure_plot_bar_min_max()} draws barplots of the mean samples from among
 those with the minimum or maximum horns index (\eqn{h}). It displays the
 typical sample with the least or most amount of variability from among all
 CLOSURE samples.
@@ -98,7 +98,7 @@ variability among horns values into perspective.
 }
 }
 \details{
-By default, both faceted plots in \code{closure_horns_min_max_bar()} have
+By default, both faceted plots in \code{closure_plot_bar_min_max()} have
 a label that includes their horns index (\eqn{h}); see \code{\link[=horns]{horns()}}. You can
 remove the parenthesized part using \code{facet_labels_parens = NULL} or the
 entire label using \code{facet_labels = NULL}.
@@ -122,7 +122,7 @@ data_horns <- closure_horns_analyze(data)
 
 # Even with minimal and maximal variability,
 # the results are almost the same:
-closure_horns_min_max_bar(data_horns)
+closure_plot_bar_min_max(data_horns)
 
 # They cluster in a narrow slice of the 0-1 range
 # of the horns index:
