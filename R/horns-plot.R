@@ -42,7 +42,7 @@
 #' @return A ggplot object.
 #'
 #' @examples
-#' # Preparation (1 / 2): run CLOSURE
+#' # Preparation: run CLOSURE
 #' data <- closure_generate(
 #'   mean = "2.9",
 #'   sd = "0.5",
@@ -51,16 +51,13 @@
 #'   scale_max = 5
 #' )
 #'
-#' # Preparation (2 / 2): analyze sample-wise horns values
-#' data_horns <- closure_horns_analyze(data)
-#'
 #' # Even with minimal and maximal variability,
 #' # the results are almost the same:
-#' closure_plot_bar_min_max(data_horns)
+#' closure_plot_bar_min_max(data)
 #'
 #' # They cluster in a narrow slice of the 0-1 range
 #' # of the horns index:
-#' closure_plot_horns_histogram(data_horns)
+#' closure_plot_horns_histogram(data)
 
 
 #' @rdname horns_plot
