@@ -194,7 +194,6 @@ plot_frequency_bar <- function(
     geom_text_frequency <- NULL
   }
 
-
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
@@ -395,52 +394,57 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 
 # # For interactive testing:
 # # (create `data`)
-# samples <- "all"
-# line_color <- "#960019"
+# samples <- "mean_min_max"
+# line_color <- "#5D3FD3"
 # text_size <- 12
 # reference_line_alpha <- 0.6
 # pad <- TRUE
 
 closure_plot_ecdf <- function(
   data,
-  samples = c("mean", "all"),
+  samples = c("mean_min_max", "mean", "all"),
   line_color = "#5D3FD3",
   text_size = 12,
   reference_line_alpha = 0.6,
   pad = TRUE
 ) {
-
   check_closure_generate(data)
   samples <- rlang::arg_match(samples)
 
   # For the reference line and the x-axis
   inputs <- data$inputs
-  metrics <- data$metrics
+  metrics_main <- data$metrics_main
   values_unique <- inputs$scale_min:inputs$scale_max
 
-  # Zoom in on the detailed `results` -- the key element of `data` needed here.
-  # Flatten them into a single integer vector. If all samples should be shown,
-  # enable grouping the values by sample using a `sample_id` column.
-  data <- tibble::new_tibble(
-    x = list(
-      value = unlist(data$results$sample, use.names = FALSE),
-      sample_id = if (samples == "all") {
-        rep(seq_len(metrics$samples_all), each = inputs$n)
-      } else {
-        NULL
-      }
-    ),
-    nrow = metrics$values_all
-  )
+  if (samples == "all") {
+    # Error if the raw data are not available -- visualizing all samples is not
+    # possible in this case
+    if (is.null(data$results$sample)) {
+      cli::cli_abort(
+        message = c(
+          "Visualizing all samples requires those samples.",
+          "x" = "`samples` is \"all\" but the actual samples are not present."
+        ),
+        call = rlang::caller_env()
+      )
+    }
 
-  # Prepare the geom-like ggplot2 object that maps the data to the ECDF line(s).
-  # Group the atomic integer values by `sample_id` if needed.
-  if (samples == "mean") {
-    stat_ecdf_line <- ggplot2::stat_ecdf(
-      color = line_color,
-      pad = pad
+    # Zoom in on the detailed `results` -- the key element of `data` needed
+    # here. Flatten them into a single integer vector. If all samples should be
+    # shown, enable grouping the values by sample using a `sample_id` column.
+    data <- tibble::new_tibble(
+      x = list(
+        value = data$results$sample |>
+          unlist(use.names = FALSE),
+        sample_id = metrics_main$samples_all |>
+          seq_len() |>
+          rep(each = inputs$n)
+      ),
+      nrow = metrics_main$values_all
     )
-  } else if (samples == "all") {
+
+    # Prepare the geom-like ggplot2 object that maps the data to the ECDF
+    # line(s). Group the atomic integer values by `sample_id` if needed.
     stat_ecdf_line <- ggplot2::stat_ecdf(
       ggplot2::aes(
         group = .data$sample_id,
@@ -449,7 +453,40 @@ closure_plot_ecdf <- function(
       pad = pad
     )
   } else {
-    cli::cli_abort("Internal error: unhandled `samples` type.")
+    data <- data$frequency
+
+    if (samples == "mean") {
+      data <- data[data$samples == "all", ]
+      stat_ecdf_line <- ggplot2::stat_ecdf(
+        color = line_color,
+        pad = pad
+      )
+    } else if (samples == "mean_min_max") {
+      data$samples <- as.factor(data$samples)
+
+      data <- data[c("samples", "value", "f_absolute")]
+
+      # Expand data from absolute values
+      data <- data |>
+        split(data$samples) |>
+        lapply(function(group) {
+          tibble::tibble(
+            value = rep(
+              group$value,
+              times = round(group$f_absolute)
+            ),
+            samples = group$samples[1]
+          )
+        }) |>
+        do.call(what = rbind)
+
+      stat_ecdf_line <- ggplot2::stat_ecdf(
+        ggplot2::aes(color = samples, group = samples),
+        pad = pad
+      )
+    } else {
+      cli::cli_abort("Internal error: unhandled `samples` type.")
+    }
   }
 
   # Construct the ECDF plot
@@ -473,5 +510,7 @@ closure_plot_ecdf <- function(
       labels = values_unique,
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
-    ggplot2::theme(legend.position = "none")
+    ggplot2::theme(
+      legend.position = if (samples == "mean_min_max") "right" else "none"
+    )
 }
