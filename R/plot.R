@@ -474,43 +474,44 @@ closure_plot_ecdf <- function(
       data <- data |>
         split(data$samples) |>
         lapply(function(group) {
-          # Remove -Inf and Inf rows for ECDF calculation
-          valid_rows <- is.finite(group$value) & is.finite(group$f_absolute)
-          group_clean <- group[valid_rows, ]
-
-          # Calculate cumulative frequencies
-          group_clean$cumulative_freq <- cumsum(group_clean$f_absolute)
+          group$cumulative_freq <- cumsum(group$f_absolute)
 
           # Normalize to get cumulative probabilities (ECDF values)
-          total_freq <- sum(group_clean$f_absolute)
-          group_clean$ecdf <- group_clean$cumulative_freq / total_freq
+          total_freq <- sum(group$f_absolute)
+          group$ecdf <- group$cumulative_freq / total_freq
 
-          # Add padding if requested
-          if (pad && nrow(group_clean) > 0) {
-            # Add point at the beginning (value just before first value, ecdf = 0)
-            first_val <- min(group_clean$value)
-            pad_start <- data.frame(
-              samples = group_clean$samples[1],
-              value = first_val - 0.5,
+          if (!pad) {
+            return(group)
+          }
+
+          # Add point at the beginning
+          value_first <- group$value[1]
+          pad_start <- tibble::new_tibble(
+            list(
+              samples = group$samples[1],
+              value = value_first - 0.5,
               f_absolute = 0,
               cumulative_freq = 0,
               ecdf = 0
-            )
+            ),
+            nrow = 1L
+          )
 
-            # Add point at the end (extend last value, ecdf = 1)
-            last_val <- max(group_clean$value)
-            pad_end <- data.frame(
-              samples = group_clean$samples[1],
-              value = last_val + 0.5,
+          # Add point at the end (extend last value, ecdf = 1)
+          value_last <- group$value[length(group$value)]
+          pad_end <- tibble::new_tibble(
+            list(
+              samples = group$samples[1],
+              value = value_last + 0.5,
               f_absolute = 0,
               cumulative_freq = total_freq,
               ecdf = 1
-            )
+            ),
+            nrow = 1L
+          )
 
-            group_clean <- rbind(pad_start, group_clean, pad_end)
-          }
-
-          group_clean
+          # Pad the `group` tibble with the extra rows
+          rbind(pad_start, group, pad_end)
         }) |>
         do.call(what = rbind)
 
