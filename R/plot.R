@@ -461,11 +461,15 @@ closure_plot_ecdf <- function(
   } else {
     data <- data$frequency
 
+    # Frequency-based ECDF plots that do not require individual samples
     if (samples == "mean") {
-      data <- data[data$samples == "all", ]
-      stat_ecdf_line <- ggplot2::stat_ecdf(
+      data <- data[data$samples == "all", c("samples", "value", "f_absolute")]
+      data <- prepare_ecdf_freqs(data, pad = pad)
+
+      stat_ecdf_line <- ggplot2::geom_step(
+        ggplot2::aes(x = value, y = ecdf),
         color = line_color,
-        pad = pad
+        direction = "hv"
       )
     } else if (samples == "mean_min_max") {
       data <- data[c("samples", "value", "f_absolute")]
@@ -473,46 +477,7 @@ closure_plot_ecdf <- function(
       # Calculate ECDF directly from frequency table
       data <- data |>
         split(data$samples) |>
-        lapply(function(group) {
-          group$cumulative_freq <- cumsum(group$f_absolute)
-
-          # Normalize to get cumulative probabilities (ECDF values)
-          total_freq <- sum(group$f_absolute)
-          group$ecdf <- group$cumulative_freq / total_freq
-
-          if (!pad) {
-            return(group)
-          }
-
-          # Add point at the beginning
-          value_first <- group$value[1]
-          pad_start <- tibble::new_tibble(
-            list(
-              samples = group$samples[1],
-              value = value_first - 0.5,
-              f_absolute = 0,
-              cumulative_freq = 0,
-              ecdf = 0
-            ),
-            nrow = 1L
-          )
-
-          # Add point at the end (extend last value, ecdf = 1)
-          value_last <- group$value[length(group$value)]
-          pad_end <- tibble::new_tibble(
-            list(
-              samples = group$samples[1],
-              value = value_last + 0.5,
-              f_absolute = 0,
-              cumulative_freq = total_freq,
-              ecdf = 1
-            ),
-            nrow = 1L
-          )
-
-          # Pad the `group` tibble with the extra rows
-          rbind(pad_start, group, pad_end)
-        }) |>
+        lapply(prepare_ecdf_freqs, pad = pad) |>
         do.call(what = rbind)
 
       stat_ecdf_line <- ggplot2::geom_step(
@@ -548,4 +513,43 @@ closure_plot_ecdf <- function(
     ggplot2::theme(
       legend.position = if (samples == "mean_min_max") "right" else "none"
     )
+}
+
+
+# Helper that calculates the cumulative frequencies and the ECDF from the
+# frequency table used inside of `closure_plot_ecdf()`. Note that `data` must
+# contain these columns (and no others): samples, value, f_absolute
+prepare_ecdf_freqs <- function(data, pad) {
+  data$cumulative_freq <- cumsum(data$f_absolute)
+
+  # Normalize to get cumulative probabilities (ECDF values)
+  total_freq <- sum(data$f_absolute)
+  data$ecdf <- data$cumulative_freq / total_freq
+
+  if (!pad) {
+    return(data)
+  }
+
+  # Add point at the beginning
+  value_first <- data$value[1]
+  pad_start <- list(
+    samples = data$samples[1],
+    value = value_first - 0.5,
+    f_absolute = 0,
+    cumulative_freq = 0,
+    ecdf = 0
+  )
+
+  # Add point at the end (extend last value, ecdf = 1)
+  value_last <- data$value[length(data$value)]
+  pad_end <- list(
+    samples = data$samples[1],
+    value = value_last + 0.5,
+    f_absolute = 0,
+    cumulative_freq = total_freq,
+    ecdf = 1
+  )
+
+  # Pad the data with the extra rows
+  rbind(pad_start, data, pad_end)
 }
