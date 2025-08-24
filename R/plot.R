@@ -468,26 +468,55 @@ closure_plot_ecdf <- function(
         pad = pad
       )
     } else if (samples == "mean_min_max") {
-      # data$samples <- as.factor(data$samples)
-
       data <- data[c("samples", "value", "f_absolute")]
 
-      # Expand data from absolute values
+      # Calculate ECDF directly from frequency table
       data <- data |>
         split(data$samples) |>
         lapply(function(group) {
-          if (pad) {
-            extra_row_first <- list(group$samples[1], -Inf, -Inf)
-            extra_row_last <- list(group$samples[1], Inf, Inf)
-            group <- rbind(extra_row_first, group, extra_row_last)
+          # Remove -Inf and Inf rows for ECDF calculation
+          valid_rows <- is.finite(group$value) & is.finite(group$f_absolute)
+          group_clean <- group[valid_rows, ]
+
+          # Calculate cumulative frequencies
+          group_clean$cumulative_freq <- cumsum(group_clean$f_absolute)
+
+          # Normalize to get cumulative probabilities (ECDF values)
+          total_freq <- sum(group_clean$f_absolute)
+          group_clean$ecdf <- group_clean$cumulative_freq / total_freq
+
+          # Add padding if requested
+          if (pad && nrow(group_clean) > 0) {
+            # Add point at the beginning (value just before first value, ecdf = 0)
+            first_val <- min(group_clean$value)
+            pad_start <- data.frame(
+              samples = group_clean$samples[1],
+              value = first_val - 0.5,
+              f_absolute = 0,
+              cumulative_freq = 0,
+              ecdf = 0
+            )
+
+            # Add point at the end (extend last value, ecdf = 1)
+            last_val <- max(group_clean$value)
+            pad_end <- data.frame(
+              samples = group_clean$samples[1],
+              value = last_val + 0.5,
+              f_absolute = 0,
+              cumulative_freq = total_freq,
+              ecdf = 1
+            )
+
+            group_clean <- rbind(pad_start, group_clean, pad_end)
           }
-          group
+
+          group_clean
         }) |>
         do.call(what = rbind)
 
-      stat_ecdf_line <- ggplot2::stat_ecdf(
-        ggplot2::aes(color = samples, group = samples),
-        pad = pad
+      stat_ecdf_line <- ggplot2::geom_step(
+        ggplot2::aes(x = value, y = ecdf, color = samples, group = samples),
+        direction = "hv"
       )
     } else {
       cli::cli_abort("Internal error: unhandled `samples` type.")
@@ -495,7 +524,7 @@ closure_plot_ecdf <- function(
   }
 
   # Construct the ECDF plot
-  ggplot2::ggplot(data, ggplot2::aes(value)) +
+  ggplot2::ggplot(data, ggplot2::aes(x = value)) +
     # ECDF line:
     stat_ecdf_line +
     # Dashed diagonal reference line:
