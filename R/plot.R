@@ -393,7 +393,13 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #' closure_plot_ecdf(data)
 
 # # For interactive testing:
-# # (create `data`)
+# data <- closure_generate(
+#   mean = "3.5",
+#   sd = "1.7",
+#   n = 70,
+#   scale_min = 1,
+#   scale_max = 5
+# )
 # samples <- "mean_min_max"
 # line_color <- "#5D3FD3"
 # text_size <- 12
@@ -462,7 +468,7 @@ closure_plot_ecdf <- function(
         pad = pad
       )
     } else if (samples == "mean_min_max") {
-      data$samples <- as.factor(data$samples)
+      # data$samples <- as.factor(data$samples)
 
       data <- data[c("samples", "value", "f_absolute")]
 
@@ -470,13 +476,12 @@ closure_plot_ecdf <- function(
       data <- data |>
         split(data$samples) |>
         lapply(function(group) {
-          tibble::tibble(
-            value = rep(
-              group$value,
-              times = round(group$f_absolute)
-            ),
-            samples = group$samples[1]
-          )
+          if (pad) {
+            extra_row_first <- list(group$samples[1], -Inf, -Inf)
+            extra_row_last <- list(group$samples[1], Inf, Inf)
+            group <- rbind(extra_row_first, group, extra_row_last)
+          }
+          group
         }) |>
         do.call(what = rbind)
 
