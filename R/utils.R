@@ -559,3 +559,13 @@ as_wide_n_tibble <- function(samples_all) {
 caller_fn_name <- function(n = 1) {
   as.character(rlang::caller_call(n + 1)[[1L]])
 }
+
+
+has_reading_class <- function(inputs, include = NULL) {
+  pattern <- paste0("^.*_read_include_", include)
+
+  inputs |>
+    class() |>
+    grepl(pattern, x = _) |>
+    any()
+}
