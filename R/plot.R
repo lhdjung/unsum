@@ -46,37 +46,6 @@ plot_frequency_bar <- function(
   data <- data$frequency
   data <- data[data$samples %in% frequency_rows_subset, ]
 
-  # # Zoom in on the frequency table -- the only element of `data` needed here. If
-  # # there are multiple tables, combine them to a single one while keeping track
-  # # of the original tables.
-  # if (is.null(frequency_rows_subset)) {
-  #   data <- data[[frequency_rows_subset[1L]]]
-  #   nrow_table_single <- nrow(data)
-  #   n_tables <- 1L
-  # } else {
-  #   tables_all <- NULL
-  #   nrow_tables_all <- integer(length(frequency_rows_subset))
-  #   nrow_table_single <- nrow(
-  #     data$frequency[data$frequency$samples == frequency_rows_subset[1L], ]
-  #   )
-  #   n_tables <- length(frequency_rows_subset)
-  #
-  #   for (i in seq_along(frequency_rows_subset)) {
-  #     table_current <- data[[frequency_rows_subset[i]]]
-  #     tables_all <- rbind(tables_all, table_current)
-  #     nrow_tables_all[i] <- nrow(table_current)
-  #   }
-  #
-  #   # This would enable tables of different dimensions, which is currently not
-  #   # possible for other reasons (and probably not needed)
-  #   tables_all$group_frequency_table <- frequency_rows_subset |>
-  #     seq_along() |>
-  #     rep(nrow_tables_all)
-  #
-  #   data <- tables_all
-  #   rm(table_current, tables_all)
-  # }
-
   # In terms of absolute frequencies, the user may choose to show the average
   # number of observations per bin instead of the full count. If so, replace the
   # full absolute values by the average values, and prepare a label to signpost
@@ -197,7 +166,10 @@ plot_frequency_bar <- function(
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
+
+    # Text labels on top of the bars
     geom_text_frequency +
+
     # Conditionally facet the plot -- needed for `closure_plot_bar_min_max()`
     {
       if (is.null(facet_labels)) {
@@ -208,30 +180,20 @@ plot_frequency_bar <- function(
             because `facet_labels` is `NULL`."
           )
         }
+        # Evaluate the entire expression to `NULL`
         NULL
       } else {
-        # Construct the part of the label inside the parentheses; for example,
-        # "(h = 0.12)" with the "h" in italics
-        part_parens <- if (is.null(facet_labels_parens)) {
-          NULL
-        } else {
-          inside_parens <- scales::label_number(
-            accuracy = 0.01,
-            decimal.mark = mark_decimal
-          )(min_max_values)
-          paste0(
-            "~(italic(",
-            facet_labels_parens,
-            ")~`=`~",
-            inside_parens,
-            ")"
-          )
-        }
-        facet_labels <- paste0(
-          gsub(" ", "~", facet_labels),
-          part_parens
+        # Format facet labels like "Minimal variability (h = 0.68)" with "h" in
+        # italics
+        facet_labels <- format_equation(
+          prefix = facet_labels,
+          var_name = facet_labels_parens,
+          number = min_max_values,
+          mark_decimal = mark_decimal,
+          parse_output = FALSE
         )
-        names(facet_labels) <- seq_along(facet_labels)
+
+        # Evaluate the entire expression to a final grid
         ggplot2::facet_grid(
           cols = ggplot2::vars(samples),
           labeller = ggplot2::labeller(
@@ -241,6 +203,8 @@ plot_frequency_bar <- function(
         )
       }
     } +
+
+    # Rest of the plot
     ggplot2::scale_x_continuous(
       breaks = data$value,
       labels = data$value
@@ -548,16 +512,17 @@ closure_plot_ecdf <- function(
         prefix = c("All samples", "Min variance", "Max variance"),
         var_name = "h",
         number = c(h_mean, h_min, h_max),
-        mark_decimal = mark_decimal
+        mark_decimal = mark_decimal,
+        parse_output = TRUE
       )
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
-      legend.position = if (samples == "mean_min_max") "right" else "none"
+      legend.position = if (samples == "mean_min_max") "bottom" else "none"
     ) +
     {
       if (samples == "mean_min_max") {
-        ggplot2::labs(color = "Subset of samples")
+        ggplot2::labs(color = NULL) #"Subset of samples")
       } else {
         NULL
       }
@@ -621,8 +586,8 @@ prepare_ecdf_freqs <- function(data, pad) {
 #' Format equation labels for ggplot2
 #'
 #' Internal helper to make ggplot2 render a label like "All samples (h = 0.34)"
-#' with "h" in italics. Vectorized over all arguments. Returns a vector of
-#' expressions, not of strings.
+#' with "h" in italics. Vectorized over all arguments. Returns a string vector
+#' by default, but can optionally be parsed into an expression vector.
 #'
 #' @param prefix String. Will go before the parentheses, e.g., `"All samples"`.
 #' @param var_name String. LHS of the equation. This part will be in italics;
@@ -630,14 +595,23 @@ prepare_ecdf_freqs <- function(data, pad) {
 #' @param number Numeric. RHS of the equation. Will be rounded to 2 decimal
 #'   places, e.g., `0.34`.
 #' @param mark_decimal String. Decimal sign to use in `number` , e.g., `"."`.
+#' @param parse_output Logical. Should the output be parsed as an expression?
+#'   Default is `FALSE`.
 #'
-#' @returns Expression to be used as a ggplot2 label. It is formatted in an
-#'   obscure style that works in ggplot2 labels but not in most other places.
-#'   Although the syntax is difficult and `ggtext::element_markdown()` offers an
-#'   easy alternative, this function does it the hard way to avoid a dependency.
+#' @returns Vector of strings (or, with `parse_output = TRUE`, expressions) to
+#'   be used as ggplot2 labels. They are formatted in an obscure style that
+#'   works in ggplot2 labels but not in most other places. Although the syntax
+#'   is difficult and `ggtext::element_markdown()` offers an easy alternative,
+#'   this function does it the hard way to avoid a dependency.
 #'
 #' @noRd
-format_equation <- function(prefix, var_name, number, mark_decimal) {
+format_equation <- function(
+  prefix,
+  var_name,
+  number,
+  mark_decimal,
+  parse_output = FALSE
+) {
   # Spaces are represented as tildes
   prefix <- gsub(" ", "~", prefix)
 
@@ -650,6 +624,14 @@ format_equation <- function(prefix, var_name, number, mark_decimal) {
   # Assemble a string that will make ggplot2 render `var_name` in italics
   out <- paste0(prefix, "~(italic(", var_name, ")~`=`~", number, ")")
 
-  # Convert the string into an expression. This is required by ggplot2.
-  parse(text = out)
+  # Needed for `ggplot2::labeller()`, though not for scale functions
+  names(out) <- seq_along(out)
+
+  # Convert the string into an expression. This is required by ggplot2 in some
+  # places like labels in scales.
+  if (parse_output) {
+    parse(text = out)
+  } else {
+    out
+  }
 }
