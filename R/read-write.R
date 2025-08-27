@@ -111,14 +111,9 @@ closure_write <- function(data, path) {
     sub("_generate$", "", x = _) |>
     toupper()
 
-  has_reading_class <- data$inputs |>
-    class() |>
-    grepl("^closure_read_include_", x = _) |>
-    any()
-
   # Refuse to rewrite data that were already saved to disk
   if (
-    has_reading_class &&
+    has_reading_class(data$inputs) &&
       any(names(data) == "directory") &&
       any(names(data$directory) == "path")
   ) {
@@ -133,7 +128,7 @@ closure_write <- function(data, path) {
 
   if (
     !any(names(data) == "results") ||
-    !identical(names(data$results), c("id", "sample", "horns"))
+      !identical(names(data$results), c("id", "sample", "horns"))
   ) {
     cli::cli_abort(
       c(
@@ -343,7 +338,7 @@ closure_read <- function(
   # Check that files read from disk are correct
   if (
     !near(as.numeric(mean_sd_str[1]), as.numeric(out$inputs$mean)) ||
-    !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
+      !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
   ) {
     cli::cli_abort(
       "Mean and SD in inputs.csv must match those \
