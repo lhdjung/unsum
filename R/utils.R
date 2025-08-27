@@ -20,11 +20,12 @@ check_closure_generate <- function(data) {
     is.list(data) &&
     any(c(5L, 6L) == length(data)) &&
     any(
-      names(data) %in% c(
-        tibbles_all,
-        c(tibbles_all, "directory"),
-        c(tibbles_all[!tibbles_all == "results"], "directory")
-      )
+      names(data) %in%
+        c(
+          tibbles_all,
+          c(tibbles_all, "directory"),
+          c(tibbles_all[!tibbles_all == "results"], "directory")
+        )
     ) &&
     inherits(data$inputs, "closure_generate")
 
@@ -192,15 +193,15 @@ check_closure_generate <- function(data) {
   f_relative_sums_up <- near(
     sum(data$frequency$f_relative),
     3
-  ) || (
+  ) ||
+    (near(
+      sum(data$frequency$f_relative),
+      0
+    ) &&
       near(
-        sum(data$frequency$f_relative),
+        sum(data$frequency$f_absolute),
         0
-      ) && near(
-          sum(data$frequency$f_absolute),
-          0
-        )
-    )
+      ))
 
   if (!f_relative_sums_up) {
     cli::cli_abort(
@@ -209,39 +210,6 @@ check_closure_generate <- function(data) {
         (or 0, if `f_absolute` does).",
         "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
       ),
-      call = rlang::caller_env()
-    )
-  }
-
-  # The remaining checks assume that a "samples" column is present, which is not
-  # the case with all settings of a reading function like `closure_read()`.
-  if (!any(names(data$results) == "sample")) {
-    return(invisible(NULL))
-  }
-
-  all_results_integer <- data$results$sample |>
-    vapply(
-      FUN = function(x) typeof(x) == "integer",
-      FUN.VALUE = logical(1)
-    ) |>
-    all()
-
-  if (!all_results_integer) {
-    cli::cli_abort("All `results` elements must be integer vectors.")
-  }
-
-  n <- data$inputs$n
-
-  all_results_length_n <- data$results$sample |>
-    vapply(
-      FUN = function(x) length(x) == n,
-      FUN.VALUE = logical(1)
-    ) |>
-    all()
-
-  if (!all_results_length_n) {
-    cli::cli_abort(
-      message = "All `results` must have length `n` ({n}).",
       call = rlang::caller_env()
     )
   }
@@ -354,7 +322,6 @@ check_scale <- function(
 # length 1, and is not `NA`. Multiple allowed types are often `c("double",
 # "integer")` which allows any numeric value, but no values of any other types.
 check_value <- function(x, type, allow_null = FALSE) {
-
   if (allow_null && is.null(x)) {
     return(invisible(NULL))
   }
@@ -384,8 +351,8 @@ check_value <- function(x, type, allow_null = FALSE) {
 check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
   if (
     any(t == typeof(x)) ||
-    (allow_null && is.null(x)) ||
-    (is.integer(x) && any(t == "double"))
+      (allow_null && is.null(x)) ||
+      (is.integer(x) && any(t == "double"))
   ) {
     return(invisible(NULL))
   }
@@ -494,11 +461,15 @@ prepare_folder_mean_sd_n <- function(inputs, path, technique) {
   write(
     x = paste0(
       "DO NOT CHANGE THIS FOLDER OR ITS CONTENTS.\n\n",
-      "Results of the ", technique, " technique are currently being written ",
+      "Results of the ",
+      technique,
+      " technique are currently being written ",
       "to the results.parquet file (unless the process was interrupted). ",
       "This message will be overwritten once the process has finished.\n\n",
       "For more information, visit:\n",
-      "https://lhdjung.github.io/unsum/reference/", lowtech, "_generate.html"
+      "https://lhdjung.github.io/unsum/reference/",
+      lowtech,
+      "_generate.html"
     ),
     file = connection
   )
@@ -535,17 +506,29 @@ write_final_info_txt <- function(path, technique) {
   # Create or overwrite info.txt
   write(
     x = paste0(
-      "This folder contains the results of ", technique, ", created by ",
+      "This folder contains the results of ",
+      technique,
+      ", created by ",
       "the R package unsum.\n\n",
       "To load a summary of these results into R, use:\n",
-      "unsum::", lowtech, "_read(\"", path, "\")\n\n",
+      "unsum::",
+      lowtech,
+      "_read(\"",
+      path,
+      "\")\n\n",
       "For options to load the results themselves, see ",
-      "documentation for `", lowtech, "_read()` at:\n",
-      "https://lhdjung.github.io/unsum/reference/", lowtech, "_write.html\n\n",
+      "documentation for `",
+      lowtech,
+      "_read()` at:\n",
+      "https://lhdjung.github.io/unsum/reference/",
+      lowtech,
+      "_write.html\n\n",
       "Use a different path if the folder was moved. ",
       "In any case, opening the files will require a Parquet reader. ",
       "For more information, visit:\n",
-      "https://lhdjung.github.io/unsum/reference/", lowtech, "_generate.html"
+      "https://lhdjung.github.io/unsum/reference/",
+      lowtech,
+      "_generate.html"
     ),
     file = connection
   )
@@ -576,4 +559,3 @@ as_wide_n_tibble <- function(samples_all) {
 caller_fn_name <- function(n = 1) {
   as.character(rlang::caller_call(n + 1)[[1L]])
 }
-
