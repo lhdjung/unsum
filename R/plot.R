@@ -348,29 +348,36 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #' Visualize CLOSURE data in an ECDF plot
 #'
 #' @description Call `closure_plot_ecdf()` to visualize CLOSURE results using
-#'   the data's empirical cumulative distribution function (ECDF).
-#'
-#'   A diagonal reference line benchmarks the ECDF against a hypothetical linear
-#'   relationship.
+#'   the data's empirical cumulative distribution function (ECDF). This can be
+#'   useful to display any variation between CLOSURE samples.
 #'
 #'   See [`closure_plot_bar()`] for more intuitive visuals.
 #'
 #' @details The present function was inspired by
-#'   [`rsprite2::plot_distributions()`]. However, `plot_distributions()` shows
-#'   multiple lines because it is based on SPRITE, which draws random samples of
-#'   possible datasets. CLOSURE is exhaustive, so `closure_plot_ecdf()` shows
-#'   all possible datasets in a single line by default.
+#'   [`rsprite2::plot_distributions()`] with its option `plot_type = "ecdf"`.
+#'   However, `plot_distributions()` always shows one line per (randomly drawn)
+#'   possible dataset, and it does not support the horns index or other measures
+#'   of dispersion.
 #'
-#' @param samples String (length 1). How to aggregate the samples? Either draw a
-#'   single ECDF line for the average sample (`"mean"`, the default); or draw a
-#'   separate line for each sample (`"all"`). Note: the latter option can be
-#'   very slow if many values were found.
-#' @param line_color String (length 1). Color of the ECDF line. Default is
-#'   `"#5D3FD3"`, a purple color.
+#' @param samples String (length 1). How to map the samples to ECDF lines?
+#'   - `"mean_min_max"`, the default, draws three lines: overall mean, minimum
+#'   horns index, and maximum horns index.
+#'   - `"mean"` draws a single line for the overall mean.
+#'   - `"all"` draws a separate line for each sample. This is invalid if `data`
+#'   does not include the full list of samples, and it can be very slow if many
+#'   values were found.
+#' @param line_color_single String (length 1). If `samples` is `"mean"`, this is
+#'   the color of the single ECDF line. Default is `"#5D3FD3"`, a purple color.
+#' @param line_color_multiple String (length 3). If `samples` is
+#'   `"mean_min_max"`, these are the colors of the three ECDF lines. Default is
+#'   `"royalblue4"` for the overall mean, `"deeppink"` for the minimum horns
+#'   index, and `"darkcyan"` for the maximum horns index; in this order.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
-#' @param pad Logical (length 1). Should the ECDF line be padded on the x-axis
-#'   so that it stretches beyond the data points? Default is `TRUE`.
+#' @param pad Logical (length 1). Should the ECDF lines be padded on the x-axis
+#'   so that they stretch beyond the data points? Default is `FALSE`.
+#' @param mark_decimal String (length 1). Decimal delimiter in the labels.
+#'   Default is `"."` (e.g., `"0.15"`).
 #' @inheritParams closure_plot_bar
 #'
 #' @return A ggplot object.
@@ -401,26 +408,39 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #   scale_max = 5
 # )
 # samples <- "mean_min_max"
-# line_color <- "#5D3FD3"
+# line_color_single <- "#5D3FD3"
+# line_color_multiple <- c("royalblue4", "deeppink", "darkcyan")
 # text_size <- 12
 # reference_line_alpha <- 0.6
-# pad <- TRUE
+# pad <- FALSE
+# mark_decimal <- "."
 
 closure_plot_ecdf <- function(
   data,
   samples = c("mean_min_max", "mean", "all"),
-  line_color = "#5D3FD3",
+  line_color_single = "#5D3FD3",
+  line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
   reference_line_alpha = 0.6,
-  pad = TRUE
+  pad = FALSE,
+  mark_decimal = "."
 ) {
   check_closure_generate(data)
   samples <- rlang::arg_match(samples)
 
+  check_length(line_color_single, 1L)
+  check_length(line_color_multiple, 3L)
+
   # For the reference line and the x-axis
   inputs <- data$inputs
   metrics_main <- data$metrics_main
+  metrics_horns <- data$metrics_horns
   values_unique <- inputs$scale_min:inputs$scale_max
+
+  # Horns index values for all three subsets of samples
+  h_mean <- data$metrics_horns$mean
+  h_min <- data$metrics_horns$min
+  h_max <- data$metrics_horns$max
 
   if (samples == "all") {
     # Error if the raw data are not available -- visualizing all samples is not
@@ -468,17 +488,27 @@ closure_plot_ecdf <- function(
 
       stat_ecdf_line <- ggplot2::geom_step(
         ggplot2::aes(x = value, y = ecdf),
-        color = line_color,
+        color = line_color_single,
         direction = "hv"
       )
     } else if (samples == "mean_min_max") {
       data <- data[c("samples", "value", "f_absolute")]
 
-      # Calculate ECDF directly from frequency table
+      # Necessary (and current) order of the unique values in `data$samples`
+      group_order <- c("all", "horns_min", "horns_max")
+
+      # Calculate ECDF directly from frequency table per group. As this reorders
+      # the groups implicitly, bring the groups into the same order as they were
+      # before splitting, then recombine them into a single tibble.
       data <- data |>
         split(data$samples) |>
         lapply(prepare_ecdf_freqs, pad = pad) |>
+        (function(x) x[group_order])() |>
         do.call(what = rbind)
+
+      # Apply custom legend labels
+      data$samples <- data$samples |>
+        factor(levels = group_order)
 
       stat_ecdf_line <- ggplot2::geom_step(
         ggplot2::aes(x = value, y = ecdf, color = samples, group = samples),
@@ -491,8 +521,10 @@ closure_plot_ecdf <- function(
 
   # Construct the ECDF plot
   ggplot2::ggplot(data, ggplot2::aes(x = value)) +
+
     # ECDF line:
     stat_ecdf_line +
+
     # Dashed diagonal reference line:
     ggplot2::annotate(
       geom = "segment",
@@ -503,22 +535,53 @@ closure_plot_ecdf <- function(
       y = 0,
       yend = 1
     ) +
+
     # Rest of the plot:
     ggplot2::labs(x = "Scale value", y = "Cumulative share") +
     ggplot2::scale_x_continuous(
       breaks = values_unique,
       labels = values_unique,
     ) +
+    ggplot2::scale_color_manual(
+      values = line_color_multiple,
+      labels = format_equation(
+        prefix = c("All samples", "Min variance", "Max variance"),
+        var_name = "h",
+        number = c(h_mean, h_min, h_max),
+        mark_decimal = mark_decimal
+      )
+    ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
       legend.position = if (samples == "mean_min_max") "right" else "none"
-    )
+    ) +
+    {
+      if (samples == "mean_min_max") {
+        ggplot2::labs(color = "Subset of samples")
+      } else {
+        NULL
+      }
+    }
 }
 
 
-# Helper that calculates the cumulative frequencies and the ECDF from the
-# frequency table used inside of `closure_plot_ecdf()`. Note that `data` must
-# contain these columns (and no others): samples, value, f_absolute
+# Internal helpers --------------------------------------------------------
+
+#' Add columns for cumulative frequency and ECDF
+#'
+#' Internal helper that calculates the cumulative frequencies and the ECDF from
+#' the frequency table used inside of `closure_plot_ecdf()`.
+#'
+#' @param data Data frame that contains these columns (and no others):
+#'   `samples`, `value`, `f_absolute`.
+#' @param pad Logical. Should the groups be padded with extra rows that have
+#'   zeros for frequencies? In an ECDF ggplot created manually using
+#'   `ggplot2::geom_step()`, this will have the same effect as `pad` in
+#'   `ggplot2::stat_ecdf()`.
+#'
+#' @returns Data frame with the input columns plus `cumulative_freq` and `ecdf`.
+#'
+#' @noRd
 prepare_ecdf_freqs <- function(data, pad) {
   data$cumulative_freq <- cumsum(data$f_absolute)
 
@@ -552,4 +615,41 @@ prepare_ecdf_freqs <- function(data, pad) {
 
   # Pad the data with the extra rows
   rbind(pad_start, data, pad_end)
+}
+
+
+#' Format equation labels for ggplot2
+#'
+#' Internal helper to make ggplot2 render a label like "All samples (h = 0.34)"
+#' with "h" in italics. Vectorized over all arguments. Returns a vector of
+#' expressions, not of strings.
+#'
+#' @param prefix String. Will go before the parentheses, e.g., `"All samples"`.
+#' @param var_name String. LHS of the equation. This part will be in italics;
+#'   e.g., `"h"`.
+#' @param number Numeric. RHS of the equation. Will be rounded to 2 decimal
+#'   places, e.g., `0.34`.
+#' @param mark_decimal String. Decimal sign to use in `number` , e.g., `"."`.
+#'
+#' @returns Expression to be used as a ggplot2 label. It is formatted in an
+#'   obscure style that works in ggplot2 labels but not in most other places.
+#'   Although the syntax is difficult and `ggtext::element_markdown()` offers an
+#'   easy alternative, this function does it the hard way to avoid a dependency.
+#'
+#' @noRd
+format_equation <- function(prefix, var_name, number, mark_decimal) {
+  # Spaces are represented as tildes
+  prefix <- gsub(" ", "~", prefix)
+
+  # Format the number to two decimal places with `mark_decimal` as the separator
+  number <- scales::label_number(
+    accuracy = 0.01,
+    decimal.mark = mark_decimal
+  )(number)
+
+  # Assemble a string that will make ggplot2 render `var_name` in italics
+  out <- paste0(prefix, "~(italic(", var_name, ")~`=`~", number, ")")
+
+  # Convert the string into an expression. This is required by ggplot2.
+  parse(text = out)
 }
