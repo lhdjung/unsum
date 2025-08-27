@@ -6,50 +6,63 @@
 \usage{
 closure_plot_ecdf(
   data,
-  samples = c("mean", "all"),
-  line_color = "#5D3FD3",
+  samples = c("mean_min_max", "mean", "all"),
+  line_color_single = "#5D3FD3",
+  line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
   reference_line_alpha = 0.6,
-  pad = TRUE
+  pad = FALSE,
+  mark_decimal = "."
 )
 }
 \arguments{
 \item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
 
-\item{samples}{String (length 1). How to aggregate the samples? Either draw a
-single ECDF line for the average sample (\code{"mean"}, the default); or draw a
-separate line for each sample (\code{"all"}). Note: the latter option can be
-very slow if many values were found.}
+\item{samples}{String (length 1). How to map the samples to ECDF lines?
+\itemize{
+\item \code{"mean_min_max"}, the default, draws three lines: overall mean, minimum
+horns index, and maximum horns index.
+\item \code{"mean"} draws a single line for the overall mean.
+\item \code{"all"} draws a separate line for each sample. This is invalid if \code{data}
+does not include the full list of samples, and it can be very slow if many
+values were found.
+}}
 
-\item{line_color}{String (length 1). Color of the ECDF line. Default is
-\code{"#5D3FD3"}, a purple color.}
+\item{line_color_single}{String (length 1). If \code{samples} is \code{"mean"}, this is
+the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}
+
+\item{line_color_multiple}{String (length 3). If \code{samples} is
+\code{"mean_min_max"}, these are the colors of the three ECDF lines. Default is
+\code{"royalblue4"} for the overall mean, \code{"deeppink"} for the minimum horns
+index, and \code{"darkcyan"} for the maximum horns index; in this order.}
 
 \item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
 
-\item{pad}{Logical (length 1). Should the ECDF line be padded on the x-axis
-so that it stretches beyond the data points? Default is \code{TRUE}.}
+\item{pad}{Logical (length 1). Should the ECDF lines be padded on the x-axis
+so that they stretch beyond the data points? Default is \code{FALSE}.}
+
+\item{mark_decimal}{String (length 1). Decimal delimiter in the labels.
+Default is \code{"."} (e.g., \code{"0.15"}).}
 }
 \value{
 A ggplot object.
 }
 \description{
 Call \code{closure_plot_ecdf()} to visualize CLOSURE results using
-the data's empirical cumulative distribution function (ECDF).
-
-A diagonal reference line benchmarks the ECDF against a hypothetical linear
-relationship.
+the data's empirical cumulative distribution function (ECDF). This can be
+useful to display any variation between CLOSURE samples.
 
 See \code{\link[=closure_plot_bar]{closure_plot_bar()}} for more intuitive visuals.
 }
 \details{
 The present function was inspired by
-\code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}}. However, \code{plot_distributions()} shows
-multiple lines because it is based on SPRITE, which draws random samples of
-possible datasets. CLOSURE is exhaustive, so \code{closure_plot_ecdf()} shows
-all possible datasets in a single line by default.
+\code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}} with its option \code{plot_type = "ecdf"}.
+However, \code{plot_distributions()} always shows one line per (randomly drawn)
+possible dataset, and it does not support the horns index or other measures
+of dispersion.
 }
 \examples{
 # Create CLOSURE data first:
