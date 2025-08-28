@@ -1,7 +1,6 @@
 #' Visualize horns values distribution
 #'
-#' @description Two plot functions that follow up on
-#'   [`closure_horns_analyze()`]:
+#' @description Two plot functions that follow up on [`closure_generate()`]:
 #' - `closure_plot_bar_min_max()` draws barplots of the mean samples from among
 #'   those with the minimum or maximum horns index (\eqn{h}). It displays the
 #'   typical sample with the least or most amount of variability from among all
@@ -11,7 +10,7 @@
 #'   the range of the horns index. This reveals the big picture, putting any
 #'   variability among horns values into perspective.
 #'
-#' @param data List returned by [`closure_horns_analyze()`].
+#' @param data List returned by [`closure_generate()`].
 #' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`. Which
 #'   plot(s) to show? Options are `"both"` (the default), `"min"`, and `"max"`.
 #' @param facet_labels String (length 2). Only in `closure_plot_bar_min_max()`.
@@ -59,7 +58,6 @@
 #' # of the horns index:
 #' closure_plot_horns_histogram(data)
 
-
 #' @rdname horns_plot
 #' @export
 
@@ -79,7 +77,6 @@
 
 # Arguments for this function are generated below the definition
 closure_plot_bar_min_max <- function() {
-
   check_length(facet_labels, 2L, allow_null = TRUE)
   check_length(facet_labels_parens, 1L, allow_null = TRUE)
 
@@ -148,11 +145,11 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
 #' @export
 
 closure_plot_horns_histogram <- function(
-    data,
-    bar_alpha = 0.75,
-    bar_color = "#5D3FD3",
-    bar_binwidth = 0.0025,
-    text_size = 12
+  data,
+  bar_alpha = 0.75,
+  bar_color = "#5D3FD3",
+  bar_binwidth = 0.0025,
+  text_size = 12
 ) {
   check_closure_generate(data)
 
@@ -182,4 +179,3 @@ closure_plot_horns_histogram <- function(
       panel.grid.minor.y = ggplot2::element_blank()
     )
 }
-

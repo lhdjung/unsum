@@ -19,7 +19,7 @@ closure_plot_bar(
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
+\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}} or \code{\link[=closure_read]{closure_read()}}.}
 
 \item{frequency}{String (length 1). What should the bars display? The
 default, \code{"absolute-percent"}, displays the count of each scale value and
@@ -41,7 +41,7 @@ corresponding frequencies? Default is \code{TRUE}.}
 \item{text_color}{String (length 1). Color of the frequency labels. By
 default, the same as \code{bar_color}.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
+\item{text_size}{Numeric (length 1). Base font size in pt. Default is \code{12}.}
 
 \item{text_offset}{Numeric (length 1). Distance between the text labels and
 the bars. Default is \code{0.05}.}

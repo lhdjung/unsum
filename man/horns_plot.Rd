@@ -32,7 +32,7 @@ closure_plot_horns_histogram(
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_horns_analyze]{closure_horns_analyze()}}.}
+\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
 
 \item{min_max}{String (length 1). Only in \code{closure_plot_bar_min_max()}. Which
 plot(s) to show? Options are \code{"both"} (the default), \code{"min"}, and \code{"max"}.}
@@ -66,7 +66,7 @@ corresponding frequencies? Default is \code{TRUE}.}
 \item{text_color}{String (length 1). Color of the frequency labels. By
 default, the same as \code{bar_color}.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
+\item{text_size}{Numeric (length 1). Base font size in pt. Default is \code{12}.}
 
 \item{text_offset}{Numeric (length 1). Distance between the text labels and
 the bars. Default is \code{0.05}.}
@@ -83,8 +83,7 @@ x-axis, passed on to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram
 A ggplot object.
 }
 \description{
-Two plot functions that follow up on
-\code{\link[=closure_horns_analyze]{closure_horns_analyze()}}:
+Two plot functions that follow up on \code{\link[=closure_generate]{closure_generate()}}:
 \itemize{
 \item \code{closure_plot_bar_min_max()} draws barplots of the mean samples from among
 those with the minimum or maximum horns index (\eqn{h}). It displays the
