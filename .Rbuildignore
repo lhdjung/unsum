@@ -16,3 +16,5 @@
 ^src/Makevars$
 ^src/Makevars\.win$
 ^CRAN-SUBMISSION$
+^[.]?air[.]toml$
+^\.vscode$
