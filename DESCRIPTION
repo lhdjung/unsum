@@ -18,7 +18,6 @@ Imports:
     cli,
     ggplot2,
     nanoparquet,
-    readr,
     rlang,
     roundwork,
     scales,
