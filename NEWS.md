@@ -11,11 +11,13 @@
 ## Breaking changes
 
 -   Reworked `closure_plot_ecdf()`:
-    -   It now shows 3 lines by default — overall mean, min horns index, and max horns index `(samples = "mean_min_max")`. The old default was `samples = "mean"` for a single line.
+    -   It now shows 3 lines by default — overall mean, min horns index, and max horns index `(samples = "mean_min_max")`, with a legend that includes the horns index values of each category. The old default was `samples = "mean"` for a single line and no legend.
 
     -   Accordingly, the `line_color` argument was replaced by `line_color_single` and `line_color_multiple`.
 
     -   The `pad` argument now defaults to `FALSE`.
+
+    -   Added `legend_title` and `mark_decimal` arguments.
 -   Renamed `closure_horns_histogram()` to `closure_plot_horns_histogram()`. This way, all CLOSURE plot functions start on `closure_plot_`.
 -   Redesigned `closure_read()` to control which parts are read in via the new `include` and `samples_cap` arguments.
 -   Removed `closure_horns_analyze()`. Its functionality was integrated into `closure_generate()` for simplicity and ease of use.

@@ -10,13 +10,14 @@ closure_plot_ecdf(
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
+  legend_title = NULL,
   reference_line_alpha = 0.6,
   pad = FALSE,
   mark_decimal = "."
 )
 }
 \arguments{
-\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}}.}
+\item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}} or \code{\link[=closure_read]{closure_read()}}.}
 
 \item{samples}{String (length 1). How to map the samples to ECDF lines?
 \itemize{
@@ -36,7 +37,12 @@ the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}
 \code{"royalblue4"} for the overall mean, \code{"deeppink"} for the minimum horns
 index, and \code{"darkcyan"} for the maximum horns index; in this order.}
 
-\item{text_size}{Numeric. Base font size in pt. Default is \code{12}.}
+\item{text_size}{Numeric (length 1). Base font size in pt. Default is \code{12}.}
+
+\item{legend_title}{String (length 1). The legend title is absent by default
+(\code{NULL}) because it can make the legend extend beyond the plot itself. If
+you do choose a title, consider "Subset of samples". To remove the legend
+or change its position, use \code{legend.position} in \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
@@ -62,7 +68,7 @@ The present function was inspired by
 \code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}} with its option \code{plot_type = "ecdf"}.
 However, \code{plot_distributions()} always shows one line per (randomly drawn)
 possible dataset, and it does not support the horns index or other measures
-of dispersion.
+of dispersion. Some further differences exist.
 }
 \examples{
 # Create CLOSURE data first:

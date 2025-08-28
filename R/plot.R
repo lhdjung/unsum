@@ -3,7 +3,13 @@
 # especially if and when SPRITE gets implemented in unsum!
 
 # # For interactive testing:
-# # (create `data`)
+# data <- closure_generate(
+#   mean = "3.5",
+#   sd = "1.7",
+#   n = 70,
+#   scale_min = 1,
+#   scale_max = 5
+# )
 # frequency <- "absolute-percent"
 # samples <- "mean"
 # bar_alpha <- 0.75
@@ -131,23 +137,23 @@ plot_frequency_bar <- function(
     # With multiple combined tables, only one set of labels is created.
     label_percent <- switch(
       frequency,
-      "absolute-percent" = paste0(
-        " (",
-        # Group by `samples` and apply the anonymous function to `frequency` by
-        # group (i.e., separately for "horns_min" and "horns_max", if present)
-        ave(
-          data$frequency,
-          data$samples,
-          FUN = function(x) 100 * round(x / sum(x), 2)
-        ),
-        "%)"
-      ),
-      "percent" = "%"
+      "percent" = "%",
+      "absolute-percent" = data |>
+        split(data$samples) |>
+        lapply(function(x) {
+          freqs <- x$frequency
+          percentage <- 100 * round(freqs / sum(freqs), 2)
+          paste0(" (", percentage, "%)")
+        }) |>
+        unlist(use.names = FALSE)
     )
+
     # Adjust the text offset using the height of the highest bar so that the
     # distance between text and bars is robust to very different values, such as
     # absolute vs. relative values.
     text_offset_adjusted <- text_offset * max(data$frequency)
+
+    # Prepare the text labels above the bars
     geom_text_frequency <- ggplot2::geom_text(
       ggplot2::aes(
         y = frequency + text_offset_adjusted,
@@ -232,7 +238,7 @@ plot_frequency_bar <- function(
 #'   For each scale value, the bars show how often this value appears in the
 #'   full list of possible raw data samples found by the CLOSURE algorithm.
 #'
-#' @param data List returned by [`closure_generate()`].
+#' @param data List returned by [`closure_generate()`] or [`closure_read()`].
 #' @param frequency String (length 1). What should the bars display? The
 #'   default, `"absolute-percent"`, displays the count of each scale value and
 #'   its percentage of all values. Other options are `"absolute"`, `"relative"`,
@@ -247,7 +253,7 @@ plot_frequency_bar <- function(
 #'   corresponding frequencies? Default is `TRUE`.
 #' @param text_color String (length 1). Color of the frequency labels. By
 #'   default, the same as `bar_color`.
-#' @param text_size Numeric. Base font size in pt. Default is `12`.
+#' @param text_size Numeric (length 1). Base font size in pt. Default is `12`.
 #' @param text_offset Numeric (length 1). Distance between the text labels and
 #'   the bars. Default is `0.05`.
 #' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
@@ -321,7 +327,7 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'   [`rsprite2::plot_distributions()`] with its option `plot_type = "ecdf"`.
 #'   However, `plot_distributions()` always shows one line per (randomly drawn)
 #'   possible dataset, and it does not support the horns index or other measures
-#'   of dispersion.
+#'   of dispersion. Some further differences exist.
 #'
 #' @param samples String (length 1). How to map the samples to ECDF lines?
 #'   - `"mean_min_max"`, the default, draws three lines: overall mean, minimum
@@ -336,6 +342,10 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'   `"mean_min_max"`, these are the colors of the three ECDF lines. Default is
 #'   `"royalblue4"` for the overall mean, `"deeppink"` for the minimum horns
 #'   index, and `"darkcyan"` for the maximum horns index; in this order.
+#' @param legend_title String (length 1). The legend title is absent by default
+#'   (`NULL`) because it can make the legend extend beyond the plot itself. If
+#'   you do choose a title, consider "Subset of samples". To remove the legend
+#'   or change its position, use `legend.position` in [`ggplot2::theme()`].
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF lines be padded on the x-axis
@@ -385,6 +395,7 @@ closure_plot_ecdf <- function(
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
+  legend_title = NULL,
   reference_line_alpha = 0.6,
   pad = FALSE,
   mark_decimal = "."
@@ -451,7 +462,7 @@ closure_plot_ecdf <- function(
       data <- prepare_ecdf_freqs(data, pad = pad)
 
       stat_ecdf_line <- ggplot2::geom_step(
-        ggplot2::aes(x = value, y = ecdf),
+        ggplot2::aes(x = value, y = .data$ecdf),
         color = line_color_single,
         direction = "hv"
       )
@@ -501,7 +512,11 @@ closure_plot_ecdf <- function(
     ) +
 
     # Rest of the plot:
-    ggplot2::labs(x = "Scale value", y = "Cumulative share") +
+    ggplot2::labs(
+      x = "Scale value",
+      y = "Cumulative share",
+      color = legend_title
+    ) +
     ggplot2::scale_x_continuous(
       breaks = values_unique,
       labels = values_unique,
@@ -519,14 +534,7 @@ closure_plot_ecdf <- function(
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
       legend.position = if (samples == "mean_min_max") "bottom" else "none"
-    ) +
-    {
-      if (samples == "mean_min_max") {
-        ggplot2::labs(color = NULL) #"Subset of samples")
-      } else {
-        NULL
-      }
-    }
+    )
 }
 
 
