@@ -349,6 +349,8 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'
 #'   To remove the legend or change its position, use `legend.position` in
 #'   [`ggplot2::theme()`].
+#' @param pad Logical (length 1). Should the ECDF lines be left-padded to run
+#'   all the way from the lower left to the upper right? Default is `FALSE`.
 #' @param line_color_single String (length 1). If `samples` is `"mean"`, this is
 #'   the color of the single ECDF line. Default is `"#5D3FD3"`, a purple color.
 #' @param line_color_multiple String (length 3). If `samples` is
@@ -360,8 +362,6 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'   used for the low and high ends of the gradient.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
-#' @param pad Logical (length 1). Should the ECDF lines be padded on the x-axis
-#'   so that they stretch beyond the data points? Default is `FALSE`.
 #' @param mark_decimal String (length 1). Decimal delimiter in the labels.
 #'   Default is `"."` (e.g., `"0.15"`).
 #' @inheritParams closure_plot_bar
@@ -406,11 +406,11 @@ closure_plot_ecdf <- function(
   data,
   samples = c("mean_min_max", "mean", "all"),
   legend_title = NULL,
+  pad = TRUE,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
   reference_line_alpha = 0.6,
-  pad = FALSE,
   mark_decimal = "."
 ) {
   check_closure_generate(data)
@@ -619,11 +619,16 @@ mutate_ecdf <- function(data, pad) {
     return(data)
   }
 
+  # This extends the horizontal lines to an imperceptible degree, but that
+  # is enough to clearly display the vertical lines at the scale limits. With
+  # larger values, a horizontal extension of the lines might be visible.
+  value_pad <- 0.002
+
   # Add point at the beginning
   value_first <- data$value[1]
   pad_start <- list(
     samples = data$samples[1],
-    value = value_first - 0.5,
+    value = value_first - value_pad,
     f_absolute = 0,
     ecdf = 0
   )
@@ -632,7 +637,7 @@ mutate_ecdf <- function(data, pad) {
   value_last <- data$value[length(data$value)]
   pad_end <- list(
     samples = data$samples[1],
-    value = value_last + 0.5,
+    value = value_last + value_pad,
     f_absolute = 0,
     ecdf = 1
   )

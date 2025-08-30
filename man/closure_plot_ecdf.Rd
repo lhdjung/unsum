@@ -8,11 +8,11 @@ closure_plot_ecdf(
   data,
   samples = c("mean_min_max", "mean", "all"),
   legend_title = NULL,
+  pad = TRUE,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
   reference_line_alpha = 0.6,
-  pad = FALSE,
   mark_decimal = "."
 )
 }
@@ -45,6 +45,9 @@ different one.
 To remove the legend or change its position, use \code{legend.position} in
 \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 
+\item{pad}{Logical (length 1). Should the ECDF lines be left-padded to run
+all the way from the lower left to the upper right? Default is \code{FALSE}.}
+
 \item{line_color_single}{String (length 1). If \code{samples} is \code{"mean"}, this is
 the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}
 
@@ -60,9 +63,6 @@ used for the low and high ends of the gradient.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
-
-\item{pad}{Logical (length 1). Should the ECDF lines be padded on the x-axis
-so that they stretch beyond the data points? Default is \code{FALSE}.}
 
 \item{mark_decimal}{String (length 1). Decimal delimiter in the labels.
 Default is \code{"."} (e.g., \code{"0.15"}).}
