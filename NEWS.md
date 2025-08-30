@@ -15,7 +15,7 @@
 
     -   Accordingly, the `line_color` argument was replaced by `line_color_single` and `line_color_multiple`.
 
-    -   The `pad` argument now defaults to `FALSE`.
+    -   The `pad` argument is now a string with three alternatives.
 
     -   Added `legend_title` and `mark_decimal` arguments.
 -   Renamed `closure_horns_histogram()` to `closure_plot_horns_histogram()`. This way, all CLOSURE plot functions start on `closure_plot_`.

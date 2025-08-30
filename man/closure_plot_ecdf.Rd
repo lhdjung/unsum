@@ -7,8 +7,8 @@
 closure_plot_ecdf(
   data,
   samples = c("mean_min_max", "mean", "all"),
+  pad = c("extend", "match", "stop"),
   legend_title = NULL,
-  pad = FALSE,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
@@ -31,12 +31,22 @@ index value. \emph{Note}: This is invalid if \code{data$results} does not includ
 slow or even crash your R session.
 }}
 
+\item{pad}{String (length 1). How far should the ECDF line(s) stretch?
+\itemize{
+\item \code{"extend"}, the default, draws the lines to both ends of the y-axis
+vertically and slightly beyond that horizontally, as
+\code{\link[ggplot2:stat_ecdf]{ggplot2::stat_ecdf()}} does by default.
+\item \code{"match"} draws them vertically as above, but not horizontally. \emph{Note:}
+This is currently invalid in combination with \code{samples = "all"}.
+\item \code{"stop"} does not draw the lines beyond the data points at all.
+}}
+
 \item{legend_title}{String (length 1). Defaults for the legend title depend
 on \code{samples}:
 \itemize{
 \item With \code{samples = "mean_min_max"}, the legend title is absent by default
 because it can make the legend extend beyond the plot itself. If you do
-choose a title, consider "Subset of samples".
+choose a title, consider \code{legend_title = "Subset of samples"}.
 \item With \code{samples = "mean"}, there is no legend, and hence no title.
 \item With \code{samples = "all"}, the title says "Horns index" unless you provide a
 different one.
@@ -44,10 +54,6 @@ different one.
 
 To remove the legend or change its position, use \code{legend.position} in
 \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
-
-\item{pad}{Logical (length 1). Should the ECDF lines be left-padded to run
-all the way from the lower left to the upper right? With \code{samples = "all"},
-this does not apply. Default is \code{FALSE}.}
 
 \item{line_color_single}{String (length 1). If \code{samples} is \code{"mean"}, this is
 the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}

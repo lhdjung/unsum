@@ -338,20 +338,24 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'   index value. *Note*: This is invalid if `data$results` does not include the
 #'   `samples` and `horns` columns. If many samples were found, it can be very
 #'   slow or even crash your R session.
+#' @param pad String (length 1). How far should the ECDF line(s) stretch?
+#'   - `"extend"`, the default, draws the lines to both ends of the y-axis
+#'   vertically and slightly beyond that horizontally, as
+#'   [`ggplot2::stat_ecdf()`] does by default.
+#'   - `"match"` draws them vertically as above, but not horizontally. *Note:*
+#'   This is currently invalid in combination with `samples = "all"`.
+#'   - `"stop"` does not draw the lines beyond the data points at all.
 #' @param legend_title String (length 1). Defaults for the legend title depend
 #'   on `samples`:
 #'   - With `samples = "mean_min_max"`, the legend title is absent by default
 #'   because it can make the legend extend beyond the plot itself. If you do
-#'   choose a title, consider "Subset of samples".
+#'   choose a title, consider `legend_title = "Subset of samples"`.
 #'   - With `samples = "mean"`, there is no legend, and hence no title.
 #'   - With `samples = "all"`, the title says "Horns index" unless you provide a
 #'   different one.
 #'
 #'   To remove the legend or change its position, use `legend.position` in
 #'   [`ggplot2::theme()`].
-#' @param pad Logical (length 1). Should the ECDF lines be left-padded to run
-#'   all the way from the lower left to the upper right? With `samples = "all"`,
-#'   this does not apply. Default is `FALSE`.
 #' @param line_color_single String (length 1). If `samples` is `"mean"`, this is
 #'   the color of the single ECDF line. Default is `"#5D3FD3"`, a purple color.
 #' @param line_color_multiple String (length 3). If `samples` is
@@ -395,19 +399,19 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #   scale_max = 5
 # )
 # samples <- "mean_min_max"
+# pad <- "extend"
+# legend_title <- NULL
 # line_color_single <- "#5D3FD3"
 # line_color_multiple <- c("royalblue4", "deeppink", "darkcyan")
 # text_size <- 12
-# legend_title <- NULL
 # reference_line_alpha <- 0.6
-# pad <- FALSE
 # mark_decimal <- "."
 
 closure_plot_ecdf <- function(
   data,
   samples = c("mean_min_max", "mean", "all"),
+  pad = c("extend", "match", "stop"),
   legend_title = NULL,
-  pad = FALSE,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
@@ -415,7 +419,9 @@ closure_plot_ecdf <- function(
   mark_decimal = "."
 ) {
   check_closure_generate(data)
+
   samples <- rlang::arg_match(samples)
+  pad <- rlang::arg_match(pad)
 
   check_length(line_color_single, 1L)
   check_length(line_color_multiple, 3L)
@@ -458,12 +464,16 @@ closure_plot_ecdf <- function(
       cli::cli_abort("Column `horns` missing.", call = rlang::caller_env())
     }
 
-    # Warn if the user tries to pad all samples
-    if (pad) {
-      cli::cli_alert_warning(
-        "In `closure_plot_ecdf()`, your use of `pad = TRUE` \
-        has no effect because padding is not supported when \
-        visualizing each individual sample (`samples = \"all\"`)."
+    # Error if the user tries to match the curves of all samples with the range
+    if (pad == "match") {
+      cli::cli_abort(
+        message = c(
+          "In `closure_plot_ecdf()`, matching the y-axis range is \
+          currently not supported when visualizing each individual sample.",
+          "x" = "You chose `samples = \"all\"`, but also `pad = \"match\"`.",
+          "i" = "Use `pad = \"extend\"` or `pad = \"stop\"` instead."
+        ),
+        call = rlang::caller_env()
       )
     }
 
@@ -506,7 +516,7 @@ closure_plot_ecdf <- function(
         group = .data$sample_id,
         color = .data$horns
       ),
-      pad = FALSE
+      pad = pad %in% c("extend", "match")
     )
   } else {
     data <- data$frequency
@@ -630,14 +640,16 @@ mutate_ecdf <- function(data, pad) {
   total_freq <- sum(data$f_absolute)
   data$ecdf <- cumulative_freq / total_freq
 
-  if (!pad) {
+  if (pad == "stop") {
     return(data)
   }
 
-  # This extends the horizontal lines to an imperceptible degree, but that
-  # is enough to clearly display the vertical lines at the scale limits. With
-  # larger values, a horizontal extension of the lines might be visible.
-  value_pad <- 0.002
+  # `pad = "extend"` behaves just like `pad = TRUE` in `ggplot2::stat_ecdf()`.
+  # By contrast, `pad = "match"` only extends the horizontal lines to an
+  # imperceptible degree, which is enough to clearly display the vertical
+  # lines at the scale limits. With larger values, a horizontal extension of the
+  # lines might be visible.
+  value_pad <- switch(pad, "extend" = 0.5, "match" = 0.002)
 
   # Add point at the beginning
   value_first <- data$value[1]
