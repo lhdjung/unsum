@@ -7,10 +7,10 @@
 closure_plot_ecdf(
   data,
   samples = c("mean_min_max", "mean", "all"),
+  legend_title = NULL,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
-  legend_title = NULL,
   reference_line_alpha = 0.6,
   pad = FALSE,
   mark_decimal = "."
@@ -21,13 +21,29 @@ closure_plot_ecdf(
 
 \item{samples}{String (length 1). How to map the samples to ECDF lines?
 \itemize{
-\item \code{"mean_min_max"}, the default, draws three lines: overall mean, minimum
-horns index, and maximum horns index.
+\item \code{"mean_min_max"}, the default, draws three lines: overall mean across all
+samples, mean of the samples with the minimum horns index, and mean of the
+samples with the maximum horns index.
 \item \code{"mean"} draws a single line for the overall mean.
-\item \code{"all"} draws a separate line for each sample. This is invalid if \code{data}
-does not include the full list of samples, and it can be very slow if many
-values were found.
+\item \code{"all"} draws a separate line for each sample, colored by its horns
+index value. \emph{Note}: This is invalid if \code{data$results} does not include the
+\code{samples} and \code{horns} columns. If many samples were found, it can be very
+slow or even crash your R session.
 }}
+
+\item{legend_title}{String (length 1). Defaults for the legend title depend
+on \code{samples}:
+\itemize{
+\item With \code{samples = "mean_min_max"}, the legend title is absent by default
+because it can make the legend extend beyond the plot itself. If you do
+choose a title, consider "Subset of samples".
+\item With \code{samples = "mean"}, there is no legend, and hence no title.
+\item With \code{samples = "all"}, the title says "Horns index" unless you provide a
+different one.
+}
+
+To remove the legend or change its position, use \code{legend.position} in
+\code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 
 \item{line_color_single}{String (length 1). If \code{samples} is \code{"mean"}, this is
 the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}
@@ -35,14 +51,12 @@ the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}
 \item{line_color_multiple}{String (length 3). If \code{samples} is
 \code{"mean_min_max"}, these are the colors of the three ECDF lines. Default is
 \code{"royalblue4"} for the overall mean, \code{"deeppink"} for the minimum horns
-index, and \code{"darkcyan"} for the maximum horns index; in this order.}
+index, and \code{"darkcyan"} for the maximum horns index; in this order.
+
+If \code{samples} is \code{"all"}, the colors for min and max horns index values are
+used for the low and high ends of the gradient.}
 
 \item{text_size}{Numeric (length 1). Base font size in pt. Default is \code{12}.}
-
-\item{legend_title}{String (length 1). The legend title is absent by default
-(\code{NULL}) because it can make the legend extend beyond the plot itself. If
-you do choose a title, consider "Subset of samples". To remove the legend
-or change its position, use \code{legend.position} in \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 
 \item{reference_line_alpha}{Numeric (length 1). Opacity of the diagonal
 reference line. Default is \code{0.6}.}
@@ -64,11 +78,11 @@ useful to display any variation between CLOSURE samples.
 See \code{\link[=closure_plot_bar]{closure_plot_bar()}} for more intuitive visuals.
 }
 \details{
-The present function was inspired by
-\code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}} with its option \code{plot_type = "ecdf"}.
-However, \code{plot_distributions()} always shows one line per (randomly drawn)
-possible dataset, and it does not support the horns index or other measures
-of dispersion. Some further differences exist.
+This function was inspired by \code{\link[rsprite2:plot_distributions]{rsprite2::plot_distributions()}}
+with its option \code{plot_type = "ecdf"}. However, \code{plot_distributions()}
+invariably shows one line per (randomly drawn) possible dataset, and it
+does not support the horns index or other measures of dispersion. Some
+further differences exist.
 }
 \examples{
 # Create CLOSURE data first:
