@@ -323,29 +323,41 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'
 #'   See [`closure_plot_bar()`] for more intuitive visuals.
 #'
-#' @details The present function was inspired by
-#'   [`rsprite2::plot_distributions()`] with its option `plot_type = "ecdf"`.
-#'   However, `plot_distributions()` always shows one line per (randomly drawn)
-#'   possible dataset, and it does not support the horns index or other measures
-#'   of dispersion. Some further differences exist.
+#' @details This function was inspired by [`rsprite2::plot_distributions()`]
+#'   with its option `plot_type = "ecdf"`. However, `plot_distributions()`
+#'   invariably shows one line per (randomly drawn) possible dataset, and it
+#'   does not support the horns index or other measures of dispersion. Some
+#'   further differences exist.
 #'
 #' @param samples String (length 1). How to map the samples to ECDF lines?
-#'   - `"mean_min_max"`, the default, draws three lines: overall mean, minimum
-#'   horns index, and maximum horns index.
+#'   - `"mean_min_max"`, the default, draws three lines: overall mean across all
+#'   samples, mean of the samples with the minimum horns index, and mean of the
+#'   samples with the maximum horns index.
 #'   - `"mean"` draws a single line for the overall mean.
-#'   - `"all"` draws a separate line for each sample. This is invalid if `data`
-#'   does not include the full list of samples, and it can be very slow if many
-#'   values were found.
+#'   - `"all"` draws a separate line for each sample, colored by its horns
+#'   index value. *Note*: This is invalid if `data$results` does not include the
+#'   `samples` and `horns` columns. If many samples were found, it can be very
+#'   slow or even crash your R session.
+#' @param legend_title String (length 1). Defaults for the legend title depend
+#'   on `samples`:
+#'   - With `samples = "mean_min_max"`, the legend title is absent by default
+#'   because it can make the legend extend beyond the plot itself. If you do
+#'   choose a title, consider "Subset of samples".
+#'   - With `samples = "mean"`, there is no legend, and hence no title.
+#'   - With `samples = "all"`, the title says "Horns index" unless you provide a
+#'   different one.
+#'
+#'   To remove the legend or change its position, use `legend.position` in
+#'   [`ggplot2::theme()`].
 #' @param line_color_single String (length 1). If `samples` is `"mean"`, this is
 #'   the color of the single ECDF line. Default is `"#5D3FD3"`, a purple color.
 #' @param line_color_multiple String (length 3). If `samples` is
 #'   `"mean_min_max"`, these are the colors of the three ECDF lines. Default is
 #'   `"royalblue4"` for the overall mean, `"deeppink"` for the minimum horns
 #'   index, and `"darkcyan"` for the maximum horns index; in this order.
-#' @param legend_title String (length 1). The legend title is absent by default
-#'   (`NULL`) because it can make the legend extend beyond the plot itself. If
-#'   you do choose a title, consider "Subset of samples". To remove the legend
-#'   or change its position, use `legend.position` in [`ggplot2::theme()`].
+#'
+#'   If `samples` is `"all"`, the colors for min and max horns index values are
+#'   used for the low and high ends of the gradient.
 #' @param reference_line_alpha Numeric (length 1). Opacity of the diagonal
 #'   reference line. Default is `0.6`.
 #' @param pad Logical (length 1). Should the ECDF lines be padded on the x-axis
@@ -385,6 +397,7 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 # line_color_single <- "#5D3FD3"
 # line_color_multiple <- c("royalblue4", "deeppink", "darkcyan")
 # text_size <- 12
+# legend_title <- NULL
 # reference_line_alpha <- 0.6
 # pad <- FALSE
 # mark_decimal <- "."
@@ -392,10 +405,10 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 closure_plot_ecdf <- function(
   data,
   samples = c("mean_min_max", "mean", "all"),
+  legend_title = NULL,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
-  legend_title = NULL,
   reference_line_alpha = 0.6,
   pad = FALSE,
   mark_decimal = "."
@@ -409,7 +422,6 @@ closure_plot_ecdf <- function(
   # For the reference line and the x-axis
   inputs <- data$inputs
   metrics_main <- data$metrics_main
-  metrics_horns <- data$metrics_horns
   values_unique <- inputs$scale_min:inputs$scale_max
 
   # Horns index values for all three subsets of samples
@@ -417,14 +429,24 @@ closure_plot_ecdf <- function(
   h_min <- data$metrics_horns$min
   h_max <- data$metrics_horns$max
 
+  # Will be changed if `samples` is "mean_min_max"
+  scale_legend <- NULL
+
+  # Will be changed if `samples` is "all"
+  scale_gradient <- NULL
+
   if (samples == "all") {
     # Error if the raw data are not available -- visualizing all samples is not
     # possible in this case
-    if (is.null(data$results$sample)) {
+    if (is.null(data[["results"]][["sample"]])) {
       cli::cli_abort(
         message = c(
           "Visualizing all samples requires those samples.",
-          "x" = "`samples` is \"all\" but the actual samples are not present."
+          "x" = "`samples` is \"all\" but the actual samples \
+          are not present. Most likely, they were written to disk instead.",
+          "i" = "See `closure_read()` for options to read \
+          all samples from disk. If successful, this will \
+          enable you to visualize each individual sample."
         ),
         call = rlang::caller_env()
       )
@@ -437,6 +459,10 @@ closure_plot_ecdf <- function(
       x = list(
         value = data$results$sample |>
           unlist(use.names = FALSE),
+
+        horns = data$results$horns |>
+          rep(each = inputs$n),
+
         sample_id = metrics_main$samples_all |>
           seq_len() |>
           rep(each = inputs$n)
@@ -444,12 +470,26 @@ closure_plot_ecdf <- function(
       nrow = metrics_main$values_all
     )
 
+    # Color the lines using a gradient derived from the colors for min and max
+    # horns index values
+    scale_gradient <- ggplot2::scale_color_gradient(
+      low = line_color_multiple[2],
+      high = line_color_multiple[3]
+    )
+
+    legend_position <- "right"
+
+    # With all samples, there actually is a default legend title
+    if (is.null(legend_title)) {
+      legend_title <- "Horns index"
+    }
+
     # Prepare the geom-like ggplot2 object that maps the data to the ECDF
     # line(s). Group the atomic integer values by `sample_id` if needed.
     stat_ecdf_line <- ggplot2::stat_ecdf(
       ggplot2::aes(
         group = .data$sample_id,
-        color = as.factor(.data$sample_id)
+        color = .data$horns
       ),
       pad = pad
     )
@@ -459,7 +499,9 @@ closure_plot_ecdf <- function(
     # Frequency-based ECDF plots that do not require individual samples
     if (samples == "mean") {
       data <- data[data$samples == "all", c("samples", "value", "f_absolute")]
-      data <- prepare_ecdf_freqs(data, pad = pad)
+      data <- mutate_ecdf(data, pad = pad)
+
+      legend_position <- "none"
 
       stat_ecdf_line <- ggplot2::geom_step(
         ggplot2::aes(x = value, y = .data$ecdf),
@@ -477,7 +519,7 @@ closure_plot_ecdf <- function(
       # before splitting, then recombine them into a single tibble.
       data <- data |>
         split(data$samples) |>
-        lapply(prepare_ecdf_freqs, pad = pad) |>
+        lapply(mutate_ecdf, pad = pad) |>
         (function(x) x[group_order])() |>
         do.call(what = rbind)
 
@@ -485,9 +527,30 @@ closure_plot_ecdf <- function(
       data$samples <- data$samples |>
         factor(levels = group_order)
 
+      # Prepare "stairstep" lines that go horizontal first, vertical second
+      # ("hv"). The seemingly obvious alternative, `stat_ecdf()`, would use the
+      # raw data even though the frequencies are already known.
       stat_ecdf_line <- ggplot2::geom_step(
         ggplot2::aes(x = value, y = ecdf, color = samples, group = samples),
         direction = "hv"
+      )
+
+      # The legend is only shown in this three-line case, so its labels are only
+      # prepared here
+      labels_legend <- format_equation(
+        prefix = c("All samples", "Min variance", "Max variance"),
+        var_name = "h",
+        number = c(h_mean, h_min, h_max),
+        mark_decimal = mark_decimal,
+        parse_output = TRUE
+      )
+
+      legend_position <- "bottom"
+
+      # Format the legend
+      scale_legend <- ggplot2::scale_color_manual(
+        values = line_color_multiple,
+        labels = labels_legend
       )
     } else {
       cli::cli_abort("Internal error: unhandled `samples` type.")
@@ -519,22 +582,12 @@ closure_plot_ecdf <- function(
     ) +
     ggplot2::scale_x_continuous(
       breaks = values_unique,
-      labels = values_unique,
+      labels = values_unique
     ) +
-    ggplot2::scale_color_manual(
-      values = line_color_multiple,
-      labels = format_equation(
-        prefix = c("All samples", "Min variance", "Max variance"),
-        var_name = "h",
-        number = c(h_mean, h_min, h_max),
-        mark_decimal = mark_decimal,
-        parse_output = TRUE
-      )
-    ) +
+    scale_legend +
+    scale_gradient +
     ggplot2::theme_minimal(base_size = text_size) +
-    ggplot2::theme(
-      legend.position = if (samples == "mean_min_max") "bottom" else "none"
-    )
+    ggplot2::theme(legend.position = legend_position)
 }
 
 
@@ -546,21 +599,21 @@ closure_plot_ecdf <- function(
 #' the frequency table used inside of `closure_plot_ecdf()`.
 #'
 #' @param data Data frame that contains these columns (and no others):
-#'   `samples`, `value`, `f_absolute`.
+#'   `"samples"`, `"value"`, `"f_absolute"`.
 #' @param pad Logical. Should the groups be padded with extra rows that have
 #'   zeros for frequencies? In an ECDF ggplot created manually using
 #'   `ggplot2::geom_step()`, this will have the same effect as `pad` in
 #'   `ggplot2::stat_ecdf()`.
 #'
-#' @returns Data frame with the input columns plus `cumulative_freq` and `ecdf`.
+#' @returns Data frame with the input columns plus `"ecdf"`.
 #'
 #' @noRd
-prepare_ecdf_freqs <- function(data, pad) {
-  data$cumulative_freq <- cumsum(data$f_absolute)
+mutate_ecdf <- function(data, pad) {
+  cumulative_freq <- cumsum(data$f_absolute)
 
   # Normalize to get cumulative probabilities (ECDF values)
   total_freq <- sum(data$f_absolute)
-  data$ecdf <- data$cumulative_freq / total_freq
+  data$ecdf <- cumulative_freq / total_freq
 
   if (!pad) {
     return(data)
@@ -607,10 +660,10 @@ prepare_ecdf_freqs <- function(data, pad) {
 #'   Default is `FALSE`.
 #'
 #' @returns Vector of strings (or, with `parse_output = TRUE`, expressions) to
-#'   be used as ggplot2 labels. They are formatted in an obscure style that
-#'   works in ggplot2 labels but not in most other places. Although the syntax
-#'   is difficult and `ggtext::element_markdown()` offers an easy alternative,
-#'   this function does it the hard way to avoid a dependency.
+#'   be used as ggplot2 labels. They are formatted in plotmath, a somewhat
+#'   obscure syntax for use in R graphics. Although plotmath is difficult and
+#'   `ggtext::element_markdown()` offers an easy alternative, this function does
+#'   it the hard way to avoid a dependency.
 #'
 #' @noRd
 format_equation <- function(
