@@ -350,7 +350,8 @@ formals(closure_plot_bar) <- plot_frequency_bar |>
 #'   To remove the legend or change its position, use `legend.position` in
 #'   [`ggplot2::theme()`].
 #' @param pad Logical (length 1). Should the ECDF lines be left-padded to run
-#'   all the way from the lower left to the upper right? Default is `FALSE`.
+#'   all the way from the lower left to the upper right? With `samples = "all"`,
+#'   this does not apply. Default is `FALSE`.
 #' @param line_color_single String (length 1). If `samples` is `"mean"`, this is
 #'   the color of the single ECDF line. Default is `"#5D3FD3"`, a purple color.
 #' @param line_color_multiple String (length 3). If `samples` is
@@ -406,7 +407,7 @@ closure_plot_ecdf <- function(
   data,
   samples = c("mean_min_max", "mean", "all"),
   legend_title = NULL,
-  pad = TRUE,
+  pad = FALSE,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
@@ -452,6 +453,20 @@ closure_plot_ecdf <- function(
       )
     }
 
+    # This error shouldn't occur if the initial checks work
+    if (is.null(data[["results"]][["horns"]])) {
+      cli::cli_abort("Column `horns` missing.", call = rlang::caller_env())
+    }
+
+    # Warn if the user tries to pad all samples
+    if (pad) {
+      cli::cli_alert_warning(
+        "In `closure_plot_ecdf()`, your use of `pad = TRUE` \
+        has no effect because padding is not supported when \
+        visualizing each individual sample (`samples = \"all\"`)."
+      )
+    }
+
     # Zoom in on the detailed `results` -- the key element of `data` needed
     # here. Flatten them into a single integer vector. If all samples should be
     # shown, enable grouping the values by sample using a `sample_id` column.
@@ -485,13 +500,13 @@ closure_plot_ecdf <- function(
     }
 
     # Prepare the geom-like ggplot2 object that maps the data to the ECDF
-    # line(s). Group the atomic integer values by `sample_id` if needed.
+    # line(s). Group the atomic integer values by `sample_id`.
     stat_ecdf_line <- ggplot2::stat_ecdf(
       ggplot2::aes(
         group = .data$sample_id,
         color = .data$horns
       ),
-      pad = pad
+      pad = FALSE
     )
   } else {
     data <- data$frequency
