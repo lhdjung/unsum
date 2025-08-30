@@ -8,7 +8,7 @@ closure_plot_ecdf(
   data,
   samples = c("mean_min_max", "mean", "all"),
   legend_title = NULL,
-  pad = TRUE,
+  pad = FALSE,
   line_color_single = "#5D3FD3",
   line_color_multiple = c("royalblue4", "deeppink", "darkcyan"),
   text_size = 12,
@@ -46,7 +46,8 @@ To remove the legend or change its position, use \code{legend.position} in
 \code{\link[ggplot2:theme]{ggplot2::theme()}}.}
 
 \item{pad}{Logical (length 1). Should the ECDF lines be left-padded to run
-all the way from the lower left to the upper right? Default is \code{FALSE}.}
+all the way from the lower left to the upper right? With \code{samples = "all"},
+this does not apply. Default is \code{FALSE}.}
 
 \item{line_color_single}{String (length 1). If \code{samples} is \code{"mean"}, this is
 the color of the single ECDF line. Default is \code{"#5D3FD3"}, a purple color.}
