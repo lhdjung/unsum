@@ -625,7 +625,6 @@ mutate_ecdf <- function(data, pad) {
     samples = data$samples[1],
     value = value_first - 0.5,
     f_absolute = 0,
-    cumulative_freq = 0,
     ecdf = 0
   )
 
@@ -635,7 +634,6 @@ mutate_ecdf <- function(data, pad) {
     samples = data$samples[1],
     value = value_last + 0.5,
     f_absolute = 0,
-    cumulative_freq = total_freq,
     ecdf = 1
   )
 
