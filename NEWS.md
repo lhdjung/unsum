@@ -1,5 +1,11 @@
 # unsum (development version)
 
+This is the first major version of unsum. As such, it introduces many new features, but also many breaking changes. You may need to adjust your code if you have used unsum before.
+
+In the big picture, this version unifies and consolidates the system of CLOSURE functions. It moves the horns index calculation down to the Rust level, where it is now conducted alongside CLOSURE itself. Their results are returned together. This reaffirms the central status of `closure_generate()`: every other function that uses CLOSURE results can now immediately follow up on `closure_generate()`, without any intermediaries.
+
+Another focus of this release is visualization, with new plotting functions and improvements on existing ones.
+
 ## New features
 
 -   Modified `closure_generate()`'s output to incorporate the horns index values for each generated sample, summary statistics about them, and frequencies based on the minimal and maximal horns values.
