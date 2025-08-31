@@ -3,7 +3,6 @@
 \name{horns_plot}
 \alias{horns_plot}
 \alias{closure_plot_bar_min_max}
-\alias{closure_plot_horns_histogram}
 \title{Visualize horns values distribution}
 \usage{
 closure_plot_bar_min_max(
@@ -21,14 +20,6 @@ closure_plot_bar_min_max(
   text_offset = 0.05,
   mark_thousand = ",",
   mark_decimal = "."
-)
-
-closure_plot_horns_histogram(
-  data,
-  bar_alpha = 0.75,
-  bar_color = "#5D3FD3",
-  bar_binwidth = 0.0025,
-  text_size = 12
 )
 }
 \arguments{
@@ -75,9 +66,9 @@ the bars. Default is \code{0.05}.}
 groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand}
 (e.g., \code{"20,000"}) and \code{"."} for \code{mark_decimal} (e.g., \code{"0.15"}).}
 
-\item{bar_binwidth}{Numeric (length 1). Only in
+\item{binwidth}{Numeric (length 1). Only in
 \code{closure_plot_horns_histogram()}. Width of the bins that divide up the
-x-axis, passed on to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.0025}.}
+x-axis, passed on to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.01}.}
 }
 \value{
 A ggplot object.

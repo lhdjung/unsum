@@ -8,6 +8,8 @@
 
 -   Added `closure_plot_bar_min_max()` to compare the subsets of samples with minimal and maximal variability, as measured by `horns()`.
 
+-   Added `closure_plot_horns_density()` and `closure_plot_horns_histogram()` to visualize the distribution of horns values as a whole.
+
 ## Breaking changes
 
 -   Reworked `closure_plot_ecdf()`:
@@ -18,9 +20,9 @@
     -   The `pad` argument is now a string with three alternatives.
 
     -   Added `legend_title` and `mark_decimal` arguments.
--   Renamed `closure_horns_histogram()` to `closure_plot_horns_histogram()`. This way, all CLOSURE plot functions start on `closure_plot_`.
 -   Redesigned `closure_read()` to control which parts are read in via the new `include` and `samples_cap` arguments.
 -   Removed `closure_horns_analyze()`. Its functionality was integrated into `closure_generate()` for simplicity and ease of use.
+-   Removed `closure_horns_histogram()` because its functionality has now been replaced by `closure_plot_horns_histogram()`.
 -   Removed the `rounding_error_mean` and `rounding_error_sd` arguments from `closure_generate()`. They are not needed for users. If anything, you can use the `rounding` argument instead.
 
 ## Bugfixes
