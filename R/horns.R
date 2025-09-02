@@ -131,11 +131,10 @@ horns <- function(freqs, scale_min, scale_max) {
       message = c(
         "Scale implied by `scale_min` ({scale_min}) \
         and `scale_max` ({scale_max}) must match `freqs` in length.",
-        "x" = " Scale: length {length(scale_complete)} (i.e., {scale_min} \
-        through {scale_max})",
-        "x" = "`freqs`: length {length(freqs)}"
-      ),
-      call = rlang::caller_env()
+        "x" = "Scale: length {length(scale_min:scale_max)} \
+        (i.e., {scale_min} through {scale_max})",
+        "x" = "`freqs`: length {k}"
+      )
     )
   }
 
@@ -188,7 +187,6 @@ horns_uniform <- function(scale_min, scale_max) {
 #   4 * sum(deviations^2) / (k * (k - 1)^2)
 # }
 
-
 #' @rdname horns
 #' @export
 
@@ -205,4 +203,3 @@ horns_rescaled <- function(freqs, scale_min, scale_max) {
     0.5 + 0.5 * ((h_actual - h_uniform) / (1 - h_uniform))
   }
 }
-
