@@ -2,24 +2,27 @@
 % Please edit documentation in R/horns-plot.R
 \name{horns-frequency}
 \alias{horns-frequency}
-\alias{closure_plot_horns_density}
 \alias{closure_plot_horns_histogram}
+\alias{closure_plot_horns_density}
 \title{Visualize horns index (\eqn{h}) frequencies}
 \usage{
+closure_plot_horns_histogram(
+  data,
+  alpha = 0.75,
+  color = "#5D3FD3",
+  binwidth = 0.01,
+  ref_line_color = "red",
+  text_limits = c(0.12, 0.88),
+  text_size = 12
+)
+
 closure_plot_horns_density(
   data,
   alpha = 0.75,
   color = "#5D3FD3",
-  reference_line_color = "red",
-  text_size = 12
-)
-
-closure_plot_horns_histogram(
-  data,
-  binwidth = 0.01,
-  alpha = 0.75,
-  color = "#5D3FD3",
-  reference_line_color = "red",
+  density_limits = c("none", "min_max"),
+  ref_line_color = "red",
+  text_limits = c(0.12, 0.88),
   text_size = 12
 )
 }
@@ -32,24 +35,81 @@ closure_plot_horns_histogram(
 \item{color}{String (length 1). Color of the density or bars. Default is
 \code{"#5D3FD3"}, a purple color.}
 
+\item{binwidth}{Numeric (length 1). Only in \code{closure_plot_horns_histogram()}.
+Width of the bins that divide up the x-axis, passed on to}
+
+\item{ref_line_color}{Numeric (length 1). Color of the lines that mark the
+lower and upper ends of the distribution. Default is \code{"red"}.}
+
+\item{text_limits}{Numeric (length 2). If the minimum horns index is lower
+than the first element here (default: \code{0.12}), both text labels go to the
+right of the maximum. The same applies in reverse with the maximum and the
+second element (default: \code{0.88}).}
+
 \item{text_size}{Numeric (length 1). Base font size in pt. Default is \code{12}.}
 
-\item{binwidth}{Numeric (length 1). Only in \code{closure_plot_horns_histogram()}.
-Width of the bins that divide up the x-axis, passed on to
+\item{density_limits}{String (length 1). Only in
+\code{closure_plot_horns_density()}. Which limits, if any, should the density be
+forced to fit between? Default is \code{"none"}. If set to \code{"min_max"}, this
+avoids the illusion of points beyond the limits but can lead to a U-shaped
+effect, which would also be misleading.
 \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.01}.}
+}
+\value{
+A ggplot object.
 }
 \description{
 Two functions that visualize the distribution of horns index
 values found by CLOSURE:
 \itemize{
-\item \code{closure_plot_horns_density()} smooths the distribution, emphasizing its
-shape. This is generally recommended.
 \item \code{closure_plot_horns_histogram()} bins the distribution into categories,
 emphasizing individual groups of values. You can adjust this via the
 \code{binwidth} argument.
+\item \code{closure_plot_horns_density()} smooths the distribution, emphasizing its
+shape. You can use the \code{density_limits} argument to avoid apparent density
+beyond the limits.
 }
 
 Both mark the minimum and maximum values. The x-axis always ranges from 0
 to 1. This reveals the big picture, putting any variability among horns
 values into perspective.
+}
+\examples{
+data_near_zero <- closure_generate(
+  mean = "2.1",
+  sd = "0.4",
+  n = 35,
+  scale_min = 1,
+  scale_max = 5
+)
+
+closure_plot_horns_histogram(data_near_zero)
+
+closure_plot_horns_density(data_near_zero)
+
+data_near_midpoint <- closure_generate(
+  mean = "2.8",
+  sd = "1.5",
+  n = 35,
+  scale_min = 1,
+  scale_max = 5
+)
+
+closure_plot_horns_histogram(data_near_midpoint)
+
+closure_plot_horns_density(data_near_midpoint)
+
+# Large difference between horns values occur (only?)
+# if there are no decimal places in `mean` and `sd`:
+data_wide_spread <- closure_generate(
+  mean = "3",
+  sd = "2",
+  n = 35,
+  scale_min = 1,
+  scale_max = 5
+)
+
+closure_plot_horns_histogram(data_wide_spread)
+
+closure_plot_horns_density(data_wide_spread)
 }

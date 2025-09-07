@@ -141,85 +141,21 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
   )
 
 
-#' Visualize horns index (\eqn{h}) frequencies
-#'
-#' @description Two functions that visualize the distribution of horns index
-#'   values found by CLOSURE:
-#'
-#'   - `closure_plot_horns_density()` smooths the distribution, emphasizing its
-#'   shape. This is generally recommended.
-#'   - `closure_plot_horns_histogram()` bins the distribution into categories,
-#'   emphasizing individual groups of values. You can adjust this via the
-#'   `binwidth` argument.
-#'
-#'   Both mark the minimum and maximum values. The x-axis always ranges from 0
-#'   to 1. This reveals the big picture, putting any variability among horns
-#'   values into perspective.
-#'
-#' @inheritParams closure_plot_bar
-#' @param alpha Numeric (length 1). Opacity of the density or bars. Default is
-#'   `0.75`.
-#' @param color String (length 1). Color of the density or bars. Default is
-#'   `"#5D3FD3"`, a purple color.
-#' @param binwidth Numeric (length 1). Only in `closure_plot_horns_histogram()`.
-#'   Width of the bins that divide up the x-axis, passed on to
-#'   [`ggplot2::geom_histogram()`]. Default is `0.01`.
-#' @param text_size Numeric (length 1). Base font size in pt. Default is `12`.
-#'
-#' @name horns-frequency
-#' @export
-
-closure_plot_horns_density <- function(
-  data,
-  alpha = 0.75,
-  color = "#5D3FD3",
-  reference_line_color = "red",
-  text_size = 12
-) {
-  plot_horns_frequency(
-    data = data,
-    type = "density",
-    alpha = alpha,
-    color = color,
-    reference_line_color = reference_line_color,
-    text_size = text_size
-  )
-}
-
-#' @rdname horns-frequency
-#' @export
-
-closure_plot_horns_histogram <- function(
-  data,
-  binwidth = 0.01,
-  alpha = 0.75,
-  color = "#5D3FD3",
-  reference_line_color = "red",
-  text_size = 12
-) {
-  plot_horns_frequency(
-    data = data,
-    type = "histogram",
-    alpha = alpha,
-    color = color,
-    binwidth = binwidth,
-    reference_line_color = reference_line_color,
-    text_size = text_size
-  )
-}
-
-
 # Internal basis of the `*_plot_horns_*()` functions
 plot_horns_frequency <- function(
   data,
   type,
-  alpha,
-  color,
-  binwidth,
-  reference_line_color,
-  text_size
+  alpha = 0.75,
+  color = "#5D3FD3",
+  binwidth = 0.01,
+  density_limits = c("none", "min_max"),
+  ref_line_color = "red",
+  text_limits = c(0.12, 0.88),
+  text_size = 12
 ) {
   check_closure_generate(data)
+
+  check_length(text_limits, 2L)
 
   h_min <- data$metrics_horns$min
   h_max <- data$metrics_horns$max
@@ -244,11 +180,11 @@ plot_horns_frequency <- function(
   # If the minimum horns value is too close to 0 for the min label to fit on its
   # left, move the max label a bit lower and the min label above it. The same
   # applies vice versa with 1 and the maximum value.
-  if (h_min < 0.12) {
+  if (h_min < text_limits[1]) {
     position_x_min <- position_x_max
     hjust_min <- hjust_max
     vjust_max <- 3.5
-  } else if (h_max > 0.88) {
+  } else if (h_max > text_limits[2]) {
     position_x_max <- position_x_min
     hjust_max <- hjust_min
     vjust_max <- 3.5
@@ -265,6 +201,7 @@ plot_horns_frequency <- function(
     parse_output = FALSE
   )
 
+  # Plot type determines geom to be shown
   geom_frequency <- switch(
     type,
     "density" = ggplot2::stat_density(
@@ -273,7 +210,12 @@ plot_horns_frequency <- function(
       fill = color,
       color = color,
       linewidth = 0.5,
-      bw = 0.005
+      bw = 0.005,
+      # `NULL` if not matched
+      bounds = switch(
+        density_limits,
+        "min_max" = c(h_min, h_max)
+      )
     ),
     "histogram" = ggplot2::geom_histogram(
       ggplot2::aes(x = .data$horns),
@@ -295,7 +237,7 @@ plot_horns_frequency <- function(
       xintercept = c(h_min, h_max),
       linetype = 2,
       alpha = 0.75,
-      color = reference_line_color,
+      color = ref_line_color,
       size = 0.75
     ) +
     ggplot2::annotate(
@@ -319,3 +261,125 @@ plot_horns_frequency <- function(
       panel.grid.minor.y = ggplot2::element_blank()
     )
 }
+
+
+#' Visualize horns index (\eqn{h}) frequencies
+#'
+#' @description Two functions that visualize the distribution of horns index
+#'   values found by CLOSURE:
+#'
+#'   - `closure_plot_horns_histogram()` bins the distribution into categories,
+#'   emphasizing individual groups of values. You can adjust this via the
+#'   `binwidth` argument.
+#'   - `closure_plot_horns_density()` smooths the distribution, emphasizing its
+#'   shape. You can use the `density_limits` argument to avoid apparent density
+#'   beyond the limits.
+#'
+#'   Both mark the minimum and maximum values. The x-axis always ranges from 0
+#'   to 1. This reveals the big picture, putting any variability among horns
+#'   values into perspective.
+#'
+#' @inheritParams closure_plot_bar
+#' @param alpha Numeric (length 1). Opacity of the density or bars. Default is
+#'   `0.75`.
+#' @param color String (length 1). Color of the density or bars. Default is
+#'   `"#5D3FD3"`, a purple color.
+#' @param binwidth Numeric (length 1). Only in `closure_plot_horns_histogram()`.
+#'   Width of the bins that divide up the x-axis, passed on to
+#' @param density_limits String (length 1). Only in
+#'   `closure_plot_horns_density()`. Which limits, if any, should the density be
+#'   forced to fit between? Default is `"none"`. If set to `"min_max"`, this
+#'   avoids the illusion of points beyond the limits but can lead to a U-shaped
+#'   effect, which would also be misleading.
+#'   [`ggplot2::geom_histogram()`]. Default is `0.01`.
+#' @param ref_line_color Numeric (length 1). Color of the lines that mark the
+#'   lower and upper ends of the distribution. Default is `"red"`.
+#' @param text_limits Numeric (length 2). If the minimum horns index is lower
+#'   than the first element here (default: `0.12`), both text labels go to the
+#'   right of the maximum. The same applies in reverse with the maximum and the
+#'   second element (default: `0.88`).
+#' @param text_size Numeric (length 1). Base font size in pt. Default is `12`.
+#'
+#' @name horns-frequency
+#' @export
+#'
+#' @return A ggplot object.
+#'
+#' @examples
+#' data_near_zero <- closure_generate(
+#'   mean = "2.1",
+#'   sd = "0.4",
+#'   n = 35,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' closure_plot_horns_histogram(data_near_zero)
+#'
+#' closure_plot_horns_density(data_near_zero)
+#'
+#' data_near_midpoint <- closure_generate(
+#'   mean = "2.8",
+#'   sd = "1.5",
+#'   n = 35,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' closure_plot_horns_histogram(data_near_midpoint)
+#'
+#' closure_plot_horns_density(data_near_midpoint)
+#'
+#' # Large difference between horns values occur (only?)
+#' # if there are no decimal places in `mean` and `sd`:
+#' data_wide_spread <- closure_generate(
+#'   mean = "3",
+#'   sd = "2",
+#'   n = 35,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' closure_plot_horns_histogram(data_wide_spread)
+#'
+#' closure_plot_horns_density(data_wide_spread)
+
+closure_plot_horns_histogram <- function() {
+  plot_horns_frequency(
+    data = data,
+    type = "histogram",
+    alpha = alpha,
+    color = color,
+    binwidth = binwidth,
+    ref_line_color = ref_line_color,
+    text_limits = text_limits,
+    text_size = text_size
+  )
+}
+
+formals(closure_plot_horns_histogram) <- plot_horns_frequency |>
+  formals() |>
+  formals_remove("type", "density_limits")
+
+
+#' @rdname horns-frequency
+#' @export
+
+closure_plot_horns_density <- function() {
+  density_limits <- rlang::arg_match(density_limits)
+
+  plot_horns_frequency(
+    data = data,
+    type = "density",
+    alpha = alpha,
+    color = color,
+    density_limits = density_limits,
+    ref_line_color = ref_line_color,
+    text_limits = text_limits,
+    text_size = text_size
+  )
+}
+
+formals(closure_plot_horns_density) <- plot_horns_frequency |>
+  formals() |>
+  formals_remove("type", "binwidth")
