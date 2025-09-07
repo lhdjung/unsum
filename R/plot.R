@@ -556,7 +556,12 @@ closure_plot_ecdf <- function(
       # ("hv"). The seemingly obvious alternative, `stat_ecdf()`, would use the
       # raw data even though the frequencies are already known.
       stat_ecdf_line <- ggplot2::geom_step(
-        ggplot2::aes(x = value, y = ecdf, color = samples, group = samples),
+        ggplot2::aes(
+          x = value,
+          y = .data$ecdf,
+          color = samples,
+          group = samples
+        ),
         direction = "hv"
       )
 

@@ -5,10 +5,6 @@
 #'   those with the minimum or maximum horns index (\eqn{h}). It displays the
 #'   typical sample with the least or most amount of variability from among all
 #'   CLOSURE samples.
-#' - `closure_plot_horns_histogram()` draws a quick barplot of the distribution
-#'   of horns values. The scale is fixed between 0 and 1, so it is aligned with
-#'   the range of the horns index. This reveals the big picture, putting any
-#'   variability among horns values into perspective.
 #'
 #' @param data List returned by [`closure_generate()`].
 #' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`. Which
@@ -20,9 +16,6 @@
 #'   `closure_plot_bar_min_max()`. Italicized part of the facet labels inside
 #'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
 #'   details. Default is `"h"`.
-#' @param binwidth Numeric (length 1). Only in
-#'   `closure_plot_horns_histogram()`. Width of the bins that divide up the
-#'   x-axis, passed on to [`ggplot2::geom_histogram()`]. Default is `0.01`.
 #' @inheritParams closure_plot_bar
 #'
 #' @details By default, both faceted plots in `closure_plot_bar_min_max()` have

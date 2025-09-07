@@ -65,10 +65,6 @@ the bars. Default is \code{0.05}.}
 \item{mark_thousand, mark_decimal}{Strings (length 1 each). Delimiters between
 groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand}
 (e.g., \code{"20,000"}) and \code{"."} for \code{mark_decimal} (e.g., \code{"0.15"}).}
-
-\item{binwidth}{Numeric (length 1). Only in
-\code{closure_plot_horns_histogram()}. Width of the bins that divide up the
-x-axis, passed on to \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}. Default is \code{0.01}.}
 }
 \value{
 A ggplot object.
@@ -80,10 +76,6 @@ Two plot functions that follow up on \code{\link[=closure_generate]{closure_gene
 those with the minimum or maximum horns index (\eqn{h}). It displays the
 typical sample with the least or most amount of variability from among all
 CLOSURE samples.
-\item \code{closure_plot_horns_histogram()} draws a quick barplot of the distribution
-of horns values. The scale is fixed between 0 and 1, so it is aligned with
-the range of the horns index. This reveals the big picture, putting any
-variability among horns values into perspective.
 }
 }
 \details{
