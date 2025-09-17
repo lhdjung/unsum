@@ -70,6 +70,21 @@ a scale from \eqn{1} to \eqn{k}. The only reason why the \code{horns()} function
 still takes \code{scale_min} and \code{scale_max} arguments is safety: if \code{freqs} is
 misstated such that its length is different from the number of points on
 the scale implied by those two arguments, there will be an error.
+\subsection{Maximum possible variance}{
+
+The "maximum possible" variance here is based on scale range only
+(Popoviciu 1935):
+
+\deqn{ s_{\max} = \frac{1}{4} \ (k - 1)^2 }
+
+It is deliberately agnostic to the mean and the sample size. These will
+influence the maximum variance in a broader sense, but in the context of
+CLOSURE, they are only relevant for generating possible samples. The number
+of scale points, \eqn{k}, is an intrinsic property of those samples. Once
+they are available, it is sensible to assess their variability in terms of
+the greatest variance that can occur in any sample with the same \eqn{k}.
+}
+
 \subsection{Uniform distribution}{
 
 Although \code{horns_uniform()} is implemented as a wrapper around \code{horns()}
@@ -134,4 +149,8 @@ horns(c(200, 50, 30, 20, 0), 1, 5)
 horns(c(150, 100, 50, 0, 0), 1, 5)
 
 horns(c(100, 40, 20, 40, 100), 1, 5)
+}
+\references{
+Popoviciu, T. (1935). Sur les équations algébriques ayant toutes
+leurs racines réelles. \emph{Mathematica} (Cluj), 9, 129-145.
 }

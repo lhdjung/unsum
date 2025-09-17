@@ -47,6 +47,20 @@
 #'   misstated such that its length is different from the number of points on
 #'   the scale implied by those two arguments, there will be an error.
 #'
+#'   ## Maximum possible variance
+#'
+#'   The "maximum possible" variance here is based on scale range only
+#'   (Popoviciu 1935):
+#'
+#'   \deqn{ s_{\max} = \frac{1}{4} \ (k - 1)^2 }
+#'
+#'   It is deliberately agnostic to the mean and the sample size. These will
+#'   influence the maximum variance in a broader sense, but in the context of
+#'   CLOSURE, they are only relevant for generating possible samples. The number
+#'   of scale points, \eqn{k}, is an intrinsic property of those samples. Once
+#'   they are available, it is sensible to assess their variability in terms of
+#'   the greatest variance that can occur in any sample with the same \eqn{k}.
+#'
 #'   ## Uniform distribution
 #'
 #'   Although `horns_uniform()` is implemented as a wrapper around `horns()`
@@ -89,6 +103,9 @@
 #'   implements CLOSURE but does not currently export horns functions for users.
 #'
 #' @returns Numeric (length 1).
+#'
+#' @references Popoviciu, T. (1935). Sur les équations algébriques ayant toutes
+#'   leurs racines réelles. *Mathematica* (Cluj), 9, 129-145.
 #'
 #' @export
 #'

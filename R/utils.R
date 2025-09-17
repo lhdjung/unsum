@@ -117,6 +117,8 @@ check_closure_generate <- function(data) {
     )
   )
 
+  # (Long intermezzo before the final tibble check)
+
   is_reading_class <- data$inputs |>
     class() |>
     grepl("^closure_read_include_", x = _)
