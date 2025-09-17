@@ -18,3 +18,4 @@
 ^CRAN-SUBMISSION$
 ^[.]?air[.]toml$
 ^\.vscode$
+^vignettes/articles$

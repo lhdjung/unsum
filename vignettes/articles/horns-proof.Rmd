@@ -1,0 +1,179 @@
+---
+title: "Proving the correctness of the horns index"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The horns index ($h$) is the variance in an ordinal frequency distribution on a scale with $k$ points expressed as a proportion of the maximum variance that is possible on any $k$-point scale. It is defined as
+
+$$
+h = 4 \ \frac
+{\sum_{i=1}^{k} \ f_i \ (i - \bar{s})^2}
+{(k - 1)^2}
+$$
+
+where $k$ is the number of scale points, $f_i$ is the relative frequency of the $i$th point on an ordinal scale from $1$ to $k$ (both inclusive), and $\bar{s}$ is the weighted mean frequency.
+
+The numerator ranges from $0$ to $\frac{1}{4} (k - 1)^2$, so its upper bound is determined by the scale bounds. These are either the number of scale points (e.g., with a Likert scale) or empirical minimum and maximum values.
+
+For a scale with bounds $1$ and $k$, the maximum dispersion occurs if 50% of the data points are at $1$ and 50% are at $k$. The same applies to any scale with $k$ points, and the resultant $h$ will be equal because its value only depends on the frequency distribution, not the original scale values. As an intuitive example, imagine a histogram of values on a scale from 21 to 27. The frequencies depicted in the histogram would remain the same if the 21-27 labels were replaced by 1-7 labels, or labels corresponding to any other 7-point ordinal scale.
+
+### The denominator is the maximum possible variance given scale limits, times 4
+
+Let $\bar{s}_{\max}$ and $\sigma^2_{\max}$ be the mean and the variance in this maximal scenario. The mean is the midpoint, i.e.,
+
+$$
+\bar{s}_{\max} = \frac{k + 1}{2}
+$$
+
+The variance is the mean squared deviation of the two extreme values:
+
+$$
+\sigma^2_{\max} = \frac{1}{2} \ \left[ (1 - \bar{s})^2 + (k - \bar{s})^2 \right]
+$$
+
+Substituting the mean yields
+
+$$
+\sigma^2_{\max} = \frac{1}{2} \ \left[ \left( 1 - \frac{k + 1}{2} \right)^2 + \left( k - \frac{k + 1}{2} \right) ^2 \right]
+$$
+
+Simplifying the first term:
+
+$$
+\begin{aligned}
+\left( 1 - \frac{k + 1}{2} \right)^2
+  &= \left( 1 - \frac{k}{2} - \frac{1}{2} \right)^2 \\
+  &= \left( \frac{1}{2} - \frac{k}{2} \right)^2 \\
+  &= \left( \frac{1 - k}{2} \right)^2 \\
+  &= \frac{1}{4} \ (1 - k)^2
+\end{aligned}
+$$
+
+Simplifying the second term:
+
+$$
+\begin{aligned}
+\left( k - \frac{k + 1}{2} \right)^2 &= \left( k - \frac{k}{2} - \frac{1}{2} \right)^2 \\
+  &= \left( \frac{k}{2} - \frac{1}{2} \right)^2 \\
+  &= \left( \frac{k - 1}{2} \right)^2 \\
+  &= \frac{1}{4} \ (k - 1)^2
+\end{aligned}
+$$
+
+Due to squaring, the first term equals the second, and it follows that it is equal to the maximum variance:
+
+$$
+\begin{aligned}
+\sigma^2_{\max} &= \frac{1}{2} \ \left[ \frac{1}{4} \ (k - 1)^2 + \frac{1}{4} \ (k - 1)^2 \right] \\
+  &= \frac{1}{4} \ (k - 1)^2
+\end{aligned}
+$$
+
+This is simply the bound imposed by Popoviciu's inequality, which asserts that
+
+$$
+\sigma^2 \leq \frac{1}{4} \ (M - m)^2
+$$
+
+where $M$ is the maximum and $m$ is the minimum. In the present context of ordinal scales, the range $M - m$ is equal to $k - 1$ for any $k$-point scale.
+
+In the final $h$ formula, the denominator is changed to $(k - 1)^2$ to avoid nested fractions. This change is canceled out via multiplying the numerator by $4$.
+
+### The numerator is the extent to which the actual variance approximates the maximum possible variance given scale limits
+
+The numerator is the weighted sum of squares. The mean $\bar{s}$ is derived from the relative frequencies:
+
+$$
+\begin{aligned}
+\bar{s} = \sum_{i=1}^{k} i \ f_i
+\end{aligned}
+$$
+
+In the maximal case, $f_i$ is $\frac{1}{2}$ at both extremes, $f_1$ and $f_k$; but $0$ at all other points. The mean, $\bar{s}$, is $\bar{s}_{max}$, i.e., $\frac{k + 1}{2}$. Thus, the weighted sum of squares is the sum of two terms only.
+
+From the identity established above, it trivially follows that, for $f_1 = f_k = \frac{1}{2}$,
+
+$$
+\begin{aligned}
+\sum_{i=1}^{k} f_i \ (i - \bar{s})^2 &= \frac{1}{2} \left(1 - \frac{k + 1}{2} \right)^2 + \frac{1}{2} \left(k - \frac{k + 1}{2} \right)^2 \\
+  &= 2 \left[ \frac{1}{2} \left(k - \frac{k + 1}{2} \right)^2 \right] \\
+  &= \left(k - \frac{k + 1}{2} \right)^2 \\
+  &= \frac{1}{4} \ (k - 1)^2
+\end{aligned}
+$$
+
+Thus, in the maximal case, $4$ times the numerator of the $h$ formula is equal to the denominator, and $h$ is $1$.
+
+#### Separate, equivalent proof
+
+The following again holds for $f_1 = f_k = \frac{1}{2}$.
+
+With $i = 1$: $$
+\begin{aligned}
+\frac{1}{2} \left( 1 - \frac{k + 1}{2} \right)^2 &= \frac{1}{2} \left( \frac{2 - (k + 1)}{2} \right)^2 \\
+  &= \frac{1}{2} \cdot \frac{(1 - k)^2}{4} \\
+  &= \frac{(k - 1)^2}{8}
+\end{aligned}
+$$
+
+With $i = k$:
+
+$$
+\begin{aligned}
+\frac{1}{2} \left( k - \frac{k + 1}{2} \right)^2 &= \frac{1}{2} \left( \frac{2k - (k + 1)}{2} \right)^2 \\
+  &= \frac{1}{2} \cdot \frac{(k - 1)^2}{4} \\
+  &= \frac{(k - 1)^2}{8}
+\end{aligned}
+$$
+
+Therefore, the same result as above obtains:
+
+$$
+\begin{aligned}
+\sum_{i=1}^{k} f_i \ (i - \bar{s})^2 &= 2 \ \frac{(k - 1)^2}{8} \\
+  &= \frac{1}{4} \ (k - 1)^2
+\end{aligned}
+$$
+
+Conversely, in the minimal case, all observations have the same value. The weighted sum of squares is trivially $0$, and so is $h$. In the same way, $h$ is never negative because the sum of squares never is.
+
+### The $h$ of a perfect uniform distribution can be obtained using the $h_u$ formula
+
+The horns index in the uniform case can be expressed as
+
+$$
+h_u = 4 \ \frac{\sum_{i=1}^{k} \ (i - \bar{s})^2}{k \ (k - 1)^2}
+$$
+
+Note the absence of an $f_i$ term which is present in the numerator of the $h$ formula for the general case. Here, however, every value has the same frequency:
+
+$$
+\forall \ i \in \{ 1, \ 2, \ ..., \ k \}: \ f_i = \frac{1}{k}
+$$
+
+Factoring out $f_i$ and multiplying it with the fraction as a whole yields the $h_u$ formula above:
+
+$$
+\begin{aligned}
+h_u
+  &= 4 \ \frac
+{\sum_{i=1}^{k} \ \frac{1}{k} \ (i - \bar{s})^2}
+{(k - 1)^2} \\
+  &= \frac{1}{k} \left( 4 \ \frac
+{\sum_{i=1}^{k} \ (i - \bar{s})^2}
+{(k - 1)^2} \right) \\
+  &= 4 \ \frac{\sum_{i=1}^{k} \ (i - \bar{s})^2}{k \ (k - 1)^2}
+\end{aligned}
+$$
+
+TODO: Check whether an additional proof for uniform horns can be given using the formula $\frac{1}{12} \ (k - 1)^2$; see <https://statproofbook.github.io/P/cuni-var.html>
