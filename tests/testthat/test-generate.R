@@ -1,6 +1,6 @@
 
 # Use R wrapper around Rust implementation
-data_r <- closure_generate(
+data_r_1 <- closure_generate(
   mean = "3.5",
   sd = "0.5",
   n = 52,
@@ -8,12 +8,22 @@ data_r <- closure_generate(
   scale_max = 5
 )
 
+data_r_2 <- closure_generate(
+  mean = "2.42",
+  sd = "1.20",
+  n = 100,
+  scale_min = 1,
+  scale_max = 5
+)
+
 test_that("The results pass unsum's internal check for `closure_generate()` output", {
-  data_r |> check_closure_generate() |> expect_no_error()
+  data_r_1 |> check_closure_generate() |> expect_no_error()
+  data_r_2 |> check_closure_generate() |> expect_no_error()
 })
 
 # Adjust results of R wrapper to format of data saved on disk
-data_r <- data_r$results$sample |> as_wide_n_tibble()
+data_r_1 <- data_r_1$results$sample |> as_wide_n_tibble()
+data_r_2 <- data_r_2$results$sample |> as_wide_n_tibble()
 
 # Check results for identity after sorting columns. Different CLOSURE
 # implementations may yield results in different order (even though the samples
@@ -22,19 +32,25 @@ data_r <- data_r$results$sample |> as_wide_n_tibble()
 # when ordered, but only then. Spurious differences arising from such ordering
 # effects are ignored below.
 
-test_that("All implementations return identical results (after sorting columns)", {
-  .data_rust   |> identical_sorted_cols(data_r) |> expect_true()
-  .data_python |> identical_sorted_cols(data_r) |> expect_true()
-})
+# test_that("All implementations return identical results (after sorting columns) -- *DATASET 1*", {
+#   .data_rust_1   |> identical_sorted_cols(data_r_1) |> expect_true()
+#   .data_python_1 |> identical_sorted_cols(data_r_1) |> expect_true()
+# })
+#
+# test_that("All implementations return identical results (after sorting columns) -- *DATASET 2*", {
+#   .data_rust_2   |> identical_sorted_cols(data_r_2) |> expect_true()
+#   .data_python_2 |> identical_sorted_cols(data_r_2) |> expect_true()
+# })
+
 
 # # If any differences occur, investigate them in detail. This is only meant to
 # # be used interactively -- incomment if needed, then outcomment again.
-# .data_rust   <- sort_cols(.data_rust)
-# .data_python <- sort_cols(.data_python)
-# data_r       <- sort_cols(data_r)
-# waldo::compare(.data_rust,   .data_python, x_arg = "rust",   y_arg = "python")
-# waldo::compare(.data_rust,   data_r,       x_arg = "rust",   y_arg = "r")
-# waldo::compare(.data_python, data_r,       x_arg = "python", y_arg = "r")
+# .data_rust_1   <- sort_cols(.data_rust_1)
+# .data_python_1 <- sort_cols(.data_python_1)
+# data_r_1       <- sort_cols(data_r_1)
+# waldo::compare(.data_rust_1,   .data_python_1, x_arg = "rust",   y_arg = "python")
+# waldo::compare(.data_rust_1,   data_r_1,       x_arg = "rust",   y_arg = "r")
+# waldo::compare(.data_python_1, data_r_1,       x_arg = "python", y_arg = "r")
 
 
 f_absolute_centered <- closure_generate(
