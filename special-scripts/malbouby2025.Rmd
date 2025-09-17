@@ -32,7 +32,7 @@ The results in detail:
 data_bmi
 ```
 
-Among the metrics, a particularly interesting quantity is the horns index ($h$). It ranges from 0 to 1, where 0 means that all observations have the same value, and 1 represents a sample that is evenly split between the scale limits, with no observations in between. In this way, $h$ quantifies the variability among the reconstructed values given their scale limits. Here, $h$ is 0.76, a relatively high value. For reference, a uniform distribution with 8 scale values, such as those from 27 to 34 here, would only have an $h$ of 0.43, as the `horns_uniform` column shows.
+A particularly interesting quantity is presented in `metrics_horns`: the horns index ($h$). It ranges from 0 to 1, where 0 means that all observations have the same value, and 1 represents a sample that is evenly split between the scale limits, with no observations in between. In this way, $h$ quantifies the variability among the reconstructed values given their scale limits: it is the actual variance as a proportion of the maximum possible variance. Here, the mean $h$ is 0.76 (with a range of 0.04), a relatively high value. For reference, a uniform distribution with 8 scale values, such as those from 27 to 34 here, would only have an $h$ of 0.43, as the `uniform` column shows.
 
 This is remarkable given that one would not expect a uniform distribution, let alone a sample as polarized as the one implied by the summary statistics, to result from a BMI measurement. Rather, one would expect a stronger central tendency.
 
@@ -47,30 +47,27 @@ closure_plot_ecdf(data_bmi)
 
 However, one possible response by the authors might be that their original sample looked very different. CLOSURE provides the average sample that is possible given the summary statistics but, one may object, it cannot rule out important differences between the samples.
 
-This claim can be tested as follows:
-
-```{r}
-data_bmi_horns <- closure_horns_analyze(data_bmi)
-data_bmi_horns
-```
-
 This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability seem negligible. In particular, the original sample cannot have had less variability than the left panel, and even this graph shows a starkly bimodal distribution where observations are concentrated at the extremes. Correspondingly, the horns indices of the two extreme distributions only differ by 0.04 (the range is 0 to 1).
 
 ```{r}
-closure_plot_bar_min_max(data_bmi_horns, frequency = "absolute")
+closure_plot_bar_min_max(data_bmi, frequency = "percent")
 ```
 
 The lack of meaningful differences between the samples is also demonstrated by a histogram of the $h$ values across all samples, plotted on the 0-1 range of $h$:
 
 ```{r}
-closure_plot_horns_histogram(data_bmi_horns)
+closure_plot_horns_histogram(data_bmi)
+```
+
+An alternative visualization clearly shows where the subsets of CLOSURE samples with minimal and maximal horns indices diverge. The main result, however, is that they hardly diverge at all:
+
+```{r}
+closure_plot_ecdf(data_bmi)
 ```
 
 ## CLOSURE analysis: age
 
 We can try to conduct a similar analysis with regards to the reported age values:
-
-*samples of n=30 with a mean of 17.2, SD of 5.2, minimum of 12 and maximum of 25*
 
 ```{r}
 data_age <- closure_generate(
@@ -86,19 +83,18 @@ data_age <- closure_generate(
 The average sample is similarly polarized as the one for BMI, although its horns index is somewhat lower (0.61 versus 0.76) and it is slightly left-skewed, with twice as many observations at the lower bound than at the upper bound.
 
 ```{r}
-closure_plot_bar(data_age)
+closure_plot_bar(data_age, frequency = "percent")
 ```
 
 Determining the lower and upper limits of variability reveals that, as above, the samples with minimal variability are hard to distinguish from those with maximal variability:
 
 ```{r}
-data_age_horns <- closure_horns_analyze(data_age)
-data_age_horns
+closure_plot_bar_min_max(data_age, frequency = "absolute", text_size = 10)
+closure_plot_horns_histogram(data_age)
 ```
 
-...
+Again, the horns index itself:
 
 ```{r}
-closure_plot_bar_min_max(data_age_horns, frequency = "absolute", text_size = 10)
-closure_plot_horns_histogram(data_age_horns)
+closure_plot_horns_histogram(data_age)
 ```
