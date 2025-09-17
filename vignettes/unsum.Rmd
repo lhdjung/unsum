@@ -102,6 +102,10 @@ You may wonder about variability between the samples. Couldn't there be some wit
 To check this, first use `closure_plot_bar_min_max()`. It shows the minimum and maximum possible variability as measured by the horns index, i.e., the average distributions of those samples with the lowest and highest horns index values:
 
 ```{r}
+#| fig.alt: >
+#|   Two barplots like the first, except they show
+#|   the subsets of samples within `data` with
+#|   minimum and maximum horns index values.
 closure_plot_bar_min_max(data, frequency = "percent")
 ```
 
