@@ -12,6 +12,8 @@ Another focus of this release is visualization, with new plotting functions and 
 
 -   Added writing mode in `closure_generate()` via the new `path` argument. This allows you to save large data to disk immediately, preventing a risk of data loss.
 
+-   Added a `technique` column at the start of `closure_generate()`'s output. This is for clarity: it says `"CLOSURE"` here, and the output of any technique to be implemented in the future will be disambiguated in the same way.
+
 -   Added `closure_plot_bar_min_max()` to compare the subsets of samples with minimal and maximal variability, as measured by `horns()`.
 
 -   Added `closure_plot_horns_density()` and `closure_plot_horns_histogram()` to visualize the distribution of horns values as a whole.

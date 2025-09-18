@@ -49,8 +49,9 @@ check_closure_generate <- function(data) {
   check_component_tibble(
     x = data$inputs,
     name = "inputs",
-    dims = c(1L, 7L),
+    dims = c(1L, 8L),
     col_names_types = list(
+      "technique" = "character",
       "mean" = "character",
       "sd" = "character",
       "n" = c("integer", "double"),
@@ -417,6 +418,7 @@ create_results_folder <- function(path, n = 1) {
       call = rlang::caller_env(n)
     )
   }
+
   dir.create(path)
 }
 
@@ -425,7 +427,7 @@ create_results_folder <- function(path, n = 1) {
 # creates a folder named after these summary statistics and returns the path to
 # that new folder. It also writes two files into it: a general info.txt that
 # will be overwritten later, and an inputs.parquet file with the inputs.
-prepare_folder_mean_sd_n <- function(inputs, path, technique) {
+prepare_folder_mean_sd_n <- function(inputs, path) {
   slash <- .Platform$file.sep
 
   # Prepare the name of the new directory to which `data` will later be written.
@@ -435,8 +437,7 @@ prepare_folder_mean_sd_n <- function(inputs, path, technique) {
     paste(collapse = "-") |>
     gsub("\\.", "_", x = _)
 
-  # Prefix with the name of the technique to make the origin very clear
-  name_new_dir <- paste0(technique, "-", name_new_dir)
+  technique <- inputs$technique
 
   path_current <- if (path == ".") getwd() else path
 

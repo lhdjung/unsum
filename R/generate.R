@@ -102,6 +102,7 @@ generate_from_mean_sd_n <- function(
     # In writing mode:
     path_new_dir <- prepare_folder_mean_sd_n(
       inputs = list(
+        technique = technique,
         mean = mean,
         sd = sd,
         n = n,
@@ -110,8 +111,7 @@ generate_from_mean_sd_n <- function(
         rounding = rounding,
         threshold = threshold
       ),
-      path = path,
-      technique = technique
+      path = path
     )
     parquet_config <- list(
       file_path = path_new_dir,
@@ -129,7 +129,7 @@ generate_from_mean_sd_n <- function(
       scale_min = scale_min,
       scale_max = scale_max
     ),
-    0  # default case
+    0 # default case
   )
 
   # This might be set to `TRUE` below
