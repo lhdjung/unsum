@@ -225,6 +225,7 @@ generate_from_mean_sd_n <- function(
     list(
       inputs = tibble::new_tibble(
         x = list(
+          technique = technique,
           mean = mean,
           sd = sd,
           n = n,
