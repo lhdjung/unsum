@@ -1,5 +1,4 @@
-
-# Replace the default of an existing argument by a new default.
+# Replace the default of an existing argument by a new default
 formals_change_defaults <- function(formals_fn, ...) {
   new_defaults <- list(...)
 
@@ -50,6 +49,7 @@ formals_add <- function(formals_fn, ..., .after) {
 }
 
 
+# Remove selected arguments from the list of a function's arguments
 formals_remove <- function(formals_fn, ...) {
   formals_to_remove <- c(...)
   offenders <- formals_to_remove[!(formals_to_remove %in% names(formals_fn))]
@@ -64,4 +64,20 @@ formals_remove <- function(formals_fn, ...) {
 
   should_be_removed <- names(formals_fn) %in% formals_to_remove
   formals_fn[!should_be_removed]
+}
+
+
+# This helper is tailored to `generate_from_mean_sd_n()`. It takes this
+# function's formal arguments, removes those that are not needed in its wrappers
+# such as `closure_generate()`, and returns the remaining ones. In this way, the
+# list of arguments is always up to date with a single source of truth, without
+# manually copying much code around.
+formals_adapt_generator <- function(fn_basic) {
+  fn_basic |>
+    formals() |>
+    formals_remove(
+      "technique",
+      "rounding_error_mean",
+      "rounding_error_sd"
+    )
 }

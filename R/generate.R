@@ -455,10 +455,5 @@ closure_generate <- function() {
   )
 }
 
-formals(closure_generate) <- generate_from_mean_sd_n |>
-  formals() |>
-  formals_remove(
-    "technique",
-    "rounding_error_mean",
-    "rounding_error_sd"
-  )
+# Insert list of arguments using a helper from inst/build-helpers/fn-formals.R
+formals(closure_generate) <- formals_adapt_generator(generate_from_mean_sd_n)
