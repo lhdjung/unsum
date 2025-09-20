@@ -332,7 +332,7 @@ closure_read <- function(
   # Parse mean and SD from the folder name
   mean_sd_str <- name_dir |>
     strsplit("-") |>
-    (function(x) x[[1]][2:3])() |>
+    (function(x) x[[1]][3:4])() |>
     gsub("_", "\\.", x = _)
 
   # Check that files read from disk are correct
