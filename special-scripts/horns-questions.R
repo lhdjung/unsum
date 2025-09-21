@@ -14,6 +14,14 @@ freqs_to_values <- function(freqs) {
 }
 
 
+# Equivalent to `horns_uniform()` in R/horns.R but more elegant mathematically
+horns_uniform_closed <- function(scale_min, scale_max) {
+  check_scale(scale_min, scale_max)
+  k <- length(scale_min:scale_max)
+  (k + 1) / (3 * (k - 1))
+}
+
+
 freqs_h_min <- c(300, 0, 0, 0, 0)
 freqs_h_max <- c(150, 0, 0, 0, 150)
 

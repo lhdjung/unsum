@@ -51,11 +51,7 @@ so, the range and the meaning of \code{0} and \code{1} are the same as for \code
 \details{
 The horns index \eqn{h} is defined as:
 
-\deqn{
-     h = 4 \frac
-     {\sum_{i=1}^{k} f_i (i - \bar{s})^2}
-     {(k - 1)^2}
-  }
+\deqn{ h = 4 \frac {\sum_{i=1}^{k} f_i (i - \bar{s})^2} {(k - 1)^2} }
 
 where \eqn{k} is the number of scale points (i.e., the length of \code{freqs}
 here), \eqn{f_i} is the relative frequency of the \eqn{i}th point on an
@@ -77,12 +73,13 @@ The "maximum possible" variance here is based on scale range only
 
 \deqn{ s_{\max} = \frac{1}{4} \ (k - 1)^2 }
 
-It is deliberately agnostic to the mean and the sample size. These will
-influence the maximum variance in a broader sense, but in the context of
-CLOSURE, they are only relevant for generating possible samples. The number
-of scale points, \eqn{k}, is an intrinsic property of those samples. Once
-they are available, it is sensible to assess their variability in terms of
-the greatest variance that can occur in any sample with the same \eqn{k}.
+It is deliberately agnostic to the mean and the sample size. In the context
+of CLOSURE, these statistics are only relevant for generating possible
+samples, which then enter the equation via the numerator; just like the
+standard deviation. By contrast, the number of scale points, \eqn{k}, is an
+intrinsic property of those samples. It is sensible to assess the variance
+of the samples by benchmarking it against the greatest variance that can
+occur in any sample with the same \eqn{k}.
 }
 
 \subsection{Uniform distribution}{
@@ -91,19 +88,7 @@ Although \code{horns_uniform()} is implemented as a wrapper around \code{horns()
 that constructs a perfect uniform distribution internally, an equivalent
 closed-form solution can be given as
 
-\deqn{
-     h_u = 4 \frac
-     {\sum_{i=1}^{k} (i - \bar{s})^2}
-     {k \ (k - 1)^2}
-  }
-
-In the uniform case, the weighted mean is simply the scale midpoint, i.e.,
-
-\deqn{
-     \bar{s}_u
-     = \sum_{i=1}^{k} \frac{i}{k}
-     = \frac{k + 1}{2}
-  }
+\deqn{ h_u = \frac{k + 1}{3 \ (k - 1)} }
 }
 
 \subsection{"Horns of no confidence"}{
@@ -116,6 +101,11 @@ In its purest form, this is a case where \eqn{h = 1}, so \code{horns()} would
 return \code{1}. However, note that the implications for the plausibility of any
 given set of summary statistics depend on the substantive context of the
 data (\href{https://peerj.com/preprints/26968/}{Heathers et al. 2018}).
+
+Heathers wrote about SPRITE, but the logic applies equally to CLOSURE.
+Indeed, as CLOSURE is exhaustive but SPRITE is not, it is only CLOSURE that
+provides certainty about the set of possible samples and their horns
+indices.
 }
 
 \subsection{Rust implementation}{
