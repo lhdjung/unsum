@@ -23,7 +23,7 @@ $$
 
 where $k$ is the number of scale points, $f_i$ is the relative frequency of the $i$th point on an ordinal scale from $1$ to $k$ (both inclusive), and $\bar{s}$ is the weighted mean frequency.
 
-The numerator ranges from $0$ to $\frac{1}{4} (k - 1)^2$, so its upper bound is determined by the scale bounds. These are either the number of scale points (e.g., with a Likert scale) or empirical minimum and maximum values.
+The numerator ranges from $0$ to $\frac{1}{4} (k - 1)^2$, so its upper bound is determined by the scale bounds. These may follow from the number of scale points, $k$ (e.g., with a Likert scale). Alternatively, they can be the empirical minimum and maximum values rescaled to fit the range from $1$ to $k$.
 
 For a scale with bounds $1$ and $k$, the maximum dispersion occurs if 50% of the data points are at $1$ and 50% are at $k$. The same applies to any scale with $k$ points, and the resultant $h$ will be equal because its value only depends on the frequency distribution, not the original scale values. As an intuitive example, imagine a histogram of values on a scale from 21 to 27. The frequencies depicted in the histogram would remain the same if the 21-27 labels were replaced by 1-7 labels, or labels corresponding to any other 7-point ordinal scale.
 
@@ -79,7 +79,7 @@ $$
 \end{aligned}
 $$
 
-This is simply the bound imposed by Popoviciu's inequality, which asserts that
+This is simply the upper bound imposed by Popoviciu's inequality, which asserts that
 
 $$
 \sigma^2 \leq \frac{1}{4} \ (M - m)^2
@@ -99,7 +99,7 @@ $$
 \end{aligned}
 $$
 
-In the maximal case, $f_i$ is $\frac{1}{2}$ at both extremes, $f_1$ and $f_k$; but $0$ at all other points. The mean, $\bar{s}$, is $\bar{s}_{max}$, i.e., $\frac{k + 1}{2}$. Thus, the weighted sum of squares is the sum of two terms only.
+In the maximal case, $f_i$ is $\frac{1}{2}$ at both extremes, $1$ and $k$; but $0$ at all other points. The mean, $\bar{s}$, is $\bar{s}_{max}$, i.e., $\frac{k + 1}{2}$. Thus, the weighted sum of squares is the sum of two terms only.
 
 From the identity established above, it trivially follows that, for $f_1 = f_k = \frac{1}{2}$,
 
@@ -113,6 +113,8 @@ $$
 $$
 
 Thus, in the maximal case, $4$ times the numerator of the $h$ formula is equal to the denominator, and $h$ is $1$.
+
+$\square$
 
 #### Separate, equivalent proof
 
@@ -145,35 +147,148 @@ $$
 \end{aligned}
 $$
 
+$\square$
+
 Conversely, in the minimal case, all observations have the same value. The weighted sum of squares is trivially $0$, and so is $h$. In the same way, $h$ is never negative because the sum of squares never is.
 
-### The $h$ of a perfect uniform distribution can be obtained using the $h_u$ formula
+### The $h$ of a uniform distribution can be obtained using the $h_u$ formula
 
-The horns index in the uniform case can be expressed as
+In the case of a perfect uniform distribution, $h$ can be expressed as follows:
 
 $$
-h_u = 4 \ \frac{\sum_{i=1}^{k} \ (i - \bar{s})^2}{k \ (k - 1)^2}
+h_u = \frac{k + 1}{3 \ (k - 1)}
 $$
 
-Note the absence of an $f_i$ term which is present in the numerator of the $h$ formula for the general case. Here, however, every value has the same frequency:
+The variance of the discrete uniform distribution, $\sigma_u^2$, is given in [Proof Wiki (2021)](https://proofwiki.org/wiki/Variance_of_Discrete_Uniform_Distribution) using a different notation (e.g., $n$ instead of our $k$):
+
+$$
+\sigma_u^2 = \frac{1}{12} \ (k^2 - 1)
+$$
+
+Note that $k^2 - 1$ can be expanded to $(k - 1) \ (k + 1)$:
+
+$$
+\begin{aligned}
+(k - 1) \ (k + 1) &= k \ (k + 1) - 1 \ (k + 1) \\
+  &= k^2 + k - k - 1 \\
+  &= k^2 - 1
+\end{aligned}
+$$
+
+The derivation of $h_u$, then, is straightforward:
+
+$$
+\begin{aligned}
+h_u &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
+  &= \frac{ (k - 1) \ (k + 1) }{12} \cdot \frac{4}{ (k - 1)^2 } \\
+  &= \frac{4 \ (k + 1)}{12 \ (k - 1)} \\
+  &= \frac{k + 1}{3 \ (k - 1)}
+\end{aligned}
+$$
+
+$\square$
+
+Alternatively, this can be shown as follows:
+
+$$
+\begin{aligned}
+h_u &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
+  &= 4 \ \frac{ \frac{1}{12} (k^2 - 1) }{ (k - 1)^2 } \\
+  &= \frac{1}{3} \cdot \frac{k^2 - 1}{(k - 1)^2} \\
+  &= \frac{(k - 1) \ (k + 1)}{3 \ (k - 1) ^2} \\
+  &= \frac{k + 1}{3 \ (k - 1)}
+\end{aligned}
+$$
+
+$\square$
+
+#### Another proof of the $h_u$ formula
+
+This proof focuses on the sum of squares. It does not rely on the $\sigma_u^2$ formula.
+
+In the uniform case, all (relative) frequencies are equal:
 
 $$
 \forall \ i \in \{ 1, \ 2, \ ..., \ k \}: \ f_i = \frac{1}{k}
 $$
 
-Factoring out $f_i$ and multiplying it with the fraction as a whole yields the $h_u$ formula above:
+Therefore:
 
 $$
 \begin{aligned}
-h_u
-  &= 4 \ \frac
+h_u &= 4 \ \frac
 {\sum_{i=1}^{k} \ \frac{1}{k} \ (i - \bar{s})^2}
 {(k - 1)^2} \\
-  &= \frac{1}{k} \left( 4 \ \frac
+  &= \frac{1}{k} \left[ 4 \ \frac
 {\sum_{i=1}^{k} \ (i - \bar{s})^2}
-{(k - 1)^2} \right) \\
-  &= 4 \ \frac{\sum_{i=1}^{k} \ (i - \bar{s})^2}{k \ (k - 1)^2}
+{(k - 1)^2} \right] \\
+  &= 4 \ \frac{\sum_{i=1}^{k} \ (i - \bar{s})^2}{k (k - 1)^2}
 \end{aligned}
 $$
 
-TODO: Check whether an additional proof for uniform horns can be given using the formula $\frac{1}{12} \ (k - 1)^2$; see <https://statproofbook.github.io/P/cuni-var.html>
+Simplifying the sum of squares:
+
+$$
+\begin{aligned}
+\sum_{i=1}^{k} (i - \bar{s})^2 &= \sum_{i=1}^{k} (i^2 - 2i\bar{s} + \bar{s}^2) \\
+  &= \sum_{i=1}^{k} i^2 - 2\bar{s}\sum_{i=1}^{k} i + \sum_{i=1}^{k} \bar{s}^2 \\
+  &= \sum_{i=1}^{k} i^2 - 2\bar{s} \cdot k\bar{s} + k\bar{s}^2 \\
+  &= \sum_{i=1}^{k} i^2 - 2k\bar{s}^2 + k\bar{s}^2 \\
+  &= \sum_{i=1}^{k} i^2 - k\bar{s}^2
+\end{aligned}
+$$
+
+For the left-hand term, we use the formula for the sum of squares of the first $k$ natural numbers:
+
+$$
+\sum_{i=1}^{k} i^2 = \frac{k(k+1)(2k+1)}{6}
+$$
+
+The mean $\bar{s}$ of the uniform distribution is simply the midpoint:
+
+$$
+\begin{aligned}
+\bar{s} &= \frac{k+1}{2}
+\end{aligned}
+$$
+
+So the right-hand term of the above expression for the sum of squares is
+
+$$
+\begin{aligned}
+k \bar{s}^2 &= k \left(\frac{k+1}{2}\right)^2 \\
+&= \frac{k (k+1)^2}{4}
+\end{aligned}
+$$
+
+Inserting these results:
+
+$$
+\begin{aligned}
+h_u &= 4 \frac{\sum_{i=1}^{k} (i - \bar{s})^2}{k(k-1)^2} \\
+  &= 4 \frac{\sum_{i=1}^{k} i^2 - k\bar{s}^2}{k(k-1)^2} \\
+  &= 4 \frac{1}{k(k-1)^2} \left[ \frac{k(k+1)(2k+1)}{6} - \frac{k(k+1)^2}{4} \right] \\
+  &= 4 \frac{k(k+1)}{k(k-1)^2} \left[\frac{2k+1}{6} - \frac{k+1}{4}\right]
+\end{aligned}
+$$
+
+Simplifying the right-hand term: $$
+\begin{aligned}
+\frac{2k+1}{6} - \frac{k+1}{4} &= \frac{2(2k+1) - 3(k+1)}{12} \\
+  &= \frac{4k+2 - 3k-3}{12} \\
+  &= \frac{k-1}{12}
+\end{aligned}
+$$
+
+Therefore:
+
+$$
+\begin{aligned}
+h_u &= 4 \frac{k+1}{(k-1)^2} \cdot \frac{k-1}{12} \\
+  &= 4 \frac{(k+1)(k-1)}{12(k-1)^2} \\
+  &= 4 \frac{k+1}{12(k-1)} \\
+  &= \frac{k+1}{3(k-1)}
+\end{aligned}
+$$
+
+$\square$
