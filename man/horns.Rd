@@ -51,7 +51,8 @@ so, the range and the meaning of \code{0} and \code{1} are the same as for \code
 \details{
 The horns index \eqn{h} is defined as:
 
-\deqn{ h = 4 \frac {\sum_{i=1}^{k} f_i (i - \bar{s})^2} {(k - 1)^2} }
+\deqn{ h = \frac {\sum_{i=1}^{k} f_i (i - \bar{s})^2} {\frac{1}{4} (k -
+1)^2} }
 
 where \eqn{k} is the number of scale points (i.e., the length of \code{freqs}
 here), \eqn{f_i} is the relative frequency of the \eqn{i}th point on an
@@ -71,7 +72,7 @@ the scale implied by those two arguments, there will be an error.
 The "maximum possible" variance here is based on scale range only
 (Popoviciu 1935):
 
-\deqn{ s_{\max} = \frac{1}{4} \ (k - 1)^2 }
+\deqn{ \sigma_{\max}^2 = \frac{1}{4} (k - 1)^2 }
 
 It is deliberately agnostic to the mean and the sample size. In the context
 of CLOSURE, these statistics are only relevant for generating possible
@@ -88,7 +89,7 @@ Although \code{horns_uniform()} is implemented as a wrapper around \code{horns()
 that constructs a perfect uniform distribution internally, an equivalent
 closed-form solution can be given as
 
-\deqn{ h_u = \frac{k + 1}{3 \ (k - 1)} }
+\deqn{ h_u = \frac{k + 1}{3 (k - 1)} }
 }
 
 \subsection{"Horns of no confidence"}{

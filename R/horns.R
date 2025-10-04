@@ -27,7 +27,8 @@
 #'
 #' @details The horns index \eqn{h} is defined as:
 #'
-#'   \deqn{ h = 4 \frac {\sum_{i=1}^{k} f_i (i - \bar{s})^2} {(k - 1)^2} }
+#'   \deqn{ h = \frac {\sum_{i=1}^{k} f_i (i - \bar{s})^2} {\frac{1}{4} (k -
+#' 1)^2} }
 #'
 #'   where \eqn{k} is the number of scale points (i.e., the length of `freqs`
 #'   here), \eqn{f_i} is the relative frequency of the \eqn{i}th point on an
@@ -48,7 +49,7 @@
 #'   The "maximum possible" variance here is based on scale range only
 #'   (Popoviciu 1935):
 #'
-#'   \deqn{ s_{\max} = \frac{1}{4} \ (k - 1)^2 }
+#'   \deqn{ \sigma_{\max}^2 = \frac{1}{4} (k - 1)^2 }
 #'
 #'   It is deliberately agnostic to the mean and the sample size. In the context
 #'   of CLOSURE, these statistics are only relevant for generating possible
@@ -64,7 +65,7 @@
 #'   that constructs a perfect uniform distribution internally, an equivalent
 #'   closed-form solution can be given as
 #'
-#'   \deqn{ h_u = \frac{k + 1}{3 \ (k - 1)} }
+#'   \deqn{ h_u = \frac{k + 1}{3 (k - 1)} }
 #'
 #'   ## "Horns of no confidence"
 #'
