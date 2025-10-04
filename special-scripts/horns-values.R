@@ -1,4 +1,3 @@
-
 library(ggplot2)
 library(dplyr)
 library(unsum)
@@ -35,7 +34,6 @@ complete_scale_by_zeroes <- function(x, endpoint) {
 }
 
 
-
 # Must be a whole number
 endpoint <- 7
 
@@ -43,7 +41,8 @@ sd_all <- seq(from = 0, to = endpoint, by = 0.1)
 n <- 500000
 
 
-dispersion_by_metric <- function(fn) {    # sd_all, n, endpoint
+dispersion_by_metric <- function(fn) {
+  # sd_all, n, endpoint
 
   n_sds <- length(sd_all)
 
@@ -118,6 +117,7 @@ dispersion_by_endpoint <- function(fn, x) {
 # start at 1, so that the endpoint is equal to the scale length
 df2 <- tibble::tibble(
   scale_length = 2:20,
+  horns_uniform_cont = 1 / 3,
   horns_uniform = dispersion_by_endpoint(horns_uniform, scale_length),
   dissention_uniform = dispersion_by_endpoint(dissention_uniform, scale_length)
 )
@@ -125,12 +125,41 @@ df2 <- tibble::tibble(
 
 decimal_seq <- seq(from = 0.1, to = 1, by = 0.1)
 
+# # Points on the x-axis
+# length_max <- 1 + nrow(df2)
+
+color_horns_uniform <- "black"
+color_dissention_uniform <- "brown2"
+color_horns_uniform_cont <- "blue"
 
 # Visualize the decline of dispersion metrics as the number of scale points
 # increases
 ggplot(df2, aes(x = scale_length)) +
-  geom_line(aes(y = horns_uniform), color = "black") +
-  geom_line(aes(y = dissention_uniform), color = "brown2") +
+  geom_line(aes(y = horns_uniform_cont), color = color_horns_uniform_cont) +
+  geom_line(aes(y = horns_uniform), color = color_horns_uniform) +
+  geom_line(aes(y = dissention_uniform), color = color_dissention_uniform) +
+  # geom_hline(yintercept = 1 / 3, color = color_horns_uniform_cont) +
+  annotate(
+    geom = "text",
+    x = 11,
+    y = 0.55,
+    label = "Dissention (i.e., 1 - consensus)",
+    color = color_dissention_uniform
+  ) +
+  annotate(
+    geom = "text",
+    x = 15,
+    y = 0.42,
+    label = "Horns index",
+    color = color_horns_uniform
+  ) +
+  annotate(
+    geom = "text",
+    x = 4.5,
+    y = 0.39,
+    label = "Horns index of the\ncontinuous uniform distribution = 1 / 3",
+    color = color_horns_uniform_cont
+  ) +
   scale_x_continuous(breaks = df2$scale_length) +
   scale_y_continuous(
     breaks = decimal_seq,
@@ -139,11 +168,7 @@ ggplot(df2, aes(x = scale_length)) +
   labs(
     x = "Number of scale points",
     y = "Dispersion in a uniform sample",
-    title = "Comparing measures of ordinal dispersion in the uniform case",
-    subtitle = paste(
-      "Black: horns index,",
-      "red: dissention (i.e., 1 - consensus)"
-    )
+    title = "Comparing measures of ordinal dispersion in the uniform case"
   ) +
   theme(
     panel.grid.minor.x = element_blank(),
