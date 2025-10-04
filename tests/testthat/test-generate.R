@@ -1,4 +1,3 @@
-
 # Use R wrapper around Rust implementation
 data_r_1 <- closure_generate(
   mean = "3.5",
@@ -9,12 +8,13 @@ data_r_1 <- closure_generate(
 )
 
 data_r_2 <- closure_generate(
-  mean = "2.42",
-  sd = "1.20",
-  n = 100,
+  mean = "3.7",
+  sd = "1.2",
+  n = 120,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
 )
+
 
 test_that("The results pass unsum's internal check for `closure_generate()` output", {
   data_r_1 |> check_closure_generate() |> expect_no_error()
@@ -25,6 +25,7 @@ test_that("The results pass unsum's internal check for `closure_generate()` outp
 data_r_1 <- data_r_1$results$sample |> as_wide_n_tibble()
 data_r_2 <- data_r_2$results$sample |> as_wide_n_tibble()
 
+
 # Check results for identity after sorting columns. Different CLOSURE
 # implementations may yield results in different order (even though the samples
 # are pairwise identical) because of the details of how parallel processing
@@ -32,25 +33,22 @@ data_r_2 <- data_r_2$results$sample |> as_wide_n_tibble()
 # when ordered, but only then. Spurious differences arising from such ordering
 # effects are ignored below.
 
-# test_that("All implementations return identical results (after sorting columns) -- *DATASET 1*", {
-#   .data_rust_1   |> identical_sorted_cols(data_r_1) |> expect_true()
-#   .data_python_1 |> identical_sorted_cols(data_r_1) |> expect_true()
-# })
-#
-# test_that("All implementations return identical results (after sorting columns) -- *DATASET 2*", {
-#   .data_rust_2   |> identical_sorted_cols(data_r_2) |> expect_true()
-#   .data_python_2 |> identical_sorted_cols(data_r_2) |> expect_true()
-# })
+ok <- test_that("All implementations return identical results (after sorting the columns)", {
+  .data_rust_1 |> identical_sorted_cols(data_r_1) |> expect_true()
+  .data_rust_2 |> identical_sorted_cols(data_r_2) |> expect_true()
+})
 
 
-# # If any differences occur, investigate them in detail. This is only meant to
-# # be used interactively -- incomment if needed, then outcomment again.
-# .data_rust_1   <- sort_cols(.data_rust_1)
-# .data_python_1 <- sort_cols(.data_python_1)
-# data_r_1       <- sort_cols(data_r_1)
-# waldo::compare(.data_rust_1,   .data_python_1, x_arg = "rust",   y_arg = "python")
-# waldo::compare(.data_rust_1,   data_r_1,       x_arg = "rust",   y_arg = "r")
-# waldo::compare(.data_python_1, data_r_1,       x_arg = "python", y_arg = "r")
+# If any differences occur, display them in detail
+if (!ok) {
+  .data_rust_1 <- sort_cols(.data_rust_1)
+  .data_python_1 <- sort_cols(.data_python_1)
+  data_r_1 <- sort_cols(data_r_1)
+
+  waldo::compare(.data_rust_1, .data_python_1, x_arg = "rust", y_arg = "python")
+  waldo::compare(.data_rust_1, data_r_1, x_arg = "rust", y_arg = "r")
+  waldo::compare(.data_python_1, data_r_1, x_arg = "python", y_arg = "r")
+}
 
 
 f_absolute_centered <- closure_generate(
@@ -79,22 +77,78 @@ f_absolute_skewed_right <- closure_generate(
 
 
 test_that("absolute frequencies are correct", {
-  f_absolute_centered |> expect_equal(c(
-    6575L, 17570L, 65388L, 209734L, 65388L, 17570L, 6575L, 333L, 920L, 3493L,
-    13108L, 3493L, 920L, 333L, 382L, 991L, 3587L, 10430L, 3587L, 991L, 382L
-  ))
+  f_absolute_centered |>
+    expect_equal(c(
+      6575L,
+      17570L,
+      65388L,
+      209734L,
+      65388L,
+      17570L,
+      6575L,
+      333L,
+      920L,
+      3493L,
+      13108L,
+      3493L,
+      920L,
+      333L,
+      382L,
+      991L,
+      3587L,
+      10430L,
+      3587L,
+      991L,
+      382L
+    ))
 
-  f_absolute_skewed_left  |> expect_equal(c(
-    571399L, 341334L, 194430L, 147830L, 107079L, 69040L, 44938L, 27281L, 18458L,
-    10370L, 7729L, 5225L, 3212L, 2075L, 15109L, 7965L, 4557L, 3615L, 2784L, 1830L,
-    1240L
-  ))
+  f_absolute_skewed_left |>
+    expect_equal(c(
+      571399L,
+      341334L,
+      194430L,
+      147830L,
+      107079L,
+      69040L,
+      44938L,
+      27281L,
+      18458L,
+      10370L,
+      7729L,
+      5225L,
+      3212L,
+      2075L,
+      15109L,
+      7965L,
+      4557L,
+      3615L,
+      2784L,
+      1830L,
+      1240L
+    ))
 
-  f_absolute_skewed_right |> expect_equal(c(
-    80279L, 123068L, 191619L, 269477L, 357529L, 626871L, 708557L, 1970L, 3059L,
-    4979L, 7495L, 10162L, 17953L, 16332L, 2320L, 3537L, 5252L, 6862L, 9021L,
-    15508L, 18850L
-  ))
+  f_absolute_skewed_right |>
+    expect_equal(c(
+      80279L,
+      123068L,
+      191619L,
+      269477L,
+      357529L,
+      626871L,
+      708557L,
+      1970L,
+      3059L,
+      4979L,
+      7495L,
+      10162L,
+      17953L,
+      16332L,
+      2320L,
+      3537L,
+      5252L,
+      6862L,
+      9021L,
+      15508L,
+      18850L
+    ))
 })
-
-
