@@ -16,6 +16,7 @@
 # rounding = "up_or_down"
 # threshold = 5
 # path <- "."
+# stop_after <- NULL
 # include <- "stats_and_horns"
 # ask_to_proceed <- TRUE
 # rounding_error_mean <- NULL
@@ -29,6 +30,7 @@ generate_from_mean_sd_n <- function(
   scale_max,
   technique,
   path = NULL,
+  stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
@@ -194,7 +196,8 @@ generate_from_mean_sd_n <- function(
     scale_max = scale_max,
     rounding_error_mean = rounding_error_mean,
     rounding_error_sd = rounding_error_sd,
-    write = parquet_config
+    write = parquet_config,
+    stop_after = stop_after
   )
 
   n_samples_all <- if (in_memory_mode) {
@@ -446,6 +449,7 @@ closure_generate <- function() {
     scale_max = scale_max,
     technique = "CLOSURE",
     path = path,
+    stop_after = stop_after,
     include = include,
     rounding = rounding,
     threshold = threshold,

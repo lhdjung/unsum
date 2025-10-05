@@ -77,7 +77,7 @@ check_closure_generate <- function(data) {
     name = "metrics_main",
     dims = c(1L, 3L),
     col_names_types = list(
-      "samples_initial" = "integer",
+      "samples_initial" = "double",
       "samples_all" = "double",
       "values_all" = "double"
     )

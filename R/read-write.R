@@ -325,14 +325,10 @@ closure_read <- function(
     frequency = "frequency" |> read_file()
   )
 
-  # For consistency with `closure_generate()`
-  out$metrics_main$samples_all <- as.double(out$metrics_main$samples_all)
-  out$metrics_main$values_all <- as.double(out$metrics_main$values_all)
-
   # Parse mean and SD from the folder name
   mean_sd_str <- name_dir |>
     strsplit("-") |>
-    (function(x) x[[1]][3:4])() |>
+    (function(x) x[[1]][2:3])() |>
     gsub("_", "\\.", x = _)
 
   # Check that files read from disk are correct
