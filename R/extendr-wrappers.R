@@ -10,7 +10,7 @@
 #' @useDynLib unsum, .registration = TRUE
 NULL
 
-create_combinations <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd, write) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd, write)
+create_combinations <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd, write, stop_after) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd, write, stop_after)
 
 
 # nolint end

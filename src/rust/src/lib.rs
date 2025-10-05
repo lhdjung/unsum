@@ -94,7 +94,7 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
         .collect();
 
     // Convert each sample to an R integer vector and collect into a list
-    let samples_robjs: Vec<Robj> = results_table.samples
+    let samples_robjs: Vec<Robj> = results_table.sample
         .iter()
         .map(|sample| {
             // Each sample becomes an R integer vector
@@ -134,7 +134,8 @@ fn create_combinations(
     scale_max: i32,
     rounding_error_mean: f64,
     rounding_error_sd: f64,
-    write: Robj, // Accept Robj directly
+    write: Robj,
+    stop_after: Option<usize>,
 ) -> Robj {
     let need_to_write = !write.is_null();
 
@@ -157,6 +158,7 @@ fn create_combinations(
             rounding_error_mean,
             rounding_error_sd,
             streaming_config,
+            stop_after,
         );
 
         // Return information about the streaming operation as an R list
@@ -179,6 +181,7 @@ fn create_combinations(
         rounding_error_mean,
         rounding_error_sd,
         None, // No parquet config - just return results in memory
+        stop_after,
     );
 
     // Create the main metrics list
