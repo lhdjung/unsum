@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(tar:*)",
+      "Bash(export CARGO_HOME=.cargo)",
+      "Bash(cargo build:*)",
+      "Bash(export CARGO_HOME=$PWD/.cargo)",
+      "Bash(rm:*)",
+      "Read(//home/lukas/.cargo/**)",
+      "Read(//home/lukas/Documents/r_projects/packages/unsum/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
