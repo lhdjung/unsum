@@ -14,6 +14,8 @@ censor <- function(x, left, right) {
 
 dissention <- function(freqs, ...) 1 - consensus(freqs)
 
+lov <- function(freqs, ...) Leik(freqs)
+
 
 # This is needed in case none of the values has any observations on it, so the
 # zeroes need to be added here. Also, the output is formatted consistently.
@@ -69,6 +71,7 @@ df1 <- tibble(
   sd = sd_all,
   horns = dispersion_by_metric(horns),
   # horns_rescaled = dispersion_by_metric(horns_rescaled),
+  leik = dispersion_by_metric(lov),
   dissention = dispersion_by_metric(dissention)
 )
 
@@ -79,6 +82,7 @@ df1
 ggplot(df1, aes(x = sd)) +
   geom_point(aes(y = horns), color = "black") +
   # geom_point(aes(y = horns_rescaled), color = "royalblue2") +
+  geom_point(aes(y = leik), color = "blue") +
   geom_point(aes(y = dissention), color = "brown2") +
   scale_x_continuous(
     breaks = 0:endpoint,
@@ -91,6 +95,7 @@ ggplot(df1, aes(x = sd)) +
     subtitle = paste(
       "Black: horns index,",
       # "blue: rescaled horns index,",
+      "blue: LOV,",
       "red: dissention (i.e., 1 - consensus)"
     )
   )
@@ -98,10 +103,12 @@ ggplot(df1, aes(x = sd)) +
 
 # Uniform distribution ----------------------------------------------------
 
+lov_uniform <- function(scale_min, scale_max) {
+  1 |> rep(length(scale_min:scale_max)) |> lov()
+}
+
 dissention_uniform <- function(scale_min, scale_max) {
-  dissention(
-    freqs = rep(1, length(scale_min:scale_max))
-  )
+  1 |> rep(length(scale_min:scale_max)) |> dissention()
 }
 
 dispersion_by_endpoint <- function(fn, x) {
@@ -119,47 +126,69 @@ df2 <- tibble::tibble(
   scale_length = 2:20,
   horns_uniform_cont = 1 / 3,
   horns_uniform = dispersion_by_endpoint(horns_uniform, scale_length),
+  lov_uniform = dispersion_by_endpoint(lov_uniform, scale_length),
   dissention_uniform = dispersion_by_endpoint(dissention_uniform, scale_length)
 )
 
+df2
 
 decimal_seq <- seq(from = 0.1, to = 1, by = 0.1)
 
 # # Points on the x-axis
 # length_max <- 1 + nrow(df2)
 
+text_label_size <- 4.5
+
 color_horns_uniform <- "black"
+color_lov_uniform <- "blue"
 color_dissention_uniform <- "brown2"
-color_horns_uniform_cont <- "blue"
+color_horns_uniform_cont <- "purple"
+
 
 # Visualize the decline of dispersion metrics as the number of scale points
 # increases
 ggplot(df2, aes(x = scale_length)) +
   geom_line(aes(y = horns_uniform_cont), color = color_horns_uniform_cont) +
   geom_line(aes(y = horns_uniform), color = color_horns_uniform) +
+  geom_line(aes(y = lov_uniform), color = color_lov_uniform) +
   geom_line(aes(y = dissention_uniform), color = color_dissention_uniform) +
   # geom_hline(yintercept = 1 / 3, color = color_horns_uniform_cont) +
+
+  # Text labels
   annotate(
     geom = "text",
-    x = 11,
-    y = 0.55,
+    x = 15,
+    y = 0.57,
+    label = "LOV",
+    size = text_label_size,
+    color = color_lov_uniform
+  ) +
+  annotate(
+    geom = "text",
+    x = 16,
+    y = 0.44,
     label = "Dissention (i.e., 1 - consensus)",
+    size = text_label_size,
     color = color_dissention_uniform
   ) +
   annotate(
     geom = "text",
-    x = 15,
-    y = 0.42,
+    x = 11,
+    y = 0.44,
     label = "Horns index",
+    size = text_label_size,
     color = color_horns_uniform
   ) +
   annotate(
     geom = "text",
-    x = 4.5,
+    x = 5.5,
     y = 0.39,
     label = "Horns index of the\ncontinuous uniform distribution = 1 / 3",
+    size = text_label_size,
     color = color_horns_uniform_cont
   ) +
+
+  # Rest of the plot
   scale_x_continuous(breaks = df2$scale_length) +
   scale_y_continuous(
     breaks = decimal_seq,
@@ -177,3 +206,39 @@ ggplot(df2, aes(x = scale_length)) +
 
 
 print(df2, n = Inf)
+
+
+# Investigating patterns in Leik's ordinal variation (LOV) for uniform
+# distributions
+lov_seq <- df2$lov_uniform
+lov_diff <- numeric(length(lov_seq))
+
+for (i in seq_along(lov_diff)) {
+  if (i == 1) {
+    next
+  }
+  lov_diff[i] <- lov_seq[i] - lov_seq[i - 1]
+}
+
+lov_diff[1] <- NaN
+lov_diff <- round(lov_diff, 10)
+
+
+df2 |>
+  select(scale_length, lov_uniform) |>
+  mutate(lov_diff)
+
+
+# Spelling out Leik's cumulative relative frequencies
+
+freqs_cumul <- seq(0.1, 1, by = 0.1)
+freqs_cumul_diff <- vapply(freqs_cumul, function(f) min(f, 1 - f), numeric(1))
+
+freqs_cumul
+freqs_cumul_diff
+
+k <- length(freqs_cumul)
+peak <- floor(k / 2)
+
+# TODO: CHECK IF CORRECT; THIS IS SUPPOSED TO BE
+sum(freqs_cumul[seq_len(peak)])
