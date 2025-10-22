@@ -42,12 +42,13 @@ generate_from_mean_sd_n <- function(
   # length 1, and is not `NA`.
   check_value(mean, "character")
   check_value(sd, "character")
-  check_value(n, "double")
-  check_value(scale_min, "double")
-  check_value(scale_max, "double")
+  check_value(n, c("double", "integer"))
+  check_value(scale_min, c("double", "integer"))
+  check_value(scale_max, c("double", "integer"))
   check_value(path, "character", allow_null = TRUE)
+  check_value(stop_after, c("double", "integer"), allow_null = TRUE)
   check_value(rounding, "character")
-  check_value(threshold, "double")
+  check_value(threshold, c("double", "integer"))
   check_value(ask_to_proceed, "logical")
 
   mean_num <- as.numeric(mean)
@@ -208,14 +209,27 @@ generate_from_mean_sd_n <- function(
     out$total_combinations
   }
 
-  # By default, raise a warning if no results were found. Invalid when writing
-  # to disk (hence the last check) because, in this case, the samples won't be
-  # stored in `results`.
+  # By default, raise a warning if no results were found. If some were found but
+  # more had been requested via `stop_after`, raise a different warning.
   if (n_samples_all == 0) {
+    # CLOSURE is exhaustive, other techniques might not be
+    msg_after <- switch(
+      technique,
+      "CLOSURE" = c(
+        "x" = "Summary statistics internally inconsistent.",
+        "x" = "These numbers cannot describe the same sample."
+      ),
+      NULL
+    )
     cli::cli_warn(c(
-      "No results found with these inputs.",
-      "x" = "Data internally inconsistent.",
-      "x" = "These statistics can't describe the same distribution."
+      "{technique} found no samples compatible with these inputs.",
+      msg_after
+    ))
+  } else if (!is.null(stop_after) && n_samples_all < stop_after) {
+    cli::cli_warn(c(
+      "{technique} found fewer samples than requested via `stop_after`.",
+      "!" = "`stop_after` is: {stop_after}",
+      "!" = "Samples found: {n_samples_all}"
     ))
   }
 
@@ -224,8 +238,15 @@ generate_from_mean_sd_n <- function(
   # `closure_plot_bar()`. All elements here are created using the low-level
   # `new_tibble()` instead of `tibble()`: once for passing the S3 class, and
   # three times for performance.
-  out_summary <- if (in_memory_mode) {
-    list(
+
+  # Assemble the summary statistics that make up much of the output's structure.
+  # In memory mode (i.e., without writing to disk), this is done manually here.
+  # An S3 class like "closure_generate" is added -- it will be recognized by
+  # downstream functions, such as `closure_plot_bar()`. All elements here are
+  # created using the low-level `new_tibble()` instead of `tibble()`: once for
+  # passing the S3 class, and three times for performance and consistency.
+  if (in_memory_mode) {
+    out_summary <- list(
       inputs = tibble::new_tibble(
         x = list(
           technique = technique,
@@ -239,7 +260,7 @@ generate_from_mean_sd_n <- function(
         ),
         nrow = 1L,
         # The class is, e.g., "closure_generate"
-        class = paste0(tolower(technique), "_generate")
+        class = technique |> tolower() |> paste0("_generate")
       ),
 
       metrics_main = out$metrics_main |>
@@ -254,40 +275,41 @@ generate_from_mean_sd_n <- function(
         as.list() |>
         tibble::new_tibble(nrow = nrow(out$frequency))
     )
-  } else {
-    closure_read(path_new_dir, include = include)
-  }
 
-  # In memory mode (i.e., without writing to disk), a message about successful
-  # completion is left to display after the rest of the function has finished.
-  # In writing mode, the results were written already, so all that is left is to
-  # overwrite info.txt (now informing about how to import the files, etc.), and
-  # issue an alert. Finally, return the results, which are partial by default.
-  if (in_memory_mode) {
+    # In memory mode (i.e., without writing to disk), a message about successful
+    # completion is left to display after the rest of the function has finished.
     on.exit({
       # Empty line before the alert
       message()
       cli::cli_alert_success("All {technique} results found")
     })
-  } else {
-    write_final_info_txt(path_new_dir, technique)
-    return(out_summary)
-  }
 
-  # Insert the samples into a data frame, along with summary statistics. The S3
-  # class "closure_generate" will be recognized by downstream functions, such as
-  # `closure_plot_bar()`. All elements here are created using the low-level
-  # `new_tibble()` instead of `tibble()`: once for passing the S3 class, and
-  # four times for performance.
-  c(
-    out_summary,
-    list(
-      results = tibble::new_tibble(
-        x = out$results,
-        nrow = n_samples_all
+    # Combine the statistics with the results and return the completed list
+    c(
+      out_summary,
+      list(
+        results = tibble::new_tibble(
+          x = out$results,
+          nrow = n_samples_all
+        )
       )
     )
-  )
+  } else {
+    # In writing mode, read the statistics -- and, optionally, results -- that
+    # were just written to disk into R. Note that R never held them in memory
+    # before this point; they were created on the Rust level. The `include`
+    # argument controls which parts of the results are loaded. This is to
+    # prevent out-of-memory errors due to large data.
+    out_summary <- closure_read(path_new_dir, include = include)
+
+    # Overwrite info.txt which now contains instructions for importing the
+    # files, etc.; and issue an alert. As both steps give confirmatory signals
+    # to the user, this is only done after reading the data successfully.
+    write_final_info_txt(path_new_dir, technique)
+
+    # Return the list
+    out_summary
+  }
 }
 
 
