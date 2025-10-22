@@ -11,6 +11,7 @@ closure_generate(
   scale_min,
   scale_max,
   path = NULL,
+  stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
