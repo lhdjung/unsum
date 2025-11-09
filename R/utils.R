@@ -384,13 +384,41 @@ check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
 }
 
 
+# Adapted from scrutiny
+check_whole_number <- function(
+  x,
+  tolerance = .Machine$double.eps^0.5,
+  n = 1,
+  name = NULL
+) {
+  # Stop before the error message if `x` is a whole number
+  if (near(x, floor(x), tol = tolerance)) {
+    return(invisible(NULL))
+  }
+
+  if (is.null(name)) {
+    name <- deparse(substitute(x))
+  }
+
+  cli::cli_abort(
+    message = c(
+      "`{name}` must be a whole number (integer or double).",
+      "x" = "It is actually: {x}"
+    ),
+    call = rlang::caller_env(n)
+  )
+}
+
+
 check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
   if (length(x) == l || (allow_null && is.null(x))) {
     return(invisible(NULL))
   }
+
   if (is.null(name)) {
     name <- deparse(substitute(x))
   }
+
   cli::cli_abort(
     message = c(
       `!` = "`{name}` must have length {l}.",
