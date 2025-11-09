@@ -2,15 +2,15 @@
 title: "Proving the correctness of the horns index"
 subtitle: "Deriving formulas for the general case ($h$) and the uniform distribution ($h_u$)"
 output:
-  pdf_document:
-    extra_dependencies: ["amsmath"]
-    number_sections: false
-    keep_tex: true
   html_document:
     df_print: paged
     number_sections: true
     mathjax: "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"
     pandoc_args: ["--mathjax"]
+  pdf_document:
+    extra_dependencies: ["amsmath"]
+    number_sections: false
+    keep_tex: true
 ---
 
 ```{r, include = FALSE}
@@ -19,6 +19,20 @@ knitr::opts_chunk$set(
   comment = "#>"
 )
 ```
+
+TODO: MAKE THE HORNS INDEX DEPENDENT ON N, SETTLE ON A NEW NOTATION FOR THE N-INDEPENDENT MEASURE THAT WILL NOW TAKE A BACKSEAT, IMPLEMENT A NEW N-DEPENDENT `horns()` FUNCTION, AND RENAME THE EXISTING FUNCTION TO `horns_inf_n()`.
+
+The horns index, $h$, depends on the sample size, $n$. However, we can define $h^*$ as a variant of $h$ that does not take $n$ into account. This variant represents $h$ in case of an infinite $n$ value.
+
+Because small samples increase the maximum possible variance, and because the latter constitutes the denominator of $h$, taking $n$ into account decreases $h$ inversely proportional to $n$. In other words, $h$ approaches $h^*$ as $n$ tends to infinity.
+
+Thus, $h^*$ is the variance as a proportion of the maximum variance that can be achieved by a distribution with given scale bounds and any sample size, rather than some particular finite sample size. In unsum, $h^*$ is implemented in the `horns_inf_n()` function.
+
+$h_{u,\infty}$
+
+$h^*_u$
+
+***
 
 The horns index ($h$) is the variance expressed as a proportion of the maximum variance that is possible with a given set of lower and upper bounds. It is defined as
 
@@ -154,12 +168,12 @@ $\square$
 
 Conversely, in the minimal case, all observations have the same value. The sum of squares is trivially $0$, and so is $h$. In the same way, $h$ is never negative because the sum of squares never is.
 
-### The $h$ of a uniform distribution can be obtained using the $h_u$ formulas
+### The $h$ of a uniform distribution can be obtained using the $h_u$ formula
 
 In the case of a discrete uniform distribution, $h$ can be expressed as follows:
 
 \begin{equation}
-h_{ud} = \frac{k + 1}{3 \ (k - 1)}
+h_u = \frac{k + 1}{3 \ (k - 1)}
 \end{equation}
 
 The variance of the discrete uniform distribution, $\sigma_u^2$, is given in [Proof Wiki (2021)](https://proofwiki.org/wiki/Variance_of_Discrete_Uniform_Distribution) using a different notation (e.g., $n$ instead of our $k$):
@@ -176,10 +190,10 @@ Note that $k^2 - 1$ can be expanded to $(k - 1) \ (k + 1)$:
   &= k^2 - 1
 \end{align}
 
-The derivation of $h_{ud}$, then, is straightforward:
+The derivation of $h_u$, then, is straightforward:
 
 \begin{align}
-h_{ud} &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
+h_u &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
   &= \frac{ (k - 1) \ (k + 1) }{12} \cdot \frac{4}{ (k - 1)^2 } \\
   &= \frac{4 \ (k + 1)}{12 \ (k - 1)} \\
   &= \frac{k + 1}{3 \ (k - 1)}
@@ -190,7 +204,7 @@ $\square$
 Alternatively, this can be shown as follows:
 
 \begin{align}
-h_{ud} &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
+h_u &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
   &= 4 \ \frac{ \frac{1}{12} (k^2 - 1) }{ (k - 1)^2 } \\
   &= \frac{1}{3} \cdot \frac{k^2 - 1}{(k - 1)^2} \\
   &= \frac{(k - 1) \ (k + 1)}{3 \ (k - 1) ^2} \\
@@ -199,7 +213,7 @@ h_{ud} &= \frac{ \frac{1}{12} (k^2 - 1) }{ \frac{1}{4} (k - 1)^2 } \\
 
 $\square$
 
-#### Another proof of the $h_{ud}$ formula
+#### Another proof of the $h_u$ formula
 
 This proof focuses on the sum of squares. It does not rely on the $\sigma_u^2$ formula from (4.2).
 
@@ -212,7 +226,7 @@ In the uniform case, all (relative) frequencies are equal:
 Therefore:
 
 \begin{align}
-h_{ud} &= \frac
+h_u &= \frac
 {\sum_{i=1}^{k} \ \frac{1}{k} \ (i - \bar{s})^2}
 {\frac{1}{4} (k - 1)^2} \\
   &= \frac{1}{k} \left[ 4 \ \frac
@@ -253,7 +267,7 @@ k \bar{s}^2 &= k \left(\frac{k+1}{2}\right)^2 \\
 Inserting (4.8), followed by (4.9) and (4.11):
 
 \begin{align}
-h_{ud} &= 4 \frac{\sum_{i=1}^{k} (i - \bar{s})^2}{k(k-1)^2} \\
+h_u &= 4 \frac{\sum_{i=1}^{k} (i - \bar{s})^2}{k(k-1)^2} \\
   &= 4 \frac{\sum_{i=1}^{k} i^2 - k\bar{s}^2}{k(k-1)^2} \\
   &= 4 \frac{1}{k(k-1)^2} \left[ \frac{k(k+1)(2k+1)}{6} - \frac{k(k+1)^2}{4} \right] \\
   &= 4 \frac{k(k+1)}{k(k-1)^2} \left[\frac{2k+1}{6} - \frac{k+1}{4}\right]
@@ -270,7 +284,7 @@ Simplifying the right-hand term:
 Simplifying (4.12) and inserting (4.13) makes the final steps easy:
 
 \begin{align}
-h_{ud} &= 4 \frac{k+1}{(k-1)^2} \cdot \frac{k-1}{12} \\
+h_u &= 4 \frac{k+1}{(k-1)^2} \cdot \frac{k-1}{12} \\
   &= 4 \frac{(k+1)(k-1)}{12(k-1)^2} \\
   &= 4 \frac{k+1}{12(k-1)} \\
   &= \frac{k+1}{3(k-1)}
@@ -278,12 +292,12 @@ h_{ud} &= 4 \frac{k+1}{(k-1)^2} \cdot \frac{k-1}{12} \\
 
 $\square$
 
-#### The $h_u$ in the continuous case is constant
+#### $h_u$ is constant in the continuous case
 
-The horns index of the continuous uniform distribution, $h_{uc}$, is a constant:
+The horns index of the continuous uniform distribution, $h_u$, is a constant:
 
 \begin{equation}
-h_{uc} = \frac{1}{3}
+h_u = \frac{1}{3}, \ \ k = \infty
 \end{equation}
 
 Let $l$ be the lower bound and $u$ the upper bound. The variance of the continuous uniform distribution is ([Proof Wiki 2023](https://proofwiki.org/wiki/Variance_of_Continuous_Uniform_Distribution)):
@@ -301,24 +315,24 @@ We will similarly express the maximum possible variance from Popoviciu's inequal
 So the horns index in this case is constant at $\frac{1}{3}$:
 
 \begin{align}
-h_{uc} &= \frac
+h_u &= \frac
 { \frac{1}{12} (u - l)^2 }
 { \frac{1}{4} (u - l)^2 } \\
   &= \frac{1}{3}
 \end{align}
 
-#### $h_{ud}$ and $h_{uc}$ converge as $k$ increases
+#### $h_u$ converges to $\frac{1}{3}$ as $k$ increases
 
-Finally, $h_{ud}$ asymptotically approximates $h_{uc}$:
+Finally, $h_u$ asymptotically approximates $\frac{1}{3}$:
 
 \begin{equation}
-\lim_{k \to \infty} h_{ud} = h_{uc} = \frac{1}{3}
+\lim_{k \to \infty} h_u = \frac{1}{3}
 \end{equation}
 
-We will first transform $h_{ud}$:
+We will first transform $h_u$:
 
 \begin{align}
-h_{ud} &= \frac{k+1}{3(k-1)} \\
+h_u &= \frac{k+1}{3(k-1)} \\
   &= \frac
 {k (1 + \frac{1}{k})}
 {k (3 - \frac{3}{k})} \\
@@ -327,7 +341,7 @@ h_{ud} &= \frac{k+1}{3(k-1)} \\
 {3 - \frac{3}{k}}
 \end{align}
 
-Therefore, as $k$ increases, $h_{ud}$ approaches $\frac{1}{3}$:
+Therefore, as $k$ increases, $h_u$ approaches $\frac{1}{3}$:
 
 \begin{equation}
 \lim_{k \to \infty} \frac

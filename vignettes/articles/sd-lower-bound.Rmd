@@ -27,15 +27,11 @@ Such a stronger assumption would rather characterize empirical bounds. For examp
 
 ## Deriving the lower bound for sample variance with empirical bounds
 
-Suppose we have $n$ observations where we know the sample size $n$, the sample mean $\bar{x}$, and that at least one observation equals the empirical minimum $a$ while at least one observation equals the empirical maximum $b$.
+Suppose we have $n$ observations with a sample mean of $\bar{x}$. Further suppose that at least one observation equals the empirical lower bound $a$ while at least one observation equals the empirical upper bound $b$.
 
-We want to find the minimum possible sample variance consistent with these constraints. The sample variance is defined as:
+We seek to find the minimum possible sample variance consistent with these constraints. The sample variance is defined as:
 
 $$s^2 = \frac{1}{n} \sum_{i=1}^{n} (x_i - \bar{x})^2$$
-
-### The optimization problem
-
-We seek to minimize $s^2$ subject to the constraints that at least one observation equals $a$, at least one observation equals $b$, the mean of all observations equals $\bar{x}$, and all observations lie in the interval $[a, b]$.
 
 ### Finding the minimum configuration
 
@@ -58,9 +54,9 @@ $$s^2 \ge \frac{1}{n}\left[(a-\bar{x})^2 + (b-\bar{x})^2 + (n-2)(c-\bar{x})^2\ri
 Now, to express $c-\bar{x}$ using only the parameters:
 
 \begin{align*}
-c - \bar{x} &= \frac{n\bar{x} - a - b}{n-2} - \bar{x}\\
-&= \frac{n\bar{x} - a - b - \bar{x}(n-2)}{n-2}\\
-&= \frac{n\bar{x} - a - b - n\bar{x} + 2\bar{x}}{n-2}\\
+c - \bar{x} &= \frac{n\bar{x} - a - b}{n-2} - \bar{x} \\
+&= \frac{n\bar{x} - a - b - \bar{x}(n-2)}{n-2} \\
+&= \frac{n\bar{x} - a - b - n\bar{x} + 2\bar{x}}{n-2} \\
 &= \frac{2\bar{x} - a - b}{n-2}
 \end{align*}
 
@@ -70,7 +66,9 @@ $$s^2 \ge \frac{1}{n}\left[(a-\bar{x})^2 + (b-\bar{x})^2 + (n-2) \cdot \frac{(2\
 
 Simplifying this yields the general lower bound for $s^2$ when empirical bounds $a$ and $b$ as well as mean $\bar{x}$ and sample size $n$ are observed:
 
-$$\boxed{s^2 \ge \frac{1}{n}\left[(a-\bar{x})^2 + (b-\bar{x})^2 + \frac{(2\bar{x} - a - b)^2}{n-2}\right]}$$
+$$s^2 \ge \frac{1}{n}\left[(a-\bar{x})^2 + (b-\bar{x})^2 + \frac{(2\bar{x} - a - b)^2}{n-2}\right]$$
+
+$\square$
 
 For the standard deviation, of course, the corresponding lower bound is the square root of this quantity.
 
@@ -91,14 +89,16 @@ This equality allows us to greatly simplify the above lower bound. First, substi
 So the formula simplifies to:
 
 \begin{align*}
-s^2 &\geq \frac{1}{n}\left[\left(a - \frac{a+b}{2}\right)^2 + \left(b - \frac{a+b}{2}\right)^2\right]\\
-&= \frac{1}{n}\left[\left(\frac{a-b}{2}\right)^2 + \left(\frac{b-a}{2}\right)^2\right]\\
-&= \frac{1}{n}\left[2 \cdot \frac{(b-a)^2}{4}\right]\\
+s^2 &\geq \frac{1}{n}\left[\left(a - \frac{a+b}{2}\right)^2 + \left(b - \frac{a+b}{2}\right)^2\right] \\
+&= \frac{1}{n}\left[\left(\frac{a-b}{2}\right)^2 + \left(\frac{b-a}{2}\right)^2\right] \\
+&= \frac{1}{n}\left[2 \cdot \frac{(b-a)^2}{4}\right] \\
 &= \frac{(b-a)^2}{2n}
 \end{align*}
 
 Thus, when $\bar{x} = \frac{a+b}{2}$, we obtain a clean formula for the lower bound of the variance based on $n$ and the empirical lower and upper bounds, $a$ and $b$:
 
-$$\boxed{s^2 \geq \frac{(b-a)^2}{2n}}$$
+$$s^2 \geq \frac{(b-a)^2}{2n}$$
+
+$\square$
 
 As an aside, note how this relates to *maximizing* variance. Popoviciu's inequality implies that $\bar{x} = \frac{a+b}{2}$ is a necessary (but not a sufficient) condition for maximizing the variance given empirical or theoretical lower and upper bounds $[a, b]$. The variance is maximized if and only if half of the sample is at $a$ and half is at $b$. The equality holds in this case, but also in all other cases in which the distribution is symmetrical about the midpoint.
