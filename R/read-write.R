@@ -208,6 +208,9 @@ closure_read <- function(
   check_type(path, "character")
   check_type(samples_cap, "double", allow_null = TRUE)
 
+  # TODO: Parameterize!
+  technique <- "CLOSURE"
+
   # Prevent errors of accidentally included spaces or line breaks by removing
   # any such pattern from the start or end of the path. Breaks in particular can
   # be insidious because double-clicking on a path in the console and then
