@@ -11,7 +11,7 @@ Description: Reconstructs all possible raw data that could have led to reported
 License: MIT + file LICENSE
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
+RoxygenNote: 7.3.3
 Depends:
     R (>= 4.2.0)
 Imports: 
@@ -30,6 +30,7 @@ Collate:
     'read-write.R'
     'performance.R'
     'horns.R'
+    'generate-for-export.R'
     'generate.R'
     'plot.R'
     'horns-plot.R'
