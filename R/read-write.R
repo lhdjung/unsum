@@ -119,8 +119,8 @@ closure_write <- function(data, path) {
   ) {
     cli::cli_abort(
       message = c(
-        "Results already saved on disk.",
-        "x" = "Folder with {technique} results present at:",
+        "Results were already saved to disk.",
+        "x" = "Folder with {technique} results is (or was) present at:",
         "x" = data$directory$path
       )
     )
@@ -146,9 +146,6 @@ closure_write <- function(data, path) {
   name_new_dir <- data$inputs |>
     paste(collapse = "-") |>
     gsub("\\.", "_", x = _)
-
-  # Prefix with the name of the technique to make the origin very clear
-  name_new_dir <- paste0(technique, "-", name_new_dir)
 
   # Full path of the new directory, not just the name
   path_new_dir <- paste0(
