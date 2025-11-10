@@ -316,8 +316,8 @@ closure_read <- function(
     inputs = "inputs" |>
       read_file() |>
       add_class(c(
-        paste0("closure_read_include_", include),
-        "closure_generate"
+        technique |> tolower() |> paste0("_read_include_", include),
+        technique |> tolower() |> paste0("_generate")
       )),
 
     metrics_main = "metrics_main" |> read_file(),
@@ -433,7 +433,13 @@ closure_read <- function(
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
-    expr = check_closure_generate(out),
+    expr = switch(
+      technique,
+      "CLOSURE" = check_closure_generate(out),
+      cli::cli_abort(
+        "Internal error: File reading not supported for {technique}.",
+      )
+    ),
     error = function(e) {
       cli::cli_abort(
         message = c(

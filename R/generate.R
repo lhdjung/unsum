@@ -233,12 +233,6 @@ generate_from_mean_sd_n <- function(
     ))
   }
 
-  # Insert the samples into a data frame, along with summary statistics. The S3
-  # class "closure_generate" will be recognized by downstream functions, such as
-  # `closure_plot_bar()`. All elements here are created using the low-level
-  # `new_tibble()` instead of `tibble()`: once for passing the S3 class, and
-  # three times for performance.
-
   # Assemble the summary statistics that make up much of the output's structure.
   # In memory mode (i.e., without writing to disk), this is done manually here.
   # An S3 class like "closure_generate" is added -- it will be recognized by
@@ -300,7 +294,15 @@ generate_from_mean_sd_n <- function(
     # before this point; they were created on the Rust level. The `include`
     # argument controls which parts of the results are loaded. This is to
     # prevent out-of-memory errors due to large data.
-    out_summary <- closure_read(path_new_dir, include = include)
+    out_summary <- switch(
+      technique,
+      "CLOSURE" = closure_read(path_new_dir, include = include),
+
+      # Error if `technique` is allowed but file reading is not supported yet
+      cli::cli_abort(
+        "Internal error: File reading not supported for {technique}."
+      )
+    )
 
     # Overwrite info.txt which now contains instructions for importing the
     # files, etc.; and issue an alert. As both steps give confirmatory signals
