@@ -65,19 +65,3 @@ formals_remove <- function(formals_fn, ...) {
   should_be_removed <- names(formals_fn) %in% formals_to_remove
   formals_fn[!should_be_removed]
 }
-
-
-# This helper is tailored to `generate_from_mean_sd_n()`. It takes this
-# function's formal arguments, removes those that are not needed in its wrappers
-# such as `closure_generate()`, and returns the remaining ones. In this way, the
-# list of arguments is always up to date with a single source of truth, without
-# manually copying much code around.
-formals_adapt_generator <- function(fn_basic) {
-  fn_basic |>
-    formals() |>
-    formals_remove(
-      "technique",
-      "rounding_error_mean",
-      "rounding_error_sd"
-    )
-}

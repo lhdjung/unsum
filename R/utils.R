@@ -3,7 +3,7 @@ utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 
 # Load helpers that are only needed at build-time. Storing them under inst/
 # rather than R/ avoids unnecessarily including them in the final binary.
-source("inst/build-helpers/fn-formals.R")
+source("inst/build-helpers/fn-factory.R")
 
 
 # Error if input is not an unchanged CLOSURE list.

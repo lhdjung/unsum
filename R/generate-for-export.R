@@ -147,24 +147,4 @@
 #' # This can also be shown by `closure_plot_bar()`:
 #' closure_plot_bar(data_low)
 
-closure_generate <- function() {
-  generate_from_mean_sd_n(
-    mean = mean,
-    sd = sd,
-    n = n,
-    scale_min = scale_min,
-    scale_max = scale_max,
-    technique = "CLOSURE",
-    path = path,
-    stop_after = stop_after,
-    include = include,
-    rounding = rounding,
-    threshold = threshold,
-    ask_to_proceed = ask_to_proceed,
-    rounding_error_mean = NULL,
-    rounding_error_sd = NULL
-  )
-}
-
-# Insert list of arguments using a helper from inst/build-helpers/fn-formals.R
-formals(closure_generate) <- formals_adapt_generator(generate_from_mean_sd_n)
+closure_generate <- new_generator_mean_sd_n("CLOSURE")
