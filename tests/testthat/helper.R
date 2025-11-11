@@ -1,4 +1,3 @@
-
 # Reading CLOSURE data from disk can lead to spurious differences in attributes;
 # specifically, in pointers. However, what matters when comparing two data
 # frames produced by different CLOSURE implementations is only the values, not
@@ -50,4 +49,3 @@ sort_cols <- function(x) {
     lapply(sort) |>
     tibble::as_tibble()
 }
-

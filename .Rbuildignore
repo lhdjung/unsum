@@ -1,6 +1,7 @@
 ^unsum\.Rproj$
 ^\.Rproj\.user$
 ^src/\.cargo$
+^src/\.claude$
 ^LICENSE\.md$
 ^README\.Rmd$
 ^special-scripts$

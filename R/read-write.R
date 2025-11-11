@@ -432,7 +432,7 @@ closure_read <- function(
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
-    expr = check_generator_output(data, technique),
+    expr = check_generator_output(out, technique),
     error = function(e) {
       cli::cli_abort(
         c(

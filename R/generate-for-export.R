@@ -23,6 +23,11 @@
 #' @param path String (length 1). Optionally, choose the directory where a new
 #'   folder with CLOSURE results should be created. Use `path = "."` for your
 #'   current working directory. See "Writing to disk" below.
+#' @param stop_after Numeric (length 1). Optionally, make CLOSURE stop searching
+#'   after it found this many samples. Useful if the goal is just to check
+#'   whether the inputs are consistent: e.g., with `stop_after = 1`, the
+#'   function returns either one sample or none. The latter would indicate an
+#'   inconsistency.
 #' @param include String (length 1). If results are written to disk, which parts
 #'   of them should be included in the R output?
 #'   - With `"stats_and_horns"`, the default, all parts except for the samples

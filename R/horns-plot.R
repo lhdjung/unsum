@@ -129,6 +129,7 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
     .after = "data"
   ) |>
   formals_remove(
+    "technique",
     "min_max_values",
     "frequency_rows_subset"
   )
@@ -354,7 +355,7 @@ closure_plot_horns_histogram <- function() {
 
 formals(closure_plot_horns_histogram) <- plot_horns_frequency |>
   formals() |>
-  formals_remove("type", "density_limits")
+  formals_remove("type", "technique", "density_limits")
 
 
 #' @rdname horns-frequency
@@ -377,4 +378,4 @@ closure_plot_horns_density <- function() {
 
 formals(closure_plot_horns_density) <- plot_horns_frequency |>
   formals() |>
-  formals_remove("type", "binwidth")
+  formals_remove("type", "technique", "binwidth")

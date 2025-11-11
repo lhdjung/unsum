@@ -45,9 +45,9 @@ if (!ok) {
   .data_python_1 <- sort_cols(.data_python_1)
   data_r_1 <- sort_cols(data_r_1)
 
-  waldo::compare(.data_rust_1, .data_python_1, x_arg = "rust", y_arg = "python")
-  waldo::compare(.data_rust_1, data_r_1, x_arg = "rust", y_arg = "r")
-  waldo::compare(.data_python_1, data_r_1, x_arg = "python", y_arg = "r")
+  all.equal(.data_rust_1, .data_python_1, x_arg = "rust", y_arg = "python")
+  all.equal(.data_rust_1, data_r_1, x_arg = "rust", y_arg = "r")
+  all.equal(.data_python_1, data_r_1, x_arg = "python", y_arg = "r")
 }
 
 

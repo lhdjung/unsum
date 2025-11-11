@@ -34,6 +34,12 @@ constrain the possible values further.}
 folder with CLOSURE results should be created. Use \code{path = "."} for your
 current working directory. See "Writing to disk" below.}
 
+\item{stop_after}{Numeric (length 1). Optionally, make CLOSURE stop searching
+after it found this many samples. Useful if the goal is just to check
+whether the inputs are consistent: e.g., with \code{stop_after = 1}, the
+function returns either one sample or none. The latter would indicate an
+inconsistency.}
+
 \item{include}{String (length 1). If results are written to disk, which parts
 of them should be included in the R output?
 \itemize{
