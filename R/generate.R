@@ -94,7 +94,7 @@ generate_from_mean_sd_n <- function(
     # Error if `include` was specified even though `path` was not
     if (include != "stats_and_horns") {
       cli::cli_abort(
-        message = c(
+        c(
           "`include` requires `path` to be specified.",
           "x" = "`include` is \"{include}\".",
           "x" = "`path` is `NULL`.",

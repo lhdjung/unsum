@@ -136,7 +136,7 @@ horns <- function(freqs, scale_min, scale_max) {
   # Error if arguments are incompatible in terms of length
   if (k != length(scale_min:scale_max)) {
     cli::cli_abort(
-      message = c(
+      c(
         "Scale implied by `scale_min` ({scale_min}) \
         and `scale_max` ({scale_max}) must match `freqs` in length.",
         "x" = "Scale: length {length(scale_min:scale_max)} \

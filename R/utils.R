@@ -32,7 +32,7 @@ check_closure_generate <- function(data) {
   if (!top_level_is_correct) {
     msg_tibbles_all <- paste0("\"", tibbles_all, "\"")
     cli::cli_abort(
-      message = c(
+      c(
         "Input must be the output of `closure_generate()` \
         or `closure_read()`.",
         "!" = "Such output is a list with the elements \
@@ -149,7 +149,7 @@ check_closure_generate <- function(data) {
     # Contradictory data
     if (reading_class == "stats_only" && any(names(data) == "results")) {
       cli::cli_abort(
-        message = c(
+        c(
           "Cannot hold \"results\" tibble because reading function \
           was called with `include == \"stats_only\"`."
         )
@@ -208,7 +208,7 @@ check_closure_generate <- function(data) {
 
   if (!f_relative_sums_up) {
     cli::cli_abort(
-      message = c(
+      c(
         "The `f_relative` column in `frequency` must sum up to 1 \
         (or 0, if `f_absolute` does).",
         "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
@@ -258,7 +258,7 @@ check_component_tibble <- function(
         to other `closure_*()` functions."
     }
     cli::cli_abort(
-      message = c(
+      c(
         msg_main,
         "!" = "Specifically, `{name}` must be a tibble with:",
         "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
@@ -283,7 +283,7 @@ check_scale <- function(
 ) {
   if (scale_min > scale_max) {
     cli::cli_abort(
-      message = c(
+      c(
         "Scale minimum can't be greater than scale maximum.",
         "!" = warning,
         "x" = "`scale_min` is {scale_min}.",
@@ -297,7 +297,7 @@ check_scale <- function(
   if (!is.null(mean)) {
     if (as.numeric(mean) < as.numeric(scale_min)) {
       cli::cli_abort(
-        message = c(
+        c(
           "Mean can't be less than scale minimum.",
           "!" = warning,
           "x" = "`mean` is {mean}.",
@@ -308,7 +308,7 @@ check_scale <- function(
     }
     if (as.numeric(mean) > as.numeric(scale_max)) {
       cli::cli_abort(
-        message = c(
+        c(
           "Mean can't be greater than scale maximum.",
           "!" = warning,
           "x" = "`mean` is {mean}.",
@@ -334,7 +334,7 @@ check_value <- function(x, type, allow_null = FALSE) {
 
   if (length(x) != 1L) {
     cli::cli_abort(
-      message = c(
+      c(
         "`{name}` must have length 1.",
         "x" = "It has length {length(x)}."
       ),
@@ -344,7 +344,7 @@ check_value <- function(x, type, allow_null = FALSE) {
 
   if (is.na(x)) {
     cli::cli_abort(
-      message = "`{name}` can't be `NA`.",
+      "`{name}` can't be `NA`.",
       call = rlang::caller_env()
     )
   }
@@ -375,7 +375,7 @@ check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
   }
 
   cli::cli_abort(
-    message = c(
+    c(
       `!` = "`{name}` must {msg_type} {t}.",
       x = "It is {typeof(x)}."
     ),
@@ -401,7 +401,7 @@ check_whole_number <- function(
   }
 
   cli::cli_abort(
-    message = c(
+    c(
       "`{name}` must be a whole number (integer or double).",
       "x" = "It is actually: {x}"
     ),
@@ -420,7 +420,7 @@ check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
   }
 
   cli::cli_abort(
-    message = c(
+    c(
       `!` = "`{name}` must have length {l}.",
       x = "It has length {length(x)}."
     ),
@@ -438,7 +438,7 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 create_results_folder <- function(path, n = 1) {
   if (dir.exists(path)) {
     cli::cli_abort(
-      message = c(
+      c(
         "Name of new folder must not be taken.",
         "x" = "Folder already exists:",
         "x" = path

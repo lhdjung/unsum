@@ -118,7 +118,7 @@ closure_write <- function(data, path) {
       any(names(data$directory) == "path")
   ) {
     cli::cli_abort(
-      message = c(
+      c(
         "Results were already saved to disk.",
         "x" = "Folder with {technique} results is (or was) present at:",
         "x" = data$directory$path
@@ -219,7 +219,7 @@ closure_read <- function(
   # the former has either of these two values, the latter must be specified.
   if (include == "capped_error" && is.null(samples_cap)) {
     cli::cli_abort(
-      message = c(
+      c(
         "If `include` is \"{include}\", `samples_cap` must be specified.",
         "i" = "Use `samples_cap` to state a threshold -- if there are \
         more than this many samples, there will be an error."
@@ -229,7 +229,7 @@ closure_read <- function(
 
   if (include != "capped_error" && !is.null(samples_cap)) {
     cli::cli_abort(
-      message = c(
+      c(
         "If `samples_cap` is specified, `include` must be \"capped_error\".",
         "x" = "`include` is: \"{include}\"",
         "x" = "`samples_cap` is: `{samples_cap}`"
@@ -239,7 +239,7 @@ closure_read <- function(
 
   if (!dir.exists(path)) {
     cli::cli_abort(
-      message = c(
+      c(
         "Must choose an existing folder.",
         "x" = "Chosen folder does not exist:",
         "x" = path
@@ -285,7 +285,7 @@ closure_read <- function(
     }
 
     cli::cli_abort(
-      message = c(
+      c(
         "Folder must contain all correct files (and no others).",
         "!" = "Expected files: {files_expected}",
         msg_missing,
@@ -337,8 +337,7 @@ closure_read <- function(
       !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
   ) {
     cli::cli_abort(
-      "Mean and SD in inputs.csv must match those \
-      in the folder's name."
+      "Mean and SD in inputs.csv must match those in the folder's name."
     )
   }
 
@@ -375,7 +374,7 @@ closure_read <- function(
     )
   } else if (include == "capped_error" && n_samples_all > samples_cap) {
     cli::cli_abort(
-      message = c(
+      c(
         "Number of samples exceeds the cap.",
         "x" = "`samples_cap` is: {samples_cap}",
         "x" = "Number of samples is: {n_samples_all}"
@@ -402,7 +401,7 @@ closure_read <- function(
           tryCatch(
             error = function(e) {
               cli::cli_abort(
-                message = c(
+                c(
                   "Reading samples.parquet from disk failed.",
                   "x" = "Original error:",
                   "x" = e,
@@ -420,9 +419,7 @@ closure_read <- function(
       nrow = n_samples_all
     )
   } else if (include != "stats_only") {
-    cli::cli_abort(
-      message = "Internal error: invalid `include` variant \"{include}\""
-    )
+    cli::cli_abort("Internal error: invalid `include` variant \"{include}\"")
   }
 
   # Add a record of the folder's path
@@ -437,12 +434,12 @@ closure_read <- function(
       technique,
       "CLOSURE" = check_closure_generate(out),
       cli::cli_abort(
-        "Internal error: File reading not supported for {technique}.",
+        "Internal error: File reading not supported for {technique}."
       )
     ),
     error = function(e) {
       cli::cli_abort(
-        message = c(
+        c(
           "Something went wrong when reading from disk.",
           "x" = "Original error:",
           "x" = "{e}"

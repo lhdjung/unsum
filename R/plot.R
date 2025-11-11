@@ -447,7 +447,7 @@ closure_plot_ecdf <- function(
     # possible in this case
     if (is.null(data[["results"]][["sample"]])) {
       cli::cli_abort(
-        message = c(
+        c(
           "Visualizing all samples requires those samples.",
           "x" = "`samples` is \"all\" but the actual samples \
           are not present. Most likely, they were written to disk instead.",
@@ -461,13 +461,16 @@ closure_plot_ecdf <- function(
 
     # This error shouldn't occur if the initial checks work
     if (is.null(data[["results"]][["horns"]])) {
-      cli::cli_abort("Column `horns` missing.", call = rlang::caller_env())
+      cli::cli_abort(
+        "Column `horns` missing.",
+        call = rlang::caller_env()
+      )
     }
 
     # Error if the user tries to match the curves of all samples with the range
     if (pad == "match") {
       cli::cli_abort(
-        message = c(
+        c(
           "In `closure_plot_ecdf()`, matching the y-axis range is \
           currently not supported when visualizing each individual sample.",
           "x" = "You chose `samples = \"all\"`, but also `pad = \"match\"`.",
