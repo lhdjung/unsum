@@ -1,11 +1,4 @@
-# NOTE: Using this function would require:
-# -- 1. Loading fn-formals.R first
-# -- 2. Loading the file that contains `generate_from_mean_sd_n()`
-# -- 3. No longer using `formals_adapt_generator()`
-# -- 4. Possibly changing the `source()` in utils.R to load this file instead
-# The difficulty is with step 2 because `generate_from_mean_sd_n()` is needed at
-# runtime.
-
+# Load files that are needed to use the present file at build-time
 source("R/generate.R")
 source("inst/build-helpers/fn-formals.R")
 

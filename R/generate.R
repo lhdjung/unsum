@@ -1,5 +1,10 @@
+# Note: don't define anything here other than `generate_from_mean_sd_n()`.
+# During the package build process, this file is manually sourced one extra time
+# to determine the arguments of its one function, and creating any other objects
+# in the file would make this less reliable.
+
 # Note: some helper functions called here can be found in the R/utils.R file.
-# The most notable exception `create_combinations()`, is in
+# The most notable exception, `create_combinations()`, is in
 # R/extendr-wrappers.R, but all it does is to call into Rust code in
 # scr/rust/src/lib.rs which, in turn, accesses closure-core. The latter is a
 # Rust crate (roughly analogous to an R package) that contains the actual
@@ -13,11 +18,11 @@
 # scale_min <- 1
 # scale_max <- 8
 # technique <- "CLOSURE"
-# rounding = "up_or_down"
-# threshold = 5
 # path <- "."
 # stop_after <- NULL
 # include <- "stats_and_horns"
+# rounding = "up_or_down"
+# threshold = 5
 # ask_to_proceed <- TRUE
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL

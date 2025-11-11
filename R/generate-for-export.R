@@ -147,4 +147,5 @@
 #' # This can also be shown by `closure_plot_bar()`:
 #' closure_plot_bar(data_low)
 
+# This constructs a function that wraps `generate_from_mean_sd_n()`; see there
 closure_generate <- new_generator_mean_sd_n("CLOSURE")
