@@ -110,7 +110,7 @@
 #'   - **`directory`** (only present if `path` was specified):
 #'     - `path`: string. Location of the folder in which the results were saved.
 #'
-#' @include utils.R count.R horns.R performance.R read-write.R
+#' @include utils.R count.R horns.R performance.R read-write.R fn-factory.R
 #'   extendr-wrappers.R
 #'
 #' @export

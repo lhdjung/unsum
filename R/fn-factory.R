@@ -1,7 +1,4 @@
-# Load files that are needed to use the present file at build-time
-source("R/generate.R")
-source("R/plot.R")
-source("inst/build-helpers/fn-formals.R")
+#' @include fn-formals.R generate.R plot-basic.R
 
 formals_final_all <- list(
   # Get the list of formals arguments from `generate_from_mean_sd_n()`, then
@@ -26,11 +23,11 @@ formals_final_all <- list(
 )
 
 
-# Remove the generator function because it is no longer needed for building. It
-# will, of course, be present in the final binary because it is under R/ and
-# needs to be called at runtime, but here, `rm()` just removes the manually
-# sourced copy.
-rm(generate_from_mean_sd_n, closure_plot_bar, closure_plot_ecdf)
+# # Remove the generator function because it is no longer needed for building. It
+# # will, of course, be present in the final binary because it is under R/ and
+# # needs to be called at runtime, but here, `rm()` just removes the manually
+# # sourced copy.
+# rm(generate_from_mean_sd_n, closure_plot_bar, closure_plot_ecdf)
 
 # Build helper that constructs functions like `closure_generate()`. The output
 # function is just a wrapper around `generate_from_mean_sd_n()` that passes

@@ -27,13 +27,17 @@ Collate:
     'utils.R'
     'count.R'
     'extendr-wrappers.R'
+    'plot-basic.R'
+    'generate.R'
+    'fn-formals.R'
+    'fn-factory.R'
     'read-write.R'
     'performance.R'
     'horns.R'
     'generate-for-export.R'
-    'generate.R'
-    'plot.R'
     'horns-plot.R'
+    'plot.R'
+    'zzz.R'
 Config/rextendr/version: 0.4.1
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/

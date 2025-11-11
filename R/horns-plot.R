@@ -29,7 +29,7 @@
 #'
 #' @name horns_plot
 #'
-#' @include plot.R
+#' @include plot-basic.R
 #'
 #' @return A ggplot object.
 #'
