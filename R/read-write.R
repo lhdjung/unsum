@@ -93,7 +93,9 @@
 #' closure_read(path_new_folder)
 
 closure_write <- function(data, path) {
-  check_closure_generate(data)
+  technique <- "CLOSURE"
+  check_generator_output(data, technique)
+
   check_value(path, "character")
 
   # Translate "." to the user's working directory. If the path was manually
@@ -430,13 +432,7 @@ closure_read <- function(
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
-    expr = switch(
-      technique,
-      "CLOSURE" = check_closure_generate(out),
-      cli::cli_abort(
-        "Internal error: File reading not supported for {technique}."
-      )
-    ),
+    expr = check_generator_output(data, technique),
     error = function(e) {
       cli::cli_abort(
         c(

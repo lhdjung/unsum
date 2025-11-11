@@ -1,23 +1,36 @@
 # Load files that are needed to use the present file at build-time
 source("R/generate.R")
+source("R/plot.R")
 source("inst/build-helpers/fn-formals.R")
 
-# Get the list of formals arguments from `generate_from_mean_sd_n()`, then
-# reduce it to the subset of arguments that exported sample generator functions
-# like `closure_generate()` should have.
-formals_generator_final <- generate_from_mean_sd_n |>
-  formals() |>
-  formals_remove(
-    "technique",
-    "rounding_error_mean",
-    "rounding_error_sd"
-  )
+formals_final_all <- list(
+  # Get the list of formals arguments from `generate_from_mean_sd_n()`, then
+  # reduce it to the subset of arguments that exported sample generator functions
+  # like `closure_generate()` should have.
+  generator = generate_from_mean_sd_n |>
+    formals() |>
+    formals_remove(
+      "technique",
+      "rounding_error_mean",
+      "rounding_error_sd"
+    ),
+  plotter = plot_frequency_bar |>
+    formals() |>
+    formals_remove(
+      "technique",
+      "facet_labels",
+      "facet_labels_parens",
+      "frequency_rows_subset",
+      "min_max_values"
+    )
+)
+
 
 # Remove the generator function because it is no longer needed for building. It
 # will, of course, be present in the final binary because it is under R/ and
 # needs to be called at runtime, but here, `rm()` just removes the manually
 # sourced copy.
-rm(generate_from_mean_sd_n)
+rm(generate_from_mean_sd_n, closure_plot_bar, closure_plot_ecdf)
 
 # Build helper that constructs functions like `closure_generate()`. The output
 # function is just a wrapper around `generate_from_mean_sd_n()` that passes
@@ -27,7 +40,7 @@ rm(generate_from_mean_sd_n)
 # specify the `technique` argument of `generate_from_mean_sd_n()`.
 new_generator_mean_sd_n <- function(technique) {
   rlang::new_function(
-    args = formals_generator_final,
+    args = formals_final_all$generator,
     body = rlang::expr({
       generate_from_mean_sd_n(
         mean = mean,
@@ -44,6 +57,36 @@ new_generator_mean_sd_n <- function(technique) {
         ask_to_proceed = ask_to_proceed,
         rounding_error_mean = NULL,
         rounding_error_sd = NULL
+      )
+    })
+  )
+}
+
+# Build helper that constructs basic barplot functions like
+# `closure_plot_bar()`. The second argument, `bar_color`, will become the
+# default for the output function's `bar_color` argument.
+new_plotter_bar <- function(technique, bar_color) {
+  rlang::new_function(
+    # Changing a default here, not above, because each technique needs its own
+    # color, and this color is only known from the call to `new_plotter_bar()`
+    args = formals_final_all$plotter |>
+      formals_change_defaults(bar_color = bar_color),
+
+    body = rlang::expr({
+      plot_frequency_bar(
+        data = data,
+        technique = !!technique,
+        frequency = frequency,
+        samples = samples,
+        bar_alpha = bar_alpha,
+        bar_color = bar_color,
+        show_text = show_text,
+        text_color = text_color,
+        text_size = text_size,
+        text_offset = text_offset,
+        mark_thousand = mark_thousand,
+        mark_decimal = mark_decimal,
+        frequency_rows_subset = "all"
       )
     })
   )

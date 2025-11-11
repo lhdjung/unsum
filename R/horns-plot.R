@@ -138,6 +138,7 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
 plot_horns_frequency <- function(
   data,
   type,
+  technique = "CLOSURE",
   alpha = 0.75,
   color = "#5D3FD3",
   binwidth = 0.01,
@@ -146,7 +147,7 @@ plot_horns_frequency <- function(
   text_limits = c(0.12, 0.88),
   text_size = 12
 ) {
-  check_closure_generate(data)
+  check_generator_output(data, technique)
 
   check_length(text_limits, 2L)
 
@@ -231,6 +232,7 @@ plot_horns_frequency <- function(
       linetype = 2,
       alpha = 0.75,
       color = ref_line_color,
+      # TODO: replace by `linewidth` and then require ggplot2 >= 3.4.0, I guess
       size = 0.75
     ) +
     ggplot2::annotate(

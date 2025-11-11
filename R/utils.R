@@ -6,8 +6,9 @@ utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 source("inst/build-helpers/fn-factory.R")
 
 
-# Error if input is not an unchanged CLOSURE list.
-check_closure_generate <- function(data) {
+# Error if the input is not an unchanged list containing the results of a
+# function such as `closure_generate()`
+check_generator_output <- function(data, technique) {
   tibbles_all <- c(
     "inputs",
     "metrics_main",
@@ -15,6 +16,9 @@ check_closure_generate <- function(data) {
     "frequency",
     "results"
   )
+
+  # "CLOSURE" --> "closure" etc.
+  lowtech <- tolower(technique)
 
   top_level_is_correct <-
     is.list(data) &&
@@ -27,14 +31,19 @@ check_closure_generate <- function(data) {
           c(tibbles_all[!tibbles_all == "results"], "directory")
         )
     ) &&
-    inherits(data$inputs, "closure_generate")
+    inherits(data$inputs, paste0(lowtech, "_generate"))
 
   if (!top_level_is_correct) {
     msg_tibbles_all <- paste0("\"", tibbles_all, "\"")
     cli::cli_abort(
       c(
-        "Input must be the output of `closure_generate()` \
-        or `closure_read()`.",
+        paste0(
+          "Input must be the output of `",
+          lowtech,
+          "_generate()` or `",
+          lowtech,
+          "_read()`."
+        ),
         "!" = "Such output is a list with the elements \
         {msg_tibbles_all}."
       ),
@@ -67,7 +76,7 @@ check_closure_generate <- function(data) {
     scale_min = data$inputs$scale_min,
     scale_max = data$inputs$scale_max,
     mean = data$inputs$mean,
-    warning = "Don't change CLOSURE results before this step.",
+    warning = "Don't change {technique} results before this step.",
     n = 2
   )
 
@@ -122,12 +131,16 @@ check_closure_generate <- function(data) {
 
   is_reading_class <- data$inputs |>
     class() |>
-    grepl("^closure_read_include_", x = _)
+    grepl(paste0("^", lowtech, "_read_include_"), x = _)
 
   # Data that were already written to disk and read back into R -- special case
   if (any(is_reading_class)) {
     reading_class <- class(data$inputs)[is_reading_class]
-    reading_class <- sub("^closure_read_include_", "", reading_class)
+    reading_class <- sub(
+      pattern = paste0("^", lowtech, "_read_include_"),
+      replacement = "",
+      x = reading_class
+    )
 
     if (length(reading_class) > 1) {
       cli::cli_abort("Cannot handle manipulated S3 classes.")

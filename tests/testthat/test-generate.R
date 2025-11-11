@@ -17,8 +17,8 @@ data_r_2 <- closure_generate(
 
 
 test_that("The results pass unsum's internal check for `closure_generate()` output", {
-  data_r_1 |> check_closure_generate() |> expect_no_error()
-  data_r_2 |> check_closure_generate() |> expect_no_error()
+  data_r_1 |> check_generator_output("CLOSURE") |> expect_no_error()
+  data_r_2 |> check_generator_output("CLOSURE") |> expect_no_error()
 })
 
 # Adjust results of R wrapper to format of data saved on disk

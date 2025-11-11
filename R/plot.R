@@ -1,7 +1,3 @@
-# TODO: Consider using bar_color = "#4e004f", "#52003a", "#610019", "#880808",
-# "#341d5c" or similar to distinguish CLOSURE plots from SPRITE plots;
-# especially if and when SPRITE gets implemented in unsum!
-
 # # For interactive testing:
 # data <- closure_generate(
 #   mean = "3.5",
@@ -27,6 +23,7 @@
 
 plot_frequency_bar <- function(
   data,
+  technique = "CLOSURE",
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
   samples = c("mean", "all"),
   min_max_values = NULL,
@@ -42,6 +39,8 @@ plot_frequency_bar <- function(
   mark_thousand = ",",
   mark_decimal = "."
 ) {
+  check_generator_output(data, technique)
+
   # Check inputs
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
@@ -264,6 +263,8 @@ plot_frequency_bar <- function(
 #'
 #' @seealso [`closure_plot_ecdf()`], an alternative visualization.
 #'
+#' @include utils.R
+#'
 #' @export
 #'
 #' @examples
@@ -279,40 +280,8 @@ plot_frequency_bar <- function(
 #' # Visualize:
 #' closure_plot_bar(data)
 
-# Arguments for this function are generated below the definition
-closure_plot_bar <- function() {
-  check_closure_generate(data)
-
-  plot_frequency_bar(
-    data = data,
-    frequency = frequency,
-    samples = samples,
-    bar_alpha = bar_alpha,
-    bar_color = bar_color,
-    show_text = show_text,
-    text_color = text_color,
-    text_size = text_size,
-    text_offset = text_offset,
-    mark_thousand = mark_thousand,
-    mark_decimal = mark_decimal,
-    frequency_rows_subset = "all"
-  )
-}
-
-# Use the arguments of the basic plot function to create a list of arguments for
-# this function, but change one default (to use the CLOSURE-specific color) and
-# remove two other arguments (to prevent abstraction leaks)
-formals(closure_plot_bar) <- plot_frequency_bar |>
-  formals() |>
-  formals_change_defaults(
-    bar_color = "#5D3FD3"
-  ) |>
-  formals_remove(
-    "facet_labels",
-    "facet_labels_parens",
-    "frequency_rows_subset",
-    "min_max_values"
-  )
+# This constructs a function that wraps `plot_frequency_bar()`; see there
+closure_plot_bar <- new_plotter_bar("CLOSURE", "#5D3FD3")
 
 
 #' Visualize CLOSURE data in an ECDF plot
@@ -418,7 +387,8 @@ closure_plot_ecdf <- function(
   reference_line_alpha = 0.6,
   mark_decimal = "."
 ) {
-  check_closure_generate(data)
+  technique <- "CLOSURE"
+  check_generator_output(data, technique)
 
   samples <- rlang::arg_match(samples)
   pad <- rlang::arg_match(pad)
