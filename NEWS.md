@@ -32,6 +32,7 @@ Another focus of this release is visualization, with new plotting functions and 
 -   Removed `closure_horns_analyze()`. Its functionality was integrated into `closure_generate()` for simplicity and ease of use.
 -   Removed `closure_horns_histogram()` because its functionality has now been replaced by `closure_plot_horns_histogram()`.
 -   Removed the `rounding_error_mean` and `rounding_error_sd` arguments from `closure_generate()`. They are not needed for users. If anything, you can use the `rounding` argument instead.
+-   Required ggplot2 version 3.4.0 or later.
 
 ## Bugfixes
 

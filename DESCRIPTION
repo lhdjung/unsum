@@ -16,7 +16,7 @@ Depends:
     R (>= 4.2.0)
 Imports: 
     cli,
-    ggplot2,
+    ggplot2 (>= 3.4.0),
     nanoparquet,
     rlang,
     roundwork,

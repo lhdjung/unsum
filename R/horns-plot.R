@@ -233,8 +233,7 @@ plot_horns_frequency <- function(
       linetype = 2,
       alpha = 0.75,
       color = ref_line_color,
-      # TODO: replace by `linewidth` and then require ggplot2 >= 3.4.0, I guess
-      size = 0.75
+      linewidth = 0.75
     ) +
     ggplot2::annotate(
       geom = "text",
