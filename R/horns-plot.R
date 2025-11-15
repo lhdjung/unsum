@@ -146,7 +146,8 @@ plot_horns_frequency <- function(
   density_limits = c("none", "min_max"),
   ref_line_color = "red",
   text_limits = c(0.12, 0.88),
-  text_size = 12
+  text_size = 12,
+  mark_decimal = "."
 ) {
   check_generator_output(data, technique)
 
@@ -154,6 +155,7 @@ plot_horns_frequency <- function(
 
   h_min <- data$metrics_horns$min
   h_max <- data$metrics_horns$max
+  h_uniform <- data$metrics_horns$uniform
 
   # Reduce the input to a tibble that only includes the horns values
   data <- data$results["horns"]
@@ -164,6 +166,9 @@ plot_horns_frequency <- function(
 
   position_x_min <- max(0, h_min - label_offset)
   position_x_max <- min(1, h_max + label_offset)
+
+  # Cannot go too low because `h_uniform` >= 1 / 3
+  position_x_uniform <- min(1, h_uniform - 0.1)
 
   # Left-align min label, right-align max label
   hjust_min <- 1
@@ -192,7 +197,15 @@ plot_horns_frequency <- function(
     prefix = c("Min", "Max"),
     number = c(h_min, h_max),
     var_name = "h",
-    mark_decimal = ".",
+    mark_decimal = mark_decimal,
+    parse_output = FALSE
+  )
+
+  label_uniform <- format_equation(
+    prefix = "Uniform",
+    number = h_uniform,
+    var_name = "h",
+    mark_decimal = mark_decimal,
     parse_output = FALSE
   )
 
@@ -228,6 +241,8 @@ plot_horns_frequency <- function(
       limits = c(0, 1),
       oob = function(x, limits) x
     ) +
+
+    # Min and max reference lines
     ggplot2::geom_vline(
       xintercept = c(h_min, h_max),
       linetype = 2,
@@ -235,16 +250,41 @@ plot_horns_frequency <- function(
       color = ref_line_color,
       linewidth = 0.75
     ) +
+    # Uniform reference line
+    ggplot2::geom_vline(
+      xintercept = h_uniform,
+      linetype = 3,
+      alpha = 0.75,
+      color = "black",
+      linewidth = 0.75
+    ) +
+
+    # Text label for min and max lines
     ggplot2::annotate(
-      geom = "text",
+      geom = "label",
       x = c(position_x_min, position_x_max),
       y = Inf,
       label = label_min_max,
       vjust = c(vjust_min, vjust_max),
       hjust = c(hjust_min, hjust_max),
       color = "black",
+      fill = "white",
       parse = TRUE
     ) +
+    # Text label for uniform line
+    ggplot2::annotate(
+      geom = "label",
+      x = position_x_uniform,
+      y = -Inf,
+      label = label_uniform,
+      vjust = -4.5,
+      hjust = hjust_max,
+      color = "black",
+      fill = "white",
+      parse = TRUE
+    ) +
+
+    # Rest of the plot
     ggplot2::labs(
       x = expression(paste("Horns index (", italic("h"), ")")),
       y = expression(paste("Count in all ", italic("h"), " values"))
