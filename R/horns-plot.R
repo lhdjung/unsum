@@ -134,17 +134,17 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
     "frequency_rows_subset"
   )
 
-
 # Internal basis of the `*_plot_horns_*()` functions
 plot_horns_frequency <- function(
   data,
   type,
-  technique = "CLOSURE",
+  technique,
   alpha = 0.75,
   color = "#5D3FD3",
   binwidth = 0.01,
   density_limits = c("none", "min_max"),
-  ref_line_color = "red",
+  line_color_min_max = "red",
+  line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
   text_size = 12,
   mark_decimal = "."
@@ -152,6 +152,8 @@ plot_horns_frequency <- function(
   check_generator_output(data, technique)
 
   check_length(text_limits, 2L)
+
+  density_limits <- rlang::arg_match(density_limits)
 
   h_min <- data$metrics_horns$min
   h_max <- data$metrics_horns$max
@@ -167,7 +169,8 @@ plot_horns_frequency <- function(
   position_x_min <- max(0, h_min - label_offset)
   position_x_max <- min(1, h_max + label_offset)
 
-  # Cannot go too low because `h_uniform` >= 1 / 3
+  # Can't go too low because `h_uniform` >= 1 / 3 which leaves enough space for
+  # the text label
   position_x_uniform <- min(1, h_uniform - 0.1)
 
   # Left-align min label, right-align max label
@@ -197,16 +200,14 @@ plot_horns_frequency <- function(
     prefix = c("Min", "Max"),
     number = c(h_min, h_max),
     var_name = "h",
-    mark_decimal = mark_decimal,
-    parse_output = FALSE
+    mark_decimal = mark_decimal
   )
 
   label_uniform <- format_equation(
     prefix = "Uniform",
     number = h_uniform,
     var_name = "h",
-    mark_decimal = mark_decimal,
-    parse_output = FALSE
+    mark_decimal = mark_decimal
   )
 
   # Plot type determines geom to be shown
@@ -247,16 +248,13 @@ plot_horns_frequency <- function(
       xintercept = c(h_min, h_max),
       linetype = 2,
       alpha = 0.75,
-      color = ref_line_color,
+      color = line_color_min_max,
       linewidth = 0.75
     ) +
     # Uniform reference line
     ggplot2::geom_vline(
       xintercept = h_uniform,
-      linetype = 3,
-      alpha = 0.75,
-      color = "black",
-      linewidth = 0.75
+      color = line_color_uniform,
     ) +
 
     # Text label for min and max lines
@@ -267,19 +265,19 @@ plot_horns_frequency <- function(
       label = label_min_max,
       vjust = c(vjust_min, vjust_max),
       hjust = c(hjust_min, hjust_max),
-      color = "black",
+      color = line_color_min_max,
       fill = "white",
       parse = TRUE
     ) +
     # Text label for uniform line
     ggplot2::annotate(
       geom = "label",
-      x = position_x_uniform,
+      x = h_uniform,
       y = -Inf,
       label = label_uniform,
       vjust = -4.5,
-      hjust = hjust_max,
-      color = "black",
+      hjust = 0.5,
+      color = line_color_uniform,
       fill = "white",
       parse = TRUE
     ) +
@@ -296,7 +294,6 @@ plot_horns_frequency <- function(
       panel.grid.minor.y = ggplot2::element_blank()
     )
 }
-
 
 #' Visualize horns index (\eqn{h}) frequencies
 #'
@@ -325,10 +322,10 @@ plot_horns_frequency <- function(
 #'   `closure_plot_horns_density()`. Which limits, if any, should the density be
 #'   forced to fit between? Default is `"none"`. If set to `"min_max"`, this
 #'   avoids the illusion of points beyond the limits but can lead to a U-shaped
-#'   effect, which would also be misleading.
-#'   [`ggplot2::geom_histogram()`]. Default is `0.01`.
-#' @param ref_line_color Numeric (length 1). Color of the lines that mark the
-#'   lower and upper ends of the distribution. Default is `"red"`.
+#'   effect, which would also be misleading. [`ggplot2::geom_histogram()`].
+#'   Default is `0.01`.
+#' @param line_color_min_max Numeric (length 1). Color of the lines that mark
+#'   the lower and upper ends of the distribution. Default is `"red"`.
 #' @param text_limits Numeric (length 2). If the minimum horns index is lower
 #'   than the first element here (default: `0.12`), both text labels go to the
 #'   right of the maximum. The same applies in reverse with the maximum and the
@@ -386,7 +383,7 @@ closure_plot_horns_histogram <- function() {
     alpha = alpha,
     color = color,
     binwidth = binwidth,
-    ref_line_color = ref_line_color,
+    line_color_min_max = line_color_min_max,
     text_limits = text_limits,
     text_size = text_size
   )
@@ -395,7 +392,6 @@ closure_plot_horns_histogram <- function() {
 formals(closure_plot_horns_histogram) <- plot_horns_frequency |>
   formals() |>
   formals_remove("type", "technique", "density_limits")
-
 
 #' @rdname horns-frequency
 #' @export
@@ -409,7 +405,7 @@ closure_plot_horns_density <- function() {
     alpha = alpha,
     color = color,
     density_limits = density_limits,
-    ref_line_color = ref_line_color,
+    line_color_min_max = line_color_min_max,
     text_limits = text_limits,
     text_size = text_size
   )
