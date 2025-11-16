@@ -2,8 +2,8 @@
 
 formals_final <- list(
   # Get the list of formals arguments from `generate_from_mean_sd_n()`, then
-  # reduce it to the subset of arguments that exported sample generator functions
-  # like `closure_generate()` should have.
+  # reduce it to the subset of arguments that exported sample generator
+  # functions like `closure_generate()` should have.
   generator = generate_from_mean_sd_n |>
     formals() |>
     formals_remove(
@@ -11,6 +11,7 @@ formals_final <- list(
       "rounding_error_mean",
       "rounding_error_sd"
     ),
+  # Same for bar plot functions
   plot_fn_freq_bar = plot_frequency_bar |>
     formals() |>
     formals_remove(
@@ -20,6 +21,7 @@ formals_final <- list(
       "frequency_rows_subset",
       "min_max_values"
     ),
+  # Same for horns index distribution plot functions
   plot_fn_horns_freq = plot_horns_frequency |>
     formals() |>
     formals_remove("type", "technique")
@@ -105,6 +107,7 @@ new_plot_fn_horns_frequency <- function(technique, type) {
   rlang::new_function(
     args = formals_final$plot_fn_horns_freq |>
       formals_remove(arg_not_needed),
+
     body = rlang::expr({
       plot_horns_frequency(
         data = data,

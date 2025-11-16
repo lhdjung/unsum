@@ -27,6 +27,7 @@ Collate:
     'utils.R'
     'count.R'
     'extendr-wrappers.R'
+    'horns-plot.R'
     'plot-basic.R'
     'generate.R'
     'fn-formals.R'
@@ -35,7 +36,8 @@ Collate:
     'performance.R'
     'horns.R'
     'generate-for-export.R'
-    'horns-plot.R'
+    'horns-plot-for-export.R'
+    'plot-bar-for-export.R'
     'plot.R'
     'zzz.R'
 Config/rextendr/version: 0.4.1
