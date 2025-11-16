@@ -155,9 +155,17 @@ plot_horns_frequency <- function(
 
   density_limits <- rlang::arg_match(density_limits)
 
+  # Key statistics about the horns index distribution. Lines and labels will be
+  # placed at or around these three points (min and max label placement varies).
   h_min <- data$metrics_horns$min
   h_max <- data$metrics_horns$max
   h_uniform <- data$metrics_horns$uniform
+
+  # If the minimum horns value is too close to 0 for the min label to fit on its
+  # left, or the maximum value is too close to 1 for the max label to fit on its
+  # right, check the distribution shape to decide where to place labels. Get the
+  # median of the distribution to understand where most data lies.
+  h_median <- data$metrics_horns$median
 
   # Reduce the input to a tibble that only includes the horns values
   data <- data$results["horns"]
@@ -169,10 +177,6 @@ plot_horns_frequency <- function(
   position_x_min <- max(0, h_min - label_offset)
   position_x_max <- min(1, h_max + label_offset)
 
-  # Can't go too low because `h_uniform` >= 1 / 3 which leaves enough space for
-  # the text label
-  position_x_uniform <- min(1, h_uniform - 0.1)
-
   # Left-align min label, right-align max label
   hjust_min <- 1
   hjust_max <- 0
@@ -180,18 +184,114 @@ plot_horns_frequency <- function(
   vjust_min <- 2
   vjust_max <- 2
 
-  # If the minimum horns value is too close to 0 for the min label to fit on its
-  # left, move the max label a bit lower and the min label above it. The same
-  # applies vice versa with 1 and the maximum value.
-  if (h_min < text_limits[1]) {
+  # Estimate horizontal space needed for a label (14 or fewer characters). As a
+  # rough estimate, 14 characters take about 0.14-0.16 of the plot width.
+  label_width <- 0.15
+  lines_too_close <- h_max - h_min < label_width
+
+  # Check if min and max lines are very close AND distribution is at one extreme
+  if (lines_too_close && h_min < text_limits[1]) {
+    # Lines too close and both near left edge: stack both labels on the right
     position_x_min <- position_x_max
-    hjust_min <- hjust_max
-    vjust_max <- 3.5
-  } else if (h_max > text_limits[2]) {
+    position_x_max <- position_x_max
+    hjust_min <- 0
+    hjust_max <- 0
+    vjust_min <- 2
+    vjust_max <- 3.5 # Max label below min label
+  } else if (lines_too_close && h_max > text_limits[2]) {
+    # Lines too close and both near right edge: stack both labels on the left
+    position_x_min <- position_x_min
     position_x_max <- position_x_min
-    hjust_max <- hjust_min
-    vjust_max <- 3.5
+    hjust_min <- 1
+    hjust_max <- 1
+    vjust_min <- 2
+    vjust_max <- 3.5 # Max label below min label
+  } else if (h_min < text_limits[1]) {
+    # Min label doesn't fit on the left side
+    if (h_median > 0.5) {
+      # Distribution concentrated on left, stack labels on the right
+      position_x_min <- position_x_max
+      hjust_min <- hjust_max
+      vjust_max <- 3.5
+    } else {
+      # Distribution concentrated on right, space on left - keep min label alone
+      # on left at edge, but closer to the line
+      position_x_min <- h_min
+      # Left-align so label extends to the right
+      hjust_min <- 0
+      vjust_min <- 2
+    }
+  } else if (h_max > text_limits[2]) {
+    # Max label doesn't fit on the right side
+    if (h_median < 0.5) {
+      # Distribution concentrated on right, stack labels on the left
+      position_x_max <- position_x_min
+      hjust_max <- hjust_min
+      vjust_max <- 3.5
+    } else {
+      # Distribution concentrated on left, space on right - keep max label alone
+      # on right at edge, but closer to the line
+      position_x_max <- h_max
+      # Right-align so label extends to the left
+      hjust_max <- 1.2
+      vjust_max <- 2
+    }
   }
+
+  # Adjust uniform label position to avoid overlap with min/max labels
+  # Uniform label is centered, so it extends about 0.075 on each side
+  label_half_width <- 0.075
+  position_x_uniform <- h_uniform
+  hjust_uniform <- 0.5
+
+  # Check if uniform label overlaps with min label (which is at the top)
+  # We need to check horizontal overlap based on the actual label positions
+  uniform_overlaps_min <- abs(position_x_uniform - position_x_min) < label_width
+  uniform_overlaps_max <- abs(position_x_uniform - position_x_max) < label_width
+
+  if (uniform_overlaps_min && uniform_overlaps_max) {
+    # Overlaps with both: move to the side with more space
+    if (h_median < 0.5) {
+      # Distribution on left, space on right - move uniform label right
+      position_x_uniform <- min(1, h_uniform + label_offset)
+      hjust_uniform <- 0 # Left-align so it extends to the right
+      # Don't shift if it would go out of bounds
+      if (position_x_uniform + label_half_width > 1) {
+        position_x_uniform <- h_uniform
+        hjust_uniform <- 0.5
+      }
+    } else {
+      # Distribution on right, space on left - move uniform label left
+      position_x_uniform <- max(0, h_uniform - label_offset)
+      hjust_uniform <- 1 # Right-align so it extends to the left
+      # Don't shift if it would go out of bounds
+      if (position_x_uniform - label_half_width < 0) {
+        position_x_uniform <- h_uniform
+        hjust_uniform <- 0.5
+      }
+    }
+  } else if (uniform_overlaps_min && !uniform_overlaps_max) {
+    # Overlaps with min label only: shift uniform label left
+    position_x_uniform <- max(0, h_uniform - label_offset)
+    # Right-align so it extends to the left
+    hjust_uniform <- 1
+    # Don't shift if it would go out of bounds
+    if (position_x_uniform - label_half_width < 0) {
+      position_x_uniform <- h_uniform
+      hjust_uniform <- 0.5
+    }
+  } else if (uniform_overlaps_max && !uniform_overlaps_min) {
+    # Overlaps with max label only: shift uniform label right
+    position_x_uniform <- min(1, h_uniform + label_offset)
+    # Left-align so it extends to the right
+    hjust_uniform <- 0
+    # Don't shift if it would go out of bounds
+    if (position_x_uniform + label_half_width > 1) {
+      position_x_uniform <- h_uniform
+      hjust_uniform <- 0.5
+    }
+  }
+  # If overlaps with neither, keep centered at h_uniform
 
   # String with labels such as "Min (h = 0.68)" and "Max (h = 0.75)"; where "h"
   # is in italics. Not parsing as an expression here because `annotate()` will
@@ -272,11 +372,11 @@ plot_horns_frequency <- function(
     # Text label for uniform line
     ggplot2::annotate(
       geom = "label",
-      x = h_uniform,
+      x = position_x_uniform,
       y = -Inf,
       label = label_uniform,
       vjust = -4.5,
-      hjust = 0.5,
+      hjust = hjust_uniform,
       color = line_color_uniform,
       fill = "white",
       parse = TRUE
