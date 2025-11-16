@@ -3,10 +3,10 @@
 # prevents them from inflating the binary, i.e., the final package file.
 rm(
   new_generator_mean_sd_n,
-  new_plotter_bar,
+  new_plot_fn_bar,
   formals_add,
   formals_remove,
   formals_change_defaults,
   # This is a list, but all other objects are functions
-  formals_final_all
+  formals_final
 )

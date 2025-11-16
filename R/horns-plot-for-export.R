@@ -79,41 +79,16 @@
 #'
 #' closure_plot_horns_density(data_wide_spread)
 
-closure_plot_horns_histogram <- function() {
-  plot_horns_frequency(
-    data = data,
-    type = "histogram",
-    alpha = alpha,
-    color = color,
-    binwidth = binwidth,
-    line_color_min_max = line_color_min_max,
-    text_limits = text_limits,
-    text_size = text_size
-  )
-}
+closure_plot_horns_histogram <- new_plot_fn_horns_frequency(
+  technique = "CLOSURE",
+  type = "histogram"
+)
 
-formals(closure_plot_horns_histogram) <- plot_horns_frequency |>
-  formals() |>
-  formals_remove("type", "technique", "density_limits")
 
 #' @rdname horns-frequency
 #' @export
 
-closure_plot_horns_density <- function() {
-  density_limits <- rlang::arg_match(density_limits)
-
-  plot_horns_frequency(
-    data = data,
-    type = "density",
-    alpha = alpha,
-    color = color,
-    density_limits = density_limits,
-    line_color_min_max = line_color_min_max,
-    text_limits = text_limits,
-    text_size = text_size
-  )
-}
-
-formals(closure_plot_horns_density) <- plot_horns_frequency |>
-  formals() |>
-  formals_remove("type", "technique", "binwidth")
+closure_plot_horns_density <- new_plot_fn_horns_frequency(
+  technique = "CLOSURE",
+  type = "density"
+)
