@@ -1,0 +1,396 @@
+#' Visualize horns values distribution
+#'
+#' @description Two plot functions that follow up on [`closure_generate()`]:
+#' - `closure_plot_bar_min_max()` draws barplots of the mean samples from among
+#'   those with the minimum or maximum horns index (\eqn{h}). It displays the
+#'   typical sample with the least or most amount of variability from among all
+#'   CLOSURE samples.
+#'
+#' @param data List returned by [`closure_generate()`].
+#' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`. Which
+#'   plot(s) to show? Options are `"both"` (the default), `"min"`, and `"max"`.
+#' @param facet_labels String (length 2). Only in `closure_plot_bar_min_max()`.
+#'   Labels of the two individual plots. Set it to `NULL` to remove the labels.
+#'   Default is `c("Minimal variability", "Maximal variability")`.
+#' @param facet_labels_parens String (length 1). Only in
+#'   `closure_plot_bar_min_max()`. Italicized part of the facet labels inside
+#'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
+#'   details. Default is `"h"`.
+#' @inheritParams closure_plot_bar
+#'
+#' @details By default, both faceted plots in `closure_plot_bar_min_max()` have
+#'   a label that includes their horns index (\eqn{h}); see [`horns()`]. You can
+#'   remove the parenthesized part using `facet_labels_parens = NULL` or the
+#'   entire label using `facet_labels = NULL`.
+#'
+#'   Although `facet_labels_parens` enables you to choose a different string
+#'   inside the parentheses than the default `"h"`, this might not be advisable:
+#'   if the parentheses are present, they will always display the horns index.
+#'
+#' @name horns_plot
+#'
+#' @include plot-basic.R fn-formals.R
+#'
+#' @return A ggplot object.
+#'
+#' @examples
+#' # Preparation: run CLOSURE
+#' data <- closure_generate(
+#'   mean = "2.9",
+#'   sd = "0.5",
+#'   n = 70,
+#'   scale_min = 1,
+#'   scale_max = 5
+#' )
+#'
+#' # Even with minimal and maximal variability,
+#' # the results are almost the same:
+#' closure_plot_bar_min_max(data)
+#'
+#' # They cluster in a narrow slice of the 0-1 range
+#' # of the horns index:
+#' closure_plot_horns_histogram(data)
+
+#' @rdname horns_plot
+#' @export
+
+# min_max = "both"
+# frequency = "absolute-percent"
+# samples = "mean"
+# facet_labels = c("Minimal variability", "Maximal variability")
+# facet_labels_parens = "h"
+# bar_alpha = 0.75
+# bar_color = "#5D3FD3"
+# show_text = TRUE
+# text_color = bar_color
+# text_size = 12
+# text_offset = 0.05
+# mark_thousand = ","
+# mark_decimal = "."
+
+# Arguments for this function are generated below the definition
+closure_plot_bar_min_max <- function() {
+  check_length(facet_labels, 2L, allow_null = TRUE)
+  check_length(facet_labels_parens, 1L, allow_null = TRUE)
+
+  min_max <- rlang::arg_match(min_max)
+
+  # Enable plots without facet labels
+  if (is.null(facet_labels)) {
+    facet_labels <- rep("\"\"", 2)
+    facet_labels_parens <- NULL
+  }
+
+  plot_frequency_bar(
+    data = data,
+    frequency = frequency,
+    samples = samples,
+    min_max_values = c(
+      data$metrics_horns$min,
+      data$metrics_horns$max
+    ),
+    frequency_rows_subset = switch(
+      min_max,
+      "both" = c("horns_min", "horns_max"),
+      "min" = "horns_min",
+      "max" = "horns_max"
+    ),
+    facet_labels = switch(
+      min_max,
+      "both" = facet_labels,
+      "min" = facet_labels[1L],
+      "max" = facet_labels[2L]
+    ),
+    facet_labels_parens = facet_labels_parens,
+    bar_alpha = bar_alpha,
+    bar_color = bar_color,
+    show_text = show_text,
+    text_color = text_color,
+    text_size = text_size,
+    text_offset = text_offset,
+    mark_thousand = mark_thousand,
+    mark_decimal = mark_decimal
+  )
+}
+
+formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
+  formals() |>
+  formals_change_defaults(
+    bar_color = "#5D3FD3"
+  ) |>
+  formals_change_defaults(
+    facet_labels = c("Minimal variability", "Maximal variability")
+  ) |>
+  formals_change_defaults(
+    facet_labels_parens = "h"
+  ) |>
+  formals_add(
+    min_max = c("both", "min", "max"),
+    .after = "data"
+  ) |>
+  formals_remove(
+    "technique",
+    "min_max_values",
+    "frequency_rows_subset"
+  )
+
+# Internal basis of the `*_plot_horns_*()` functions
+plot_horns_frequency <- function(
+  data,
+  type,
+  technique,
+  alpha = 0.75,
+  color = "#5D3FD3",
+  binwidth = 0.01,
+  density_limits = c("none", "min_max"),
+  line_color_min_max = "red",
+  line_color_uniform = "grey20",
+  text_limits = c(0.12, 0.88),
+  text_size = 12,
+  mark_decimal = "."
+) {
+  check_generator_output(data, technique)
+
+  check_length(text_limits, 2L)
+
+  density_limits <- rlang::arg_match(density_limits)
+
+  # Key statistics about the horns index distribution. Lines and labels will be
+  # placed at or around these three points (min and max label placement varies).
+  h_min <- data$metrics_horns$min
+  h_max <- data$metrics_horns$max
+  h_uniform <- data$metrics_horns$uniform
+
+  # If the minimum horns value is too close to 0 for the min label to fit on its
+  # left, or the maximum value is too close to 1 for the max label to fit on its
+  # right, check the distribution shape to decide where to place labels. Get the
+  # median of the distribution to understand where most data lies.
+  h_median <- data$metrics_horns$median
+
+  # Reduce the input to a tibble that only includes the horns values
+  data <- data$results["horns"]
+
+  # Position labels: min label to the left, max label to the right. Add a small
+  # horizontal offset from the line.
+  label_offset <- 0.02
+
+  position_x_min <- max(0, h_min - label_offset)
+  position_x_max <- min(1, h_max + label_offset)
+
+  # Left-align min label, right-align max label
+  hjust_min <- 1
+  hjust_max <- 0
+
+  vjust_min <- 2
+  vjust_max <- 2
+
+  # Estimate horizontal space needed for a label (14 or fewer characters). As a
+  # rough estimate, 14 characters take about 0.14-0.16 of the plot width.
+  label_width <- 0.15
+  lines_too_close <- h_max - h_min < label_width
+
+  # Check if min and max lines are very close AND distribution is at one extreme
+  if (lines_too_close && h_min < text_limits[1]) {
+    # Lines too close and both near left edge: stack both labels on the right
+    position_x_min <- position_x_max
+    position_x_max <- position_x_max
+    hjust_min <- 0
+    hjust_max <- 0
+    vjust_min <- 2
+    vjust_max <- 3.5 # Max label below min label
+  } else if (lines_too_close && h_max > text_limits[2]) {
+    # Lines too close and both near right edge: stack both labels on the left
+    position_x_min <- position_x_min
+    position_x_max <- position_x_min
+    hjust_min <- 1
+    hjust_max <- 1
+    vjust_min <- 2
+    vjust_max <- 3.5 # Max label below min label
+  } else if (h_min < text_limits[1]) {
+    # Min label doesn't fit on the left side
+    if (h_median > 0.5) {
+      # Distribution concentrated on left, stack labels on the right
+      position_x_min <- position_x_max
+      hjust_min <- hjust_max
+      vjust_max <- 3.5
+    } else {
+      # Distribution concentrated on right, space on left - keep min label alone
+      # on left at edge, but closer to the line
+      position_x_min <- h_min
+      # Left-align so label extends to the right
+      hjust_min <- 0
+      vjust_min <- 2
+    }
+  } else if (h_max > text_limits[2]) {
+    # Max label doesn't fit on the right side
+    if (h_median < 0.5) {
+      # Distribution concentrated on right, stack labels on the left
+      position_x_max <- position_x_min
+      hjust_max <- hjust_min
+      vjust_max <- 3.5
+    } else {
+      # Distribution concentrated on left, space on right - keep max label alone
+      # on right at edge, but closer to the line
+      position_x_max <- h_max
+      # Right-align so label extends to the left
+      hjust_max <- 1.2
+      vjust_max <- 2
+    }
+  }
+
+  # Adjust uniform label position to avoid overlap with min/max labels
+  # Uniform label is centered, so it extends about 0.075 on each side
+  label_half_width <- 0.075
+  position_x_uniform <- h_uniform
+  hjust_uniform <- 0.5
+
+  # Check if uniform label overlaps with min label (which is at the top)
+  # We need to check horizontal overlap based on the actual label positions
+  uniform_overlaps_min <- abs(position_x_uniform - position_x_min) < label_width
+  uniform_overlaps_max <- abs(position_x_uniform - position_x_max) < label_width
+
+  if (uniform_overlaps_min && uniform_overlaps_max) {
+    # Overlaps with both: move to the side with more space
+    if (h_median < 0.5) {
+      # Distribution on left, space on right - move uniform label right
+      position_x_uniform <- min(1, h_uniform + label_offset)
+      hjust_uniform <- 0 # Left-align so it extends to the right
+      # Don't shift if it would go out of bounds
+      if (position_x_uniform + label_half_width > 1) {
+        position_x_uniform <- h_uniform
+        hjust_uniform <- 0.5
+      }
+    } else {
+      # Distribution on right, space on left - move uniform label left
+      position_x_uniform <- max(0, h_uniform - label_offset)
+      hjust_uniform <- 1 # Right-align so it extends to the left
+      # Don't shift if it would go out of bounds
+      if (position_x_uniform - label_half_width < 0) {
+        position_x_uniform <- h_uniform
+        hjust_uniform <- 0.5
+      }
+    }
+  } else if (uniform_overlaps_min && !uniform_overlaps_max) {
+    # Overlaps with min label only: shift uniform label left
+    position_x_uniform <- max(0, h_uniform - label_offset)
+    # Right-align so it extends to the left
+    hjust_uniform <- 1
+    # Don't shift if it would go out of bounds
+    if (position_x_uniform - label_half_width < 0) {
+      position_x_uniform <- h_uniform
+      hjust_uniform <- 0.5
+    }
+  } else if (uniform_overlaps_max && !uniform_overlaps_min) {
+    # Overlaps with max label only: shift uniform label right
+    position_x_uniform <- min(1, h_uniform + label_offset)
+    # Left-align so it extends to the right
+    hjust_uniform <- 0
+    # Don't shift if it would go out of bounds
+    if (position_x_uniform + label_half_width > 1) {
+      position_x_uniform <- h_uniform
+      hjust_uniform <- 0.5
+    }
+  }
+  # If overlaps with neither, keep centered at h_uniform
+
+  # String with labels such as "Min (h = 0.68)" and "Max (h = 0.75)"; where "h"
+  # is in italics. Not parsing as an expression here because `annotate()` will
+  # do that itself, and parsing here would lead to a spurious warning.
+  label_min_max <- format_equation(
+    prefix = c("Min", "Max"),
+    number = c(h_min, h_max),
+    var_name = "h",
+    mark_decimal = mark_decimal
+  )
+
+  label_uniform <- format_equation(
+    prefix = "Uniform",
+    number = h_uniform,
+    var_name = "h",
+    mark_decimal = mark_decimal
+  )
+
+  # Plot type determines geom to be shown
+  geom_frequency <- switch(
+    type,
+    "density" = ggplot2::stat_density(
+      ggplot2::aes(x = .data$horns),
+      alpha = alpha,
+      fill = color,
+      color = color,
+      linewidth = 0.5,
+      bw = 0.005,
+      # `NULL` if not matched
+      bounds = switch(
+        density_limits,
+        "min_max" = c(h_min, h_max)
+      )
+    ),
+    "histogram" = ggplot2::geom_histogram(
+      ggplot2::aes(x = .data$horns),
+      alpha = alpha,
+      fill = color,
+      binwidth = binwidth
+    ),
+    cli::cli_abort("Internal error: unhandled plot type.")
+  )
+
+  # Construct the plot
+  ggplot2::ggplot(data) +
+    geom_frequency +
+    ggplot2::scale_x_continuous(
+      limits = c(0, 1),
+      oob = function(x, limits) x
+    ) +
+
+    # Min and max reference lines
+    ggplot2::geom_vline(
+      xintercept = c(h_min, h_max),
+      linetype = 2,
+      alpha = 0.75,
+      color = line_color_min_max,
+      linewidth = 0.75
+    ) +
+    # Uniform reference line
+    ggplot2::geom_vline(
+      xintercept = h_uniform,
+      color = line_color_uniform,
+    ) +
+
+    # Text label for min and max lines
+    ggplot2::annotate(
+      geom = "label",
+      x = c(position_x_min, position_x_max),
+      y = Inf,
+      label = label_min_max,
+      vjust = c(vjust_min, vjust_max),
+      hjust = c(hjust_min, hjust_max),
+      color = line_color_min_max,
+      fill = "white",
+      parse = TRUE
+    ) +
+    # Text label for uniform line
+    ggplot2::annotate(
+      geom = "label",
+      x = position_x_uniform,
+      y = -Inf,
+      label = label_uniform,
+      vjust = -4.5,
+      hjust = hjust_uniform,
+      color = line_color_uniform,
+      fill = "white",
+      parse = TRUE
+    ) +
+
+    # Rest of the plot
+    ggplot2::labs(
+      x = expression(paste("Horns index (", italic("h"), ")")),
+      y = expression(paste("Count in all ", italic("h"), " values"))
+    ) +
+    ggplot2::theme_minimal(base_size = text_size) +
+    ggplot2::theme(
+      panel.grid.major.x = ggplot2::element_blank(),
+      panel.grid.minor.x = ggplot2::element_blank(),
+      panel.grid.minor.y = ggplot2::element_blank()
+    )
+}
