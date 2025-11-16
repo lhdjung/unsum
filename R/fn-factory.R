@@ -1,6 +1,6 @@
-#' @include fn-formals.R generate.R plot-basic.R
+#' @include fn-formals.R generate.R plot-basic.R horns-plot.R
 
-formals_final_all <- list(
+formals_final <- list(
   # Get the list of formals arguments from `generate_from_mean_sd_n()`, then
   # reduce it to the subset of arguments that exported sample generator functions
   # like `closure_generate()` should have.
@@ -11,7 +11,7 @@ formals_final_all <- list(
       "rounding_error_mean",
       "rounding_error_sd"
     ),
-  plotter = plot_frequency_bar |>
+  plot_fn_freq_bar = plot_frequency_bar |>
     formals() |>
     formals_remove(
       "technique",
@@ -19,15 +19,11 @@ formals_final_all <- list(
       "facet_labels_parens",
       "frequency_rows_subset",
       "min_max_values"
-    )
+    ),
+  plot_fn_horns_freq = plot_horns_frequency |>
+    formals() |>
+    formals_remove("type", "technique")
 )
-
-
-# # Remove the generator function because it is no longer needed for building. It
-# # will, of course, be present in the final binary because it is under R/ and
-# # needs to be called at runtime, but here, `rm()` just removes the manually
-# # sourced copy.
-# rm(generate_from_mean_sd_n, closure_plot_bar, closure_plot_ecdf)
 
 # Build helper that constructs functions like `closure_generate()`. The output
 # function is just a wrapper around `generate_from_mean_sd_n()` that passes
@@ -37,7 +33,7 @@ formals_final_all <- list(
 # specify the `technique` argument of `generate_from_mean_sd_n()`.
 new_generator_mean_sd_n <- function(technique) {
   rlang::new_function(
-    args = formals_final_all$generator,
+    args = formals_final$generator,
     body = rlang::expr({
       generate_from_mean_sd_n(
         mean = mean,
@@ -62,11 +58,11 @@ new_generator_mean_sd_n <- function(technique) {
 # Build helper that constructs basic barplot functions like
 # `closure_plot_bar()`. The second argument, `bar_color`, will become the
 # default for the output function's `bar_color` argument.
-new_plotter_bar <- function(technique, bar_color) {
+new_plot_fn_bar <- function(technique, bar_color) {
   rlang::new_function(
     # Changing a default here, not above, because each technique needs its own
-    # color, and this color is only known from the call to `new_plotter_bar()`
-    args = formals_final_all$plotter |>
+    # color, and this color is only known from the call to `new_plot_fn_bar()`
+    args = formals_final$plot_fn_freq_bar |>
       formals_change_defaults(bar_color = bar_color),
 
     body = rlang::expr({
@@ -84,6 +80,40 @@ new_plotter_bar <- function(technique, bar_color) {
         mark_thousand = mark_thousand,
         mark_decimal = mark_decimal,
         frequency_rows_subset = "all"
+      )
+    })
+  )
+}
+
+# Build helper that constructs horns frequency plot functions like
+# `closure_plot_horns_histogram()` as well as `closure_plot_horns_density()`.
+# The second argument, `type`, makes the difference between these two functions.
+# It has to be either "histogram" or "density". For each of these two types,
+# there is an argument that it doesn't need (but that the other type does need).
+# This argument is determined first and removed below.
+new_plot_fn_horns_frequency <- function(technique, type) {
+  arg_not_needed <- switch(
+    type,
+    "histogram" = "density_limits",
+    "density" = "binwidth",
+    cli::cli_abort("Internal error: invalid `type` value \"{type}\".")
+  )
+
+  rlang::new_function(
+    args = formals_final$plot_fn_horns_freq |>
+      formals_remove(arg_not_needed),
+    body = rlang::expr({
+      plot_horns_frequency(
+        data = data,
+        technique = !!technique,
+        type = !!type,
+        alpha = alpha,
+        color = color,
+        binwidth = binwidth,
+        line_color_min_max = line_color_min_max,
+        line_color_uniform = line_color_uniform,
+        text_limits = text_limits,
+        text_size = text_size
       )
     })
   )

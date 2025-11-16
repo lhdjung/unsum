@@ -49,7 +49,7 @@
 #' closure_plot_bar(data)
 
 # This constructs a function that wraps `plot_frequency_bar()`; see there
-closure_plot_bar <- new_plotter_bar("CLOSURE", "#5D3FD3")
+closure_plot_bar <- new_plot_fn_bar("CLOSURE", "#5D3FD3")
 
 
 #' Visualize CLOSURE data in an ECDF plot
