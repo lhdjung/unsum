@@ -68,9 +68,11 @@ Simplifying this yields the general lower bound for $s^2$ when empirical bounds 
 
 $$s^2 \ge \frac{1}{n}\left[(a-\bar{x})^2 + (b-\bar{x})^2 + \frac{(2\bar{x} - a - b)^2}{n-2}\right]$$
 
-$\square$
+For the standard deviation, of course, the corresponding lower bound is the square root of this quantity:
 
-For the standard deviation, of course, the corresponding lower bound is the square root of this quantity.
+$$s \ge \sqrt{ \frac{1}{n}\left[(a-\bar{x})^2 + (b-\bar{x})^2 + \frac{(2\bar{x} - a - b)^2}{n-2}\right] } $$
+
+$\square$
 
 ### Special case: mean at midpoint
 
