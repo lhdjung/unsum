@@ -3,8 +3,8 @@ utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 
 
 # Error if the input is not an unchanged list containing the results of a
-# function such as `closure_generate()`
-check_generator_output <- function(data, technique) {
+# function such as `closure_generate()`. Empty result sets error by default.
+check_generator_output <- function(data, technique, allow_empty = FALSE) {
   tibbles_all <- c(
     "inputs",
     "metrics_main",
@@ -106,14 +106,29 @@ check_generator_output <- function(data, technique) {
     )
   )
 
+  # Length of the scale implied by the inputs. In `data$frequency`, each
+  # `samples` category will have this very length. Empty results will only have
+  # one such category, "all".
+  scale_length <- data$inputs$scale_max - data$inputs$scale_min + 1
+
+  # (Intermezzo to check for empty results)
+  if (
+    !allow_empty &&
+      scale_length == nrow(data$frequency) &&
+      all(is.nan(data$frequency$f_average)) &&
+      all(is.nan(data$frequency$f_relative))
+  ) {
+    cli::cli_abort(
+      "Results are empty; there is nothing to process any further.",
+      call = rlang::caller_env()
+    )
+  }
+
   # Frequency (4 / 5)
   check_component_tibble(
     x = data$frequency,
     name = "frequency",
-    dims = c(
-      3 * (data$inputs$scale_max - data$inputs$scale_min + 1),
-      5
-    ),
+    dims = c(3 * scale_length, 5),
     col_names_types = list(
       "samples" = "character",
       "value" = "integer",
