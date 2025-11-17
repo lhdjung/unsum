@@ -211,6 +211,9 @@ plot_horns_frequency <- function(
       limits = c(0, 1),
       oob = function(x, limits) x
     ) +
+    ggplot2::scale_y_continuous(
+      labels = scales::label_number(big.mark = mark_thousand)
+    ) +
 
     # Min and max reference lines
     ggplot2::geom_vline(

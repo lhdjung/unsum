@@ -120,6 +120,7 @@ new_plot_fn_horns_frequency <- function(technique, type) {
         line_color_uniform = line_color_uniform,
         text_limits = text_limits,
         text_size = text_size,
+        mark_thousand = mark_thousand,
         mark_decimal = mark_decimal
       )
     })
