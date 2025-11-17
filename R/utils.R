@@ -453,6 +453,14 @@ check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
 }
 
 
+# Pipe helper that allows for calling primitives, anonymous functions, and
+# function factories within a pipe workflow. As a toy example: `object |>
+# call_on(function(x) x[x > 10])`
+call_on <- function(.x, .f, ...) {
+  .f(.x, ...)
+}
+
+
 # Copied from `dplyr::near()`
 near <- function(x, y, tol = .Machine$double.eps^0.5) {
   abs(x - y) < tol

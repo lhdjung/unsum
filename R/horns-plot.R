@@ -11,6 +11,7 @@ plot_horns_frequency <- function(
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
   text_size = 12,
+  mark_thousand = ",",
   mark_decimal = "."
 ) {
   check_generator_output(data, technique)
@@ -24,6 +25,10 @@ plot_horns_frequency <- function(
   h_min <- data$metrics_horns$min
   h_max <- data$metrics_horns$max
   h_uniform <- data$metrics_horns$uniform
+
+  # For the y-axis label
+  label_samples_all <- data$metrics_main$samples_all |>
+    call_on(scales::label_number(big.mark = mark_thousand))
 
   # If the minimum horns value is too close to 0 for the min label to fit on its
   # left, or the maximum value is too close to 1 for the max label to fit on its
@@ -248,8 +253,14 @@ plot_horns_frequency <- function(
 
     # Rest of the plot
     ggplot2::labs(
-      x = expression(paste("Horns index (", italic("h"), ")")),
-      y = expression(paste("Count in all ", italic("h"), " values"))
+      x = rlang::expr(paste("Horns index (", italic("h"), ")")),
+      y = rlang::expr(paste(
+        "Count in all ",
+        !!(label_samples_all),
+        " ",
+        italic("h"),
+        " values"
+      ))
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
