@@ -221,7 +221,7 @@ generate_from_mean_sd_n <- function(
     msg_after <- switch(
       technique,
       "CLOSURE" = c(
-        "x" = "Summary statistics internally inconsistent.",
+        "x" = "Summary statistics are internally inconsistent.",
         "x" = "These numbers cannot describe the same sample."
       ),
       NULL
@@ -277,10 +277,13 @@ generate_from_mean_sd_n <- function(
 
     # In memory mode (i.e., without writing to disk), a message about successful
     # completion is left to display after the rest of the function has finished.
+    # Exception: no message is shown if no results were found.
     on.exit({
-      # Empty line before the alert
-      message()
-      cli::cli_alert_success("All {technique} results found")
+      if (n_samples_all != 0) {
+        # Empty line before the alert
+        message()
+        cli::cli_alert_success("All {technique} results found")
+      }
     })
 
     # Combine the statistics with the results and return the completed list
