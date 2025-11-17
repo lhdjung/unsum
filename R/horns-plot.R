@@ -253,17 +253,15 @@ plot_horns_frequency <- function(
 
     # Rest of the plot
     ggplot2::labs(
-      x = rlang::expr(paste("Horns index (", italic("h"), ")")),
-      y = rlang::expr(paste(
-        "Count in all ",
-        !!(label_samples_all),
-        " ",
-        italic("h"),
-        " values"
-      ))
+      x = "Horns index (*h*)",
+      y = paste("Count in all", label_samples_all, "*h* values")
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
+      # Enable markdown formatting in axis labels to display "h" in italics
+      axis.title.x = ggtext::element_markdown(),
+      axis.title.y = ggtext::element_markdown(),
+      # Unclutter the plot by removing some grid lines, incl. all vertical ones
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank(),
       panel.grid.minor.y = ggplot2::element_blank()
