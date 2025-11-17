@@ -371,10 +371,10 @@ closure_plot_ecdf <- function(
 #'
 #' @param data Data frame that contains these columns (and no others):
 #'   `"samples"`, `"value"`, `"f_absolute"`.
-#' @param pad Logical. Should the groups be padded with extra rows that have
-#'   zeros for frequencies? In an ECDF ggplot created manually using
-#'   `ggplot2::geom_step()`, this will have the same effect as `pad` in
-#'   `ggplot2::stat_ecdf()`.
+#' @param pad String. If `"extend"` or `"match"`, the groups will be padded with
+#'   extra rows that have zeros for frequencies. In an ECDF ggplot created
+#'   manually using `ggplot2::geom_step()`, this will have the same effect as
+#'   `pad` in `ggplot2::stat_ecdf()`. No padding will occur if `pad == "stop"`.
 #'
 #' @returns Data frame with the input columns plus `"ecdf"`.
 #'

@@ -15,6 +15,7 @@ closure_plot_horns_histogram(
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
   text_size = 12,
+  mark_thousand = ",",
   mark_decimal = "."
 )
 
@@ -22,11 +23,12 @@ closure_plot_horns_density(
   data,
   alpha = 0.75,
   color = "#5D3FD3",
-  density_limits = c("none", "min_max"),
+  density_bounds = c("none", "min_max"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
   text_size = 12,
+  mark_thousand = ",",
   mark_decimal = "."
 )
 }
@@ -52,12 +54,15 @@ second element (default: \code{0.88}).}
 
 \item{text_size}{Numeric (length 1). Base font size in pt. Default is \code{12}.}
 
-\item{density_limits}{String (length 1). Only in
+\item{mark_thousand, mark_decimal}{Strings (length 1 each). Delimiters between
+groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand}
+(e.g., \code{"20,000"}) and \code{"."} for \code{mark_decimal} (e.g., \code{"0.15"}).}
+
+\item{density_bounds}{String (length 1). Only in
 \code{closure_plot_horns_density()}. Which limits, if any, should the density be
 forced to fit between? Default is \code{"none"}. If set to \code{"min_max"}, this
 avoids the illusion of points beyond the limits but can lead to a U-shaped
-effect, which would also be misleading. \code{\link[ggplot2:geom_histogram]{ggplot2::geom_histogram()}}.
-Default is \code{0.01}.}
+effect, which would also be misleading. Default is \code{0.01}.}
 }
 \value{
 A ggplot object.
@@ -70,7 +75,7 @@ values found by CLOSURE:
 emphasizing individual groups of values. You can adjust this via the
 \code{binwidth} argument.
 \item \code{closure_plot_horns_density()} smooths the distribution, emphasizing its
-shape. You can use the \code{density_limits} argument to avoid apparent density
+shape. You can use the \code{density_bounds} argument to avoid apparent density
 beyond the limits.
 }
 

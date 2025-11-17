@@ -99,7 +99,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
 new_plot_fn_horns_frequency <- function(technique, type) {
   arg_not_needed <- switch(
     type,
-    "histogram" = "density_limits",
+    "histogram" = "density_bounds",
     "density" = "binwidth",
     cli::cli_abort("Internal error: invalid `type` value \"{type}\".")
   )

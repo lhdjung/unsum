@@ -6,7 +6,7 @@ plot_horns_frequency <- function(
   alpha = 0.75,
   color = "#5D3FD3",
   binwidth = 0.01,
-  density_limits = c("none", "min_max"),
+  density_bounds = c("none", "min_max"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
@@ -18,7 +18,7 @@ plot_horns_frequency <- function(
 
   check_length(text_limits, 2L)
 
-  density_limits <- rlang::arg_match(density_limits)
+  density_bounds <- rlang::arg_match(density_bounds)
 
   # Key statistics about the horns index distribution. Lines and labels will be
   # placed at or around these three points (min and max label placement varies).
@@ -26,15 +26,15 @@ plot_horns_frequency <- function(
   h_max <- data$metrics_horns$max
   h_uniform <- data$metrics_horns$uniform
 
-  # For the y-axis label
-  label_samples_all <- data$metrics_main$samples_all |>
-    call_on(scales::label_number(big.mark = mark_thousand))
-
   # If the minimum horns value is too close to 0 for the min label to fit on its
   # left, or the maximum value is too close to 1 for the max label to fit on its
   # right, check the distribution shape to decide where to place labels. Get the
   # median of the distribution to understand where most data lies.
   h_median <- data$metrics_horns$median
+
+  # For the y-axis label
+  label_samples_all <- data$metrics_main$samples_all |>
+    call_on(scales::label_number(big.mark = mark_thousand))
 
   # Reduce the input to a tibble that only includes the horns values
   data <- data$results["horns"]
@@ -191,7 +191,7 @@ plot_horns_frequency <- function(
       bw = 0.005,
       # `NULL` if not matched
       bounds = switch(
-        density_limits,
+        density_bounds,
         "min_max" = c(h_min, h_max)
       )
     ),

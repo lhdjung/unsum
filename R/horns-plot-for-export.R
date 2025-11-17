@@ -7,7 +7,7 @@
 #'   emphasizing individual groups of values. You can adjust this via the
 #'   `binwidth` argument.
 #'   - `closure_plot_horns_density()` smooths the distribution, emphasizing its
-#'   shape. You can use the `density_limits` argument to avoid apparent density
+#'   shape. You can use the `density_bounds` argument to avoid apparent density
 #'   beyond the limits.
 #'
 #'   Both mark the minimum and maximum values. The x-axis always ranges from 0
@@ -21,12 +21,11 @@
 #'   `"#5D3FD3"`, a purple color.
 #' @param binwidth Numeric (length 1). Only in `closure_plot_horns_histogram()`.
 #'   Width of the bins that divide up the x-axis, passed on to
-#' @param density_limits String (length 1). Only in
+#' @param density_bounds String (length 1). Only in
 #'   `closure_plot_horns_density()`. Which limits, if any, should the density be
 #'   forced to fit between? Default is `"none"`. If set to `"min_max"`, this
 #'   avoids the illusion of points beyond the limits but can lead to a U-shaped
-#'   effect, which would also be misleading. [`ggplot2::geom_histogram()`].
-#'   Default is `0.01`.
+#'   effect, which would also be misleading. Default is `0.01`.
 #' @param line_color_min_max Numeric (length 1). Color of the lines that mark
 #'   the lower and upper ends of the distribution. Default is `"red"`.
 #' @param text_limits Numeric (length 2). If the minimum horns index is lower
