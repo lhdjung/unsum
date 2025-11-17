@@ -109,7 +109,7 @@ closure_write <- function(data, path) {
   # "closure_generate" --> "CLOSURE" etc.
   technique <- data$inputs |>
     class() |>
-    (function(x) x[grepl("_generate$", x)])() |>
+    call_on(function(x) x[grepl("_generate$", x)]) |>
     sub("_generate$", "", x = _) |>
     toupper()
 
@@ -330,7 +330,7 @@ closure_read <- function(
   # Parse mean and SD from the folder name
   mean_sd_str <- name_dir |>
     strsplit("-") |>
-    (function(x) x[[1]][2:3])() |>
+    call_on(function(x) x[[1]][2:3]) |>
     gsub("_", "\\.", x = _)
 
   # Check that files read from disk are correct
