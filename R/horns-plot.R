@@ -223,6 +223,7 @@ plot_horns_frequency <- function(
       color = line_color_min_max,
       linewidth = 0.75
     ) +
+
     # Uniform reference line
     ggplot2::geom_vline(
       xintercept = h_uniform,
@@ -238,11 +239,18 @@ plot_horns_frequency <- function(
         vjust = c(vjust_min, vjust_max),
         hjust = c(hjust_min, hjust_max)
       ),
-      ggplot2::aes(x = .data$x, y = .data$y, label = .data$label,
-                   vjust = .data$vjust, hjust = .data$hjust),
+      ggplot2::aes(
+        x = .data$x,
+        y = .data$y,
+        label = .data$label,
+        vjust = .data$vjust,
+        hjust = .data$hjust
+      ),
       color = line_color_min_max,
-      fill = "white"
+      fill = "white",
+      label.padding = grid::unit(c(0.4, 0.4, 0.4, 0.4), "lines")
     ) +
+
     # Text label for uniform line
     ggtext::geom_richtext(
       data = data.frame(
@@ -251,10 +259,13 @@ plot_horns_frequency <- function(
         label = label_uniform
       ),
       ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
-      vjust = -4.5,
+      vjust = -4,
       hjust = hjust_uniform,
       color = line_color_uniform,
-      fill = "white"
+      fill = "white",
+      # Center the label within the box by leaving less space at the bottom
+      # (position 3) to cancel out the subscript's distorting effect
+      label.padding = grid::unit(c(0.5, 0.5, 0.25, 0.5), "lines")
     ) +
 
     # Rest of the plot
