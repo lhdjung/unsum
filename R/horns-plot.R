@@ -163,20 +163,20 @@ plot_horns_frequency <- function(
   # If overlaps with neither, keep centered at h_uniform
 
   # String with labels such as "Min (h = 0.68)" and "Max (h = 0.75)"; where "h"
-  # is in italics. Not parsing as an expression here because `annotate()` will
-  # do that itself, and parsing here would lead to a spurious warning.
-  label_min_max <- format_equation(
+  # is in italics. Using ggtext markdown formatting.
+  label_min_max <- format_equation_richtext(
     prefix = c("Min", "Max"),
     number = c(h_min, h_max),
     var_name = "h",
     mark_decimal = mark_decimal
   )
 
-  label_uniform <- format_equation(
+  label_uniform <- format_equation_richtext(
     prefix = "Uniform",
     number = h_uniform,
     var_name = "h",
-    mark_decimal = mark_decimal
+    mark_decimal = mark_decimal,
+    subscript = "u"
   )
 
   # Plot type determines geom to be shown
@@ -230,28 +230,31 @@ plot_horns_frequency <- function(
     ) +
 
     # Text label for min and max lines
-    ggplot2::annotate(
-      geom = "label",
-      x = c(position_x_min, position_x_max),
-      y = Inf,
-      label = label_min_max,
-      vjust = c(vjust_min, vjust_max),
-      hjust = c(hjust_min, hjust_max),
+    ggtext::geom_richtext(
+      data = data.frame(
+        x = c(position_x_min, position_x_max),
+        y = Inf,
+        label = label_min_max,
+        vjust = c(vjust_min, vjust_max),
+        hjust = c(hjust_min, hjust_max)
+      ),
+      ggplot2::aes(x = .data$x, y = .data$y, label = .data$label,
+                   vjust = .data$vjust, hjust = .data$hjust),
       color = line_color_min_max,
-      fill = "white",
-      parse = TRUE
+      fill = "white"
     ) +
     # Text label for uniform line
-    ggplot2::annotate(
-      geom = "label",
-      x = position_x_uniform,
-      y = -Inf,
-      label = label_uniform,
+    ggtext::geom_richtext(
+      data = data.frame(
+        x = position_x_uniform,
+        y = -Inf,
+        label = label_uniform
+      ),
+      ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
       vjust = -4.5,
       hjust = hjust_uniform,
       color = line_color_uniform,
-      fill = "white",
-      parse = TRUE
+      fill = "white"
     ) +
 
     # Rest of the plot

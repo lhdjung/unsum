@@ -472,3 +472,27 @@ format_equation <- function(
     out
   }
 }
+
+# Alternative based on `ggtext::geom_richtext()`
+format_equation_richtext <- function(
+  prefix,
+  var_name,
+  number,
+  mark_decimal,
+  subscript = NULL
+) {
+  # Format the number to two decimal places
+  number <- scales::label_number(
+    accuracy = 0.01,
+    decimal.mark = mark_decimal
+  )(number)
+
+  part_subscript <- if (is.null(subscript)) {
+    ""
+  } else {
+    paste0("<sub>", subscript, "</sub>")
+  }
+
+  # Assemble the label
+  paste0(prefix, " (*", var_name, "*", part_subscript, " = ", number, ")")
+}
