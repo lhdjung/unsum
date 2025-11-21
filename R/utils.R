@@ -46,13 +46,14 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     )
   }
 
-  # Check the formats of the three tibbles that are elements of `data`, i.e., of
-  # the output of `closure_generate()`:
+  # Check the formats of the 5 or 6 tibbles that are elements of `data`, i.e.,
+  # of the output of a function like `closure_generate()`:
 
   # Inputs (1 / 5)
   check_component_tibble(
     x = data$inputs,
     dims = c(1L, 8L),
+    technique = technique,
     col_names_types = list(
       "technique" = "character",
       "mean" = "character",
@@ -78,6 +79,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   check_component_tibble(
     x = data$metrics_main,
     dims = c(1L, 3L),
+    technique = technique,
     col_names_types = list(
       "samples_initial" = "double",
       "samples_all" = "double",
@@ -89,6 +91,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   check_component_tibble(
     x = data$metrics_horns,
     dims = c(1L, 9L),
+    technique = technique,
     col_names_types = list(
       "mean" = "double",
       "uniform" = "double",
@@ -124,6 +127,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   check_component_tibble(
     x = data$frequency,
     dims = c(3 * scale_length, 5),
+    technique = technique,
     col_names_types = list(
       "samples" = "character",
       "value" = "integer",
@@ -159,6 +163,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     check_component_tibble(
       x = data$directory,
       dims = c(1L, 1L),
+      technique = technique,
       col_names_types = list(
         "path" = "character"
       )
@@ -179,6 +184,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
       check_component_tibble(
         x = data$results,
         dims = c(data$metrics_main$samples_all, 2L),
+        technique = technique,
         col_names_types = list(
           "id" = "integer",
           "horns" = "double"
@@ -187,13 +193,15 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     }
   }
 
-  # In case the "results" tibble was returned directly by `closure_generate()`
-  # or by a reading function with a setting that makes for equivalent "results"
+  # In case the "results" tibble was returned directly by a function like
+  # `closure_generate()` or by a reading function with a setting that makes for
+  # equivalent "results"
   if (!any(is_reading_class) || any(reading_class == "capped_error")) {
     # Results (5 / 5)
     check_component_tibble(
       x = data$results,
       dims = c(data$metrics_main$samples_all, 3L),
+      technique = technique,
       col_names_types = list(
         "id" = "integer",
         "sample" = "list",
@@ -235,10 +243,12 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
 }
 
 
-# Check each element of `closure_generate()` for correct format.
+# Check each element of the output of a function like `closure_generate()` for
+# correct format.
 check_component_tibble <- function(
   x,
   dims,
+  technique,
   col_names_types,
   msg_main = NULL,
   n = 2
@@ -275,9 +285,12 @@ check_component_tibble <- function(
       "These column names and types"
     }
 
+    # "CLOSURE" --> "closure" etc.
+    lowtech <- tolower(technique)
+
     if (is.null(msg_main)) {
-      msg_main <- "CLOSURE data must not be changed before passing them \
-        to other `closure_*()` functions."
+      msg_main <- "{technique} data must not be changed before passing them \
+        to other `{lowtech}_*()` functions."
     }
 
     cli::cli_abort(
