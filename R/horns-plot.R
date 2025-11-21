@@ -3,8 +3,8 @@ plot_horns_frequency <- function(
   data,
   type,
   technique,
+  bar_color,
   alpha = 0.75,
-  color = "#5D3FD3",
   binwidth = 0.01,
   show_labels = c(
     "all",
@@ -16,7 +16,6 @@ plot_horns_frequency <- function(
     "bounds",
     "none"
   ),
-  density_bounds = c("none", "min_max"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
@@ -28,7 +27,6 @@ plot_horns_frequency <- function(
 
   check_length(text_limits, 2L)
 
-  density_bounds <- rlang::arg_match(density_bounds)
   show_labels <- rlang::arg_match(show_labels)
 
   # Key statistics about the horns index distribution. Lines and labels will be
@@ -190,34 +188,14 @@ plot_horns_frequency <- function(
     subscript = "u"
   )
 
-  # Plot type determines geom to be shown
-  geom_frequency <- switch(
-    type,
-    "density" = ggplot2::stat_density(
-      ggplot2::aes(x = .data$horns),
-      alpha = alpha,
-      fill = color,
-      color = color,
-      linewidth = 0.5,
-      bw = 0.005,
-      # `NULL` if not matched
-      bounds = switch(
-        density_bounds,
-        "min_max" = c(h_min, h_max)
-      )
-    ),
-    "histogram" = ggplot2::geom_histogram(
-      ggplot2::aes(x = .data$horns),
-      alpha = alpha,
-      fill = color,
-      binwidth = binwidth
-    ),
-    cli::cli_abort("Internal error: unhandled plot type.")
-  )
-
   # Construct the plot
   ggplot2::ggplot(data) +
-    geom_frequency +
+    ggplot2::geom_histogram(
+      ggplot2::aes(x = .data$horns),
+      alpha = alpha,
+      fill = bar_color,
+      binwidth = binwidth
+    ) +
     ggplot2::scale_x_continuous(
       limits = c(0, 1),
       oob = function(x, limits) x

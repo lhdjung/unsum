@@ -91,30 +91,18 @@ new_plot_fn_bar <- function(technique, bar_color) {
 
 
 # Build helper that constructs horns frequency plot functions like
-# `closure_plot_horns_histogram()` as well as `closure_plot_horns_density()`.
-# The second argument, `type`, makes the difference between these two functions.
-# It has to be either "histogram" or "density". For each of these two types,
-# there is an argument that it doesn't need (but that the other type does need).
-# This argument is determined first and removed below.
-new_plot_fn_horns_frequency <- function(technique, type) {
-  arg_not_needed <- switch(
-    type,
-    "histogram" = "density_bounds",
-    "density" = "binwidth",
-    cli::cli_abort("Internal error: invalid `type` value \"{type}\".")
-  )
-
+# `closure_plot_horns_histogram()`. The `bar_color` argument works as above.
+new_plot_fn_horns_frequency <- function(technique, bar_color) {
   rlang::new_function(
     args = formals_final$plot_fn_horns_freq |>
-      formals_remove(arg_not_needed),
+      formals_change_defaults(bar_color = bar_color),
 
     body = rlang::expr({
       plot_horns_frequency(
         data = data,
         technique = !!technique,
-        type = !!type,
+        bar_color = !!bar_color,
         alpha = alpha,
-        color = color,
         binwidth = binwidth,
         show_labels = show_labels,
         line_color_min_max = line_color_min_max,

@@ -3,31 +3,15 @@
 \name{horns-frequency}
 \alias{horns-frequency}
 \alias{closure_plot_horns_histogram}
-\alias{closure_plot_horns_density}
 \title{Visualize horns index (\eqn{h}) frequencies}
 \usage{
 closure_plot_horns_histogram(
   data,
+  bar_color = "#5D3FD3",
   alpha = 0.75,
-  color = "#5D3FD3",
   binwidth = 0.01,
   show_labels = c("all", "min_max", "min_max_uniform", "min_max_bounds", "uniform",
     "uniform_bounds", "bounds", "none"),
-  line_color_min_max = "red",
-  line_color_uniform = "grey20",
-  text_limits = c(0.12, 0.88),
-  text_size = 12,
-  mark_thousand = ",",
-  mark_decimal = "."
-)
-
-closure_plot_horns_density(
-  data,
-  alpha = 0.75,
-  color = "#5D3FD3",
-  show_labels = c("all", "min_max", "min_max_uniform", "min_max_bounds", "uniform",
-    "uniform_bounds", "bounds", "none"),
-  density_bounds = c("none", "min_max"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
@@ -39,11 +23,10 @@ closure_plot_horns_density(
 \arguments{
 \item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}} or \code{\link[=closure_read]{closure_read()}}.}
 
-\item{alpha}{Numeric (length 1). Opacity of the density or bars. Default is
-\code{0.75}.}
-
-\item{color}{String (length 1). Color of the density or bars. Default is
+\item{bar_color}{String (length 1). Color of the bars. Default is
 \code{"#5D3FD3"}, a purple color.}
+
+\item{alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
 \item{binwidth}{Numeric (length 1). Only in \code{closure_plot_horns_histogram()}.
 Width of the bins that divide up the x-axis. Default is \code{0.01}.}
@@ -71,31 +54,17 @@ second element (default: \code{0.88}).}
 \item{mark_thousand, mark_decimal}{Strings (length 1 each). Delimiters between
 groups of digits in text labels. Defaults are \code{","} for \code{mark_thousand}
 (e.g., \code{"20,000"}) and \code{"."} for \code{mark_decimal} (e.g., \code{"0.15"}).}
-
-\item{density_bounds}{String (length 1). Only in
-\code{closure_plot_horns_density()}. Which limits, if any, should the density be
-forced to fit between? Default is \code{"none"}. If set to \code{"min_max"}, this
-avoids the illusion of points beyond the limits but can lead to a U-shaped
-effect, which would also be misleading. Default is \code{0.01}.}
 }
 \value{
 A ggplot object.
 }
 \description{
-Two functions that visualize the distribution of horns index
-values found by CLOSURE:
-\itemize{
-\item \code{closure_plot_horns_histogram()} bins the distribution into categories,
-emphasizing individual groups of values. You can adjust this via the
-\code{binwidth} argument.
-\item \code{closure_plot_horns_density()} smooths the distribution, emphasizing its
-shape. You can use the \code{density_bounds} argument to avoid apparent density
-beyond the limits.
-}
+\code{closure_plot_horns_histogram()} visualizes the distribution of
+horns index values found by CLOSURE.
 
-Both mark the minimum and maximum values. The x-axis always ranges from 0
-to 1. This reveals the big picture, putting any variability among horns
-values into perspective.
+It marks the min, max, and uniform values; see \code{\link[=horns_uniform]{horns_uniform()}}. The
+x-axis always ranges from 0 to 1. This reveals the big picture, putting any
+variability among horns values into perspective.
 }
 \examples{
 data_near_zero <- closure_generate(
@@ -108,8 +77,6 @@ data_near_zero <- closure_generate(
 
 closure_plot_horns_histogram(data_near_zero)
 
-closure_plot_horns_density(data_near_zero)
-
 data_near_midpoint <- closure_generate(
   mean = "2.8",
   sd = "1.5",
@@ -119,8 +86,6 @@ data_near_midpoint <- closure_generate(
 )
 
 closure_plot_horns_histogram(data_near_midpoint)
-
-closure_plot_horns_density(data_near_midpoint)
 
 # Large difference between horns values occur (only?)
 # if there are no decimal places in `mean` and `sd`:
@@ -133,6 +98,4 @@ data_wide_spread <- closure_generate(
 )
 
 closure_plot_horns_histogram(data_wide_spread)
-
-closure_plot_horns_density(data_wide_spread)
 }

@@ -16,7 +16,7 @@ Another focus of this release is visualization, with new plotting functions and 
 
 -   Added `closure_plot_bar_min_max()` to compare the subsets of samples with minimal and maximal variability, as measured by `horns()`.
 
--   Added `closure_plot_horns_density()` and `closure_plot_horns_histogram()` to visualize the distribution of horns values as a whole.
+-   Added `closure_plot_horns_histogram()` to visualize the distribution of horns values as a whole.
 
 ## Breaking changes
 
