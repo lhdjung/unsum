@@ -177,16 +177,14 @@ plot_horns_frequency <- function(
 
   # String with labels such as "Min (h = 0.68)" and "Max (h = 0.75)"; where "h"
   # is in italics. Using ggtext markdown formatting.
-  label_min_max <- format_equation_richtext(
+  label_min_max <- format_equation(
     prefix = c("Min<br>", "Max<br>"),
-    var_name = "h",
     number = c(h_min, h_max),
     mark_decimal = mark_decimal
   )
 
-  label_uniform <- format_equation_richtext(
+  label_uniform <- format_equation(
     prefix = "Uniform<br>",
-    var_name = "h",
     number = h_uniform,
     mark_decimal = mark_decimal,
     subscript = "u"

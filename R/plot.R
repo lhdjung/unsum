@@ -310,10 +310,8 @@ closure_plot_ecdf <- function(
       # prepared here
       labels_legend <- format_equation(
         prefix = c("All samples", "Min variance", "Max variance"),
-        var_name = "h",
         number = c(h_mean, h_min, h_max),
-        mark_decimal = mark_decimal,
-        parse_output = TRUE
+        mark_decimal = mark_decimal
       )
 
       legend_position <- "bottom"
@@ -358,7 +356,10 @@ closure_plot_ecdf <- function(
     scale_legend +
     scale_gradient +
     ggplot2::theme_minimal(base_size = text_size) +
-    ggplot2::theme(legend.position = legend_position)
+    ggplot2::theme(
+      legend.text = ggtext::element_markdown(),
+      legend.position = legend_position
+    )
 }
 
 
@@ -424,61 +425,24 @@ mutate_ecdf <- function(data, pad) {
 #'
 #' Internal helper to make ggplot2 render a label like "All samples (h = 0.34)"
 #' with "h" in italics. Vectorized over all arguments. Returns a string vector
-#' by default, but can optionally be parsed into an expression vector.
+#' with Markdown / HTML syntax, to be rendered by `ggtext::element_markdown()`.
 #'
 #' @param prefix String. Will go before the parentheses, e.g., `"All samples"`.
-#' @param var_name String. LHS of the equation. This part will be in italics;
-#'   e.g., `"h"`.
 #' @param number Numeric. RHS of the equation. Will be rounded to 2 decimal
 #'   places, e.g., `0.34`.
 #' @param mark_decimal String. Decimal sign to use in `number` , e.g., `"."`.
-#' @param parse_output Logical. Should the output be parsed as an expression?
-#'   Default is `FALSE`.
+#' @param var_name String. LHS of the equation. This part will be in italics.
+#'   Default is `"h"` for the horns index; see `horns()`.
+#' @param subscript String. Optionally, add a subscript to `var_name`.
 #'
-#' @returns Vector of strings (or, with `parse_output = TRUE`, expressions) to
-#'   be used as ggplot2 labels. They are formatted in plotmath, a somewhat
-#'   obscure syntax for use in R graphics. Although plotmath is difficult and
-#'   `ggtext::element_markdown()` offers an easy alternative, this function does
-#'   it the hard way to avoid a dependency.
+#' @returns Vector of strings to be used as ggplot2 labels.
 #'
 #' @noRd
 format_equation <- function(
   prefix,
-  var_name,
   number,
   mark_decimal,
-  parse_output = FALSE
-) {
-  # Spaces are represented as tildes
-  prefix <- gsub(" ", "~", prefix)
-
-  # Format the number to two decimal places with `mark_decimal` as the separator
-  number <- scales::label_number(
-    accuracy = 0.01,
-    decimal.mark = mark_decimal
-  )(number)
-
-  # Assemble a string that will make ggplot2 render `var_name` in italics
-  out <- paste0(prefix, "~(italic(", var_name, ")~`=`~", number, ")")
-
-  # Needed for `ggplot2::labeller()`, though not for scale functions
-  names(out) <- seq_along(out)
-
-  # Convert the string into an expression. This is required by ggplot2 in some
-  # places like labels in scales.
-  if (parse_output) {
-    parse(text = out)
-  } else {
-    out
-  }
-}
-
-# Alternative based on `ggtext::geom_richtext()`
-format_equation_richtext <- function(
-  prefix,
-  var_name,
-  number,
-  mark_decimal,
+  var_name = "h",
   subscript = NULL
 ) {
   # Format the number to two decimal places
@@ -487,12 +451,12 @@ format_equation_richtext <- function(
     decimal.mark = mark_decimal
   )(number)
 
-  part_subscript <- if (is.null(subscript)) {
+  part_sub <- if (is.null(subscript)) {
     ""
   } else {
     paste0("<sub>", subscript, "</sub>")
   }
 
   # Assemble the label
-  paste0(prefix, " (*", var_name, "*", part_subscript, " = ", number, ")")
+  paste0(prefix, " (*", var_name, "*", part_sub, " = ", number, ")")
 }

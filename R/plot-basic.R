@@ -191,11 +191,11 @@ plot_frequency_bar <- function(
         # Format facet labels like "Minimal variability (h = 0.68)" with "h" in
         # italics. The labeller expects a named vector where names match the
         # factor levels (which are "1", "2", etc.).
-        facet_labels <- format_equation_richtext(
+        facet_labels <- format_equation(
           prefix = facet_labels,
-          var_name = facet_labels_parens,
           number = min_max_values,
-          mark_decimal = mark_decimal
+          mark_decimal = mark_decimal,
+          var_name = facet_labels_parens
         )
         names(facet_labels) <- as.character(seq_along(facet_labels))
 
