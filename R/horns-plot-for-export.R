@@ -20,7 +20,14 @@
 #' @param color String (length 1). Color of the density or bars. Default is
 #'   `"#5D3FD3"`, a purple color.
 #' @param binwidth Numeric (length 1). Only in `closure_plot_horns_histogram()`.
-#'   Width of the bins that divide up the x-axis, passed on to
+#'   Width of the bins that divide up the x-axis. Default is `0.01`.
+#' @param show_labels String (length 1). Which text labels to show within the
+#'   plot? One of:
+#'   - `"all"` (the default): *min*, *max*, and *uniform* horns values from
+#'   `data`, as well as the *bounds* at 0 and 1.
+#'   - `"min_max"`, `"min_max_uniform"`, `"min_max_bounds"`, `"uniform"`,
+#'   `"uniform_bounds"`, or `"bounds"`: a subset of these labels.
+#'   - `"none"`: no labels.
 #' @param density_bounds String (length 1). Only in
 #'   `closure_plot_horns_density()`. Which limits, if any, should the density be
 #'   forced to fit between? Default is `"none"`. If set to `"min_max"`, this

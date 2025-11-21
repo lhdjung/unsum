@@ -6,6 +6,16 @@ plot_horns_frequency <- function(
   alpha = 0.75,
   color = "#5D3FD3",
   binwidth = 0.01,
+  show_labels = c(
+    "all",
+    "min_max",
+    "min_max_uniform",
+    "min_max_bounds",
+    "uniform",
+    "uniform_bounds",
+    "bounds",
+    "none"
+  ),
   density_bounds = c("none", "min_max"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
@@ -19,6 +29,7 @@ plot_horns_frequency <- function(
   check_length(text_limits, 2L)
 
   density_bounds <- rlang::arg_match(density_bounds)
+  show_labels <- rlang::arg_match(show_labels)
 
   # Key statistics about the horns index distribution. Lines and labels will be
   # placed at or around these three points (min and max label placement varies).
@@ -35,6 +46,8 @@ plot_horns_frequency <- function(
   # For the y-axis label
   label_samples_all <- data$metrics_main$samples_all |>
     call_on(scales::label_number(big.mark = mark_thousand))
+
+  n_samples_all <- data$metrics_main$samples_all
 
   # Reduce the input to a tibble that only includes the horns values
   data <- data$results["horns"]
@@ -165,16 +178,16 @@ plot_horns_frequency <- function(
   # String with labels such as "Min (h = 0.68)" and "Max (h = 0.75)"; where "h"
   # is in italics. Using ggtext markdown formatting.
   label_min_max <- format_equation_richtext(
-    prefix = c("Min", "Max"),
-    number = c(h_min, h_max),
+    prefix = c("Min<br>", "Max<br>"),
     var_name = "h",
+    number = c(h_min, h_max),
     mark_decimal = mark_decimal
   )
 
   label_uniform <- format_equation_richtext(
-    prefix = "Uniform",
-    number = h_uniform,
+    prefix = "Uniform<br>",
     var_name = "h",
+    number = h_uniform,
     mark_decimal = mark_decimal,
     subscript = "u"
   )
@@ -224,54 +237,112 @@ plot_horns_frequency <- function(
       linewidth = 0.75
     ) +
 
-    # Uniform reference line
+    # Reference lines for perfect unimodality / invariance (h = 0), perfect
+    # uniformity (h_u), and perfect bimodality / polarization (h = 1)
     ggplot2::geom_vline(
-      xintercept = h_uniform,
+      xintercept = c(0, h_uniform, 1),
       color = line_color_uniform,
     ) +
 
-    # Text label for min and max lines
-    ggtext::geom_richtext(
-      data = data.frame(
-        x = c(position_x_min, position_x_max),
-        y = Inf,
-        label = label_min_max,
-        vjust = c(vjust_min, vjust_max),
-        hjust = c(hjust_min, hjust_max)
-      ),
-      ggplot2::aes(
-        x = .data$x,
-        y = .data$y,
-        label = .data$label,
-        vjust = .data$vjust,
-        hjust = .data$hjust
-      ),
-      color = line_color_min_max,
-      fill = "white",
-      label.padding = grid::unit(c(0.4, 0.4, 0.4, 0.4), "lines")
-    ) +
+    # Text label for min and max lines -- optional (1 / 3)
+    {
+      if (show_labels == "all" || grepl("min_max", show_labels)) {
+        ggtext::geom_richtext(
+          data = tibble::new_tibble(
+            list(
+              x = c(position_x_min, position_x_max),
+              y = Inf,
+              label = label_min_max,
+              vjust = c(vjust_min, vjust_max),
+              hjust = c(hjust_min, hjust_max)
+            ),
+            nrow = 2L
+          ),
+          ggplot2::aes(
+            x = .data$x,
+            y = .data$y,
+            label = .data$label,
+            vjust = .data$vjust,
+            hjust = .data$hjust
+          ),
+          color = line_color_min_max,
+          fill = "white",
+          # Determine padding for top, right, bottom, left; in "trouble" order
+          label.padding = grid::unit(c(0.4, 0.4, 0.4, 0.4), "lines")
+        )
+      } else {
+        NULL
+      }
+    } +
 
-    # Text label for uniform line
-    ggtext::geom_richtext(
-      data = data.frame(
-        x = position_x_uniform,
-        y = -Inf,
-        label = label_uniform
-      ),
-      ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
-      vjust = -4,
-      hjust = hjust_uniform,
-      color = line_color_uniform,
-      fill = "white",
-      # Center the label within the box by leaving less space at the bottom
-      # (position 3) to cancel out the subscript's distorting effect
-      label.padding = grid::unit(c(0.5, 0.5, 0.25, 0.5), "lines")
-    ) +
+    # Text label for uniform line -- optional (2 / 3)
+    {
+      if (show_labels == "all" || grepl("uniform", show_labels)) {
+        ggtext::geom_richtext(
+          data = tibble::new_tibble(
+            list(
+              x = position_x_uniform,
+              y = -Inf,
+              label = label_uniform
+            ),
+            nrow = 1L
+          ),
+          ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+          vjust = -3,
+          hjust = hjust_uniform,
+          color = line_color_uniform,
+          fill = "white",
+          # Center the label within the box by leaving less space at the bottom
+          # to cancel out the distorting effect of the subscript
+          label.padding = grid::unit(c(0.5, 0.5, 0.25, 0.5), "lines")
+        )
+      } else {
+        NULL
+      }
+    } +
+
+    # Text labels for h = 0 and h = 1 -- optional (3 / 3)
+    {
+      if (show_labels == "all" || grepl("bounds", show_labels)) {
+        ggtext::geom_richtext(
+          data = tibble::new_tibble(
+            list(
+              x = c(0, 1),
+              y = c(-Inf, -Inf),
+              label = c(
+                "Perfect unimodal,<br>all values equal<br>(*h* = 0)",
+                "Perfect bimodal,<br>polarized split<br>(*h* = 1)"
+              )
+            ),
+            nrow = 2L
+          ),
+          ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
+          vjust = -0.75,
+          hjust = c(-0.05, 1.05),
+          color = line_color_uniform,
+          fill = "white",
+          label.padding = grid::unit(c(0.4, 0.4, 0.4, 0.4), "lines")
+        )
+      } else {
+        NULL
+      }
+    } +
 
     # Rest of the plot
     ggplot2::labs(
       x = "Horns index (*h*)",
-      y = paste("Count in all", label_samples_all, "*h* values")
+      # Special y-axis label if there is exactly 1 h value -- otherwise, a label
+      # that includes the number of values is assembled
+      y = if (n_samples_all == 1) {
+        "\"Count\" of the single *h* value"
+      } else {
+        paste(
+          "Count in all",
+          n_samples_all |>
+            call_on(scales::label_number(big.mark = mark_thousand)),
+          "*h* values"
+        )
+      }
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(

@@ -11,6 +11,8 @@ closure_plot_horns_histogram(
   alpha = 0.75,
   color = "#5D3FD3",
   binwidth = 0.01,
+  show_labels = c("all", "min_max", "min_max_uniform", "min_max_bounds", "uniform",
+    "uniform_bounds", "bounds", "none"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
   text_limits = c(0.12, 0.88),
@@ -23,6 +25,8 @@ closure_plot_horns_density(
   data,
   alpha = 0.75,
   color = "#5D3FD3",
+  show_labels = c("all", "min_max", "min_max_uniform", "min_max_bounds", "uniform",
+    "uniform_bounds", "bounds", "none"),
   density_bounds = c("none", "min_max"),
   line_color_min_max = "red",
   line_color_uniform = "grey20",
@@ -42,7 +46,17 @@ closure_plot_horns_density(
 \code{"#5D3FD3"}, a purple color.}
 
 \item{binwidth}{Numeric (length 1). Only in \code{closure_plot_horns_histogram()}.
-Width of the bins that divide up the x-axis, passed on to}
+Width of the bins that divide up the x-axis. Default is \code{0.01}.}
+
+\item{show_labels}{String (length 1). Which text labels to show within the
+plot? One of:
+\itemize{
+\item \code{"all"} (the default): \emph{min}, \emph{max}, and \emph{uniform} horns values from
+\code{data}, as well as the \emph{bounds} at 0 and 1.
+\item \code{"min_max"}, \code{"min_max_uniform"}, \code{"min_max_bounds"}, \code{"uniform"},
+\code{"uniform_bounds"}, or \code{"bounds"}: a subset of these labels.
+\item \code{"none"}: no labels.
+}}
 
 \item{line_color_min_max}{Numeric (length 1). Color of the lines that mark
 the lower and upper ends of the distribution. Default is \code{"red"}.}
