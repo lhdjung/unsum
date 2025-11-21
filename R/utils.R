@@ -40,8 +40,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
           lowtech,
           "_read()`."
         ),
-        "!" = "Such output is a list with the elements \
-        {msg_tibbles_all}."
+        "!" = "Such output is a list with the elements {msg_tibbles_all}."
       ),
       call = rlang::caller_env()
     )
@@ -53,7 +52,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   # Inputs (1 / 5)
   check_component_tibble(
     x = data$inputs,
-    name = "inputs",
     dims = c(1L, 8L),
     col_names_types = list(
       "technique" = "character",
@@ -79,7 +77,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   # Main metrics (2 / 5)
   check_component_tibble(
     x = data$metrics_main,
-    name = "metrics_main",
     dims = c(1L, 3L),
     col_names_types = list(
       "samples_initial" = "double",
@@ -91,7 +88,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   # Horns metrics (3 / 5)
   check_component_tibble(
     x = data$metrics_horns,
-    name = "metrics_horns",
     dims = c(1L, 9L),
     col_names_types = list(
       "mean" = "double",
@@ -127,7 +123,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   # Frequency (4 / 5)
   check_component_tibble(
     x = data$frequency,
-    name = "frequency",
     dims = c(3 * scale_length, 5),
     col_names_types = list(
       "samples" = "character",
@@ -163,7 +158,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
 
     check_component_tibble(
       x = data$directory,
-      name = "directory",
       dims = c(1L, 1L),
       col_names_types = list(
         "path" = "character"
@@ -184,7 +178,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     if (reading_class == "stats_and_horns") {
       check_component_tibble(
         x = data$results,
-        name = "results",
         dims = c(data$metrics_main$samples_all, 2L),
         col_names_types = list(
           "id" = "integer",
@@ -200,7 +193,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     # Results (5 / 5)
     check_component_tibble(
       x = data$results,
-      name = "results",
       dims = c(data$metrics_main$samples_all, 3L),
       col_names_types = list(
         "id" = "integer",
@@ -246,7 +238,6 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
 # Check each element of `closure_generate()` for correct format.
 check_component_tibble <- function(
   x,
-  name,
   dims,
   col_names_types,
   msg_main = NULL,
@@ -265,6 +256,11 @@ check_component_tibble <- function(
     )
 
   if (!tibble_is_correct) {
+    tibble_name <- x |>
+      substitute() |>
+      deparse() |>
+      sub("^.*\\$", "", x = _)
+
     cols_msg <- paste0(
       "\"",
       names(col_names_types),
@@ -272,19 +268,22 @@ check_component_tibble <- function(
       unname(col_names_types),
       ")"
     )
+
     this_these <- if (length(col_names_types) == 1L) {
       "This column name and type"
     } else {
       "These column names and types"
     }
+
     if (is.null(msg_main)) {
       msg_main <- "CLOSURE data must not be changed before passing them \
         to other `closure_*()` functions."
     }
+
     cli::cli_abort(
       c(
         msg_main,
-        "!" = "Specifically, `{name}` must be a tibble with:",
+        "!" = "Specifically, `{tibble_name}` must be a tibble with:",
         "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
         "*" = "{this_these}: {cols_msg}"
       ),
@@ -600,7 +599,7 @@ write_final_info_txt <- function(path, technique) {
 # Transform unsum's CLOSURE results into the "n"-column format of the CSV files
 # made by closure-core's test harness or the original Python implementation.
 # This is also the format in which `closure_write()` saves the Parquet files.
-# If the `closure_generate()` output was assigned to `data`, call:
+# Assuming that `samples_all` is `closure_generate()` output, call:
 # `as_wide_n_tibble(data$results$sample)`
 as_wide_n_tibble <- function(samples_all) {
   samples_all |>
