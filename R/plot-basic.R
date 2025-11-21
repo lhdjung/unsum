@@ -57,7 +57,7 @@ plot_frequency_bar <- function(
   # the average inside of the plot.
   if (samples == "mean") {
     data$f_absolute <- data$f_average
-    label_avg_all <- "avg. sample, N = "
+    label_avg_all <- "avg. sample, *n* = "
     label_values <- " "
   } else if (samples == "all") {
     label_avg_all <- "all "
@@ -189,22 +189,20 @@ plot_frequency_bar <- function(
         NULL
       } else {
         # Format facet labels like "Minimal variability (h = 0.68)" with "h" in
-        # italics
-        facet_labels <- format_equation(
+        # italics. The labeller expects a named vector where names match the
+        # factor levels (which are "1", "2", etc.).
+        facet_labels <- format_equation_richtext(
           prefix = facet_labels,
           var_name = facet_labels_parens,
           number = min_max_values,
-          mark_decimal = mark_decimal,
-          parse_output = FALSE
+          mark_decimal = mark_decimal
         )
+        names(facet_labels) <- as.character(seq_along(facet_labels))
 
         # Evaluate the entire expression to a final grid
         ggplot2::facet_grid(
           cols = ggplot2::vars(samples),
-          labeller = ggplot2::labeller(
-            samples = facet_labels,
-            .default = ggplot2::label_parsed
-          )
+          labeller = ggplot2::labeller(samples = facet_labels)
         )
       }
     } +
@@ -224,6 +222,9 @@ plot_frequency_bar <- function(
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
+      axis.title.x = ggtext::element_markdown(),
+      axis.title.y = ggtext::element_markdown(),
+      strip.text = ggtext::element_markdown(),
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
     )
