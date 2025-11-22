@@ -101,7 +101,7 @@ new_plot_fn_horns_frequency <- function(technique, bar_color) {
       plot_horns_frequency(
         data = data,
         technique = !!technique,
-        bar_color = !!bar_color,
+        bar_color = bar_color,
         alpha = alpha,
         binwidth = binwidth,
         show_labels = show_labels,
