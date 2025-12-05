@@ -251,10 +251,14 @@ closure_read <- function(
 
   slash <- .Platform$file.sep
 
-  name_dir <- strsplit(path, slash)[[1]]
-  name_dir <- name_dir[length(name_dir)]
+  name_dir <- path |>
+    strsplit(slash) |>
+    call_on(function(x) {
+      vec <- x[[1]]
+      vec[length(vec)]
+    })
 
-  files_all <- dir(path)
+  files_actual <- dir(path)
   files_expected <- c(
     "info.txt",
     "inputs.parquet",
@@ -267,12 +271,12 @@ closure_read <- function(
 
   # Error if the folder contains other files than those needed, or if it does
   # not contain all of those needed. A bespoke message is shown in each case.
-  if (!setequal(files_all, files_expected)) {
+  if (!setequal(files_actual, files_expected)) {
     files_expected <- sort(files_expected)
-    files_all <- sort(files_all)
+    files_actual <- sort(files_actual)
 
-    offenders_missing <- setdiff(files_expected, files_all)
-    offenders_not_needed <- setdiff(files_all, files_expected)
+    offenders_missing <- setdiff(files_expected, files_actual)
+    offenders_not_needed <- setdiff(files_actual, files_expected)
 
     msg_missing <- if (length(offenders_missing) == 0) {
       NULL

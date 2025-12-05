@@ -446,10 +446,11 @@ format_equation <- function(
   subscript = NULL
 ) {
   # Format the number to two decimal places
-  number <- scales::label_number(
-    accuracy = 0.01,
-    decimal.mark = mark_decimal
-  )(number)
+  part_number <- number |>
+    call_on(scales::label_number(
+      accuracy = 0.01,
+      decimal.mark = mark_decimal
+    ))
 
   part_sub <- if (is.null(subscript)) {
     ""
@@ -458,5 +459,5 @@ format_equation <- function(
   }
 
   # Assemble the label
-  paste0(prefix, " (*", var_name, "*", part_sub, " = ", number, ")")
+  paste0(prefix, " (*", var_name, "*", part_sub, " = ", part_number, ")")
 }
