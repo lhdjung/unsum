@@ -406,11 +406,13 @@ closure_read <- function(
                 c(
                   "Reading samples.parquet from disk failed.",
                   "x" = "Original error:",
-                  "x" = e,
-                  "i" = "If memory is lacking, try \
-                  `include = \"stats_only\"` or \
-                  `include = \"stats_and_horns\"`."
-                )
+                  "x" = "{e}",
+                  "i" = "If memory is lacking, try\
+                  `include = \"stats_and_horns\"`.\
+                  In case even this takes up too much memory, use\
+                  `include = \"stats_only\"`."
+                ),
+                call = rlang::caller_env(4)
               )
             }
           ),
@@ -439,7 +441,8 @@ closure_read <- function(
           "Something went wrong when reading from disk.",
           "x" = "Original error:",
           "x" = "{e}"
-        )
+        ),
+        call = rlang::caller_env(4)
       )
     }
   )
