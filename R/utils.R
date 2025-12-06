@@ -615,14 +615,23 @@ write_final_info_txt <- function(path, technique) {
 }
 
 
-# Transform unsum's CLOSURE results into the "n"-column format of the CSV files
-# made by closure-core's test harness or the original Python implementation.
-# This is also the format in which `closure_write()` saves the Parquet files.
-# Assuming that `samples_all` is `closure_generate()` output, call:
+# Transform unsum's CLOSURE result lists into the "n"-column format in which
+# `closure_generate()` streams Parquet files to disk (if `path` is specified),
+# and in which `closure_write()` saves Parquet files. This is also the format of
+# the CSV files made by closure-core's test harness or the original Python
+# implementation. Optimized for performance, not readability. As an example,
+# assuming that `data` is `closure_generate()` output, call:
 # `as_wide_n_tibble(data$results$sample)`
 as_wide_n_tibble <- function(samples_all) {
-  samples_all |>
-    tibble::as_tibble(.name_repair = "minimal") |>
+  n_samples <- length(samples_all)
+  n_final_cols <- length(samples_all[[1]])
+
+  # Use the numbers from 1 to `n_samples` to name the elements of `samples_all`.
+  # Then, turn the list into a tibble, which is necessary to transpose it using
+  # `t()`. Finally, turn the result into a tibble again, but this time, name the
+  # columns like "n1", "n2", etc.
+  `names<-`(samples_all, seq_len(n_samples)) |>
+    tibble::new_tibble(nrow = n_final_cols) |>
     t() |>
     tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
 }
