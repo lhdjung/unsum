@@ -66,8 +66,9 @@
 #' @section More about memory: Some output columns that contain counts, such as
 #'   `f_absolute`, are doubles instead of integers. This is because doubles are
 #'   able to contain much larger numbers. When counting CLOSURE results, it is
-#'   not unrealistic to reach the limit of 32-bit integers in R, which is
-#'   roughly two billion.
+#'   possible to exceed the limit of 32-bit integers in R, which is roughly two
+#'   billion. For instance, this will happen with `values_all` in the examples
+#'   (`data_high`) if `n` is changed to `120` and `scale_max` to `7`.
 #'
 #' @section Rounding limitations: The `rounding` and `threshold` arguments are
 #'   not fully implemented. For example, CLOSURE currently treats all rounding

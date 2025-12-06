@@ -152,8 +152,9 @@ from an uncertain attempt to load them into R.
  Some output columns that contain counts, such as
 \code{f_absolute}, are doubles instead of integers. This is because doubles are
 able to contain much larger numbers. When counting CLOSURE results, it is
-not unrealistic to reach the limit of 32-bit integers in R, which is
-roughly two billion.
+possible to exceed the limit of 32-bit integers in R, which is roughly two
+billion. For instance, this will happen with \code{values_all} in the examples
+(\code{data_high}) if \code{n} is changed to \code{120} and \code{scale_max} to \code{7}.
 }
 
 \section{Rounding limitations}{
