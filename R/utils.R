@@ -479,6 +479,12 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 }
 
 
+# Add an S3 class to an object
+add_class <- function(x, new_class) {
+  `class<-`(x, c(new_class, class(x)))
+}
+
+
 create_results_folder <- function(path, n = 1) {
   if (dir.exists(path)) {
     cli::cli_abort(

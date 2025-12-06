@@ -191,7 +191,7 @@ closure_write <- function(data, path) {
 }
 
 
-# path <- "/home/lukas/Documents/r_projects/packages/unsum/CLOSURE-5_00-2_78-30-1-8-up_or_down-5"
+# # Example inputs:
 # include <- "stats_only"
 # samples_cap <- NULL
 
@@ -209,6 +209,9 @@ closure_read <- function(
 
   # TODO: Parameterize!
   technique <- "CLOSURE"
+
+  # "CLOSURE" --> "closure" etc.
+  lowtech <- tolower(technique)
 
   # Prevent errors of accidentally included spaces or line breaks by removing
   # any such pattern from the start or end of the path. Breaks in particular can
@@ -300,30 +303,31 @@ closure_read <- function(
     )
   }
 
-  # Function to add an S3 class to an object
-  add_class <- function(x, new_class) {
-    `class<-`(x, value = c(new_class, class(x)))
-  }
+  # See comment right below
+  parquet_options_list <- nanoparquet::parquet_options(
+    class = c("tbl_df", "tbl")
+  )
 
-  # Function to read the small Parquet files into tibbles. Add the "tbl_df"
-  # class which is not included by `read_parquet()` but is needed for regular
-  # tibbles.
+  # Function to read the small Parquet files into tibbles. Since tibbles usually
+  # have the "tbl_df" class but `read_parquet()` does not currently add it
+  # (although it does add "tbl"), tweak nanoparquet's options just to be sure.
+  # This is not needed in the rest of the package because no other instance of
+  # `read_parquet()` returns a data frame that is part of a function's output.
   read_file <- function(name) {
     path |>
       paste0(slash, name, ".parquet") |>
-      nanoparquet::read_parquet() |>
-      add_class("tbl_df")
+      nanoparquet::read_parquet(options = parquet_options_list)
   }
 
-  # Carry out these two steps. At this point in time, `out` corresponds to
+  # Read all the small files into a list. At this point, `out` corresponds to
   # `include == "stats_only"` because all of the additions further below
   # correspond to other variants of `include`.
   out <- list(
     inputs = "inputs" |>
       read_file() |>
       add_class(c(
-        technique |> tolower() |> paste0("_read_include_", include),
-        technique |> tolower() |> paste0("_generate")
+        paste0(lowtech, "_read_include_", include),
+        paste0(lowtech, "_generate")
       )),
 
     metrics_main = "metrics_main" |> read_file(),
@@ -348,7 +352,7 @@ closure_read <- function(
   }
 
   tryCatch(
-    expr = {
+    {
       out$inputs$mean <- mean_sd_str[1]
       out$inputs$sd <- mean_sd_str[2]
     },
@@ -358,7 +362,7 @@ closure_read <- function(
   )
 
   tryCatch(
-    expr = {
+    {
       out$frequency$value <- as.integer(out$frequency$value)
     },
     error = function(e) {
@@ -432,13 +436,13 @@ closure_read <- function(
 
   # Add a record of the folder's path
   out$directory <- tibble::new_tibble(
-    x = list(path = path),
+    list(path = path),
     nrow = 1L
   )
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
-    expr = check_generator_output(out, technique),
+    check_generator_output(out, technique),
     error = function(e) {
       cli::cli_abort(
         c(
