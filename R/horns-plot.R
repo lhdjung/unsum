@@ -17,7 +17,7 @@ plot_horns_frequency <- function(
     "none"
   ),
   line_color_min_max = "red",
-  line_color_uniform = "grey20",
+  line_color_reference = "grey20",
   text_limits = c(0.12, 0.88),
   text_size = 12,
   mark_thousand = ",",
@@ -217,7 +217,10 @@ plot_horns_frequency <- function(
     # uniformity (h_u), and perfect bimodality / polarization (h = 1)
     ggplot2::geom_vline(
       xintercept = c(0, h_uniform, 1),
-      color = line_color_uniform,
+      # Uniform line is dotted and slightly wider
+      linetype = c(1, 3, 1),
+      linewidth = c(0.5, 0.75, 0.5),
+      color = line_color_reference,
     ) +
 
     # Text label for min and max lines -- optional (1 / 3)
@@ -266,7 +269,7 @@ plot_horns_frequency <- function(
           ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
           vjust = -3,
           hjust = hjust_uniform,
-          color = line_color_uniform,
+          color = line_color_reference,
           fill = "white",
           # Center the label within the box by leaving less space at the bottom
           # to cancel out the distorting effect of the subscript
@@ -295,7 +298,7 @@ plot_horns_frequency <- function(
           ggplot2::aes(x = .data$x, y = .data$y, label = .data$label),
           vjust = -0.75,
           hjust = c(-0.05, 1.05),
-          color = line_color_uniform,
+          color = line_color_reference,
           fill = "white",
           label.padding = grid::unit(c(0.4, 0.4, 0.4, 0.4), "lines")
         )
@@ -325,9 +328,5 @@ plot_horns_frequency <- function(
       # Enable markdown formatting in axis labels to display "h" in italics
       axis.title.x = ggtext::element_markdown(),
       axis.title.y = ggtext::element_markdown(),
-      # Unclutter the plot by removing some grid lines, incl. all vertical ones
-      panel.grid.major.x = ggplot2::element_blank(),
-      panel.grid.minor.x = ggplot2::element_blank(),
-      panel.grid.minor.y = ggplot2::element_blank()
     )
 }

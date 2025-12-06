@@ -20,8 +20,10 @@
 #'   - `"min_max"`, `"min_max_uniform"`, `"min_max_bounds"`, `"uniform"`,
 #'   `"uniform_bounds"`, or `"bounds"`: a subset of these labels.
 #'   - `"none"`: no labels.
-#' @param line_color_min_max Numeric (length 1). Color of the lines that mark
-#'   the lower and upper ends of the distribution. Default is `"red"`.
+#' @param line_color_min_max String (length 1). Color of the lines that mark the
+#'   lower and upper ends of the distribution. Default is `"red"`.
+#' @param line_color_reference String (length 1). Color of the lines at *h = 0*,
+#'   *h = 1*, and the uniform point. Default is `"grey20"`.
 #' @param text_limits Numeric (length 2). If the minimum horns index is lower
 #'   than the first element here (default: `0.12`), both text labels go to the
 #'   right of the maximum. The same applies in reverse with the maximum and the
@@ -39,29 +41,47 @@
 #'   sd = "0.4",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 7
 #' )
 #'
+#' # All CLOSURE samples have low horns indices:
 #' closure_plot_horns_histogram(data_near_zero)
 #'
 #' data_near_midpoint <- closure_generate(
-#'   mean = "2.8",
-#'   sd = "1.5",
+#'   mean = "4.3",
+#'   sd = "2.2",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 7
 #' )
 #'
+#' # The min-max lines are beyond the midpoint,
+#' # so all CLOSURE samples are bimodal:
 #' closure_plot_horns_histogram(data_near_midpoint)
 #'
-#' # Large difference between horns values occur (only?)
-#' # if there are no decimal places in `mean` and `sd`:
+#' data_near_one <- closure_generate(
+#'   mean = "4.3",
+#'   sd = "2.8",
+#'   n = 35,
+#'   scale_min = 1,
+#'   scale_max = 7
+#' )
+#'
+#' # Extremely high variance throughout; close to the upper limit.
+#' # We can omit labels at the bounds so they don't cover the data:
+#' closure_plot_horns_histogram(
+#'   data_near_one,
+#'   show_labels = "min_max_uniform"
+#' )
+#'
+#' # Large differences between horns values occur (only?)
+#' # if `mean` and `sd` have no decimal places:
 #' data_wide_spread <- closure_generate(
 #'   mean = "3",
 #'   sd = "2",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 7
 #' )
 #'
 #' closure_plot_horns_histogram(data_wide_spread)
