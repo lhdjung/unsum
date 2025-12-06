@@ -157,10 +157,10 @@ generate_from_mean_sd_n <- function(
     "ATTENTION: Long runtime ahead!"
   }
 
-  # Simplest case here: just a message (on the bottom). Otherwise, the
-  # complexity is so high that the user is asked whether to proceed.
   if (!is.null(msg_wait)) {
     if (need_to_ask) {
+      cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
+
       # In memory mode, make sure the user knows there is also the option to
       # write large results to disk.
       if (in_memory_mode) {
@@ -170,11 +170,7 @@ generate_from_mean_sd_n <- function(
           "()`."
         ))
         cli::cli_alert_info("You would still obtain summary statistics in R.")
-        # Empty line before the next alert
-        message()
       }
-
-      cli::cli_alert_warning(paste(msg_wait, "Do you wish to proceed?"))
 
       selection <- utils::menu(
         choices = c("Yes, wait", "No, abort"),
@@ -189,6 +185,7 @@ generate_from_mean_sd_n <- function(
         return(invisible(NULL))
       }
     } else {
+      # If the user should not be asked, just issue the alert
       cli::cli_alert(msg_wait)
     }
   }
