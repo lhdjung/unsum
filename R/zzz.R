@@ -9,6 +9,7 @@ rm(
   # Argument modifiers: change the list of a function's formal arguments
   formals_add,
   formals_remove,
+  formals_remove_defaults,
   formals_change_defaults,
   # This is a list, but all other objects are functions
   formals_final
