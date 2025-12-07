@@ -29,6 +29,7 @@ Another focus of this release is visualization, with new plotting functions and 
 
     -   Added `legend_title` and `mark_decimal` arguments.
 -   Redesigned `closure_read()` to control which parts are read in via the new `include` and `samples_cap` arguments.
+-   Renamed the `"absolute-percent"` option of `frequency` in `closure_plot_bar()` to `"absolute_percent"`, for consistency.
 -   Removed `closure_horns_analyze()`. Its functionality was integrated into `closure_generate()` for simplicity and ease of use.
 -   Removed `closure_horns_histogram()` because its functionality has now been replaced by `closure_plot_horns_histogram()`.
 -   Removed the `rounding_error_mean` and `rounding_error_sd` arguments from `closure_generate()`. They are not needed for users. If anything, you can use the `rounding` argument instead.
@@ -36,6 +37,7 @@ Another focus of this release is visualization, with new plotting functions and 
 ## Bugfixes
 
 -   Fixed a bug that caused `closure_plot_ecdf()` to return clearly wrong results if the scale did not start at 1.
+-   Fixed bugs in `closure_plot_bar()` that could cause imprecision in the ways that percentages were rounded for display using `frequency = "percent"` or `frequency = "absolute-percent"` (see above for new syntax). This was only intended to limit the length of the percentage text labels, but it could affect the bar sizes, as well.
 
 ## Lifecycle updates
 

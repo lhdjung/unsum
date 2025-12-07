@@ -8,7 +8,7 @@
 closure_plot_bar_min_max(
   data,
   min_max = c("both", "min", "max"),
-  frequency = c("absolute-percent", "absolute", "relative", "percent"),
+  frequency = c("percent", "absolute_percent", "absolute", "relative"),
   samples = c("mean", "all"),
   facet_labels = c("Minimal variance", "Maximal variance"),
   facet_labels_parens = "h",
@@ -28,10 +28,10 @@ closure_plot_bar_min_max(
 \item{min_max}{String (length 1). Only in \code{closure_plot_bar_min_max()}. Which
 plot(s) to show? Options are \code{"both"} (the default), \code{"min"}, and \code{"max"}.}
 
-\item{frequency}{String (length 1). What should the bars display? The
-default, \code{"absolute-percent"}, displays the count of each scale value and
-its percentage of all values. Other options are \code{"absolute"}, \code{"relative"},
-and \code{"percent"}.}
+\item{frequency}{String (length 1). What should the bars display? The default
+is \code{"percent"}. Similarly, \code{"absolute_percent"}, displays the count of each
+scale value and its percentage of all values. Other options are
+\code{"absolute"}, \code{"relative"}.}
 
 \item{samples}{String (length 1). How to aggregate the samples? Either take
 the average sample (\code{"mean"}, the default) or the sum of all samples

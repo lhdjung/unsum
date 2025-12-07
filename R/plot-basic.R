@@ -6,7 +6,7 @@
 #   scale_min = 1,
 #   scale_max = 5
 # )
-# frequency <- "absolute-percent"
+# frequency <- "absolute_percent"
 # samples <- "mean"
 # bar_alpha <- 0.75
 # bar_color <- "#5D3FD3"
@@ -24,7 +24,7 @@
 plot_frequency_bar <- function(
   data,
   technique = "CLOSURE",
-  frequency = c("absolute-percent", "absolute", "relative", "percent"),
+  frequency = c("percent", "absolute_percent", "absolute", "relative"),
   samples = c("mean", "all"),
   min_max_values = NULL,
   frequency_rows_subset = NULL,
@@ -68,6 +68,9 @@ plot_frequency_bar <- function(
     data <- data[data$samples %in% frequency_rows_subset, ]
   }
 
+  # How many subsets of samples are there? E.g., 2 with min-max grouping
+  n_samples_groups <- length(unique(data$samples))
+
   # In terms of absolute frequencies, the user may choose to show the average
   # number of observations per bin instead of the full count. If so, replace the
   # full absolute values by the average values, and prepare a label to signpost
@@ -76,9 +79,12 @@ plot_frequency_bar <- function(
     data$f_absolute <- data$f_average
     label_avg_all <- "avg. sample, *n* = "
     label_values <- " "
-  } else if (samples == "all") {
+  } else if (samples == "all" && n_samples_groups == 1) {
     label_avg_all <- "all "
     label_values <- " values "
+  } else if (samples == "all") {
+    label_avg_all <- "the subset of values"
+    label_values <- ""
   } else {
     cli::cli_abort("Internal error: unhandled `samples` type.")
   }
@@ -105,21 +111,32 @@ plot_frequency_bar <- function(
     decimal.mark = mark_decimal
   )
 
-  # Remove the column that represents the main non-chosen type of frequency
-  # (absolute or relative) after specifying the y-axis label by frequency type.
-  if (frequency %in% c("absolute", "absolute-percent")) {
+  # Next, specify the y-axis label by frequency type, then remove the column
+  # that represents the main non-chosen type of frequency: absolute or relative
+  if (frequency %in% c("absolute", "absolute_percent")) {
+    # In case the average sample is displayed (either of the whole results set
+    # or per facet / subset), format the number of values found: no decimal
+    # places but a comma or similar to separate levels of thousand every three
+    # digits. This value is either the reported `n` -- i.e., inter alia, the
+    # size of the average sample -- or the total number of values found by the
+    # CLOSURE-type technique.
+    label_mean_count <- if (samples == "mean") {
+      data$f_absolute |>
+        call_on(function(x) sum(x) / n_samples_groups) |>
+        call_on(scales::label_number(
+          accuracy = 1,
+          big.mark = mark_thousand
+        ))
+    } else {
+      ""
+    }
+
     label_y_axis <- paste0(
       "Count in ",
       label_avg_all,
-      # Need to create a separate number-formatting function on the fly to
-      # format the number of values found by CLOSURE: no decimal places but a
-      # comma (or similar) to separate levels of thousand every three digits.
-      scales::label_number(
-        accuracy = 1,
-        big.mark = mark_thousand
-      )(sum(data$f_absolute) / length(unique(data$samples))),
+      label_mean_count,
       label_values,
-      if (frequency == "absolute-percent") "(%)" else NULL
+      switch(frequency, "absolute_percent" = " (%)")
     )
     data$f_relative <- NULL
   } else if (frequency == "relative") {
@@ -127,7 +144,7 @@ plot_frequency_bar <- function(
     data$f_absolute <- NULL
   } else if (frequency == "percent") {
     label_y_axis <- "Percentage of all values"
-    data$f_relative <- 100 * round(data$f_relative, 2)
+    data$f_relative <- round(100 * data$f_relative, 2)
     data$f_absolute <- NULL
   } else {
     cli::cli_abort("Internal error: unhandled `frequency` type.")
@@ -154,11 +171,11 @@ plot_frequency_bar <- function(
     label_percent <- switch(
       frequency,
       "percent" = "%",
-      "absolute-percent" = data |>
+      "absolute_percent" = data |>
         split(data$samples) |>
         lapply(function(x) {
           freqs <- x$frequency
-          percentage <- 100 * round(freqs / sum(freqs), 2)
+          percentage <- round(100 * freqs / sum(freqs), 1)
           paste0(" (", percentage, "%)")
         }) |>
         unlist(use.names = FALSE)

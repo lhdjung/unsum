@@ -55,7 +55,7 @@
 #' @export
 
 # min_max = "both"
-# frequency = "absolute-percent"
+# frequency = "percent"
 # samples = "mean"
 # facet_labels = c("Minimal variance", "Maximal variance")
 # facet_labels_parens = "h"
