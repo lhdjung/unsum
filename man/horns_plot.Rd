@@ -10,7 +10,7 @@ closure_plot_bar_min_max(
   min_max = c("both", "min", "max"),
   frequency = c("absolute-percent", "absolute", "relative", "percent"),
   samples = c("mean", "all"),
-  facet_labels = c("Minimal variability", "Maximal variability"),
+  facet_labels = c("Minimal variance", "Maximal variance"),
   facet_labels_parens = "h",
   bar_alpha = 0.75,
   bar_color = "#5D3FD3",
@@ -39,7 +39,7 @@ the average sample (\code{"mean"}, the default) or the sum of all samples
 
 \item{facet_labels}{String (length 2). Only in \code{closure_plot_bar_min_max()}.
 Labels of the two individual plots. Set it to \code{NULL} to remove the labels.
-Default is \code{c("Minimal variability", "Maximal variability")}.}
+Default is \code{c("Minimal variance", "Maximal variance")}.}
 
 \item{facet_labels_parens}{String (length 1). Only in
 \code{closure_plot_bar_min_max()}. Italicized part of the facet labels inside
@@ -74,7 +74,7 @@ Two plot functions that follow up on \code{\link[=closure_generate]{closure_gene
 \itemize{
 \item \code{closure_plot_bar_min_max()} draws barplots of the mean samples from among
 those with the minimum or maximum horns index (\eqn{h}). It displays the
-typical sample with the least or most amount of variability from among all
+typical sample with the least or most amount of variance from among all
 CLOSURE samples.
 }
 }
@@ -98,7 +98,7 @@ data <- closure_generate(
   scale_max = 5
 )
 
-# Even with minimal and maximal variability,
+# Even with minimal and maximal variance,
 # the results are almost the same:
 closure_plot_bar_min_max(data)
 

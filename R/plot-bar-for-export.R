@@ -3,7 +3,7 @@
 #' @description Two plot functions that follow up on [`closure_generate()`]:
 #' - `closure_plot_bar_min_max()` draws barplots of the mean samples from among
 #'   those with the minimum or maximum horns index (\eqn{h}). It displays the
-#'   typical sample with the least or most amount of variability from among all
+#'   typical sample with the least or most amount of variance from among all
 #'   CLOSURE samples.
 #'
 #' @param data List returned by [`closure_generate()`].
@@ -11,7 +11,7 @@
 #'   plot(s) to show? Options are `"both"` (the default), `"min"`, and `"max"`.
 #' @param facet_labels String (length 2). Only in `closure_plot_bar_min_max()`.
 #'   Labels of the two individual plots. Set it to `NULL` to remove the labels.
-#'   Default is `c("Minimal variability", "Maximal variability")`.
+#'   Default is `c("Minimal variance", "Maximal variance")`.
 #' @param facet_labels_parens String (length 1). Only in
 #'   `closure_plot_bar_min_max()`. Italicized part of the facet labels inside
 #'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
@@ -43,7 +43,7 @@
 #'   scale_max = 5
 #' )
 #'
-#' # Even with minimal and maximal variability,
+#' # Even with minimal and maximal variance,
 #' # the results are almost the same:
 #' closure_plot_bar_min_max(data)
 #'
@@ -57,7 +57,7 @@
 # min_max = "both"
 # frequency = "absolute-percent"
 # samples = "mean"
-# facet_labels = c("Minimal variability", "Maximal variability")
+# facet_labels = c("Minimal variance", "Maximal variance")
 # facet_labels_parens = "h"
 # bar_alpha = 0.75
 # bar_color = "#5D3FD3"
@@ -119,7 +119,7 @@ formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
     bar_color = "#5D3FD3"
   ) |>
   formals_change_defaults(
-    facet_labels = c("Minimal variability", "Maximal variability")
+    facet_labels = c("Minimal variance", "Maximal variance")
   ) |>
   formals_change_defaults(
     facet_labels_parens = "h"

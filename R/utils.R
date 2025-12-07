@@ -30,6 +30,12 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     inherits(data$inputs, paste0(lowtech, "_generate"))
 
   if (!top_level_is_correct) {
+    # Demo plots are not based on generated samples, so they will inevitably
+    # fail the current check and need an escape hatch like this
+    if (technique == "DEMO") {
+      return(invisible(NULL))
+    }
+
     msg_tibbles_all <- paste0("\"", tibbles_all, "\"")
     cli::cli_abort(
       c(

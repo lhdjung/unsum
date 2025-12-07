@@ -17,7 +17,7 @@
 # mark_decimal <- "."
 # text_size <- 12
 # frequency_rows_subset <- c("horns_min", "horns_max")
-# facet_labels <- c("Minimal variability", "Maximal variability")
+# facet_labels <- c("Minimal variance", "Maximal variance")
 # facet_labels_parens <- "h"
 # min_max_values <- c(0.41, 0.42)
 
@@ -45,11 +45,28 @@ plot_frequency_bar <- function(
   frequency <- rlang::arg_match(frequency)
   samples <- rlang::arg_match(samples)
 
-  # Zoom in on the frequency table -- the only element of `data` needed here.
-  # Filter its rows to only keep those with a specific subset of samples, such
-  # as "horns_min" and "horns_max", or "all" for all samples taken together.
-  data <- data$frequency
-  data <- data[data$samples %in% frequency_rows_subset, ]
+  # With a demo plot, construct a frequency table like those from `*_generate()`
+  if (technique == "DEMO") {
+    check_type(data, c("double", "integer"))
+
+    data <- tibble::new_tibble(
+      list(
+        samples = rep("all", length(data)),
+        value = seq_along(data),
+        # `f_average` is not supported, but it still needs a pro forma value
+        f_average = data,
+        f_absolute = data,
+        f_relative = data / sum(data)
+      ),
+      nrow = length(data)
+    )
+  } else {
+    # Zoom in on the frequency table -- the only element of `data` needed here.
+    # Filter its rows to only keep those with a specific subset of samples, such
+    # as "horns_min" and "horns_max", or "all" for all samples taken together.
+    data <- data$frequency
+    data <- data[data$samples %in% frequency_rows_subset, ]
+  }
 
   # In terms of absolute frequencies, the user may choose to show the average
   # number of observations per bin instead of the full count. If so, replace the
@@ -177,7 +194,7 @@ plot_frequency_bar <- function(
 
     # Conditionally facet the plot -- needed for `closure_plot_bar_min_max()`
     {
-      if (is.null(facet_labels)) {
+      if (is.null(facet_labels) && technique != "DEMO") {
         # Warn in case the arguments don't quite fit together
         if (!is.null(facet_labels_parens)) {
           cli::cli_warn(
@@ -187,8 +204,25 @@ plot_frequency_bar <- function(
         }
         # Evaluate the entire expression to `NULL`
         NULL
+      } else if (technique == "DEMO") {
+        label_h <- data$frequency |>
+          horns(1, nrow(data)) |>
+          call_on(scales::label_number(
+            accuracy = 0.01,
+            decimal.mark = mark_decimal
+          ))
+
+        # Prepare a pseudo-"facet" label for a single demo plot. It will only
+        # say, e.g., "h = 0.32" because example data are not min-max grouped.
+        single_h_label <- paste0("*h* = ", label_h)
+        names(single_h_label) <- "1"
+
+        ggplot2::facet_grid(
+          cols = ggplot2::vars(samples),
+          labeller = ggplot2::labeller(samples = single_h_label)
+        )
       } else {
-        # Format facet labels like "Minimal variability (h = 0.68)" with "h" in
+        # Format facet labels like "Minimal variance (h = 0.68)" with "h" in
         # italics. The labeller expects a named vector where names match the
         # factor levels (which are "1", "2", etc.).
         facet_labels <- format_equation(
@@ -197,6 +231,7 @@ plot_frequency_bar <- function(
           mark_decimal = mark_decimal,
           var_name = facet_labels_parens
         )
+
         names(facet_labels) <- as.character(seq_along(facet_labels))
 
         # Evaluate the entire expression to a final grid
@@ -222,9 +257,12 @@ plot_frequency_bar <- function(
     ) +
     ggplot2::theme_minimal(base_size = text_size) +
     ggplot2::theme(
+      # Enable markdown formatting in x and y axis labels (e.g., "h" in italics)
       axis.title.x = ggtext::element_markdown(),
       axis.title.y = ggtext::element_markdown(),
-      strip.text = ggtext::element_markdown(),
+      # Enable markdown formatting in facet labels and control their size
+      strip.text = ggtext::element_markdown(size = text_size),
+      # Leave out vertical grid lines because the x-axis is categorical
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
     )

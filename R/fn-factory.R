@@ -63,15 +63,26 @@ new_generator_mean_sd_n <- function(technique) {
 # `closure_plot_bar()`. The second argument, `bar_color`, will become the
 # default for the output function's `bar_color` argument.
 new_plot_fn_bar <- function(technique, bar_color) {
-  rlang::new_function(
-    # Changing a default here, not above, because each technique needs its own
-    # color, and this color is only known from the call to `new_plot_fn_bar()`
-    args = formals_final$plot_fn_freq_bar |>
-      formals_change_defaults(bar_color = bar_color),
+  args_all <- formals_final$plot_fn_freq_bar |>
+    formals_change_defaults(bar_color = bar_color)
 
+  # DEMO functions are based on frequencies, not CLOSURE-type result lists.
+  # Therefore, replace the `data` argument by one called `freqs`.
+  if (technique == "DEMO") {
+    args_all <- args_all |>
+      formals_add("freqs", .after = "data") |>
+      formals_remove("data")
+
+    data_arg <- rlang::expr(freqs)
+  } else {
+    data_arg <- rlang::expr(data)
+  }
+
+  rlang::new_function(
+    args = args_all,
     body = rlang::expr({
       plot_frequency_bar(
-        data = data,
+        data = !!data_arg,
         technique = !!technique,
         frequency = frequency,
         samples = samples,
