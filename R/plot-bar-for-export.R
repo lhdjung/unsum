@@ -55,7 +55,7 @@
 #' @export
 
 # min_max = "both"
-# frequency = "percent"
+# format = "percent"
 # samples = "mean"
 # facet_labels = c("Minimal variance", "Maximal variance")
 # facet_labels_parens = "h"
@@ -83,7 +83,7 @@ closure_plot_bar_min_max <- function() {
 
   plot_frequency_bar(
     data = data,
-    frequency = frequency,
+    format = format,
     samples = samples,
     min_max_values = c(
       data$metrics_horns$min,

@@ -29,7 +29,8 @@ Another focus of this release is visualization, with new plotting functions and 
 
     -   Added `legend_title` and `mark_decimal` arguments.
 -   Redesigned `closure_read()` to control which parts are read in via the new `include` and `samples_cap` arguments.
--   Renamed the `"absolute-percent"` option of `frequency` in `closure_plot_bar()` to `"absolute_percent"`, for consistency.
+-   Renamed the `frequency` argument of `closure_plot_bar()` to `format`, for clarity. There are many mentions of "frequency" in unsum, so it is good to disambiguate. In particular, the new `demo_plot_bar()` has `freqs` as its first argument.
+-   Renamed the `"absolute-percent"` option of `format` (the former `frequency`) in `closure_plot_bar()` to `"absolute_percent"`, for consistency with other multi-word strings in the package.
 -   Removed `closure_horns_analyze()`. Its functionality was integrated into `closure_generate()` for simplicity and ease of use.
 -   Removed `closure_horns_histogram()` because its functionality has now been replaced by `closure_plot_horns_histogram()`.
 -   Removed the `rounding_error_mean` and `rounding_error_sd` arguments from `closure_generate()`. They are not needed for users. If anything, you can use the `rounding` argument instead.

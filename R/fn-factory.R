@@ -84,7 +84,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
       plot_frequency_bar(
         data = !!data_arg,
         technique = !!technique,
-        frequency = frequency,
+        format = format,
         samples = samples,
         bar_alpha = bar_alpha,
         bar_color = bar_color,

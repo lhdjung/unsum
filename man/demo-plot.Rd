@@ -6,7 +6,7 @@
 \usage{
 demo_plot_bar(
   freqs,
-  frequency = c("percent", "absolute_percent", "absolute", "relative"),
+  format = c("percent", "absolute_percent", "absolute", "relative"),
   samples = c("mean", "all"),
   bar_alpha = 0.75,
   bar_color = "darkgreen",
@@ -22,10 +22,10 @@ demo_plot_bar(
 \item{freqs}{Numeric. Vector of relative or absolute frequencies to
 visualize.}
 
-\item{frequency}{String (length 1). What should the bars display? The default
-is \code{"percent"}. Similarly, \code{"absolute_percent"}, displays the count of each
-scale value and its percentage of all values. Other options are
-\code{"absolute"}, \code{"relative"}.}
+\item{format}{String (length 1). What should the bars show? The default is
+\code{"percent"}. Similarly, \code{"absolute_percent"} shows the count of each scale
+value and its percentage of all values. Other options are \code{"absolute"} and
+\code{"relative"} frequencies.}
 
 \item{samples}{String (length 1). How to aggregate the samples? Either take
 the average sample (\code{"mean"}, the default) or the sum of all samples

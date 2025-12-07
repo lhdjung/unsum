@@ -6,10 +6,10 @@
 #'   full list of possible raw data samples found by the CLOSURE algorithm.
 #'
 #' @param data List returned by [`closure_generate()`] or [`closure_read()`].
-#' @param frequency String (length 1). What should the bars display? The default
-#'   is `"percent"`. Similarly, `"absolute_percent"`, displays the count of each
-#'   scale value and its percentage of all values. Other options are
-#'   `"absolute"`, `"relative"`.
+#' @param format String (length 1). What should the bars show? The default is
+#'   `"percent"`. Similarly, `"absolute_percent"` shows the count of each scale
+#'   value and its percentage of all values. Other options are `"absolute"` and
+#'   `"relative"` frequencies.
 #' @param samples String (length 1). How to aggregate the samples? Either take
 #'   the average sample (`"mean"`, the default) or the sum of all samples
 #'   (`"all"`). This only matters if absolute frequencies are shown.

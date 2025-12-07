@@ -6,7 +6,7 @@
 #   scale_min = 1,
 #   scale_max = 5
 # )
-# frequency <- "absolute_percent"
+# format <- "absolute_percent"
 # samples <- "mean"
 # bar_alpha <- 0.75
 # bar_color <- "#5D3FD3"
@@ -24,7 +24,12 @@
 plot_frequency_bar <- function(
   data,
   technique = "CLOSURE",
-  frequency = c("percent", "absolute_percent", "absolute", "relative"),
+  format = c(
+    "percent",
+    "absolute_percent",
+    "absolute",
+    "relative"
+  ),
   samples = c("mean", "all"),
   min_max_values = NULL,
   frequency_rows_subset = NULL,
@@ -42,7 +47,7 @@ plot_frequency_bar <- function(
   check_generator_output(data, technique)
 
   # Check inputs
-  frequency <- rlang::arg_match(frequency)
+  format <- rlang::arg_match(format)
   samples <- rlang::arg_match(samples)
 
   # With a demo plot, construct a frequency table like those from `*_generate()`
@@ -100,9 +105,9 @@ plot_frequency_bar <- function(
   # numbers are fractions. However, if all numbers are absolute integers, there
   # is no need for decimal places.
   format_number_label <- scales::label_number(
-    accuracy = if (frequency == "relative") {
+    accuracy = if (format == "relative") {
       0.01
-    } else if (samples == "mean" || frequency == "percent") {
+    } else if (samples == "mean" || format == "percent") {
       0.1
     } else {
       1
@@ -111,9 +116,9 @@ plot_frequency_bar <- function(
     decimal.mark = mark_decimal
   )
 
-  # Next, specify the y-axis label by frequency type, then remove the column
-  # that represents the main non-chosen type of frequency: absolute or relative
-  if (frequency %in% c("absolute", "absolute_percent")) {
+  # Next, specify the y-axis label by format type, then remove the column
+  # that represents the main non-chosen type of format: absolute or relative
+  if (format %in% c("absolute", "absolute_percent")) {
     # In case the average sample is displayed (either of the whole results set
     # or per facet / subset), format the number of values found: no decimal
     # places but a comma or similar to separate levels of thousand every three
@@ -136,18 +141,18 @@ plot_frequency_bar <- function(
       label_avg_all,
       label_mean_count,
       label_values,
-      switch(frequency, "absolute_percent" = " (%)")
+      switch(format, "absolute_percent" = " (%)")
     )
     data$f_relative <- NULL
-  } else if (frequency == "relative") {
+  } else if (format == "relative") {
     label_y_axis <- "Relative frequency"
     data$f_absolute <- NULL
-  } else if (frequency == "percent") {
+  } else if (format == "percent") {
     label_y_axis <- "Percentage of all values"
     data$f_relative <- round(100 * data$f_relative, 2)
     data$f_absolute <- NULL
   } else {
-    cli::cli_abort("Internal error: unhandled `frequency` type.")
+    cli::cli_abort("Internal error: unhandled `format` type.")
   }
 
   # Ensure consistent column names to be referenced later
@@ -169,7 +174,7 @@ plot_frequency_bar <- function(
     # at least in part. Otherwise, `label_percent` is `NULL`, so it's ignored.
     # With multiple combined tables, only one set of labels is created.
     label_percent <- switch(
-      frequency,
+      format,
       "percent" = "%",
       "absolute_percent" = data |>
         split(data$samples) |>

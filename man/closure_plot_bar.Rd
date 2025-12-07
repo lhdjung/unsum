@@ -6,7 +6,7 @@
 \usage{
 closure_plot_bar(
   data,
-  frequency = c("percent", "absolute_percent", "absolute", "relative"),
+  format = c("percent", "absolute_percent", "absolute", "relative"),
   samples = c("mean", "all"),
   bar_alpha = 0.75,
   bar_color = "#5D3FD3",
@@ -21,10 +21,10 @@ closure_plot_bar(
 \arguments{
 \item{data}{List returned by \code{\link[=closure_generate]{closure_generate()}} or \code{\link[=closure_read]{closure_read()}}.}
 
-\item{frequency}{String (length 1). What should the bars display? The default
-is \code{"percent"}. Similarly, \code{"absolute_percent"}, displays the count of each
-scale value and its percentage of all values. Other options are
-\code{"absolute"}, \code{"relative"}.}
+\item{format}{String (length 1). What should the bars show? The default is
+\code{"percent"}. Similarly, \code{"absolute_percent"} shows the count of each scale
+value and its percentage of all values. Other options are \code{"absolute"} and
+\code{"relative"} frequencies.}
 
 \item{samples}{String (length 1). How to aggregate the samples? Either take
 the average sample (\code{"mean"}, the default) or the sum of all samples
