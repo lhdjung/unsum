@@ -1,6 +1,10 @@
+# Global configuration ----------------------------------------------------
+
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 
+
+# Checks ------------------------------------------------------------------
 
 # Error if the input is not an unchanged list containing the results of a
 # function such as `closure_generate()`. Empty result sets error by default.
@@ -471,6 +475,8 @@ check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
 }
 
 
+# General helpers ---------------------------------------------------------
+
 # Pipe helper that allows for calling primitives, anonymous functions, and
 # function factories within a pipe workflow. As a toy example: `object |>
 # call_on(function(x) x[x > 10])`
@@ -490,6 +496,17 @@ add_class <- function(x, new_class) {
   `class<-`(x, c(new_class, class(x)))
 }
 
+
+# Get the name of the calling function as a string. By default, this is the
+# function immediately calling the one within which `caller_fn_name()` is
+# called. Choose the next-higher function with `n = 2` etc; or the current
+# function with `n = 0`.
+caller_fn_name <- function(n = 1) {
+  as.character(rlang::caller_call(n + 1)[[1L]])
+}
+
+
+# Specific logic ----------------------------------------------------------
 
 create_results_folder <- function(path, n = 1) {
   if (dir.exists(path)) {
@@ -640,15 +657,6 @@ as_wide_n_tibble <- function(samples_all) {
     tibble::new_tibble(nrow = n_final_cols) |>
     t() |>
     tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
-}
-
-
-# Get the name of the calling function as a string. By default, this is the
-# function immediately calling the one within which `caller_fn_name()` is
-# called. Choose the next-higher function with `n = 2` etc; or the current
-# function with `n = 0`.
-caller_fn_name <- function(n = 1) {
-  as.character(rlang::caller_call(n + 1)[[1L]])
 }
 
 
