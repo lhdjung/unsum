@@ -397,6 +397,7 @@ check_value <- function(x, type, allow_null = FALSE) {
 }
 
 
+# Make sure a value has the correct type (or is `NULL`, if allowed)
 check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
   if (
     any(t == typeof(x)) ||
@@ -456,6 +457,7 @@ check_whole_number <- function(
 }
 
 
+# Make sure a value has the correct length (or is `NULL`, if allowed)
 check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
   if (length(x) == l || (allow_null && is.null(x))) {
     return(invisible(NULL))
@@ -491,7 +493,7 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 }
 
 
-# Add an S3 class to an object
+# Add an S3 class to an object. Using the prefix form which is more efficient.
 add_class <- function(x, new_class) {
   `class<-`(x, c(new_class, class(x)))
 }
@@ -508,6 +510,7 @@ caller_fn_name <- function(n = 1) {
 
 # Specific logic ----------------------------------------------------------
 
+# Folder into which CLOSURE-type results will be written, with a helpful check
 create_results_folder <- function(path, n = 1) {
   if (dir.exists(path)) {
     cli::cli_abort(
@@ -660,9 +663,12 @@ as_wide_n_tibble <- function(samples_all) {
 }
 
 
+# Run this on a `data$inputs` tibble to check whether `data` was already written
+# to disk before. If so, this will have been marked by an (invisible) S3 class.
 has_reading_class <- function(inputs, include = NULL) {
   pattern <- paste0("^.*_read_include_", include)
 
+  # Search the `inputs` classes for one like "closure_read_include_stats_only"
   inputs |>
     class() |>
     grepl(pattern, x = _) |>
