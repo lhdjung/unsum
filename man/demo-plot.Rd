@@ -7,7 +7,6 @@
 demo_plot_bar(
   freqs,
   format = c("percent", "absolute_percent", "absolute", "relative"),
-  samples = c("mean", "all"),
   bar_alpha = 0.75,
   bar_color = "darkgreen",
   show_text = TRUE,
@@ -26,10 +25,6 @@ visualize.}
 \code{"percent"}. Similarly, \code{"absolute_percent"} shows the count of each scale
 value and its percentage of all values. Other options are \code{"absolute"} and
 \code{"relative"} frequencies.}
-
-\item{samples}{String (length 1). How to aggregate the samples? Either take
-the average sample (\code{"mean"}, the default) or the sum of all samples
-(\code{"all"}). This only matters if absolute frequencies are shown.}
 
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 

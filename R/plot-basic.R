@@ -46,10 +46,6 @@ plot_frequency_bar <- function(
 ) {
   check_generator_output(data, technique)
 
-  # Check inputs
-  format <- rlang::arg_match(format)
-  samples <- rlang::arg_match(samples)
-
   # With a demo plot, construct a frequency table like those from `*_generate()`
   if (technique == "DEMO") {
     check_type(data, c("double", "integer"))
@@ -65,6 +61,10 @@ plot_frequency_bar <- function(
       ),
       nrow = length(data)
     )
+
+    # As demo plots don't have a `samples` argument but the remainder of the
+    # current function expects one, it is substituted here
+    samples <- "all"
   } else {
     # Zoom in on the frequency table -- the only element of `data` needed here.
     # Filter its rows to only keep those with a specific subset of samples, such
@@ -72,6 +72,10 @@ plot_frequency_bar <- function(
     data <- data$frequency
     data <- data[data$samples %in% frequency_rows_subset, ]
   }
+
+  # Check inputs here because demo plots don't have `samples`
+  format <- rlang::arg_match(format)
+  samples <- rlang::arg_match(samples)
 
   # How many subsets of samples are there? E.g., 2 with min-max grouping
   n_samples_groups <- length(unique(data$samples))

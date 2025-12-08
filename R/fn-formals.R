@@ -23,7 +23,8 @@ formals_change_defaults <- function(formals_fn, ...) {
 
 
 # Remove the defaults of one or more existing arguments, but keep the arguments
-# themselves. Use by passing the names of arguments to be removed as strings.
+# themselves. Use by passing strings (through the dots) that are the names of
+# the arguments you want to free from their defaults.
 formals_remove_defaults <- function(formals_fn, ...) {
   targets_all <- c(...)
 

@@ -71,7 +71,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
   if (technique == "DEMO") {
     args_all <- args_all |>
       formals_add("freqs", .after = "data") |>
-      formals_remove("data")
+      formals_remove("data", "samples")
 
     data_arg <- rlang::expr(freqs)
   } else {
