@@ -50,6 +50,7 @@ plot_frequency_bar <- function(
   # from the input `data`, which is simply a vector of frequencies.
   if (technique == "DEMO") {
     check_type(data, c("double", "integer"))
+    check_frequency_vector(data)
 
     data <- tibble::new_tibble(
       list(

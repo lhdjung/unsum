@@ -227,25 +227,16 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
   # frequencies must also sum up to 0: it only makes sense if no values at all
   # were found. These comparisons use `near()`, copied from dplyr, to account
   # for accidental floating-point inaccuracies.
-  f_relative_sums_up <- near(
-    sum(data$frequency$f_relative),
-    3
-  ) ||
-    (near(
-      sum(data$frequency$f_relative),
-      0
-    ) &&
-      near(
-        sum(data$frequency$f_absolute),
-        0
-      ))
+  f_relative_sum <- sum(data$frequency$f_relative)
+  freqs_sum_up <- near(f_relative_sum, 3) ||
+    (near(f_relative_sum, 0) && near(sum(data$frequency$f_absolute), 0))
 
-  if (!f_relative_sums_up) {
+  if (!freqs_sum_up) {
     cli::cli_abort(
       c(
         "The `f_relative` column in `frequency` must sum up to 1 \
         (or 0, if `f_absolute` does).",
-        "x" = "It actually sums up to {sum(data$frequency$f_relative)}."
+        "x" = "It actually sums up to {f_relative_sum}."
       ),
       call = rlang::caller_env()
     )
@@ -477,6 +468,27 @@ check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
 }
 
 
+# A vector of frequencies will sum up to 1 or 0 if the frequencies are relative,
+# or it will consist of all-integerish absolute frequencies. The expected
+# relative sum can be adjusted for vectors with multiple whole groups.
+check_frequency_vector <- function(x, sum_relative = 1) {
+  sum_x <- sum(x)
+
+  if (
+    near(sum_x, sum_relative) ||
+      near(sum_x, 0) ||
+      all(is_whole_number(x))
+  ) {
+    return(invisible(NULL))
+  }
+
+  cli::cli_abort(
+    "`freqs` must be a vector of frequencies (relative or absolute).",
+    call = rlang::caller_env(2)
+  )
+}
+
+
 # General helpers ---------------------------------------------------------
 
 # Pipe helper that allows for calling primitives, anonymous functions, and
@@ -490,6 +502,12 @@ call_on <- function(.x, .f, ...) {
 # Copied from `dplyr::near()`
 near <- function(x, y, tol = .Machine$double.eps^0.5) {
   abs(x - y) < tol
+}
+
+
+# Adapted from scrutiny
+is_whole_number <- function(x, tolerance = .Machine$double.eps^0.5) {
+  near(x, floor(x), tol = tolerance)
 }
 
 
