@@ -15,6 +15,8 @@ formals_change_defaults <- function(formals_fn, ...) {
       "Can only choose new defaults for existing arguments.",
       "x" = "Non-existing argument{?s}: {offenders}"
     ))
+  } else if (length(new_defaults) == 0) {
+    cli::cli_abort("Need to name one or more existing arguments.")
   }
 
   formals_fn[names(formals_fn) %in% names(new_defaults)] <- new_defaults
@@ -37,6 +39,8 @@ formals_remove_defaults <- function(formals_fn, ...) {
       "Can only remove defaults of existing arguments.",
       "x" = "Non-existing argument{?s}: {offenders}"
     ))
+  } else if (length(targets_all) == 0) {
+    cli::cli_abort("Need to name one or more existing arguments.")
   }
 
   # Replace each target formal argument by a version of itself that does not
@@ -64,12 +68,15 @@ formals_remove_defaults <- function(formals_fn, ...) {
 # of new arguments that should not have any defaults. For example,
 # `list_of_formals |> formals_add(a = 5, "b")` will add `a` as an argument with
 # default `5`, and `b` as an argument without a default; in this order.
-formals_add <- function(formals_fn, ..., .after) {
+formals_add <- function(formals_fn, ..., .before = NULL, .after = NULL) {
   new_args_all <- list(...)
-  names_args_new <- names(new_args_all)
-  names_args_old <- names(formals_fn)
 
-  offenders <- names(new_args_all)[names(new_args_all) %in% names_args_old]
+  # Unlike `base::names()`, `rlang::names2()` returns `""` for unnamed elements
+  names_old <- rlang::names2(formals_fn)
+  names_new <- rlang::names2(new_args_all)
+
+  args_have_no_defaults <- names_new == ""
+  offenders <- names_new[names_new %in% names_old]
 
   if (length(offenders) > 0) {
     offenders <- paste0("\"", offenders, "\"")
@@ -77,36 +84,76 @@ formals_add <- function(formals_fn, ..., .after) {
       "Can only add arguments that don't exist yet.",
       "x" = "Already existing argument{?s}: {offenders}"
     ))
+  } else if (length(new_args_all) == 0) {
+    cli::cli_abort("Need to add one or more arguments.")
   }
 
-  if (!is.character(.after) || !.after %in% names_args_old) {
-    cli::cli_abort("`.after` must be a string that names an existing argument.")
+  using_before <- !is.null(.before)
+  using_after <- !is.null(.after)
+
+  # Check that exactly one of `.before` and `.after` is a string that names an
+  # existing argument, and the other one is `NULL`
+  if (using_before && using_after) {
+    cli::cli_abort("Can't specify both `.before` and `.after`.")
+  } else if (!using_before && !using_after) {
+    cli::cli_abort("Need to specify one of `.before` and `.after`.")
+  } else if (using_before) {
+    stopifnot(
+      is.character(.before),
+      length(.before) == 1,
+      .before %in% names_old
+    )
+    index <- match(.before, names_old)
+  } else {
+    # `.after` remains
+    stopifnot(
+      is.character(.after),
+      length(.after) == 1,
+      .after %in% names_old
+    )
+    index <- match(.after, names_old)
   }
 
-  index <- match(.after, names(formals_fn))
-
+  # Insert each new argument into the list by checking its position and, if
+  # needed, handling the no-default case
   for (i in seq_along(new_args_all)) {
     new_arg <- new_args_all[i]
-    new_name <- names_args_new[i]
-
-    has_no_default <- is.null(new_name)
+    new_name <- names_new[i]
+    has_no_default <- args_have_no_defaults[i]
 
     # Add temporary dummy default if needed because `c()` wants all elements to
-    # be name-value pairs when it combines the new pairlist below
+    # be name-value pairs when it combines the new pairlist below. Redefine as a
+    # string with value `"dummy"` and the name that is nested within `new_arg`.
     if (has_no_default) {
-      # Redefine because `new_arg` only has a (nested) value, not a name
-      new_arg <- new_arg[[1]]
-      stand_in <- c(x = "dummy")
-      # The "value" of `new_arg` should be the name of the new argument
-      names(stand_in) <- new_arg
-      new_arg <- stand_in
+      new_arg <- `names<-`("dummy", new_arg[[1]])
     }
 
-    # Insert the current new argument into the list of arguments
+    # Update positions around which the new arg will be inserted, based on
+    # current `index` value that is incremented after each loop iteration
+    if (using_before) {
+      neighbor_low <- index - 1
+      neighbor_high <- index
+    } else {
+      # I.e., if `using_after`
+      neighbor_low <- index
+      neighbor_high <- index + 1
+    }
+
+    # Insert the current new argument into the list of arguments. The second
+    # part of the existing list -- after the new argument -- might not exist
+    # because the new argument is inserted right at the end of the list.
+    # Therefore, `NULL` is inserted instead if there is no second part. This
+    # problem can't occur on the lower end because the index only ever
+    # increments, and because R can inherently handle the lower end better.
     formals_fn <- c(
-      formals_fn[seq_len(index)],
+      formals_fn[seq_len(neighbor_low)],
       new_arg,
-      formals_fn[(index + 1):length(formals_fn)]
+
+      if (neighbor_high > length(formals_fn)) {
+        NULL
+      } else {
+        formals_fn[neighbor_high:length(formals_fn)]
+      }
     )
 
     # Remove temporary dummy default
@@ -133,6 +180,8 @@ formals_remove <- function(formals_fn, ...) {
       "Can only remove existing arguments.",
       "x" = "Non-existing argument{?s}: {offenders}"
     ))
+  } else if (length(targets_all) == 0) {
+    cli::cli_abort("Need to name one or more existing arguments.")
   }
 
   should_be_removed <- names(formals_fn) %in% targets_all
