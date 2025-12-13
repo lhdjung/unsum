@@ -8,6 +8,7 @@
 closure_plot_bar_min_max(
   data,
   min_max = c("both", "min", "max"),
+  technique = "CLOSURE",
   format = c("percent", "absolute_percent", "absolute", "relative"),
   samples = c("mean", "all"),
   facet_labels = c("Minimal variance", "Maximal variance"),

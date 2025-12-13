@@ -12,19 +12,23 @@
 #' @description The `demo_plot_*()` functions are variants of `closure_plot_*()`
 #'   that directly visualize a given frequency distribution. Their purpose is to
 #'   illustrate general points about CLOSURE-type techniques and the horns
-#'   index, which is also shown; see [`horns()`].
+#'   index.
 #'
-#' - `demo_plot_bar()` is like [`closure_plot_bar()`] except it is not faceted.
-#' - `demo_plot_horns_histogram()` is like [`closure_plot_horns_histogram()`].
-#' - `demo_plot_ecdf()` is like [`closure_plot_ecdf()`].
+#'   - `demo_plot_bar()` is like [`closure_plot_bar()`] except it is never
+#'   faceted.
+#'   - `demo_plot_horns_histogram()` is like [`closure_plot_horns_histogram()`].
+#'   - `demo_plot_ecdf()` is like [`closure_plot_ecdf()`].
 #'
+#'   The top line shows the horns index of the given distribution (\eqn{h}) and
+#'   the horns index of a hypothetical uniform distribution with the same number
+#'   of scale points (\eqn{h_u}). See [`horns()`] and `horns_uniform()` for the
+#'   corresponding functions.
+
 #' @details In keeping with the forensic metascience tradition of tortured
 #'   backronyms, DEMO stands for "displaying examples of meticulous operation".
 #'
 #' @param freqs Numeric. Vector of relative or absolute frequencies to
 #'   visualize.
-#' @param bar_color String (length 1). Color of the bars. Default is
-#'   `"darkgreen"`.
 #' @inheritParams closure_plot_bar
 #'
 #' @returns A ggplot object.
@@ -46,4 +50,7 @@
 #' # for 7-point scales
 #' demo_plot_bar(freqs = 21:27)
 
-demo_plot_bar <- new_plot_fn_bar("DEMO", "darkgreen")
+demo_plot_bar <- new_plot_fn_bar("DEMO", "#5D3FD3")
+
+# # Also of note: h == h_u here even though the distribution is not uniform
+# demo_plot_bar(c(20, 40, 20, 20, 30))

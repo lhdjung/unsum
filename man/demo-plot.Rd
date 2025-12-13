@@ -8,7 +8,7 @@ demo_plot_bar(
   freqs,
   format = c("percent", "absolute_percent", "absolute", "relative"),
   bar_alpha = 0.75,
-  bar_color = "darkgreen",
+  bar_color = "#5D3FD3",
   show_text = TRUE,
   text_color = bar_color,
   text_size = 12,
@@ -29,7 +29,7 @@ value and its percentage of all values. Other options are \code{"absolute"} and
 \item{bar_alpha}{Numeric (length 1). Opacity of the bars. Default is \code{0.75}.}
 
 \item{bar_color}{String (length 1). Color of the bars. Default is
-\code{"darkgreen"}.}
+\code{"#5D3FD3"}, a purple color.}
 
 \item{show_text}{Logical (length 1). Should the bars be labeled with the
 corresponding frequencies? Default is \code{TRUE}.}
@@ -53,12 +53,18 @@ A ggplot object.
 The \verb{demo_plot_*()} functions are variants of \verb{closure_plot_*()}
 that directly visualize a given frequency distribution. Their purpose is to
 illustrate general points about CLOSURE-type techniques and the horns
-index, which is also shown; see \code{\link[=horns]{horns()}}.
+index.
 \itemize{
-\item \code{demo_plot_bar()} is like \code{\link[=closure_plot_bar]{closure_plot_bar()}} except it is not faceted.
+\item \code{demo_plot_bar()} is like \code{\link[=closure_plot_bar]{closure_plot_bar()}} except it is never
+faceted.
 \item \code{demo_plot_horns_histogram()} is like \code{\link[=closure_plot_horns_histogram]{closure_plot_horns_histogram()}}.
 \item \code{demo_plot_ecdf()} is like \code{\link[=closure_plot_ecdf]{closure_plot_ecdf()}}.
 }
+
+The top line shows the horns index of the given distribution (\eqn{h}) and
+the horns index of a hypothetical uniform distribution with the same number
+of scale points (\eqn{h_u}). See \code{\link[=horns]{horns()}} and \code{horns_uniform()} for the
+corresponding functions.
 }
 \details{
 In keeping with the forensic metascience tradition of tortured

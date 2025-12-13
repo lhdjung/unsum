@@ -23,7 +23,7 @@
 
 plot_frequency_bar <- function(
   data,
-  technique = "CLOSURE",
+  technique,
   format = c(
     "percent",
     "absolute_percent",
@@ -47,6 +47,7 @@ plot_frequency_bar <- function(
   check_generator_output(data, technique)
 
   # With a demo plot, construct a frequency table like those from `*_generate()`
+  # from the input `data`, which is simply a vector of frequencies.
   if (technique == "DEMO") {
     check_type(data, c("double", "integer"))
 
@@ -54,8 +55,7 @@ plot_frequency_bar <- function(
       list(
         samples = rep("all", length(data)),
         value = seq_along(data),
-        # `f_average` is not supported, but it still needs a pro forma value
-        f_average = data,
+        # `f_average` is not supported
         f_absolute = data,
         f_relative = data / sum(data)
       ),
@@ -220,7 +220,9 @@ plot_frequency_bar <- function(
 
     # Conditionally facet the plot -- needed for `closure_plot_bar_min_max()`
     {
-      if (is.null(facet_labels) && technique != "DEMO") {
+      if (!show_text) {
+        NULL
+      } else if (is.null(facet_labels) && technique != "DEMO") {
         # Warn in case the arguments don't quite fit together
         if (!is.null(facet_labels_parens)) {
           cli::cli_warn(
@@ -231,21 +233,30 @@ plot_frequency_bar <- function(
         # Evaluate the entire expression to `NULL`
         NULL
       } else if (technique == "DEMO") {
+        # Compute the horns index for the example frequency distribution, then
+        # add the uniform horns index based only on the number of scale points.
         label_h <- data$frequency |>
           horns(1, nrow(data)) |>
+          c(horns_uniform(1, nrow(data))) |>
           call_on(scales::label_number(
             accuracy = 0.01,
             decimal.mark = mark_decimal
           ))
 
-        # Prepare a pseudo-"facet" label for a single demo plot. It will only
-        # say, e.g., "h = 0.32" because example data are not min-max grouped.
-        single_h_label <- paste0("*h* = ", label_h)
-        names(single_h_label) <- "1"
+        # Prepare a pseudo-"facet" label for a single demo plot. It will say,
+        # e.g., "h = 0.32, h_u = 0.50" for the horns index and the uniform one.
+        # There is only one set of such labels because example data are not
+        # min-max grouped. Naming the label is needed to display it via ggplot2.
+        label_h <- paste0(
+          c("*h* = ", "*h*<sub>u</sub> = "),
+          label_h,
+          collapse = ", "
+        )
+        names(label_h) <- "1"
 
         ggplot2::facet_grid(
           cols = ggplot2::vars(samples),
-          labeller = ggplot2::labeller(samples = single_h_label)
+          labeller = ggplot2::labeller(samples = label_h)
         )
       } else {
         # Format facet labels like "Minimal variance (h = 0.68)" with "h" in

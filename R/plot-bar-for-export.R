@@ -83,6 +83,7 @@ closure_plot_bar_min_max <- function() {
 
   plot_frequency_bar(
     data = data,
+    technique = technique,
     format = format,
     samples = samples,
     min_max_values = c(
@@ -116,20 +117,16 @@ closure_plot_bar_min_max <- function() {
 formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
   formals() |>
   formals_change_defaults(
+    technique = "CLOSURE",
+    facet_labels = c("Minimal variance", "Maximal variance"),
+    facet_labels_parens = "h",
     bar_color = "#5D3FD3"
-  ) |>
-  formals_change_defaults(
-    facet_labels = c("Minimal variance", "Maximal variance")
-  ) |>
-  formals_change_defaults(
-    facet_labels_parens = "h"
   ) |>
   formals_add(
     min_max = c("both", "min", "max"),
     .after = "data"
   ) |>
   formals_remove(
-    "technique",
     "min_max_values",
     "frequency_rows_subset"
   )
