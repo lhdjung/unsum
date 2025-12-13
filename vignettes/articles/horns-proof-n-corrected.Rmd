@@ -1,0 +1,160 @@
+---
+title: "Mathematical foundations of the horns index with finite sample corrections"
+subtitle: "Complete derivations for $h$ and $h^*$"
+output: pdf_document
+header-includes:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{amsthm}
+  - \theoremstyle{definition}
+  - \newtheorem{theorem}{Theorem}
+  - \newtheorem{lemma}{Lemma}
+  - \newtheorem{proposition}{Proposition}
+  - \newtheorem{definition}{Definition}
+---
+
+\section{Introduction}
+
+The horns index, $h$, measures dispersion in ordinal data as the ratio of observed variance to maximum possible variance. We also define a special case, $h^*$. The difference is that $h$ accounts for finite sample constraints, whereas $h^*$ is solely based on the theoretical limit that follows from the range of the original scale. In this way, $h^*$ corresponds to an infinite sample.
+
+\section{Notation and setup}
+
+\begin{itemize}
+\item $k$: number of scale points (1 to $k$)
+\item $n$: sample size
+\item $n_i$: frequency at scale point $i$
+\item $\bar{x}$: sample mean
+\item $s^2$: sample variance
+\item $\sigma^2$: population variance
+\end{itemize}
+
+\section{The two versions of the horns index}
+
+\begin{definition}[Theoretical horns index $h^*$]
+$$h^* = \frac{\text{Observed variance}}{\text{Popoviciu bound}} = \frac{\sigma^2}{\frac{1}{4} (k-1)^2}$$
+where $\sigma^2$ uses the population variance formula (dividing by $n$).
+\end{definition}
+
+\begin{definition}[Finite-sample horns index $h$]
+$$h = \frac{\text{Observed variance}}{\text{Maximum achievable variance for a given } n}$$
+where the maximum accounts for whether $n$ is odd or even (geometric constraint), the choice of variance formula (sample vs. population)
+\end{definition}
+
+\section{Maximum variance for finite samples}
+
+\subsection{The geometric constraint}
+
+\begin{theorem}[Maximum configuration]
+Maximum variance is achieved by placing all observations at the scale extremes (positions 1 and $k$).
+\begin{itemize}
+\item \textbf{Even $n$}: Place $\frac{n}{2}$ at position 1 and $\frac{n}{2}$ at position $k$
+\item \textbf{Odd $n$}: Place $\frac{n - 1}{2}$ at position 1 and $\frac{n + 1}{2}$ at position $k$
+\end{itemize}
+\end{theorem}
+
+\subsection{Calculating maximum variance}
+
+\begin{theorem}[Maximum variance for even $n$]
+For even $n$ with perfect split:
+\begin{itemize}
+\item Mean: $\bar{x} = \frac{k + 1}{2}$
+\item Sum of squared deviations: $SS = n \cdot \frac{(k-1)^2}{4}$
+\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4}$
+\item Sample variance: $s^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{n}{n-1}$
+\end{itemize}
+\end{theorem}
+
+\begin{proof}
+With $\frac{n}{2}$ observations at each extreme:
+$$\bar{x} = \frac{\frac{n}{2} \cdot 1 + \frac{n}{2} \cdot k}{n} = \frac{k + 1}{2}$$
+
+The sum of squared deviations:
+$$SS = \frac{n}{2}\left(1 - \frac{k+1}{2}\right)^2 + \frac{n}{2}\left(k - \frac{k+1}{2}\right)^2$$
+$$= \frac{n}{2} \cdot 2 \cdot \left(\frac{k-1}{2}\right)^2 = n \cdot \frac{(k-1)^2}{4}$$
+
+Therefore:
+$$\sigma^2_{\max} = \frac{SS}{n} = \frac{(k-1)^2}{4}$$
+$$s^2_{\max} = \frac{SS}{n-1} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4}$$
+\end{proof}
+
+\begin{theorem}[Maximum variance for odd $n$]
+For odd $n$ with uneven split:
+\begin{itemize}
+\item Mean: $\bar{x} = \frac{k+1}{2} + \frac{k-1}{2n}$
+\item Sum of squared deviations: $SS = n \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
+\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
+\item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
+\end{itemize}
+\end{theorem}
+
+\begin{proof}
+With $\frac{n-1}{2}$ at position 1 and $\frac{n+1}{2}$ at position $k$:
+$$\bar{x} = \frac{\frac{n-1}{2} + k \cdot \frac{n+1}{2}}{n} = \frac{k+1}{2} + \frac{k-1}{2n}$$
+
+The deviations from mean:
+$$d_1 = 1 - \bar{x} = -\frac{k-1}{2} \cdot \frac{n+1}{n}$$
+$$d_k = k - \bar{x} = \frac{k-1}{2} \cdot \frac{n-1}{n}$$
+
+Sum of squared deviations:
+$$SS = \frac{n-1}{2} \cdot d_1^2 + \frac{n+1}{2} \cdot d_k^2$$
+
+After algebra (expanding and simplifying):
+$$SS = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$$
+
+Therefore:
+$$\sigma^2_{\max} = \frac{SS}{n} = \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$$
+$$s^2_{\max} = \frac{SS}{n-1} = \frac{(k-1)^2}{4} \cdot \frac{n}{n-1} \cdot \left(1 - \frac{1}{n^2}\right)$$
+\end{proof}
+
+\section{The relationship between $h$ and $h^*$}
+
+\begin{proposition}[Convergence]
+As $n \to \infty$:
+\begin{enumerate}
+\item The odd-$n$ correction factor converges to 1, so the odd/even distinction vanishes: $(1 - \frac{1}{n^2}) \to 1$
+\item Bessel's correction factor likewise converges to 1, so sample variance converges to population variance: $(n - 1) \to 1$
+\item Therefore, the horns index converges to the infinite-$n$ horns index: $h \to h^*$
+\end{enumerate}
+\end{proposition}
+
+\begin{theorem}[Relationship for sample variance]
+When consistently using the sample variance, $s^2$:
+$$
+h = \frac{s^2_{\text{observed}}}{s^2_{\max}}
+$$
+If $n$ is even, this corresponds to the following:
+
+$$
+h = \frac{\frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2}{\frac{1}{4} (k-1)^2 \cdot \frac{n}{n-1}}
+$$
+If $n$ is odd, the only difference from the even case is that the denominator is attenuated by an additional correction factor:
+
+$$
+h = \frac{\frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2}{\frac{1}{4} (k-1)^2 \cdot \frac{n}{n-1} \cdot (1 - \frac{1}{n^2})}
+$$
+
+Note that the $\frac{n}{n-1}$ factors cancel when both numerator and denominator use sample variance consistently.
+\end{theorem}
+
+\section{Effect sizes by sample size}
+
+Below is the maximum achievable variance relative to the Popoviciu bound. Note that the reference cases coincide with the even-$n$ cases because neither even $n$ nor infinite $n$ require the odd-$n$ correction.
+
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+$n$ & Even/Odd & Factor (Pop. Var.) & Factor (Sample Var.) \\
+\hline
+4 & Even & 1.000 & 1.333 \\
+5 & Odd & 0.960 & 1.200 \\
+10 & Even & 1.000 & 1.111 \\
+20 & Even & 1.000 & 1.053 \\
+27 & Odd & 0.9986 & 1.037 \\
+50 & Even & 1.000 & 1.020 \\
+100 & Even & 1.000 & 1.010 \\
+\hline
+\end{tabular}
+\end{center}
+
+\section{TODO: Small-sample bias ($h^* - h$)}
+
