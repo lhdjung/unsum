@@ -1,9 +1,8 @@
 [source.crates-io]
 replace-with = "vendored-sources"
 
-[source."git+https://github.com/lhdjung/closure-core.git?branch=optimize#53dc8e355413b53c02317fdccf6fbeb0e29c21fd"]
+[source."git+https://github.com/lhdjung/closure-core.git"]
 git = "https://github.com/lhdjung/closure-core.git"
-branch = "optimize"
 replace-with = "vendored-sources"
 
 [source.vendored-sources]
