@@ -3,11 +3,17 @@
 use extendr_api::prelude::*;
 use extendr_api::Robj;
 use closure_core::{
-    dfs_parallel,
-    dfs_parallel_streaming,
+    closure_parallel,
+    closure_parallel_streaming,
+    sprite_parallel,
+    sprite_parallel_streaming,
     ParquetConfig,
     StreamingConfig,
+    RestrictionsMinimum,
+    RestrictionsOption,
 };
+use std::collections::HashMap;
+use rand::rng;
 
 /// Local wrapper for ParquetConfig to allow TryFrom<Robj> implementation.
 /// This wrapper type is necessary because of Rust's orphan rule - we can only
@@ -74,14 +80,85 @@ impl TryFrom<Robj> for StreamingConfigR {
 fn frequency_table_to_robj(freq_table: &closure_core::FrequencyTable) -> Robj {
     // Create a data frame with columns: samples, value, f_average, f_absolute, f_relative
     let df = data_frame!(
-        samples = freq_table.samples.clone(),
-        value = freq_table.value.clone(),
-        f_average = freq_table.f_average.clone(),
-        f_absolute = freq_table.f_absolute.clone(),
-        f_relative = freq_table.f_relative.clone()
+        samples = freq_table.samples_group().to_vec(),
+        value = freq_table.value().to_vec(),
+        f_average = freq_table.f_average().to_vec(),
+        f_absolute = freq_table.f_absolute().to_vec(),
+        f_relative = freq_table.f_relative().to_vec()
     );
 
     df.into()
+}
+
+/// Helper function to parse restrict_exact from R object
+/// Expects NULL or a named numeric vector/list
+fn parse_restrict_exact(robj: &Robj) -> Result<Option<HashMap<i32, usize>>> {
+    if robj.is_null() {
+        return Ok(None);
+    }
+
+    let mut map = HashMap::new();
+
+    // Get keys (names) and values
+    let names = robj.get_attrib("names").ok_or_else(|| {
+        Error::Other("restrict_exact must have names".into())
+    })?;
+    let names_vec: Vec<&str> = names.as_str_vector().ok_or_else(|| {
+        Error::Other("restrict_exact names must be strings".into())
+    })?;
+
+    for (i, name) in names_vec.iter().enumerate() {
+        let key: i32 = name.parse().map_err(|_| {
+            Error::Other("restrict_exact names must be integers".into())
+        })?;
+
+        let value = robj.index(i + 1)?.as_real().ok_or_else(|| {
+            Error::Other("restrict_exact values must be numeric".into())
+        })? as usize;
+
+        map.insert(key, value);
+    }
+
+    Ok(Some(map))
+}
+
+/// Helper function to parse restrict_min from R object
+/// Expects NULL or a named numeric vector/list
+fn parse_restrict_min(robj: &Robj) -> Result<RestrictionsOption> {
+    if robj.is_null() {
+        return Ok(RestrictionsOption::Null);
+    }
+
+    // Check if it's a special string "default"
+    if let Some(s) = robj.as_str() {
+        if s == "default" {
+            return Ok(RestrictionsOption::Default);
+        }
+    }
+
+    let mut map = HashMap::new();
+
+    // Get keys (names) and values
+    let names = robj.get_attrib("names").ok_or_else(|| {
+        Error::Other("restrict_min must have names".into())
+    })?;
+    let names_vec: Vec<&str> = names.as_str_vector().ok_or_else(|| {
+        Error::Other("restrict_min names must be strings".into())
+    })?;
+
+    for (i, name) in names_vec.iter().enumerate() {
+        let key: i32 = name.parse().map_err(|_| {
+            Error::Other("restrict_min names must be integers".into())
+        })?;
+
+        let value = robj.index(i + 1)?.as_real().ok_or_else(|| {
+            Error::Other("restrict_min values must be numeric".into())
+        })? as usize;
+
+        map.insert(key, value);
+    }
+
+    Ok(RestrictionsOption::Opt(Some(RestrictionsMinimum::new(map))))
 }
 
 /// Helper function to convert ResultsTable to R list
@@ -132,11 +209,36 @@ fn create_combinations(
     n: i32,
     scale_min: i32,
     scale_max: i32,
+    technique: &str,
     rounding_error_mean: f64,
     rounding_error_sd: f64,
+    n_items: Option<u32>,
+    restrict_exact: Robj,
+    restrict_min: Robj,
+    dont_test: bool,
     write: Robj,
     stop_after: Option<usize>,
 ) -> Robj {
+    // Validate and parse SPRITE-specific parameters
+    let technique_upper = technique.to_uppercase();
+
+    let (restrict_exact_parsed, restrict_min_parsed) = if technique_upper == "SPRITE" {
+        // Parse restrictions for SPRITE
+        let exact = match parse_restrict_exact(&restrict_exact) {
+            Ok(e) => e,
+            Err(e) => return Robj::from(format!("Error parsing restrict_exact: {}", e)),
+        };
+
+        let minimum = match parse_restrict_min(&restrict_min) {
+            Ok(m) => m,
+            Err(e) => return Robj::from(format!("Error parsing restrict_min: {}", e)),
+        };
+
+        (exact, minimum)
+    } else {
+        (None, RestrictionsOption::Null)
+    };
+
     let need_to_write = !write.is_null();
 
     if need_to_write {
@@ -149,17 +251,48 @@ fn create_combinations(
         };
 
         // Use streaming mode - writes directly to disk without keeping results in memory
-        let result = dfs_parallel_streaming(
-            mean,
-            sd,
-            n,
-            scale_min,
-            scale_max,
-            rounding_error_mean,
-            rounding_error_sd,
-            streaming_config,
-            stop_after,
-        );
+        let result = match technique_upper.as_str() {
+            "CLOSURE" => {
+                closure_parallel_streaming(
+                    mean,
+                    sd,
+                    n,
+                    scale_min,
+                    scale_max,
+                    rounding_error_mean,
+                    rounding_error_sd,
+                    streaming_config,
+                    stop_after,
+                )
+            }
+            "SPRITE" => {
+                let n_items_val = n_items.ok_or_else(|| {
+                    return format!("n_items is required for SPRITE technique");
+                }).unwrap_or_else(|_| {
+                    // Return error if n_items is missing
+                    return 2; // Default fallback
+                });
+
+                sprite_parallel_streaming(
+                    mean,
+                    sd,
+                    n,
+                    scale_min,
+                    scale_max,
+                    rounding_error_mean,
+                    rounding_error_sd,
+                    n_items_val,
+                    restrict_exact_parsed,
+                    restrict_min_parsed,
+                    dont_test,
+                    streaming_config,
+                    stop_after,
+                )
+            }
+            _ => {
+                return Robj::from(format!("Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'", technique));
+            }
+        };
 
         // Return information about the streaming operation as an R list
         let result_list = list!(
@@ -171,18 +304,56 @@ fn create_combinations(
         return result_list.into();
     }
 
-    // Default mode: use dfs_parallel without writing to disk
-    let closure_results = dfs_parallel(
-        mean,
-        sd,
-        n,
-        scale_min,
-        scale_max,
-        rounding_error_mean,
-        rounding_error_sd,
-        None, // No parquet config - just return results in memory
-        stop_after,
-    );
+    // Default mode: use parallel without writing to disk
+    let closure_results = match technique_upper.as_str() {
+        "CLOSURE" => {
+            closure_parallel(
+                mean,
+                sd,
+                n,
+                scale_min,
+                scale_max,
+                rounding_error_mean,
+                rounding_error_sd,
+                None, // No parquet config - just return results in memory
+                stop_after,
+            )
+        }
+        "SPRITE" => {
+            let n_items_val = match n_items {
+                Some(val) => val,
+                None => {
+                    return Robj::from("Error: n_items is required for SPRITE technique");
+                }
+            };
+
+            let mut rng = rng();
+            match sprite_parallel(
+                mean,
+                sd,
+                n,
+                scale_min,
+                scale_max,
+                rounding_error_mean,
+                rounding_error_sd,
+                n_items_val,
+                restrict_exact_parsed,
+                restrict_min_parsed,
+                dont_test,
+                None, // No parquet config - just return results in memory
+                stop_after,
+                &mut rng,
+            ) {
+                Ok(results) => results,
+                Err(e) => {
+                    return Robj::from(format!("SPRITE error: {:?}", e));
+                }
+            }
+        }
+        _ => {
+            return Robj::from(format!("Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'", technique));
+        }
+    };
 
     // Create the main metrics list
     let metrics_main = list!(

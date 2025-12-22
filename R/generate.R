@@ -197,8 +197,13 @@ generate_from_mean_sd_n <- function(
     n = n,
     scale_min = scale_min,
     scale_max = scale_max,
+    technique = technique,
     rounding_error_mean = rounding_error_mean,
     rounding_error_sd = rounding_error_sd,
+    n_items = 1L,
+    restrict_exact = NULL,
+    restrict_min = NULL,
+    dont_test = FALSE,
     write = parquet_config,
     stop_after = stop_after
   )

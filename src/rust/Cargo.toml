@@ -12,6 +12,7 @@ name = 'unsum'
 [dependencies]
 closure-core = { git = "https://github.com/lhdjung/closure-core.git" }
 extendr-api = '*'
+rand = '*'
 
 [profile.release]
 lto = "fat"

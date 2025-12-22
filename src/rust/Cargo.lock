@@ -1332,6 +1332,7 @@ version = "0.1.0"
 dependencies = [
  "closure-core",
  "extendr-api",
+ "rand 0.9.2",
 ]
 
 [[package]]
