@@ -40,7 +40,7 @@ complete_scale_by_zeroes <- function(x, endpoint) {
 endpoint <- 7
 
 sd_all <- seq(from = 0, to = endpoint, by = 0.1)
-n <- 500000
+n <- 50000
 
 
 dispersion_by_metric <- function(fn) {
@@ -70,7 +70,8 @@ dispersion_by_metric <- function(fn) {
 df1 <- tibble(
   sd = sd_all,
   horns = dispersion_by_metric(horns),
-  # horns_rescaled = dispersion_by_metric(horns_rescaled),
+  horns_corrected = dispersion_by_metric(horns_corrected),
+  horns_rescaled = dispersion_by_metric(horns_rescaled),
   leik = dispersion_by_metric(lov),
   dissention = dispersion_by_metric(dissention)
 )
@@ -81,7 +82,8 @@ df1
 # Visualize the metrics, comparing them against each other as the SD rises
 ggplot(df1, aes(x = sd)) +
   geom_point(aes(y = horns), color = "black") +
-  # geom_point(aes(y = horns_rescaled), color = "royalblue2") +
+  geom_point(aes(y = horns_corrected), color = "red") +
+  geom_point(aes(y = horns_rescaled), color = "royalblue2") +
   geom_point(aes(y = leik), color = "blue") +
   geom_point(aes(y = dissention), color = "brown2") +
   scale_x_continuous(
@@ -242,3 +244,52 @@ peak <- floor(k / 2)
 
 # TODO: CHECK IF CORRECT; THIS IS SUPPOSED TO BE
 sum(freqs_cumul[seq_len(peak)])
+
+# Comparing h and h* ------------------------------------------------------
+
+relative <- c(0.29, 0.18, 0.06, 0.18, 0.29)
+
+df3 <- tibble(
+  n = 20:30,
+  freqs = lapply(n, function(x) x * relative),
+  h = vapply(freqs, function(x) horns_corrected(x, 1, 5), numeric(1)),
+  h_star = vapply(freqs, function(x) horns(x, 1, 5), numeric(1)),
+)
+
+
+absolute <- c(2, 5, 5, 8, 8)
+relative <- absolute / sum(absolute)
+
+df4 <- tibble(
+  inflation = seq(from = 0.1, to = 20, by = 0.2),
+  freqs = lapply(inflation, function(x) x * absolute),
+  mean = vapply(freqs, mean, numeric(1)),
+  n = vapply(freqs, function(x) sum(x), numeric(1)),
+  h = vapply(freqs, function(x) horns_corrected(x, 1, 5), numeric(1)),
+  h_star = vapply(freqs, function(x) horns(x, 1, 5), numeric(1)),
+  bias = abs(h - h_star)
+)
+
+df4 <- df4 |>
+  mutate(id = seq_len(nrow(df4)), .before = inflation)
+
+
+ggplot(df4, aes(x = n)) +
+  geom_line(aes(y = h), color = "black") +
+  geom_line(aes(y = h_star), color = "royalblue1") +
+  labs(x = "Sample size", y = "Horns index") +
+  scale_y_continuous(limits = c(0.66, 0.665))
+
+##
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#
+#

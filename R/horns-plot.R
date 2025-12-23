@@ -41,10 +41,6 @@ plot_horns_frequency <- function(
   # median of the distribution to understand where most data lies.
   h_median <- data$metrics_horns$median
 
-  # For the y-axis label
-  label_samples_all <- data$metrics_main$samples_all |>
-    call_on(scales::label_number(big.mark = mark_thousand))
-
   n_samples_all <- data$metrics_main$samples_all
 
   # Reduce the input to a tibble that only includes the horns values

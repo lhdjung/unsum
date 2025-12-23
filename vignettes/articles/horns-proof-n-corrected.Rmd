@@ -1,7 +1,9 @@
 ---
 title: "Mathematical foundations of the horns index with finite sample corrections"
 subtitle: "Complete derivations for $h$ and $h^*$"
-output: pdf_document
+output:
+  pdf_document:
+    latex_engine: pdflatex
 header-includes:
   - \usepackage{amsmath}
   - \usepackage{amssymb}
