@@ -681,6 +681,17 @@ as_wide_n_tibble <- function(samples_all) {
 }
 
 
+closure_to_sprite <- function(string) {
+  string |>
+    gsub("CLOSURE", "SPRITE", x = _) |>
+    gsub("closure", "sprite", x = _)
+}
+
+closure_to_sprite_return <- function(string) {
+  string <- closure_to_sprite(string)
+}
+
+
 # Run this on a `data$inputs` tibble to check whether `data` was already written
 # to disk before. If so, this will have been marked by an (invisible) S3 class.
 has_reading_class <- function(inputs, include = NULL) {

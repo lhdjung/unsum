@@ -15,7 +15,9 @@ closure_generate(
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
-  ask_to_proceed = TRUE
+  ask_to_proceed = TRUE,
+  n_items = NULL,
+  dont_test = FALSE
 )
 }
 \arguments{

@@ -41,7 +41,9 @@ generate_from_mean_sd_n <- function(
   threshold = 5,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
-  rounding_error_sd = NULL
+  rounding_error_sd = NULL,
+  n_items = NULL,
+  dont_test = FALSE
 ) {
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
@@ -55,11 +57,56 @@ generate_from_mean_sd_n <- function(
   check_value(rounding, "character")
   check_value(threshold, c("double", "integer"))
   check_value(ask_to_proceed, "logical")
+  check_value(n_items, c("double", "integer"), allow_null = TRUE)
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
 
   check_scale(scale_min, scale_max, mean_num, n = 2)
+
+  # SPRITE-specific validation
+  if (technique == "SPRITE") {
+    if (is.null(n_items)) {
+      cli::cli_abort(
+        c(
+          "`n_items` is required for SPRITE technique.",
+          "i" = "`n_items` must be at least 2 (representing the number of items/questions in your scale)."
+        ),
+        call = rlang::caller_env()
+      )
+    }
+    if (n_items < 2) {
+      cli::cli_abort(
+        c(
+          "`n_items` must be at least 2 for SPRITE.",
+          "x" = "`n_items` is: {n_items}",
+          "i" = "SPRITE requires at least 2 items to generate valid samples."
+        ),
+        call = rlang::caller_env()
+      )
+    }
+    # Automatically disable GRIMMER validation for n_items > 1
+    # (not yet implemented in Rust)
+    if (n_items > 1 && !dont_test) {
+      cli::cli_alert_info("Auto-enabling `dont_test = TRUE` (GRIMMER validation not available for n_items > 1)")
+      dont_test <- TRUE
+    }
+
+    # Prevent overflow crashes - SPRITE with n_items > 1 is prone to overflow
+    # Be very conservative and require stop_after in most cases
+    if (n_items > 1 && is.null(stop_after)) {
+      cli::cli_abort(
+        c(
+          "`stop_after` is required when using SPRITE with `n_items > 1`.",
+          "x" = "Current parameters: n_items={n_items}, n={n}",
+          "i" = "Add `stop_after` to limit results and prevent overflow.",
+          "i" = "Recommended: `stop_after = 100` for exploratory analysis.",
+          "i" = "This is a known limitation of the current SPRITE implementation."
+        ),
+        call = rlang::caller_env()
+      )
+    }
+  }
 
   include <- rlang::arg_match(include)
 
@@ -191,6 +238,9 @@ generate_from_mean_sd_n <- function(
   }
 
   # Compute CLOSURE samples by calling into pre-compiled Rust code.
+  # For CLOSURE, n_items defaults to 1; for SPRITE, it must be provided
+  n_items_val <- if (is.null(n_items)) 1L else as.integer(n_items)
+
   out <- create_combinations(
     mean = mean_num,
     sd = sd_num,
@@ -200,10 +250,10 @@ generate_from_mean_sd_n <- function(
     technique = technique,
     rounding_error_mean = rounding_error_mean,
     rounding_error_sd = rounding_error_sd,
-    n_items = 1L,
+    n_items = n_items_val,
     restrict_exact = NULL,
     restrict_min = NULL,
-    dont_test = FALSE,
+    dont_test = dont_test,
     write = parquet_config,
     stop_after = stop_after
   )
