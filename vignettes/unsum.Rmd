@@ -106,7 +106,7 @@ To check this, first use `closure_plot_bar_min_max()`. It shows the minimum and 
 #|   Two barplots like the first, except they show
 #|   the subsets of samples within `data` with
 #|   minimum and maximum horns index values.
-closure_plot_bar_min_max(data, frequency = "percent")
+closure_plot_bar_min_max(data, format = "percent")
 ```
 
 As you can see, the variability does not change very much. The distribution is starkly bimodal even with the lowest possible amount of variability.
