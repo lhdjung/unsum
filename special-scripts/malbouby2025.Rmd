@@ -50,7 +50,7 @@ However, one possible response by the authors might be that their original sampl
 This plot shows the subsets of CLOSURE results with the minimal and maximal variability. As they look nearly identical, differences between the samples in terms of variability seem negligible. In particular, the original sample cannot have had less variability than the left panel, and even this graph shows a starkly bimodal distribution where observations are concentrated at the extremes. Correspondingly, the horns indices of the two extreme distributions only differ by 0.04 (the range is 0 to 1).
 
 ```{r}
-closure_plot_bar_min_max(data_bmi, frequency = "percent")
+closure_plot_bar_min_max(data_bmi, format = "percent")
 ```
 
 The lack of meaningful differences between the samples is also demonstrated by a histogram of the $h$ values across all samples, plotted on the 0-1 range of $h$:
@@ -65,17 +65,19 @@ An alternative visualization clearly shows where the subsets of CLOSURE samples 
 closure_plot_ecdf(data_bmi)
 ```
 
-## CLOSURE analysis: age
+## SPRITE analysis: age
 
 We can try to conduct a similar analysis with regards to the reported age values:
 
 ```{r}
-data_age <- closure_generate(
+data_age <- sprite_generate(
   mean = "17.2",
   sd = "5.2",
   n = 30,
   scale_min = 12,
   scale_max = 25,
+  n_items = 2,
+  stop_after = 100 * 1000,
   ask_to_proceed = FALSE
 )
 ```
@@ -83,13 +85,13 @@ data_age <- closure_generate(
 The average sample is similarly polarized as the one for BMI, although its horns index is somewhat lower (0.61 versus 0.76) and it is slightly left-skewed, with twice as many observations at the lower bound than at the upper bound.
 
 ```{r}
-closure_plot_bar(data_age, frequency = "percent")
+closure_plot_bar(data_age, format = "percent")
 ```
 
 Determining the lower and upper limits of variability reveals that, as above, the samples with minimal variability are hard to distinguish from those with maximal variability:
 
 ```{r}
-closure_plot_bar_min_max(data_age, frequency = "absolute", text_size = 10)
+closure_plot_bar_min_max(data_age, format = "absolute", text_size = 10)
 closure_plot_horns_histogram(data_age)
 ```
 

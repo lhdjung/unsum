@@ -11,6 +11,7 @@ formals_final <- list(
       "rounding_error_mean",
       "rounding_error_sd"
     ),
+
   # Same for bar plot functions
   plot_fn_freq_bar = plot_frequency_bar |>
     formals() |>
@@ -21,6 +22,7 @@ formals_final <- list(
       "frequency_rows_subset",
       "min_max_values"
     ),
+
   # Same for horns index distribution plot functions
   plot_fn_horns_freq = plot_horns_frequency |>
     formals() |>
@@ -52,7 +54,8 @@ new_generator_mean_sd_n <- function(technique) {
         threshold = threshold,
         ask_to_proceed = ask_to_proceed,
         rounding_error_mean = NULL,
-        rounding_error_sd = NULL
+        rounding_error_sd = NULL,
+        n_items = n_items
       )
     })
   )

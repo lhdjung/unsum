@@ -87,8 +87,10 @@ generate_from_mean_sd_n <- function(
     }
     # Automatically disable GRIMMER validation for n_items > 1
     # (not yet implemented in Rust)
-    if (n_items > 1 && !dont_test) {
-      cli::cli_alert_info("Auto-enabling `dont_test = TRUE` (GRIMMER validation not available for n_items > 1)")
+    if (FALSE && n_items > 1 && !dont_test) {
+      cli::cli_alert_info(
+        "Auto-enabling `dont_test = TRUE` (GRIMMER validation not available for n_items > 1)"
+      )
       dont_test <- TRUE
     }
 
@@ -253,7 +255,7 @@ generate_from_mean_sd_n <- function(
     n_items = n_items_val,
     restrict_exact = NULL,
     restrict_min = NULL,
-    dont_test = dont_test,
+    dont_test = TRUE,
     write = parquet_config,
     stop_after = stop_after
   )

@@ -9,9 +9,10 @@ template:
     navbar-dark-active-color: '#f9ea6b'
   math-rendering: katex
 reference:
-- title: Main CLOSURE function
+- title: Main CLOSURE and SPRITE functions
 - contents:
   - closure_generate
+  - sprite_generate
 - title: Visualization
 - contents:
   - closure_plot_bar
