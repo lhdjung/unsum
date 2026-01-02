@@ -116,7 +116,7 @@ closure_plot_bar_min_max <- function() {
 
 formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
   formals() |>
-  formals_change_defaults(
+  formals_add_defaults(
     technique = "CLOSURE",
     facet_labels = c("Minimal variance", "Maximal variance"),
     facet_labels_parens = "h",

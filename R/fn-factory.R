@@ -67,7 +67,7 @@ new_generator_mean_sd_n <- function(technique) {
 # default for the output function's `bar_color` argument.
 new_plot_fn_bar <- function(technique, bar_color) {
   args_all <- formals_final$plot_fn_freq_bar |>
-    formals_change_defaults(bar_color = bar_color)
+    formals_add_defaults(bar_color = bar_color)
 
   # DEMO functions are based on frequencies, not CLOSURE-type result lists.
   # Therefore, replace the `data` argument by one called `freqs`.
@@ -109,7 +109,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
 new_plot_fn_horns_frequency <- function(technique, bar_color) {
   rlang::new_function(
     args = formals_final$plot_fn_horns_freq |>
-      formals_change_defaults(bar_color = bar_color),
+      formals_add_defaults(bar_color = bar_color),
 
     body = rlang::expr({
       plot_horns_frequency(
