@@ -71,8 +71,8 @@ proceed or abort? Default is \code{TRUE}.}
 \item \strong{\code{inputs}}: Arguments to this function.
 \item \strong{\code{metrics_main}}:
 \itemize{
-\item \code{samples_initial}: integer. The basis for computing CLOSURE results,
-based on scale range only. See \code{\link[=closure_count_initial]{closure_count_initial()}}.
+\item \code{samples_initial}: integer. The basis for computing CLOSURE
+results, based on scale range only. See \code{\link[=closure_count_initial]{closure_count_initial()}}.
 \item \code{samples_all}: double. Number of all samples. Equal to the number
 of rows in \code{results}.
 \item \code{values_all}: double. Number of all individual values found. Equal to
@@ -93,9 +93,9 @@ default.
 \item \strong{\code{frequency}}:
 \itemize{
 \item \code{samples}: string. Frequencies apply to one of three subsets of
-samples: \code{"all"} for all samples, \code{"horns_min"} for those samples with the
-lowest horns index among all samples, and \code{"horns_max"} for those samples
-with the highest horns index.
+samples: \code{"all"} for all samples, \code{"horns_min"} for those samples with
+the lowest horns index among all samples, and \code{"horns_max"} for those
+samples with the highest horns index.
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
 \item \code{f_average}: double. Count of scale values in the mean \code{results}
@@ -134,34 +134,25 @@ then return empty results and throw a warning.
 }
 \section{Writing to disk}{
  Specify \code{path} if the expected runtime is very
-long. (In case you have trouble choosing a path, use \code{path = "."} for your
-current working directory.) This makes sure the results are preserved by
-incrementally writing them to disk. Otherwise, you might encounter an
-out-of-memory error because \code{closure_generate()} accumulates more data than
-your computer can hold in memory.
-
-If \code{path} is specified, the output in R will not include the \code{"sample"}
-column in the \code{results} tibble by default; but it will feature a
-\code{directory} tibble with the file path. If you choose to load the samples
-using \code{include = "all"}, you incur the risk of a memory error. Even so, the
-results are safe because they are written to disk first; and you can later
-try to load the full detailed results from disk using \code{\link[=closure_read]{closure_read()}}
-and its \code{include} argument. This would separate saving the data to disk
-from an uncertain attempt to load them into R.
+long. (In case you have trouble choosing a path, use \code{path = "."} for
+your current working directory.) This makes sure the results are preserved
+by incrementally writing them to disk. Otherwise, you might encounter an
+out-of-memory error because \code{closure_generate()} accumulates more data
+than your computer can hold in memory.
 }
 
 \section{More about memory}{
  Some output columns that contain counts, such as
 \code{f_absolute}, are doubles instead of integers. This is because doubles are
-able to contain much larger numbers. When counting CLOSURE results, it is
-possible to exceed the limit of 32-bit integers in R, which is roughly two
-billion. For instance, this will happen with \code{values_all} in the examples
+able to contain much larger numbers. When counting CLOSURE results, it
+is possible to exceed the limit of 32-bit integers in R, which is roughly
+two billion. For instance, this will happen with \code{values_all} in the examples
 (\code{data_high}) if \code{n} is changed to \code{120} and \code{scale_max} to \code{7}.
 }
 
 \section{Rounding limitations}{
- The \code{rounding} and \code{threshold} arguments are
-not fully implemented. For example, CLOSURE currently treats all rounding
+ The \code{rounding} and \code{threshold} arguments are not
+fully implemented. For example, CLOSURE currently treats all rounding
 bounds as inclusive, even if the \code{rounding} value would imply otherwise.
 Many specifications of the two arguments will not make any difference, and
 those that do will most likely lead to empty results.

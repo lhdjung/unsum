@@ -18,9 +18,11 @@
 #'   Automatically enabled when `n_items > 1`. Default is `FALSE`.
 #' @inheritParams closure_generate
 #'
-#' @inheritSection closure_generate Rounding limitations
+#' @return `r expand_section_return("SPRITE")`
 #'
-#' @return `r closure_to_sprite_return(generate_return)`
+#' @section `r expand_section_custom("SPRITE", "writing")`
+#' @section `r expand_section_custom("SPRITE", "memory")`
+#' @section `r expand_section_custom("SPRITE", "rounding")`
 #'
 #' @include doc-sections.R
 #' @export

@@ -71,7 +71,55 @@ to produce each participant's mean score.}
 Automatically enabled when \code{n_items > 1}. Default is \code{FALSE}.}
 }
 \value{
-
+\code{sprite_generate()} returns a named list of tibbles (data frames):
+\itemize{
+\item \strong{\code{inputs}}: Arguments to this function.
+\item \strong{\code{metrics_main}}:
+\itemize{
+\item \code{samples_all}: double. Number of all samples. Equal to the number
+of rows in \code{results}.
+\item \code{values_all}: double. Number of all individual values found. Equal to
+\code{n * samples_all}.
+}
+\item \strong{\code{metrics_horns}}:
+\itemize{
+\item \code{mean}: double. Average horns value of all samples. The horns index is
+a measure of dispersion for bounded scales; see \code{\link[=horns]{horns()}}.
+\item \code{uniform}: double. The value that \code{mean} would have if all samples were
+uniformly distributed; see \code{\link[=horns_uniform]{horns_uniform()}}.
+\item \code{sd}, \code{cv}, \code{mad}, \code{min}, \code{median}, \code{max}, \code{range}: double. Standard
+deviation, coefficient of variation, median absolute deviation, minimum,
+median, maximum, and range of the horns index values across all samples.
+Note that \code{mad} is not scaled using a constant, as \code{\link[stats:mad]{stats::mad()}} is by
+default.
+}
+\item \strong{\code{frequency}}:
+\itemize{
+\item \code{samples}: string. Frequencies apply to one of three subsets of
+samples: \code{"all"} for all samples, \code{"horns_min"} for those samples with
+the lowest horns index among all samples, and \code{"horns_max"} for those
+samples with the highest horns index.
+\item \code{value}: integer. Scale values derived from \code{scale_min} and
+\code{scale_max}.
+\item \code{f_average}: double. Count of scale values in the mean \code{results}
+sample.
+\item \code{f_absolute}: double. Count of individual scale values found in the
+\code{results} samples.
+\item \code{f_relative}: double. Values' share of total values found.
+}
+\item \strong{\code{results}}:
+\itemize{
+\item \code{id}: integer. Runs from \code{1} to \code{samples_all}.
+\item \code{sample} (not present by default if \code{path} was specified): list of
+integer vectors. Each of these vectors has length \code{n}. It is a sample (or
+distribution) of individual scale values found by SPRITE.
+\item \code{horns}: double. Horns index of each sample.
+}
+\item \strong{\code{directory}} (only present if \code{path} was specified):
+\itemize{
+\item \code{path}: string. Location of the folder in which the results were saved.
+}
+}
 }
 \description{
 Generate samples using the SPRITE (Sample Parameter Reconstruction via
@@ -81,9 +129,26 @@ distributions given summary statistics and multi-item scale information.
 \strong{Important:} \code{stop_after} is required when \code{n_items > 1} to prevent
 overflow errors in the current implementation.
 }
+\section{Writing to disk}{
+ Specify \code{path} if the expected runtime is very
+long. (In case you have trouble choosing a path, use \code{path = "."} for
+your current working directory.) This makes sure the results are preserved
+by incrementally writing them to disk. Otherwise, you might encounter an
+out-of-memory error because \code{sprite_generate()} accumulates more data
+than your computer can hold in memory.
+}
+
+\section{More about memory}{
+ Some output columns that contain counts, such as
+\code{f_absolute}, are doubles instead of integers. This is because doubles are
+able to contain much larger numbers. When counting SPRITE results, it
+is possible to exceed the limit of 32-bit integers in R, which is roughly
+two billion.
+}
+
 \section{Rounding limitations}{
- The \code{rounding} and \code{threshold} arguments are
-not fully implemented. For example, CLOSURE currently treats all rounding
+ The \code{rounding} and \code{threshold} arguments are not
+fully implemented. For example, SPRITE currently treats all rounding
 bounds as inclusive, even if the \code{rounding} value would imply otherwise.
 Many specifications of the two arguments will not make any difference, and
 those that do will most likely lead to empty results.

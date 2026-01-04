@@ -47,74 +47,11 @@
 #'   very long in an interactive setting, should the function prompt you to
 #'   proceed or abort? Default is `TRUE`.
 #'
-#' @section Writing to disk: Specify `path` if the expected runtime is very
-#'   long. (In case you have trouble choosing a path, use `path = "."` for your
-#'   current working directory.) This makes sure the results are preserved by
-#'   incrementally writing them to disk. Otherwise, you might encounter an
-#'   out-of-memory error because `closure_generate()` accumulates more data than
-#'   your computer can hold in memory.
+#' @return `r expand_section_return("CLOSURE")`
 #'
-#'   If `path` is specified, the output in R will not include the `"sample"`
-#'   column in the `results` tibble by default; but it will feature a
-#'   `directory` tibble with the file path. If you choose to load the samples
-#'   using `include = "all"`, you incur the risk of a memory error. Even so, the
-#'   results are safe because they are written to disk first; and you can later
-#'   try to load the full detailed results from disk using [`closure_read()`]
-#'   and its `include` argument. This would separate saving the data to disk
-#'   from an uncertain attempt to load them into R.
-#'
-#' @section More about memory: Some output columns that contain counts, such as
-#'   `f_absolute`, are doubles instead of integers. This is because doubles are
-#'   able to contain much larger numbers. When counting CLOSURE results, it is
-#'   possible to exceed the limit of 32-bit integers in R, which is roughly two
-#'   billion. For instance, this will happen with `values_all` in the examples
-#'   (`data_high`) if `n` is changed to `120` and `scale_max` to `7`.
-#'
-#' @section Rounding limitations: The `rounding` and `threshold` arguments are
-#'   not fully implemented. For example, CLOSURE currently treats all rounding
-#'   bounds as inclusive, even if the `rounding` value would imply otherwise.
-#'   Many specifications of the two arguments will not make any difference, and
-#'   those that do will most likely lead to empty results.
-#'
-#' @return `closure_generate()` returns a named list of tibbles (data frames):
-#'   - **`inputs`**: Arguments to this function.
-#'   - **`metrics_main`**:
-#'     - `samples_initial`: integer. The basis for computing CLOSURE results,
-#'   based on scale range only. See [`closure_count_initial()`].
-#'     - `samples_all`: double. Number of all samples. Equal to the number
-#'   of rows in `results`.
-#'     - `values_all`: double. Number of all individual values found. Equal to
-#'   `n * samples_all`.
-#'   - **`metrics_horns`**:
-#'     - `mean`: double. Average horns value of all samples. The horns index is
-#'   a measure of dispersion for bounded scales; see [`horns()`].
-#'     - `uniform`: double. The value that `mean` would have if all samples were
-#'   uniformly distributed; see [`horns_uniform()`].
-#'     - `sd`, `cv`, `mad`, `min`, `median`, `max`, `range`: double. Standard
-#'   deviation, coefficient of variation, median absolute deviation, minimum,
-#'   median, maximum, and range of the horns index values across all samples.
-#'   Note that `mad` is not scaled using a constant, as [`stats::mad()`] is by
-#'   default.
-#'   - **`frequency`**:
-#'     - `samples`: string. Frequencies apply to one of three subsets of
-#'   samples: `"all"` for all samples, `"horns_min"` for those samples with the
-#'   lowest horns index among all samples, and `"horns_max"` for those samples
-#'   with the highest horns index.
-#'     - `value`: integer. Scale values derived from `scale_min` and
-#'   `scale_max`.
-#'     - `f_average`: double. Count of scale values in the mean `results`
-#'   sample.
-#'     - `f_absolute`: double. Count of individual scale values found in the
-#'   `results` samples.
-#'     - `f_relative`: double. Values' share of total values found.
-#'   - **`results`**:
-#'     - `id`: integer. Runs from `1` to `samples_all`.
-#'     - `sample` (not present by default if `path` was specified): list of
-#'   integer vectors. Each of these vectors has length `n`. It is a sample (or
-#'   distribution) of individual scale values found by CLOSURE.
-#'     - `horns`: double. Horns index of each sample.
-#'   - **`directory`** (only present if `path` was specified):
-#'     - `path`: string. Location of the folder in which the results were saved.
+#' @section `r expand_section_custom("CLOSURE", "writing")`
+#' @section `r expand_section_custom("CLOSURE", "memory")`
+#' @section `r expand_section_custom("CLOSURE", "rounding")`
 #'
 #' @include utils.R count.R horns.R performance.R read-write.R fn-factory.R
 #'   extendr-wrappers.R

@@ -34,7 +34,7 @@ Collate:
     'fn-formals.R'
     'fn-factory.R'
     'demo-plot.R'
-    'doc-sections.R'
+    'doc-helpers.R'
     'extendr-wrappers.R'
     'read-write.R'
     'performance.R'
@@ -54,6 +54,7 @@ URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
 BugReports: https://github.com/lhdjung/unsum/issues
 Suggests: 
     devtools,
+    glue,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
