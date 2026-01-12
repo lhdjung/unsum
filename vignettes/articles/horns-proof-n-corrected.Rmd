@@ -28,16 +28,16 @@ We also define a special case, $h^*$. The difference is that $h$ accounts for fi
 
 Let $k$ be the number of scale points, $n$ the sample size, $\bar{x}$ the arithmetic mean, $s^2$ the sample variance, and $\sigma^2$ the population variance.
 
-Note that the following two definitions rely on maximum variance quantities. The latter will be the subject of the remainder of this document.
-
 \begin{definition}[Horns index]
 $$h = \frac{s^2}{s^2_{\max}}$$
-where $s^2_{\max}$ is the maximum attainable $s^2$ based on $k$ and $n$. Note that this maximum accounts for the parity of $n$, i.e., its property of being even or odd.
+where $s^2_{\max}$ is the maximum attainable $s^2$ given $k$ and $n$.
 \end{definition}
 
 \begin{definition}[Infinite-$n$ horns index]
 $$h^* = \frac{\sigma^2}{\sigma^2_{\max}}$$
-where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ based on $k$ only.
+where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $k$ only.
+
+The maximum variance formulas on which the definitions of $h$ and $h^*$ rely will be the subject of the remainder of this document. Note that they account for the parity of $n$, i.e., its property of being even or odd.
 
 \end{definition}
 
@@ -67,7 +67,13 @@ For even $n$ with perfect split:
 
 \begin{proof}
 With $\frac{n}{2}$ observations at each extreme:
-$$\bar{x} = \frac{\frac{n}{2} \cdot 1 + \frac{n}{2} \cdot k}{n} = \frac{k + 1}{2}$$
+
+\begin{align}
+\bar{x} &= \frac{\frac{n}{2} \cdot 1 + \frac{n}{2} \cdot k}{n} \\
+  &= \frac{n + nk}{ 2n } \\
+  &= \frac{k + 1}{2}
+\end{align}
+
 
 The sum of squared deviations:
 \begin{align}
@@ -79,6 +85,7 @@ SSD &= \frac{n}{2}\left(1 - \frac{k+1}{2}\right)^2 + \frac{n}{2}\left(k - \frac{
 \end{align}
 
 Therefore, with an even $n$, the maximal population variance $\sigma^2_{\max}$ and the maximal sample variance $s^2_{\max}$ are as follows:
+
 \begin{align}
 \sigma^2_{\max} &= \frac{SSD}{n} \\
   &= \frac{(k-1)^2}{4}
@@ -95,8 +102,8 @@ s^2_{\max} &= \frac{SSD}{n-1} \\
 For odd $n$ with uneven split:
 \begin{itemize}
 \item Mean: $\bar{x} = \frac{k+1}{2} + \frac{k-1}{2n}$
-\item Sum of squared deviations: $SSD = \frac{n \ (k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
-\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4}$
+\item Sum of squared deviations: $SSD = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$
+\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot (1 - \frac{1}{n^2})$
 \item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
 \end{itemize}
 \end{theorem}
@@ -108,7 +115,7 @@ With $\frac{n-1}{2}$ at position 1 and $\frac{n+1}{2}$ at position $k$:
   &= \frac{k+1}{2} + \frac{k-1}{2n}
 \end{align}
 
-The deviations from mean:
+As $1$ and $k$ are the only values at which any observations are located, we can express the deviations from the mean $\bar{x}$ as $d_1$ and $d_k$:
 \begin{align}
 d_1 &= 1 - \bar{x} \\
   &= -\frac{k-1}{2} \cdot \frac{n+1}{n}
@@ -152,7 +159,7 @@ $$
 \end{cases}
 $$
 
-We can use this term to modify the odd-$n$ correction factor in a way that renders it inert iff $n$ is even. We thus obtain a generalized parity correction that is neutral for even $n$ but otherwise has the desired correcting value for the odd-$n$ case:
+We can use this term to modify the odd-$n$ correction factor in a way that renders it inert iff $n$ is even. We thus obtain a generalized parity correction that is neutral for even $n$ but otherwise has the desired correcting behavior for the odd-$n$ case:
 
 \begin{align}
 1 - \frac{1}{n^2} \cdot \frac{1- (-1)^n}{2} &= 1 - \frac{1- (-1)^n}{2 n^2} \\
