@@ -16,8 +16,6 @@ header-includes:
   - \newtheorem{definition}{Definition}
 ---
 
-TODO: SORT OUT USAGE OF S^2 AND SIGMA^2 IN THE ODD-N SECTION
-
 \section{Introduction}
 
 Here, we define the horns index, $h$, as a measure of dispersion for integer data. More precisely, $h$ is the ratio of the observed sample variance to the maximum possible sample variance.
@@ -35,7 +33,7 @@ where $s^2_{\max}$ is the maximum attainable $s^2$ given $k$ and $n$.
 
 \begin{definition}[Infinite-$n$ horns index]
 $$h^* = \frac{\sigma^2}{\sigma^2_{\max}}$$
-where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $k$ only.
+where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $k$ and $n$.
 
 The maximum variance formulas on which the definitions of $h$ and $h^*$ rely will be the subject of the remainder of this document. Note that they account for the parity of $n$, i.e., its property of being even or odd.
 
@@ -46,11 +44,8 @@ The maximum variance formulas on which the definitions of $h$ and $h^*$ rely wil
 \subsection{The geometric constraint}
 
 \begin{theorem}[Maximum configuration]
-Maximum variance is achieved by placing all observations at the scale extremes (positions 1 and $k$).
-\begin{itemize}
-\item \textbf{Even $n$}: Place $\frac{n}{2}$ at position 1 and $\frac{n}{2}$ at position $k$
-\item \textbf{Odd $n$}: Place $\frac{n - 1}{2}$ at position 1 and $\frac{n + 1}{2}$ at position $k$
-\end{itemize}
+Maximum variance is achieved by placing all observations at the scale extremes (positions 1 and $k$). In particular, with an even $n$, this requires placing $\frac{n}{2}$ at position 1 and $\frac{n}{2}$ at position $k$. With an odd $n$, however, $\frac{n - 1}{2}$ are placed at position 1 and $\frac{n + 1}{2}$ at position $k$.
+
 \end{theorem}
 
 \subsection{Calculating maximum variance}
@@ -58,7 +53,7 @@ Maximum variance is achieved by placing all observations at the scale extremes (
 \begin{theorem}[Maximum variance for even $n$]
 For even $n$ with perfect split:
 \begin{itemize}
-\item Mean: $\bar{x} = \frac{k + 1}{2}$
+\item Mean: $\bar{x} = \frac{k + 1}{2}$ \ \ (\emph{Note}: These equations are statements to be proven, not definitions.)
 \item Sum of squared deviations: $SSD = n \cdot \frac{(k-1)^2}{4}$
 \item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4}$
 \item Sample variance: $s^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{n}{n-1}$
@@ -101,7 +96,7 @@ s^2_{\max} &= \frac{SSD}{n-1} \\
 \begin{theorem}[Maximum variance for odd $n$]
 For odd $n$ with uneven split:
 \begin{itemize}
-\item Mean: $\bar{x} = \frac{k+1}{2} + \frac{k-1}{2n}$
+\item Mean: $\bar{x} = \frac{k+1}{2} + \frac{k-1}{2n}$ \ \ (\emph{Note}: These equations, too, are statements to be proven, not definitions.)
 \item Sum of squared deviations: $SSD = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$
 \item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot (1 - \frac{1}{n^2})$
 \item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
@@ -126,29 +121,83 @@ d_k &= k - \bar{x} \\
   &= \frac{k-1}{2} \cdot \frac{n-1}{n}
 \end{align}
 
-Sum of squared deviations:
+So the sum of squares is
 $$SSD = \frac{n-1}{2} \cdot d_1^2 + \frac{n+1}{2} \cdot d_k^2$$
 
-After algebra (expanding and simplifying):
-$$SSD = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$$
+Square the deviations:
 
-Therefore, with an odd $n$:
+$$d_1^2 = \left(-\frac{k-1}{2} \cdot \frac{n+1}{n}\right)^2 = \frac{(k-1)^2}{4} \cdot \frac{(n+1)^2}{n^2}$$
+
+$$d_k^2 = \left(\frac{k-1}{2} \cdot \frac{n-1}{n}\right)^2 = \frac{(k-1)^2}{4} \cdot \frac{(n-1)^2}{n^2}$$
+
+Substitute into the SSD formula:
+
 \begin{align}
-\sigma^2_{\max} &= \frac{SSD}{n} \\
-  &= \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)
+SSD &= \left[ \frac{n-1}{2} \cdot \frac{(k-1)^2}{4} \cdot \frac{(n+1)^2}{n^2} \right] + \left[ \frac{n+1}{2} \cdot \frac{(k-1)^2}{4} \cdot \frac{(n-1)^2}{n^2} \right] \\
+  &= \left[ \frac{(k-1)^2}{4} \cdot \frac{n-1}{2} \cdot \frac{(n+1)^2}{n^2} \right] + \left[ \frac{(k-1)^2}{4} \cdot \frac{n+1}{2} \cdot \frac{(n-1)^2}{n^2} \right]
 \end{align}
 
+The two terms share common factors:
+
+$$= \frac{(k-1)^2}{4} \left[\frac{n-1}{2} \cdot \frac{(n+1)^2}{n^2} + \frac{n+1}{2} \cdot \frac{(n-1)^2}{n^2}\right]$$
+
+$$= \frac{(k-1)^2}{4} \cdot \frac{1}{n^2} \left[\frac{n-1}{2}(n+1)^2 + \frac{n+1}{2}(n-1)^2\right]$$
+
+Now, to simplify the bracketed expression:
+
+$$\frac{n-1}{2}(n+1)^2 + \frac{n+1}{2}(n-1)^2 = \frac{1}{2} \left[ (n-1)(n+1)^2 + (n+1)(n-1)^2 \right]$$
+
+Expand and factor out:
+
+\begin{align}
+&= \frac{1}{2} \left[ (n-1) \cdot (n+1) \cdot (n+1) + (n+1) \cdot (n-1) \cdot (n-1) \right] \\
+  &= \frac{1}{2}(n-1)(n+1) \cdot \left[ (n+1) + (n-1) \right]
+\end{align}
+
+Simplify the sum:
+
+\begin{align}
+&= \frac{1}{2}(n-1)(n+1) \cdot 2n \\
+  &= n(n-1)(n+1) \\
+  &= n(n^2-1)
+\end{align}
+
+Substitute back into the SSD expression:
+\begin{align}
+SSD &= \frac{(k-1)^2}{4n^2} \cdot n(n^2-1) \\
+  &= \frac{(k-1)^2 \cdot (n^2-1)}{4n}
+\end{align}
+
+Rearrange to isolate Popoviciu's bound:
+\begin{align}
+&= n \cdot \frac{(k-1)^2}{4} \cdot \left(\frac{n^2-1}{n^2}\right) \\
+  &= n \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)
+\end{align}
+
+Thus, the sum of squares is
+$$SSD = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$$
+
+With an odd $n$, the maximal sample and population variance are therefore
 \begin{align}
 s^2_{\max} &= \frac{SSD}{n-1} \\
-  &= \frac{(k-1)^2}{4} \cdot \frac{n}{n-1} \cdot \left(1 - \frac{1}{n^2}\right)
+  &= \frac{(k-1)^2}{4} \left(1 - \frac{1}{n^2}\right) \frac{n}{n-1}
+\end{align}
+
+and
+
+\begin{align}
+\sigma^2_{\max} &= \frac{SSD}{n} \\
+  &= \frac{(k-1)^2}{4} \left(1 - \frac{1}{n^2}\right)
 \end{align}
 
 \end{proof}
 
-\begin{theorem}[Unified expression of $s^2_{\max}$] Theorems 2 and 3 can be combined into a single equation that holds for any $n$.
+\begin{theorem}[Unified expressions of $s^2_{\max}$ and $\sigma^2_{\max}$] Theorems 2 and 3 can be combined into a single equation that holds for any $n$.
 \
 
-The formulas for $s^2_{\max}$ in Theorems 2 and 3 are only distinguished by the parity of $n$ (even or odd), such that the presence or absence of the odd-$n$ correction factor $1 - \frac{1}{n^2}$ constitutes the only difference between them. To emphasize the commonalities between the two equations and reduce them to a single, consistent representation that holds for any value of $n$, irrespective of parity, a unified equation for $s^2_{\max}$ shall be provided below.
+The formulas for $s^2_{\max}$ in Theorems 2 and 3 are only distinguished by the parity of $n$ (even or odd), such that the presence or absence of the odd-$n$ correction factor $1 - \frac{1}{n^2}$ constitutes the only difference between them. The same applies to $\sigma^2_{\max}$.
+
+To emphasize the commonalities between the two equations and reduce them to a single, consistent representation that holds for any value of $n$, irrespective of parity, a unified equation for $s^2_{\max}$ shall be provided below. A corresponding expression of $\sigma^2_{\max}$ will also be provided.
 
 First, note that $(-1)^n$ equals 1 if $n$ is even, and $-1$ if $n$ is odd. Therefore:
 
@@ -163,18 +212,20 @@ We can use this term to modify the odd-$n$ correction factor in a way that rende
 
 \begin{align}
 1 - \frac{1}{n^2} \cdot \frac{1- (-1)^n}{2} &= 1 - \frac{1- (-1)^n}{2 n^2} \\
-  &=\frac{2 n^2 - 1 + (-1)^n}{2 n^2} \\
+  &= \frac{2 n^2 - 1 + (-1)^n}{2 n^2} \\
   &= \begin{cases}
 1 & \text{if } n \text{ is even} \\
 1 - \frac{1}{n^2} & \text{if } n \text{ is odd}
 \end{cases}
 \end{align}
 
-Consequently, using this generalized expression instead of the one from Theorem 3 (that is specific to the odd-$n$ case) yields the desired general formula for the sample variance that applies to any $n$:
+Consequently, using this generalized expression instead of the one from Theorem 3 (that is specific to the odd-$n$ case) yields the desired general formula for the maximal sample variance that applies to any $n$:
 
-$$
-s^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{n}{n-1} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2}
-$$
+$$s^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2} \cdot \frac{n}{n-1}$$
+
+As for the maximal \emph{population} variance, the only difference from the maximal sample variance is the absence of Bessel's correction:
+
+$$\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2}$$
 
 \end{theorem}
 
