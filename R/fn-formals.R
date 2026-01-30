@@ -5,12 +5,17 @@
 
 # -- "Constructors" create or capture a list of arguments. The names of these
 # functions all start on `formals_new_`.
+
 # -- "Modifiers" change an existing list of arguments. Example usage:
 # `your_function |> formals() |> formals_add("mode", .after = "data")`
+# Most functions here are modifiers!
+
 # -- "Predicates" run checks on a list of arguments and return logical vectors.
+# Currently, there is only one predicate.
+
 # -- "Helpers" are only needed by the other functions.
 
-# If you use them as build helpers and don't need them in the final binary, you
+# If you use these functions as build helpers but not in the final binary, you
 # could run `rm(list = ls(pattern = "^formals_"))` in a zzz.R file. This will
 # remove all these functions before they can be included in the package binary.
 
@@ -20,11 +25,28 @@
 
 # Constructors ------------------------------------------------------------
 
-# Alternative to `formals()` with the same arguments but these differences:
-# -- It doesn't return `NULL` for primitives. Instead, it returns the list of
-# "pseudo-arguments" that the primitive function would have if it was a closure.
-# E.g., `args()` shows these pseudo-arguments but doesn't directly return them.
-# -- It throws an error if `fun` is not a function.
+#' Get arguments from any function
+#'
+#' @description Wrapper around `formals()` with the same arguments but these
+#' differences:
+#'  - It doesn't return `NULL` for primitives. Instead, it returns the list of
+#' "pseudo-arguments" that the primitive function would have if it was a
+#' closure. For example, `args()` shows these pseudo-arguments but doesn't
+#' directly return them.
+#'  - It throws an error if the input is not a function.
+#'
+#' @param fun Any function.
+#' @param envir See `?formals`.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Works on closures just like `formals()` does
+#' formals_new_pseudo(colnames)
+#'
+#' # Also works on primitives, where `formals()` returns `NULL`
+#' formals_new_pseudo(sum)
 formals_new_pseudo <- function(fun, envir = parent.frame(2)) {
   if (is.primitive(fun)) {
     formals(args(fun), envir)
@@ -39,10 +61,25 @@ formals_new_pseudo <- function(fun, envir = parent.frame(2)) {
 }
 
 
-# Create a pairlist of arguments without defaults. Similar to, and based on,
-# `rlang::pairlist2()` when used like `pairlist2(a = , b = )`. However, the
-# current function is more flexible because it can even create such lists
-# programmatically from a string vector, without hard-coding the arguments.
+#' Create a list of arguments without defaults
+#'
+#' @description This is like a pairlist of name-value pairs but without values.
+#'   Similar to `rlang::pairlist2()` when used like `pairlist2(a = , b = )`.
+#'   However, the current function is more flexible because it can even create
+#'   such lists programmatically from a string vector, without hard-coding the
+#'   arguments.
+#'
+#' @param ... Strings that will become the new arguments.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Create a pairlist from individual strings
+#' formals_new_without_defaults("x", "y", "z")
+#'
+#' # Create a pairlist from a string vector
+#' formals_new_without_defaults(c("alpha", "beta"))
 formals_new_without_defaults <- function(...) {
   names_all <- c(...)
 
@@ -64,7 +101,31 @@ formals_new_without_defaults <- function(...) {
 
 # Modifiers ---------------------------------------------------------------
 
-# Insert defaults for existing arguments or replace old defaults by new ones
+#' Add defaults to a list of arguments
+#'
+#' @description Insert defaults for existing arguments or replace old defaults
+#'   by new ones.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param ... Name-value pairs of existing arguments and their new defaults.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' paste_custom <- paste
+#'
+#' # Add a default to one argument
+#' formals(paste_custom) <- paste |>
+#'   formals() |>
+#'   formals_add_defaults(collapse = ", ")
+#' paste_custom(letters)
+#'
+#' # Replace defaults for multiple arguments at once
+#' formals(paste_custom) <- paste_custom |>
+#'   formals() |>
+#'   formals_add_defaults(sep = "_", collapse = "")
+#' paste_custom(letters)
 formals_add_defaults <- function(fmls, ...) {
   formals_check_pairlist(fmls)
 
@@ -93,8 +154,26 @@ formals_add_defaults <- function(fmls, ...) {
 }
 
 
-# Set defaults for all arguments. This must be either a single default used
-# throughout or a vector of as many defaults as there are arguments.
+#' Set defaults for all arguments
+#'
+#' @description All arguments will get new defaults; you don't name the
+#' arguments one by one. Instead, you supply either a single default used
+#' throughout or a vector of as many defaults as there are arguments.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param new_defaults Vector with length 1 or the same length as `fmls`.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Set a single default for all arguments
+#' formals_new_without_defaults("a", "b", "c") |>
+#'   formals_add_defaults_all(new_defaults = TRUE)
+#'
+#' # Set a different default for each argument
+#' formals_new_without_defaults("x", "y") |>
+#'   formals_add_defaults_all(new_defaults = c(0, 1))
 formals_add_defaults_all <- function(fmls, new_defaults) {
   formals_check_pairlist(fmls)
 
@@ -107,7 +186,7 @@ formals_add_defaults_all <- function(fmls, new_defaults) {
     out <- new_defaults
   } else {
     cli::cli_abort(c(
-      "`new_defaults` must be length 1 or as long as `fmls`.",
+      "`new_defaults` must be length 1 or the length of `fmls` ({n_args}).",
       "x" = "It is actually length {n_new}."
     ))
   }
@@ -118,9 +197,25 @@ formals_add_defaults_all <- function(fmls, new_defaults) {
 }
 
 
-# Remove the defaults of one or more existing arguments, but keep the arguments
-# themselves. Use by passing strings (through the dots) that are the names of
-# the arguments you want to free from their defaults.
+#' Remove some defaults
+#'
+#' @description Defaults of the named arguments are removed, but the arguments
+#' themselves are preserved. Use by passing strings (through the dots) that are
+#' the names of the arguments you want to free from their defaults.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param ... Strings. Names of those arguments that should no longer have
+#'   defaults.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Remove the default from a single argument
+#' paste |> formals() |> formals_remove_defaults("sep")
+#'
+#' # Remove defaults from multiple arguments at once
+#' paste |> formals() |> formals_remove_defaults("sep", "collapse")
 formals_remove_defaults <- function(fmls, ...) {
   formals_check_pairlist(fmls)
 
@@ -160,18 +255,55 @@ formals_remove_defaults <- function(fmls, ...) {
 }
 
 
-# Simple wrapper that removes all defaults from a list of arguments
+#' Remove all defaults
+#'
+#' @description Strip the defaults of all arguments. The arguments themselves
+#'   are preserved, so the function returns a pairlist with names but no values.
+#'
+#' @param fmls Pairlist of arguments.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Before
+#' paste |> formals()
+#'
+#' # After
+#' paste |> formals() |> formals_remove_defaults_all()
 formals_remove_defaults_all <- function(fmls) {
+  # Checking here redundantly because otherwise, any error message would
+  # confusingly name `formals_new_without_defaults()` as the error's source
   formals_check_pairlist(fmls)
   formals_new_without_defaults(names(fmls))
 }
 
 
-# Extend the list of a function's arguments. Use by supplying some combination
-# of name-value pairs of arguments and defaults and / or strings with the names
-# of new arguments that should not have any defaults. For example,
-# `list_of_formals |> formals_add(a = 5, "b")` will add `a` as an argument with
-# default `5`, and `b` as an argument without a default; in this order.
+#' Add arguments
+#'
+#' @description Extend a list of arguments. Use by supplying some combination of
+#'   name-value pairs of new arguments with defaults, and / or strings with the
+#'   names of new arguments that should not have any defaults.
+#'
+#'   For example, `my_formals |> formals_add("b", "c" = NULL, .after = "a")`
+#'   will add `b` as an argument without a default and `c` as an argument with
+#'   default `NULL`; in this order and after the existing argument `a`.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param ... New arguments (see above).
+#' @param .before,.after Strings. Specify exactly one of these two arguments.
+#'   Use it to name the one existing argument before or after which you want to
+#'   place the new arguments.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Add an argument without a default after an existing one
+#' mean.default |> formals() |> formals_add("weights", .after = "x")
+#'
+#' # Add an argument with a default before an existing one
+#' colnames |> formals() |> formals_add(na.action = "omit", .before = "prefix")
 formals_add <- function(fmls, ..., .before = NULL, .after = NULL) {
   formals_check_pairlist(fmls)
 
@@ -265,7 +397,23 @@ formals_add <- function(fmls, ..., .before = NULL, .after = NULL) {
 }
 
 
-# Remove selected arguments from the list of a function's arguments
+#' Remove some arguments
+#'
+#' @description Remove certain arguments from the list of a function's
+#'   arguments. Use by passing names of those arguments that should be removed.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param ... Strings. Names of existing arguments to remove.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Remove a single argument
+#' mean.default |> formals() |> formals_remove("trim")
+#'
+#' # Remove multiple arguments at once
+#' paste |> formals() |> formals_remove("sep", "collapse")
 formals_remove <- function(fmls, ...) {
   formals_check_pairlist(fmls)
 
@@ -290,26 +438,55 @@ formals_remove <- function(fmls, ...) {
 
 # Predicates --------------------------------------------------------------
 
-# For each argument in a list of arguments, this says `TRUE` if the argument has
-# a default, and `FALSE` if it does not
+#' Do arguments have defaults?
+#'
+#' @description For each argument in a list of arguments, this says `TRUE` if
+#'   the argument has a default, and `FALSE` if it does not.
+#'
+#' @param fmls Pairlist of arguments.
+#'
+#' @returns Logical vector with the same length as `fmls`. No `NA` elements.
+#' @noRd
+#'
+#' @examples
+#' # Check a function where some arguments have defaults
+#' mean.default |> formals() |> formals_have_defaults()
+#'
+#' # All `FALSE` when no argument has a default
+#' formals_new_without_defaults("a", "b") |> formals_have_defaults()
 formals_have_defaults <- function(fmls) {
   formals_check_pairlist(fmls)
 
-  are_missing <- logical(length(fmls))
+  defaults_are_missing <- logical(length(fmls))
 
   for (i in seq_along(fmls)) {
     current_arg <- fmls[[i]]
-    are_missing[i] <- missing(current_arg)
+    defaults_are_missing[i] <- missing(current_arg)
   }
 
-  !are_missing
+  !defaults_are_missing
 }
 
 
 # Helpers -----------------------------------------------------------------
 
-# Helper that throws an error if its argument is not a pairlist, i.e., the
-# special type of object that a function's list of arguments consists of
+#' Check whether object is pairlist
+#'
+#' @description Helper that throws an error if its argument is not a pairlist,
+#'   i.e., the special type of object that a function's list of arguments
+#'   consists of.
+#'
+#' @param x Some object; presumably a pairlist of arguments.
+#'
+#' @returns Nothing; might throw an error.
+#' @noRd
+#'
+#' @examples
+#' # Passes silently for a valid pairlist
+#' formals_check_pairlist(formals(mean))
+#'
+#' # Throws an error for a regular list
+#' try(formals_check_pairlist(list(a = 1)))
 formals_check_pairlist <- function(x) {
   if (typeof(x) != "pairlist") {
     cli::cli_abort(
@@ -324,9 +501,25 @@ formals_check_pairlist <- function(x) {
 }
 
 
-# Helper that throws an error if the position argument in `formals_add()`, i.e.,
-# `.before` or `.after`, is not a length-1 string that is the name of an
-# existing argument. If the check passes, it returns the index of that argument.
+#' Get the index of a given argument
+#'
+#' @description Helper that throws an error if the position argument in
+#' `formals_add()`, i.e., `.before` or `.after`, is not a length-1 string that
+#' is the name of an existing argument. If the check passes, it returns the
+#' index of that argument.
+#'
+#' @param names_old String. Vector of the names of the existing arguments.
+#' @param name_next String (length 1). Value of `.before` or `.after`.
+#'
+#' @returns Integer (length 1).
+#' @noRd
+#'
+#' @examples
+#' # Returns the position of the named argument
+#' formals_get_index(c("x", "na.rm", "trim"), "na.rm")
+#'
+#' # Throws an error if the name is not found
+#' try(formals_get_index(c("x", "y"), "z"))
 formals_get_index <- function(names_old, name_next) {
   if (
     is.character(name_next) &&
