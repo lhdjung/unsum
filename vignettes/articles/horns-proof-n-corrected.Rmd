@@ -32,7 +32,7 @@ where $s^2_{\max}$ is the maximum attainable $s^2$ given $k$ and $n$.
 \end{definition}
 
 \begin{definition}[Infinite-$n$ horns index]
-$$h^* = \frac{\sigma^2}{\sigma^2_{\max}}$$
+$$h^* = \frac{\sigma^2}{\sigma^2_{\max | n = \infty}}$$
 where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $k$ and $n$.
 
 The maximum variance formulas on which the definitions of $h$ and $h^*$ rely will be the subject of the remainder of this document. Note that they account for the parity of $n$, i.e., its property of being even or odd.
@@ -97,9 +97,9 @@ s^2_{\max} &= \frac{SSD}{n-1} \\
 For odd $n$ with uneven split:
 \begin{itemize}
 \item Mean: $\bar{x} = \frac{k+1}{2} + \frac{k-1}{2n}$ \ \ (\emph{Note}: These equations, too, are statements to be proven, not definitions.)
-\item Sum of squared deviations: $SSD = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$
-\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot (1 - \frac{1}{n^2})$
-\item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)$
+\item Sum of squared deviations: $SSD = \frac{(k-1)^2}{4} \cdot n \cdot \frac{n^2 - 1}{n^2}$
+\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2}$
+\item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2}$
 \end{itemize}
 \end{theorem}
 
@@ -162,32 +162,24 @@ Simplify the sum:
   &= n(n^2-1)
 \end{align}
 
-Substitute back into the SSD expression:
+Substitute back into the $SSD$ expression and isolate Popoviciu's bound:
 \begin{align}
 SSD &= \frac{(k-1)^2}{4n^2} \cdot n(n^2-1) \\
-  &= \frac{(k-1)^2 \cdot (n^2-1)}{4n}
+  &= \frac{(k-1)^2 \cdot (n^2-1)}{4n} \\
+  &= \frac{(k-1)^2}{4} \cdot n \cdot \left(\frac{n^2-1}{n^2}\right)
 \end{align}
 
-Rearrange to isolate Popoviciu's bound:
-\begin{align}
-&= n \cdot \frac{(k-1)^2}{4} \cdot \left(\frac{n^2-1}{n^2}\right) \\
-  &= n \cdot \frac{(k-1)^2}{4} \cdot \left(1 - \frac{1}{n^2}\right)
-\end{align}
-
-Thus, the sum of squares is
-$$SSD = \frac{(k-1)^2}{4} \cdot n \cdot \left(1 - \frac{1}{n^2}\right)$$
-
-With an odd $n$, the maximal sample and population variance are therefore
+The maximal sample and population variance with an odd $n$ are therefore
 \begin{align}
 s^2_{\max} &= \frac{SSD}{n-1} \\
-  &= \frac{(k-1)^2}{4} \left(1 - \frac{1}{n^2}\right) \frac{n}{n-1}
+  &= \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2} \cdot \frac{n}{n-1}
 \end{align}
 
 and
 
 \begin{align}
 \sigma^2_{\max} &= \frac{SSD}{n} \\
-  &= \frac{(k-1)^2}{4} \left(1 - \frac{1}{n^2}\right)
+  &= \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2}
 \end{align}
 
 \end{proof}
@@ -195,7 +187,7 @@ and
 \begin{theorem}[Unified expressions of $s^2_{\max}$ and $\sigma^2_{\max}$] Theorems 2 and 3 can be combined into a single equation that holds for any $n$.
 \
 
-The formulas for $s^2_{\max}$ in Theorems 2 and 3 are only distinguished by the parity of $n$ (even or odd), such that the presence or absence of the odd-$n$ correction factor $1 - \frac{1}{n^2}$ constitutes the only difference between them. The same applies to $\sigma^2_{\max}$.
+The formulas for $s^2_{\max}$ in Theorems 2 and 3 are only distinguished by the parity of $n$ (even or odd), such that the presence or absence of the odd-$n$ correction factor $\frac{n^2 - 1}{n^2}$ constitutes the only difference between them. The same applies to $\sigma^2_{\max}$.
 
 To emphasize the commonalities between the two equations and reduce them to a single, consistent representation that holds for any value of $n$, irrespective of parity, a unified equation for $s^2_{\max}$ shall be provided below. A corresponding expression of $\sigma^2_{\max}$ will also be provided.
 
@@ -227,6 +219,26 @@ As for the maximal \emph{population} variance, the only difference from the maxi
 
 $$\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2}$$
 
+Petocz (2005) provides two separate bounds for the sample SD distinguished by the parity of $n$:
+
+$$
+s_{max | R,n} = \begin{cases} 
+\frac{R}{2} \sqrt{\frac{n}{n-1}} & \text{if } n \text{ is even} \\
+\frac{R}{2} \sqrt{\frac{n+1}{n}} & \text{if } n \text{ is odd}
+\end{cases}
+$$
+
+Equivalence with the general formula obtains when the latter is used to state an upper bound for the SD rather than the variance. This is obvious in the even-$n$ case where the only correction is Bessel's. In the odd-$n$ case, $\frac{n + 1}{n}$ is the product of Bessel's correction and the odd-$n$ correction used before:
+
+\begin{align}
+\frac{n}{n - 1} (1 - \frac{1}{n^2}) &= \frac{n}{n - 1} \cdot \frac{n^2 - 1}{n^2} \\
+  &= \frac{n}{n - 1} \cdot \frac{(n - 1)(n + 1)}{n^2} \\
+  &= \frac{n(n + 1)}{n^2} \\
+  &= \frac{n + 1}{n}
+\end{align}
+
+Therefore, the formula that includes the generalized parity correction (and, as a separate term, Bessel's correction) is a restatement of Petocz's upper bound for the sample SD. The closed form seems preferable over the case differentiation because it is a single expression that holds in general.
+
 \end{theorem}
 
 \section{The relationship between $h$ and $h^*$}
@@ -234,7 +246,7 @@ $$\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2}$$
 \begin{proposition}[Convergence]
 As $n \to \infty$:
 \begin{enumerate}
-\item The parity correction converges to 1, so the odd-even distinction vanishes: $\frac{2 n^2 - 1 + (-1)^n}{2 n^2} \to 1$
+\item The parity correction converges to 1 for odd $n$, while it is exactly 1 for all even $n$. The sequence as a whole oscillates between 1 and lower values asymptotically approaching 1. Therefore, the odd-even distinction vanishes ass odd $n$ values increase: $\frac{2 n^2 - 1 + (-1)^n}{2 n^2} \to 1, \ n \text{ is odd}$
 \item Bessel's correction also converges to 1, so the sample-population distinction vanishes: $\frac{n}{n - 1} \to 1$
 \item Therefore, the horns index converges to the infinite-$n$ horns index: $h \to h^*$
 \end{enumerate}
