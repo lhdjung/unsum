@@ -43,11 +43,11 @@
 #'
 #' @examples
 #' # Works on closures just like `formals()` does
-#' formals_new_pseudo(colnames)
+#' formals_new_safe(colnames)
 #'
 #' # Also works on primitives, where `formals()` returns `NULL`
-#' formals_new_pseudo(sum)
-formals_new_pseudo <- function(fun, envir = parent.frame(2)) {
+#' formals_new_safe(sum)
+formals_new_safe <- function(fun, envir = parent.frame(2)) {
   if (is.primitive(fun)) {
     formals(args(fun), envir)
   } else if (is.function(fun)) {
@@ -87,15 +87,12 @@ formals_new_without_defaults <- function(...) {
     cli::cli_abort("Arguments of this function must be unnamed strings.")
   }
 
-  # Single string with names formatted like "a  = , b  = , c  = "
-  names_equal_empty <- paste(names_all, " = ", collapse = ", ")
+  # Create a list of empty arguments and name them after the inputs
+  out <- rep(list(rlang::missing_arg()), length(names_all))
+  names(out) <- names_all
 
-  # See comment in `formals_remove_defaults()` which works the same way
-  eval(rlang::parse_expr(paste0(
-    "rlang::pairlist2(",
-    names_equal_empty,
-    ")"
-  )))
+  # Arguments are stored in pairlists, not regular lists
+  as.pairlist(out)
 }
 
 
@@ -135,8 +132,7 @@ formals_add_defaults <- function(fmls, ...) {
     return(fmls)
   }
 
-  offenders <-
-    names(new_defaults)[!(names(new_defaults) %in% names(fmls))]
+  offenders <- names(new_defaults)[!(names(new_defaults) %in% names(fmls))]
 
   if (length(offenders) > 0) {
     offenders <- paste0("\"", offenders, "\"")
@@ -144,8 +140,6 @@ formals_add_defaults <- function(fmls, ...) {
       "Can only choose new defaults for existing arguments.",
       "x" = "Non-existing argument{?s}: {offenders}"
     ))
-  } else if (length(new_defaults) == 0) {
-    cli::cli_abort("Need to name one or more existing arguments.")
   }
 
   fmls[names(fmls) %in% names(new_defaults)] <- new_defaults
@@ -180,8 +174,10 @@ formals_add_defaults_all <- function(fmls, new_defaults) {
   n_args <- length(fmls)
   n_new <- length(new_defaults)
 
-  if (n_new == 1) {
-    out <- rep(new_defaults, n_args)
+  # Length-zero objects need to be wrapped in a list, which also fits length-1
+  # objects because they are not recycled
+  if (n_new < 2) {
+    out <- rep(list(new_defaults), n_args)
   } else if (n_new == n_args) {
     out <- new_defaults
   } else {
@@ -234,21 +230,9 @@ formals_remove_defaults <- function(fmls, ...) {
     cli::cli_abort("Need to name one or more existing arguments.")
   }
 
-  # Replace each target formal argument by a version of itself that does not
-  # have a default
-  for (target in targets_all) {
-    index <- match(target, names_all)
-
-    # Parse and evaluate a call to rlang's pairlist constructor that allows for
-    # missing arguments. This produces a pairlist of an argument named after
-    # `target` but without a default, which then replaces the version of itself
-    # that does have a default.
-    fmls[index] <- eval(rlang::parse_expr(paste0(
-      "rlang::pairlist2(",
-      target,
-      " = )"
-    )))
-  }
+  # Replace the target defaults by the missing argument object
+  indices_all <- which(names_all %in% targets_all)
+  fmls[indices_all] <- list(rlang::missing_arg())
 
   # Arguments are stored in pairlists, not regular lists
   as.pairlist(fmls)
@@ -313,7 +297,7 @@ formals_add <- function(fmls, ..., .before = NULL, .after = NULL) {
   names_old <- rlang::names2(fmls)
   names_new <- rlang::names2(new_args_all)
 
-  args_have_no_defaults <- names_new == ""
+  have_no_defaults <- names_new == ""
   offenders <- names_new[names_new %in% names_old]
 
   if (length(offenders) > 0) {
@@ -342,58 +326,22 @@ formals_add <- function(fmls, ..., .before = NULL, .after = NULL) {
     index <- formals_get_index(names_old, .after)
   }
 
-  # Insert each new argument into the list by checking its position and, if
-  # needed, handling the no-default case
-  for (i in seq_along(new_args_all)) {
-    new_arg <- new_args_all[i]
-    new_name <- names_new[i]
-    has_no_default <- args_have_no_defaults[i]
+  names_new[have_no_defaults] <- new_args_all[have_no_defaults]
+  new_args_all[have_no_defaults] <- list(rlang::missing_arg())
 
-    # Add temporary dummy default if needed because `c()` wants all elements to
-    # be name-value pairs when it combines the new pairlist below. Redefine as a
-    # string with value `"dummy"` and the name that is nested within `new_arg`.
-    if (has_no_default) {
-      new_arg <- `names<-`("dummy", new_arg[[1]])
-    }
+  names(new_args_all) <- names_new
 
-    # Update positions around which the new arg will be inserted, based on
-    # current `index` value that is incremented after each loop iteration
-    if (using_before) {
-      neighbor_low <- index - 1
-      neighbor_high <- index
-    } else {
-      # I.e., if `using_after`
-      neighbor_low <- index
-      neighbor_high <- index + 1
-    }
+  # Determine where to split the existing formals
+  split <- if (using_before) index - 1 else index
 
-    # Insert the current new argument into the list of arguments. The second
-    # part of the existing list -- after the new argument -- might not exist
-    # because the new argument is inserted right at the end of the list.
-    # Therefore, `NULL` is inserted instead if there is no second part. This
-    # problem can't occur on the lower end because the index only ever
-    # increments, and because R can inherently handle the lower end better.
-    fmls <- as.pairlist(c(
-      fmls[seq_len(neighbor_low)],
-      new_arg,
-
-      if (neighbor_high > length(fmls)) {
-        NULL
-      } else {
-        fmls[neighbor_high:length(fmls)]
-      }
-    ))
-
-    # Remove temporary dummy default
-    if (has_no_default) {
-      fmls <- formals_remove_defaults(fmls, names(new_arg))
-    }
-
-    # Increment because the next new argument should go after the current one
-    index <- index + 1
-  }
-
-  as.pairlist(fmls)
+  # Construct the full pairlist in one shot: [before | new | after].
+  # Convert pairlist subsets to regular lists so that `c()` preserves elements
+  # with missing values (no defaults), which `c()` on pairlists would drop.
+  as.pairlist(c(
+    as.list(fmls[seq_len(split)]),
+    new_args_all,
+    if (split < length(fmls)) as.list(fmls[(split + 1):length(fmls)])
+  ))
 }
 
 
@@ -459,6 +407,7 @@ formals_have_defaults <- function(fmls) {
 
   defaults_are_missing <- logical(length(fmls))
 
+  # Loop needed here because `missing()` doesn't work with `vapply()` etc.
   for (i in seq_along(fmls)) {
     current_arg <- fmls[[i]]
     defaults_are_missing[i] <- missing(current_arg)
@@ -488,7 +437,7 @@ formals_have_defaults <- function(fmls) {
 #' # Throws an error for a regular list
 #' try(formals_check_pairlist(list(a = 1)))
 formals_check_pairlist <- function(x) {
-  if (typeof(x) != "pairlist") {
+  if (!is.pairlist(x)) {
     cli::cli_abort(
       c(
         "`fmls` must be the list of a function's arguments.",
