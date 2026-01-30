@@ -384,6 +384,126 @@ formals_remove <- function(fmls, ...) {
 }
 
 
+#' Rename arguments
+#'
+#' @description Rename one or more arguments. Uses the `dplyr::rename()`
+#'   convention: each name-value pair in the dots has the new name on the left
+#'   and the old name (a string) on the right.
+#'
+#'   For example, `fmls |> formals_rename(new = "old")` renames the argument
+#'   called `old` to `new`. Order and defaults are preserved.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param ... Name-value pairs: `new_name = "old_name"`.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Rename a single argument
+#' mean.default |> formals() |> formals_rename(value = "x")
+#'
+#' # Rename multiple arguments at once
+#' paste |> formals() |> formals_rename(separator = "sep", joiner = "collapse")
+formals_rename <- function(fmls, ...) {
+  formals_check_pairlist(fmls)
+
+  mapping <- c(...)
+
+  if (!is.character(mapping) || is.null(names(mapping)) ||
+    any(names(mapping) == "")) {
+    cli::cli_abort("All arguments must be named: `new_name = \"old_name\"`.")
+  }
+
+  if (length(mapping) == 0) {
+    cli::cli_abort("Need to rename one or more arguments.")
+  }
+
+  current <- names(fmls)
+  old_names <- unname(mapping)
+  new_names <- names(mapping)
+
+  offenders <- old_names[!old_names %in% current]
+
+  if (length(offenders) > 0) {
+    offenders <- paste0("\"", offenders, "\"")
+    cli::cli_abort(c(
+      "Can only rename existing arguments.",
+      "x" = "Non-existing argument{?s}: {offenders}"
+    ))
+  }
+
+  # New names must not collide with existing names that are not being renamed
+  remaining <- current[!current %in% old_names]
+  collisions <- new_names[new_names %in% remaining]
+
+  if (length(collisions) > 0) {
+    collisions <- paste0("\"", collisions, "\"")
+    cli::cli_abort(c(
+      "New names must not clash with existing argument names.",
+      "x" = "Already existing name{?s}: {collisions}"
+    ))
+  }
+
+  current[match(old_names, current)] <- new_names
+  names(fmls) <- current
+
+  as.pairlist(fmls)
+}
+
+
+#' Reorder arguments
+#'
+#' @description Rearrange arguments in a new order. Named arguments are moved to
+#'   the front in the order supplied; any remaining arguments follow in their
+#'   original order. Defaults are preserved.
+#'
+#' @param fmls Pairlist of arguments.
+#' @param ... Strings. Names of existing arguments in the desired order. May be
+#'   a subset; unmentioned arguments keep their original relative order and are
+#'   placed after the named ones.
+#'
+#' @returns Pairlist of arguments.
+#' @noRd
+#'
+#' @examples
+#' # Move one argument to the front; the rest stay in their original order
+#' mean.default |> formals() |> formals_reorder("na.rm")
+#'
+#' # Supply all names for a complete reorder
+#' paste |> formals() |> formals_reorder("recycle0", "collapse", "sep", "...")
+formals_reorder <- function(fmls, ...) {
+  formals_check_pairlist(fmls)
+
+  new_order <- c(...)
+
+  if (!is.character(new_order) || !all(rlang::names2(new_order) == "")) {
+    cli::cli_abort("Arguments of this function must be unnamed strings.")
+  }
+
+  if (length(new_order) == 0) {
+    cli::cli_abort("Need to name one or more arguments.")
+  }
+
+  current <- names(fmls)
+  extra_names <- new_order[!new_order %in% current]
+
+  if (length(extra_names) > 0) {
+    extra_names <- paste0("\"", extra_names, "\"")
+    cli::cli_abort(c(
+      "Can only reorder existing arguments.",
+      "x" = "Non-existing argument{?s}: {extra_names}"
+    ))
+  }
+
+  # Named arguments go first; the rest follow in their original order
+  rest <- current[!current %in% new_order]
+  full_order <- c(new_order, rest)
+
+  as.pairlist(fmls[match(full_order, current)])
+}
+
+
 # Predicates --------------------------------------------------------------
 
 #' Do arguments have defaults?
