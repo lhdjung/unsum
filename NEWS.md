@@ -14,8 +14,6 @@ Another focus of this release is visualization, with new plotting functions and 
 
 -   Added a `technique` column at the start of `closure_generate()`'s output. This is for clarity: it says `"CLOSURE"` here, and the output of any technique to be implemented in the future will be disambiguated in the same way.
 
--   Added `closure_plot_bar_min_max()` to compare the subsets of samples with minimal and maximal variability, as measured by `horns()`.
-
 -   Added `closure_plot_horns_histogram()` to visualize the distribution of horns values as a whole.
 
 ## Breaking changes
@@ -28,6 +26,7 @@ Another focus of this release is visualization, with new plotting functions and 
     -   The `pad` argument is now a string with three alternatives.
 
     -   Added `legend_title` and `mark_decimal` arguments.
+-   Remodeled `closure_plot_bar()` to show two panels instead of one. It now compares the subsets of samples with minimal and maximal variability, as measured by `horns()`.
 -   Redesigned `closure_read()` to control which parts are read in via the new `include` and `samples_cap` arguments.
 -   Renamed the `frequency` argument of `closure_plot_bar()` to `format`, for clarity. There are many mentions of "frequency" in unsum, so it is good to disambiguate. In particular, the new `demo_plot_bar()` has `freqs` as its first argument.
 -   Renamed the `"absolute-percent"` option of `format` (the former `frequency`) in `closure_plot_bar()` to `"absolute_percent"`, for consistency with other multi-word strings in the package.

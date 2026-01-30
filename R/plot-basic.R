@@ -24,6 +24,7 @@
 plot_frequency_bar <- function(
   data,
   technique,
+  min_max = c("both", "min", "max"),
   format = c(
     "percent",
     "absolute_percent",
@@ -31,10 +32,8 @@ plot_frequency_bar <- function(
     "relative"
   ),
   samples = c("mean", "all"),
-  min_max_values = NULL,
-  frequency_rows_subset = NULL,
-  facet_labels = NULL,
-  facet_labels_parens = NULL,
+  facet_labels = c("Minimal variance", "Maximal variance"),
+  facet_labels_parens = "h",
   bar_alpha = 0.75,
   bar_color = "black",
   show_text = TRUE,
@@ -66,10 +65,39 @@ plot_frequency_bar <- function(
     # As demo plots don't have a `samples` argument but the remainder of the
     # current function expects one, it is substituted here
     samples <- "all"
+    frequency_rows_subset <- "all"
   } else {
+    min_max <- rlang::arg_match(min_max)
+
+    check_length(facet_labels, 2L, allow_null = TRUE)
+    check_length(facet_labels_parens, 1L, allow_null = TRUE)
+
+    # Enable plots without facet labels
+    if (is.null(facet_labels)) {
+      facet_labels <- rep("\"\"", 2)
+      facet_labels_parens <- NULL
+    }
+
+    # Derive internal values from `min_max`
+    min_max_values <- c(data$metrics_horns$min, data$metrics_horns$max)
+
+    frequency_rows_subset <- switch(
+      min_max,
+      "both" = c("horns_min", "horns_max"),
+      "min" = "horns_min",
+      "max" = "horns_max"
+    )
+
+    facet_labels <- switch(
+      min_max,
+      "both" = facet_labels,
+      "min" = facet_labels[1L],
+      "max" = facet_labels[2L]
+    )
+
     # Zoom in on the frequency table -- the only element of `data` needed here.
     # Filter its rows to only keep those with a specific subset of samples, such
-    # as "horns_min" and "horns_max", or "all" for all samples taken together.
+    # as "horns_min" and "horns_max".
     data <- data$frequency
     data <- data[data$samples %in% frequency_rows_subset, ]
   }
@@ -185,7 +213,8 @@ plot_frequency_bar <- function(
         split(data$samples) |>
         lapply(function(x) {
           freqs <- x$frequency
-          percentage <- round(100 * freqs / sum(freqs), 1)
+          percentage <- 100 * freqs / sum(freqs)
+          percentage <- round(percentage, 1)
           paste0(" (", percentage, "%)")
         }) |>
         unlist(use.names = FALSE)
@@ -219,19 +248,9 @@ plot_frequency_bar <- function(
     # Text labels on top of the bars
     geom_text_frequency +
 
-    # Conditionally facet the plot -- needed for `closure_plot_bar_min_max()`
+    # Conditionally facet the plot -- needed for `closure_plot_bar()`
     {
       if (!show_text) {
-        NULL
-      } else if (is.null(facet_labels) && technique != "DEMO") {
-        # Warn in case the arguments don't quite fit together
-        if (!is.null(facet_labels_parens)) {
-          cli::cli_warn(
-            "`facet_labels_parens` has no effect \
-            because `facet_labels` is `NULL`."
-          )
-        }
-        # Evaluate the entire expression to `NULL`
         NULL
       } else if (technique == "DEMO") {
         # Compute the horns index for the example frequency distribution, then

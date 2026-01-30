@@ -1,40 +1,57 @@
-#' Visualize horns values distribution
+#' Visualize CLOSURE data in a barplot
 #'
-#' @description Two plot functions that follow up on [`closure_generate()`]:
-#' - `closure_plot_bar_min_max()` draws barplots of the mean samples from among
-#'   those with the minimum or maximum horns index (\eqn{h}). It displays the
-#'   typical sample with the least or most amount of variance from among all
-#'   CLOSURE samples.
+#' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
 #'
-#' @param data List returned by [`closure_generate()`].
-#' @param min_max String (length 1). Only in `closure_plot_bar_min_max()`. Which
-#'   plot(s) to show? Options are `"both"` (the default), `"min"`, and `"max"`.
-#' @param facet_labels String (length 2). Only in `closure_plot_bar_min_max()`.
-#'   Labels of the two individual plots. Set it to `NULL` to remove the labels.
-#'   Default is `c("Minimal variance", "Maximal variance")`.
-#' @param facet_labels_parens String (length 1). Only in
-#'   `closure_plot_bar_min_max()`. Italicized part of the facet labels inside
-#'   the parentheses. Set it to `NULL` to remove the parentheses altogether. See
-#'   details. Default is `"h"`.
-#' @inheritParams closure_plot_bar
+#'   For each scale value, the bars show how often this value appears in the
+#'   mean samples with the minimum or maximum horns index (\eqn{h}). This
+#'   displays the typical sample with the least or most amount of variance from
+#'   among all CLOSURE samples.
 #'
-#' @details By default, both faceted plots in `closure_plot_bar_min_max()` have
-#'   a label that includes their horns index (\eqn{h}); see [`horns()`]. You can
-#'   remove the parenthesized part using `facet_labels_parens = NULL` or the
-#'   entire label using `facet_labels = NULL`.
+#' @param data List returned by [`closure_generate()`] or [`closure_read()`].
+#' @param min_max String (length 1). Which plot panel(s) to show? Options are
+#'   `"both"` (the default), `"min"`, and `"max"`.
+#' @param format String (length 1). What should the bars show? The default is
+#'   `"percent"`. Similarly, `"absolute_percent"` shows the count of each scale
+#'   value and its percentage of all values. Other options are `"absolute"` and
+#'   `"relative"` frequencies.
+#' @param samples String (length 1). How to aggregate the samples? Either take
+#'   the average sample (`"mean"`, the default) or the sum of all samples
+#'   (`"all"`). This only matters if absolute frequencies are shown.
+#' @param facet_labels String (length 2). Labels of the two individual panels.
+#'   Set it to `NULL` to remove the labels. Default is
+#'   `c("Minimal variance", "Maximal variance")`.
+#' @param facet_labels_parens String (length 1). Italicized part of the facet
+#'   labels inside the parentheses. Set it to `NULL` to remove the parentheses
+#'   altogether. See details. Default is `"h"`.
+#' @param bar_alpha Numeric (length 1). Opacity of the bars. Default is `0.75`.
+#' @param bar_color String (length 1). Color of the bars. Default is
+#'   `"#5D3FD3"`, a purple color.
+#' @param show_text Logical (length 1). Should the bars be labeled with the
+#'   corresponding frequencies? Default is `TRUE`.
+#' @param text_color String (length 1). Color of the frequency labels. By
+#'   default, the same as `bar_color`.
+#' @param text_size Numeric (length 1). Base font size in pt. Default is `12`.
+#' @param text_offset Numeric (length 1). Distance between the text labels and
+#'   the bars. Default is `0.05`.
+#' @param mark_thousand,mark_decimal Strings (length 1 each). Delimiters between
+#'   groups of digits in text labels. Defaults are `","` for `mark_thousand`
+#'   (e.g., `"20,000"`) and `"."` for `mark_decimal` (e.g., `"0.15"`).
 #'
-#'   Although `facet_labels_parens` enables you to choose a different string
-#'   inside the parentheses than the default `"h"`, this might not be advisable:
-#'   if the parentheses are present, they will always display the horns index.
-#'
-#' @name horns_plot
-#'
-#' @include plot-basic.R fn-formals.R
+#' @details By default, both faceted plots have a label that includes their
+#'   horns index (\eqn{h}); see [`horns()`]. You can remove the parenthesized
+#'   part using `facet_labels_parens = NULL` or the entire label using
+#'   `facet_labels = NULL`.
 #'
 #' @return A ggplot object.
 #'
+#' @seealso [`closure_plot_ecdf()`], an alternative visualization.
+#'
+#' @include plot-basic.R fn-formals.R
+#'
+#' @export
+#'
 #' @examples
-#' # Preparation: run CLOSURE
+#' # Create CLOSURE data first:
 #' data <- closure_generate(
 #'   mean = "2.9",
 #'   sd = "0.5",
@@ -45,88 +62,10 @@
 #'
 #' # Even with minimal and maximal variance,
 #' # the results are almost the same:
-#' closure_plot_bar_min_max(data)
+#' closure_plot_bar(data)
 #'
-#' # They cluster in a narrow slice of the 0-1 range
-#' # of the horns index:
-#' closure_plot_horns_histogram(data)
+#' # Only show the minimum-variance panel:
+#' closure_plot_bar(data, min_max = "min")
 
-#' @rdname horns_plot
-#' @export
-
-# min_max = "both"
-# format = "percent"
-# samples = "mean"
-# facet_labels = c("Minimal variance", "Maximal variance")
-# facet_labels_parens = "h"
-# bar_alpha = 0.75
-# bar_color = "#5D3FD3"
-# show_text = TRUE
-# text_color = bar_color
-# text_size = 12
-# text_offset = 0.05
-# mark_thousand = ","
-# mark_decimal = "."
-
-# Arguments for this function are generated below the definition
-closure_plot_bar_min_max <- function() {
-  check_length(facet_labels, 2L, allow_null = TRUE)
-  check_length(facet_labels_parens, 1L, allow_null = TRUE)
-
-  min_max <- rlang::arg_match(min_max)
-
-  # Enable plots without facet labels
-  if (is.null(facet_labels)) {
-    facet_labels <- rep("\"\"", 2)
-    facet_labels_parens <- NULL
-  }
-
-  plot_frequency_bar(
-    data = data,
-    technique = technique,
-    format = format,
-    samples = samples,
-    min_max_values = c(
-      data$metrics_horns$min,
-      data$metrics_horns$max
-    ),
-    frequency_rows_subset = switch(
-      min_max,
-      "both" = c("horns_min", "horns_max"),
-      "min" = "horns_min",
-      "max" = "horns_max"
-    ),
-    facet_labels = switch(
-      min_max,
-      "both" = facet_labels,
-      "min" = facet_labels[1L],
-      "max" = facet_labels[2L]
-    ),
-    facet_labels_parens = facet_labels_parens,
-    bar_alpha = bar_alpha,
-    bar_color = bar_color,
-    show_text = show_text,
-    text_color = text_color,
-    text_size = text_size,
-    text_offset = text_offset,
-    mark_thousand = mark_thousand,
-    mark_decimal = mark_decimal
-  )
-}
-
-formals(closure_plot_bar_min_max) <- plot_frequency_bar |>
-  formals() |>
-  formals_add_defaults(
-    technique = "CLOSURE",
-    facet_labels = c("Minimal variance", "Maximal variance"),
-    facet_labels_parens = "h",
-    bar_color = "#5D3FD3"
-  ) |>
-  formals_add(
-    min_max = c("both", "min", "max"),
-    .after = "data"
-  ) |>
-  formals_remove(
-    "min_max_values",
-    "frequency_rows_subset"
-  )
+# This constructs a function that wraps `plot_frequency_bar()`; see there
+closure_plot_bar <- new_plot_fn_bar("CLOSURE", "#5D3FD3")

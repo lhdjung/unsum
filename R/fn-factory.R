@@ -15,13 +15,7 @@ formals_final <- list(
   # Same for bar plot functions
   plot_fn_freq_bar = plot_frequency_bar |>
     formals() |>
-    formals_remove(
-      "technique",
-      "facet_labels",
-      "facet_labels_parens",
-      "frequency_rows_subset",
-      "min_max_values"
-    ),
+    formals_remove("technique"),
 
   # Same for horns index distribution plot functions
   plot_fn_horns_freq = plot_horns_frequency |>
@@ -70,15 +64,27 @@ new_plot_fn_bar <- function(technique, bar_color) {
     formals_add_defaults(bar_color = bar_color)
 
   # DEMO functions are based on frequencies, not CLOSURE-type result lists.
-  # Therefore, replace the `data` argument by one called `freqs`.
+  # Therefore, replace the `data` argument by one called `freqs`, and remove
+  # arguments that only apply to CLOSURE-type techniques.
   if (technique == "DEMO") {
     args_all <- args_all |>
       formals_add("freqs", .after = "data") |>
-      formals_remove("data", "samples")
+      formals_remove(
+        "data", "min_max", "samples",
+        "facet_labels", "facet_labels_parens"
+      )
 
     data_arg <- rlang::expr(freqs)
+    samples_arg <- NULL
+    min_max_arg <- NULL
+    facet_labels_arg <- NULL
+    facet_labels_parens_arg <- NULL
   } else {
     data_arg <- rlang::expr(data)
+    samples_arg <- rlang::expr(samples)
+    min_max_arg <- rlang::expr(min_max)
+    facet_labels_arg <- rlang::expr(facet_labels)
+    facet_labels_parens_arg <- rlang::expr(facet_labels_parens)
   }
 
   rlang::new_function(
@@ -87,8 +93,11 @@ new_plot_fn_bar <- function(technique, bar_color) {
       plot_frequency_bar(
         data = !!data_arg,
         technique = !!technique,
+        min_max = !!min_max_arg,
         format = format,
-        samples = samples,
+        samples = !!samples_arg,
+        facet_labels = !!facet_labels_arg,
+        facet_labels_parens = !!facet_labels_parens_arg,
         bar_alpha = bar_alpha,
         bar_color = bar_color,
         show_text = show_text,
@@ -96,8 +105,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
         text_size = text_size,
         text_offset = text_offset,
         mark_thousand = mark_thousand,
-        mark_decimal = mark_decimal,
-        frequency_rows_subset = "all"
+        mark_decimal = mark_decimal
       )
     })
   )
