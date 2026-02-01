@@ -18,13 +18,13 @@
 #'   Automatically enabled when `n_items > 1`. Default is `FALSE`.
 #' @inheritParams closure_generate
 #'
-#' @return `r expand_section_return("SPRITE")`
+#' @return `r expand_section("generate_return", "SPRITE")`
 #'
-#' @section `r expand_section_custom("SPRITE", "writing")`
-#' @section `r expand_section_custom("SPRITE", "memory")`
-#' @section `r expand_section_custom("SPRITE", "rounding")`
+#' @section `r expand_section("writing", "SPRITE")`
+#' @section `r expand_section("memory", "SPRITE")`
+#' @section `r expand_section("rounding", "SPRITE")`
 #'
-#' @include doc-sections.R
+#' @include doc-helpers.R
 #' @export
 #'
 #' @examples

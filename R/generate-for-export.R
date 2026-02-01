@@ -47,11 +47,11 @@
 #'   very long in an interactive setting, should the function prompt you to
 #'   proceed or abort? Default is `TRUE`.
 #'
-#' @return `r expand_section_return("CLOSURE")`
+#' @return `r expand_section("generate_return", "CLOSURE")`
 #'
-#' @section `r expand_section_custom("CLOSURE", "writing")`
-#' @section `r expand_section_custom("CLOSURE", "memory")`
-#' @section `r expand_section_custom("CLOSURE", "rounding")`
+#' @section `r expand_section("writing", "CLOSURE")`
+#' @section `r expand_section("memory", "CLOSURE")`
+#' @section `r expand_section("rounding", "CLOSURE")`
 #'
 #' @include utils.R count.R horns.R performance.R read-write.R fn-factory.R
 #'   extendr-wrappers.R

@@ -1,13 +1,10 @@
+# CLOSURE -----------------------------------------------------------------
+
 #' Visualize CLOSURE data in a barplot
 #'
-#' @description Call `closure_plot_bar()` to get a barplot of CLOSURE results.
+#' @description `r expand_section("plot_bar_description", "CLOSURE")`
 #'
-#'   For each scale value, the bars show how often this value appears in the
-#'   mean samples with the minimum or maximum horns index (\eqn{h}). This
-#'   displays the typical sample with the least or most amount of variance from
-#'   among all CLOSURE samples.
-#'
-#' @param data List returned by [`closure_generate()`] or [`closure_read()`].
+#' @param data `r expand_section("param_data", "CLOSURE")`
 #' @param min_max String (length 1). Which plot panel(s) to show? Options are
 #'   `"both"` (the default), `"min"`, and `"max"`.
 #' @param format String (length 1). What should the bars show? The default is
@@ -69,3 +66,21 @@
 
 # This constructs a function that wraps `plot_frequency_bar()`; see there
 closure_plot_bar <- new_plot_fn_bar("CLOSURE", "#5D3FD3")
+
+
+# SPRITE ------------------------------------------------------------------
+
+#' Visualize SPRITE data in a barplot
+#'
+#' @description `r expand_section("plot_bar_description", "SPRITE")`
+#'
+#' @param data `r expand_section("param_data", "SPRITE")`
+#' @inheritParams closure_plot_bar
+#'
+#' @return A ggplot object.
+#' @export
+#'
+#' @examples
+
+# This constructs a function that wraps `plot_frequency_bar()`; see there
+sprite_plot_bar <- new_plot_fn_bar("SPRITE", "royalblue1")
