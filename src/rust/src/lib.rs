@@ -13,7 +13,6 @@ use closure_core::{
     RestrictionsOption,
 };
 use std::collections::HashMap;
-use rand::rng;
 
 /// Local wrapper for ParquetConfig to allow TryFrom<Robj> implementation.
 /// This wrapper type is necessary because of Rust's orphan rule - we can only
@@ -164,11 +163,8 @@ fn parse_restrict_min(robj: &Robj) -> Result<RestrictionsOption> {
 /// Helper function to convert ResultsTable to R list
 /// Returns a simple list that can be converted to a data frame on the R side
 fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Robj {
-    // Convert id from usize to i32 for R compatibility
-    let id_vec: Vec<i32> = results_table.id
-        .iter()
-        .map(|&id| id as i32)
-        .collect();
+    // Clone the id vector (Vec<f64>) for R compatibility
+    let id_vec: Vec<f64> = results_table.id.clone();
 
     // Convert each sample to an R integer vector and collect into a list
     let samples_robjs: Vec<Robj> = results_table.sample
@@ -184,18 +180,18 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     let samples_list: Robj = samples_robjs.into_robj();
 
     // Get the horns values as a numeric vector
-    let horns_vec = results_table.horns_values.clone();
+    let horns_vec = results_table.horns.clone();
 
     // Return as a simple list with named elements
     // R users can convert this to a data frame using:
     // df <- data.frame(
     //   id = results$id,
-    //   samples = I(results$samples),  # I() preserves the list structure
+    //   sample = I(results$samples),  # I() preserves the list structure
     //   horns = results$horns
     // )
     let results_list = list!(
         id = id_vec,
-        samples = samples_list,
+        sample = samples_list,
         horns = horns_vec
     );
 
@@ -215,7 +211,6 @@ fn create_combinations(
     n_items: Option<u32>,
     restrict_exact: Robj,
     restrict_min: Robj,
-    dont_test: bool,
     write: Robj,
     stop_after: Option<usize>,
 ) -> Robj {
@@ -239,9 +234,8 @@ fn create_combinations(
         (None, RestrictionsOption::Null)
     };
 
-    let need_to_write = !write.is_null();
-
-    if need_to_write {
+    // Writing mode
+    if !write.is_null() {
         // Parse the write parameter as StreamingConfig for streaming mode
         let streaming_config = match StreamingConfigR::try_from(write) {
             Ok(config_wrapper) => config_wrapper.0,
@@ -261,6 +255,7 @@ fn create_combinations(
                     scale_max,
                     rounding_error_mean,
                     rounding_error_sd,
+                    1,
                     streaming_config,
                     stop_after,
                 )
@@ -284,7 +279,6 @@ fn create_combinations(
                     n_items_val,
                     restrict_exact_parsed,
                     restrict_min_parsed,
-                    dont_test,
                     streaming_config,
                     stop_after,
                 )
@@ -295,6 +289,12 @@ fn create_combinations(
         };
 
         // Return information about the streaming operation as an R list
+        let result = match result {
+            Ok(r) => r,
+            Err(e) => {
+                return Robj::from(format!("Streaming error: {:?}", e));
+            }
+        };
         let result_list = list!(
             total_combinations = result.total_combinations,
             file_path = result.file_path,
@@ -307,7 +307,7 @@ fn create_combinations(
     // Default mode: use parallel without writing to disk
     let closure_results = match technique_upper.as_str() {
         "CLOSURE" => {
-            closure_parallel(
+            match closure_parallel(
                 mean,
                 sd,
                 n,
@@ -315,9 +315,15 @@ fn create_combinations(
                 scale_max,
                 rounding_error_mean,
                 rounding_error_sd,
+                1,
                 None, // No parquet config - just return results in memory
                 stop_after,
-            )
+            ) {
+                Ok(results) => results,
+                Err(e) => {
+                    return Robj::from(format!("CLOSURE error: {:?}", e));
+                }
+            }
         }
         "SPRITE" => {
             let n_items_val = match n_items {
@@ -327,7 +333,6 @@ fn create_combinations(
                 }
             };
 
-            let mut rng = rng();
             match sprite_parallel(
                 mean,
                 sd,
@@ -339,10 +344,8 @@ fn create_combinations(
                 n_items_val,
                 restrict_exact_parsed,
                 restrict_min_parsed,
-                dont_test,
                 None, // No parquet config - just return results in memory
                 stop_after,
-                &mut rng,
             ) {
                 Ok(results) => results,
                 Err(e) => {
@@ -357,7 +360,6 @@ fn create_combinations(
 
     // Create the main metrics list
     let metrics_main = list!(
-        samples_initial = closure_results.metrics_main.samples_initial,
         samples_all = closure_results.metrics_main.samples_all,
         values_all = closure_results.metrics_main.values_all
     );

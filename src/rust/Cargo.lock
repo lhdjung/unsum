@@ -388,7 +388,7 @@ dependencies = [
 [[package]]
 name = "closure-core"
 version = "1.0.0"
-source = "git+https://github.com/lhdjung/closure-core.git#1f3441db0ee7b20b3133aa185f2a3ea83a1595ae"
+source = "git+https://github.com/lhdjung/closure-core.git#fff3d0ae0c58b8e32de44954dd3e6869d4ad5a4a"
 dependencies = [
  "arrow",
  "bigdecimal",

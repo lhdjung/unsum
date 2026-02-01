@@ -42,8 +42,7 @@ generate_from_mean_sd_n <- function(
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL,
-  n_items = NULL,
-  dont_test = FALSE
+  n_items = NULL
 ) {
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
@@ -84,14 +83,6 @@ generate_from_mean_sd_n <- function(
         ),
         call = rlang::caller_env()
       )
-    }
-    # Automatically disable GRIMMER validation for n_items > 1
-    # (not yet implemented in Rust)
-    if (FALSE && n_items > 1 && !dont_test) {
-      cli::cli_alert_info(
-        "Auto-enabling `dont_test = TRUE` (GRIMMER validation not available for n_items > 1)"
-      )
-      dont_test <- TRUE
     }
 
     # Prevent overflow crashes - SPRITE with n_items > 1 is prone to overflow
@@ -255,14 +246,12 @@ generate_from_mean_sd_n <- function(
     n_items = n_items_val,
     restrict_exact = NULL,
     restrict_min = NULL,
-    dont_test = TRUE,
     write = parquet_config,
     stop_after = stop_after
   )
 
+  # Count samples found; the place of this number depends on the output type
   n_samples_all <- if (in_memory_mode) {
-    # TODO: Fix this in closure-core; it should be "sample", not "samples"
-    names(out$results)[2] <- "sample"
     length(out$results$sample)
   } else {
     out$total_combinations

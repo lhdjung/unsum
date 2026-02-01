@@ -4,13 +4,14 @@
 #'   [`closure_generate()`] on your computer. A message will show the exact
 #'   location.
 #'
-#'   The data are saved in a new folder as four separate files, one for each
-#'   tibble in `closure_generate()`'s output. The folder is named after the
-#'   parameters of `closure_generate()`.
+#'   The data are saved in a new folder as five separate files, one for each
+#'   tibble in `closure_generate()`'s output.
 #'
 #'   `closure_read()` is the opposite: it reads those files back into R,
 #'   recreating the original CLOSURE list. This is useful for later analyses if
-#'   you don't want to re-run a lengthy `closure_generate()` call.
+#'   you don't want to re-run a lengthy `closure_generate()` call. It also works
+#'   with results that `closure_generate()` wrote to disk itself using `path =
+#'   "your/path"`.
 #'
 #' @param data List returned by `closure_generate()`.
 #' @param path String (length 1). File path where `closure_write()` will create
@@ -56,10 +57,8 @@
 #'   faster and takes up far less disk space --- roughly 1% of a CSV file with
 #'   the same data. Speed and disk space can be relevant with large result sets.
 #'
-#'   Use `closure_read()` to recreate the CLOSURE list from the folder. One of
-#'   the reasons why it is convenient is that opening a Parquet file requires a
-#'   special reader. For a more general tool, see
-#'   [`nanoparquet::read_parquet()`].
+#'   Use `closure_read()` to import the CLOSURE list from the folder back into
+#'   R. This is based on [`nanoparquet::read_parquet()`].
 #'
 #' @returns
 #'   - `closure_write()` returns the path to the new folder it created.
@@ -99,12 +98,8 @@ closure_write <- function(data, path) {
   check_value(path, "character")
 
   # Translate "." to the user's working directory. If the path was manually
-  # supplied, remove leading or trailing whitespace, including linebreaks.
-  path <- if (path == ".") {
-    getwd()
-  } else {
-    trimws(path)
-  }
+  # given, `trimws()` removes leading or trailing whitespace, e.g., linebreaks.
+  path <- if (path == ".") getwd() else trimws(path)
 
   # "closure_generate" --> "CLOSURE" etc.
   technique <- data$inputs |>
@@ -159,13 +154,13 @@ closure_write <- function(data, path) {
 
   create_results_folder(path_new_dir)
 
-  tibbles_all <- names(data)
+  data_names <- names(data)
 
   # Write the small tibbles: those other than the "results"
-  for (tibble in tibbles_all[tibbles_all != "results"]) {
+  for (name in data_names[data_names != "results"]) {
     nanoparquet::write_parquet(
-      data[[tibble]],
-      file = paste0(path_new_dir, tibble, ".parquet")
+      data[[name]],
+      file = paste0(path_new_dir, name, ".parquet")
     )
   }
 
@@ -377,7 +372,7 @@ closure_read <- function(
   if (include == "stats_and_horns") {
     out$results <- tibble::new_tibble(
       x = list(
-        id = seq_len(n_samples_all),
+        id = as.double(seq_len(n_samples_all)),
         horns = nanoparquet::read_parquet(path_horns)[[1]]
       ),
       nrow = n_samples_all
@@ -398,7 +393,7 @@ closure_read <- function(
     out$results <- tibble::new_tibble(
       x = list(
         # ID numbers (1 / 3)
-        id = seq_len(n_samples_all),
+        id = as.double(seq_len(n_samples_all)),
 
         # Result samples (2 / 3)
         sample = path |>
