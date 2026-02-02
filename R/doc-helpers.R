@@ -80,9 +80,13 @@ expand_section <- function(section, technique) {
     ),
 
     # `data` parameter of functions that are downstream from a generator
-    param_data = glue::glue(
-      "List returned by [`{lowtech}_generate()`] or [`{lowtech}_read()`]."
-    ),
+    param_data = if (technique == "CLOSURE") {
+      glue::glue(
+        "List returned by [`{lowtech}_generate()`] or [`{lowtech}_read()`]."
+      )
+    } else {
+      glue::glue("List returned by [`{lowtech}_generate()`].")
+    },
 
     # Description section of bar plot functions, i.e., `closure_plot_bar()` etc.
     plot_bar_description = glue::glue(

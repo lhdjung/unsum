@@ -43,7 +43,7 @@
 #'
 #' @seealso [`closure_plot_ecdf()`], an alternative visualization.
 #'
-#' @include plot-basic.R fn-formals.R
+#' @include plot-bar-basic.R fn-formals.R
 #'
 #' @export
 #'

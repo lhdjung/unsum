@@ -1,4 +1,5 @@
-#' @include fn-formals.R generate.R plot-basic.R horns-plot.R
+#' @include fn-formals.R generate-basic.R plot-bar-basic.R
+#' @include plot-horns-histogram-basic.R
 
 formals_final <- list(
   # Get the list of formals arguments from `generate_from_mean_sd_n()`, then

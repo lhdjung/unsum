@@ -15,7 +15,7 @@
 #'
 #' @return Integer (length 1).
 #'
-#' @include utils.R
+#' @include utils.R generate.R
 #'
 #' @export
 #'

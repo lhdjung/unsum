@@ -35,6 +35,8 @@
 #' # Compare h and h* for small sample
 #' freqs_small <- c(3, 0, 0, 0, 2)  # N=5
 #' horns(freqs_small, 1, 5, return_details = TRUE)
+#'
+#' @noRd
 
 horns <- function(
   freqs,
