@@ -293,7 +293,7 @@ demonstrate_sample_size_effects <- function(
   n_values = c(5, 10, 20, 50, 100, 1000),
   shape = c("horns", "uniform", "all_equal")
 ) {
-  shape <- rlang::arg_match(shape)
+  shape <- arg_match_in_export(shape)
 
   cat("Maximum Variance by Sample Size\n")
   cat("Scale: 1 to", k, "\n")

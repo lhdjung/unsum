@@ -3,20 +3,25 @@
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 
+# Names of the tibbles in the kind of list returned by `closure_generate()` etc.
+tibble_names <- c(
+  "inputs",
+  "metrics_main",
+  "metrics_horns",
+  "frequency",
+  "results"
+)
+
 
 # Checks ------------------------------------------------------------------
 
 # Error if the input is not an unchanged list containing the results of a
 # function such as `closure_generate()`. Empty result sets error by default.
-check_generator_output <- function(data, technique, allow_empty = FALSE) {
-  tibbles_all <- c(
-    "inputs",
-    "metrics_main",
-    "metrics_horns",
-    "frequency",
-    "results"
-  )
-
+check_generator_output <- function(
+  data,
+  technique,
+  allow_empty = FALSE
+) {
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)
 
@@ -26,9 +31,9 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     any(
       names(data) %in%
         c(
-          tibbles_all,
-          c(tibbles_all, "directory"),
-          c(tibbles_all[!tibbles_all == "results"], "directory")
+          tibble_names,
+          c(tibble_names, "directory"),
+          c(tibble_names[!tibble_names == "results"], "directory")
         )
     ) &&
     inherits(data$inputs, paste0(lowtech, "_generate"))
@@ -40,19 +45,17 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
       return(invisible(NULL))
     }
 
-    msg_tibbles_all <- paste0("\"", tibbles_all, "\"")
-    cli::cli_abort(
-      c(
-        paste0(
-          "Input must be the output of `",
-          lowtech,
-          "_generate()` or `",
-          lowtech,
-          "_read()`."
-        ),
-        "!" = "Such output is a list with the elements {msg_tibbles_all}."
+    msg_tibbles_all <- paste0("\"", tibble_names, "\"")
+
+    abort_in_export(
+      paste0(
+        "Input must be the output of `",
+        lowtech,
+        "_generate()` or `",
+        lowtech,
+        "_read()`."
       ),
-      call = rlang::caller_env()
+      "!" = "Such output is a list with the elements {msg_tibbles_all}."
     )
   }
 
@@ -71,7 +74,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
       "n" = c("integer", "double"),
       "scale_min" = c("integer", "double"),
       "scale_max" = c("integer", "double"),
-      "rounding" = c("character"),
+      "rounding" = "character",
       "threshold" = c("integer", "double")
     )
   )
@@ -81,17 +84,15 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
     scale_min = data$inputs$scale_min,
     scale_max = data$inputs$scale_max,
     mean = data$inputs$mean,
-    warning = "Don't change {technique} results before this step.",
-    n = 2
+    warning = "Don't change {technique} results before this step."
   )
 
   # Main metrics (2 / 5)
   check_component_tibble(
     x = data$metrics_main,
-    dims = c(1L, 3L),
+    dims = c(1L, 2L),
     technique = technique,
     col_names_types = list(
-      "samples_initial" = "double",
       "samples_all" = "double",
       "values_all" = "double"
     )
@@ -196,7 +197,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
         dims = c(data$metrics_main$samples_all, 2L),
         technique = technique,
         col_names_types = list(
-          "id" = "integer",
+          "id" = "double",
           "horns" = "double"
         )
       )
@@ -213,7 +214,7 @@ check_generator_output <- function(data, technique, allow_empty = FALSE) {
       dims = c(data$metrics_main$samples_all, 3L),
       technique = technique,
       col_names_types = list(
-        "id" = "integer",
+        "id" = "double",
         "sample" = "list",
         "horns" = "double"
       )
@@ -251,8 +252,7 @@ check_component_tibble <- function(
   dims,
   technique,
   col_names_types,
-  msg_main = NULL,
-  n = 2
+  msg_main = NULL
 ) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
@@ -294,14 +294,11 @@ check_component_tibble <- function(
         to other `{lowtech}_*()` functions."
     }
 
-    cli::cli_abort(
-      c(
-        msg_main,
-        "!" = "Specifically, `{tibble_name}` must be a tibble with:",
-        "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
-        "*" = "{this_these}: {cols_msg}"
-      ),
-      call = rlang::caller_env(n)
+    abort_in_export(
+      msg_main,
+      "!" = "Specifically, `{tibble_name}` must be a tibble with:",
+      "*" = "{dims[1]} row{?s} and {dims[2]} column{?s}",
+      "*" = "{this_these}: {cols_msg}"
     )
   }
 }
@@ -315,43 +312,33 @@ check_scale <- function(
   scale_min,
   scale_max,
   mean = NULL,
-  warning = NULL,
-  n = 1
+  warning = NULL
 ) {
   if (scale_min > scale_max) {
-    cli::cli_abort(
-      c(
-        "Scale minimum can't be greater than scale maximum.",
-        "!" = warning,
-        "x" = "`scale_min` is {scale_min}.",
-        "x" = "`scale_max` is {scale_max}."
-      ),
-      call = rlang::caller_env(n)
+    abort_in_export(
+      "Scale minimum can't be greater than scale maximum.",
+      "!" = warning,
+      "x" = "`scale_min` is {scale_min}.",
+      "x" = "`scale_max` is {scale_max}."
     )
   }
 
   # Coercing mean and scale bounds to avoid a false-positive error
   if (!is.null(mean)) {
     if (as.numeric(mean) < as.numeric(scale_min)) {
-      cli::cli_abort(
-        c(
-          "Mean can't be less than scale minimum.",
-          "!" = warning,
-          "x" = "`mean` is {mean}.",
-          "x" = "`scale_min` is {scale_min}."
-        ),
-        call = rlang::caller_env(n)
+      abort_in_export(
+        "Mean can't be less than scale minimum.",
+        "!" = warning,
+        "x" = "`mean` is {mean}.",
+        "x" = "`scale_min` is {scale_min}."
       )
     }
     if (as.numeric(mean) > as.numeric(scale_max)) {
-      cli::cli_abort(
-        c(
-          "Mean can't be greater than scale maximum.",
-          "!" = warning,
-          "x" = "`mean` is {mean}.",
-          "x" = "`scale_max` is {scale_max}."
-        ),
-        call = rlang::caller_env(n)
+      abort_in_export(
+        "Mean can't be greater than scale maximum.",
+        "!" = warning,
+        "x" = "`mean` is {mean}.",
+        "x" = "`scale_max` is {scale_max}."
       )
     }
   }
@@ -370,20 +357,14 @@ check_value <- function(x, type, allow_null = FALSE) {
   check_type(x, type, n = 2, name = name, allow_null = allow_null)
 
   if (length(x) != 1L) {
-    cli::cli_abort(
-      c(
-        "`{name}` must have length 1.",
-        "x" = "It has length {length(x)}."
-      ),
-      call = rlang::caller_env()
+    abort_in_export(
+      "`{name}` must have length 1.",
+      "x" = "It has length {length(x)}."
     )
   }
 
   if (is.na(x)) {
-    cli::cli_abort(
-      "`{name}` can't be `NA`.",
-      call = rlang::caller_env()
-    )
+    abort_in_export("`{name}` can't be `NA`.")
   }
 }
 
@@ -412,12 +393,9 @@ check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
     t <- "double or integer"
   }
 
-  cli::cli_abort(
-    c(
-      `!` = "`{name}` must {msg_type} {t}.",
-      x = "It is {typeof(x)}."
-    ),
-    call = rlang::caller_env(n)
+  abort_in_export(
+    "!" = "`{name}` must {msg_type} {t}.",
+    "x" = "It is {typeof(x)}."
   )
 }
 
@@ -438,12 +416,9 @@ check_whole_number <- function(
     name <- deparse(substitute(x))
   }
 
-  cli::cli_abort(
-    c(
-      "`{name}` must be a whole number (integer or double).",
-      "x" = "It is actually: {x}"
-    ),
-    call = rlang::caller_env(n)
+  abort_in_export(
+    "`{name}` must be a whole number (integer or double).",
+    "x" = "It is actually: {x}"
   )
 }
 
@@ -458,12 +433,9 @@ check_length <- function(x, l, n = 1, name = NULL, allow_null = FALSE) {
     name <- deparse(substitute(x))
   }
 
-  cli::cli_abort(
-    c(
-      `!` = "`{name}` must have length {l}.",
-      x = "It has length {length(x)}."
-    ),
-    call = rlang::caller_env(n)
+  abort_in_export(
+    "!" = "`{name}` must have length {l}.",
+    "x" = "It has length {length(x)}."
   )
 }
 
@@ -482,9 +454,8 @@ check_frequency_vector <- function(x, sum_relative = 1) {
     return(invisible(NULL))
   }
 
-  cli::cli_abort(
-    "`freqs` must be a vector of frequencies (relative or absolute).",
-    call = rlang::caller_env(2)
+  abort_in_export(
+    "`freqs` must be a vector of frequencies (relative or absolute)."
   )
 }
 
@@ -506,8 +477,8 @@ near <- function(x, y, tol = .Machine$double.eps^0.5) {
 
 
 # Adapted from scrutiny
-is_whole_number <- function(x, tolerance = .Machine$double.eps^0.5) {
-  near(x, floor(x), tol = tolerance)
+is_whole_number <- function(x, tol = .Machine$double.eps^0.5) {
+  abs(x - floor(x)) < tol
 }
 
 
@@ -526,18 +497,129 @@ caller_fn_name <- function(n = 1) {
 }
 
 
+# Throw an error that names the top-level exported, user-called function as the
+# source; e.g., "Error in `exported_fn()`", not "Error in `internal_helper()`".
+abort_in_export <- function(...) {
+  cli::cli_abort(
+    message = c(...),
+    call = caller_env_last_export(),
+    .envir = parent.frame()
+  )
+}
+
+
+# Similar to `abort_in_export()` but as an alternative to `match.arg()` /
+# `rlang::arg_match()`. Advantage: If this function throws an error, it will
+# name the exported function called by the user as the source of the problem.
+# Arguments shared with `rlang::arg_match()` work as there.
+arg_match_in_export <- function(arg, values = NULL, multiple = FALSE) {
+  arg_expr <- rlang::enexpr(arg)
+  arg_name <- as.character(arg_expr)
+
+  # If values not provided, extract from the calling function's formals
+  if (is.null(values)) {
+    parent_formals <- formals(sys.function(sys.parent()))
+
+    if (!arg_name %in% names(parent_formals)) {
+      cli::cli_abort(
+        "Internal error: {.arg {arg_name}} not found in calling function."
+      )
+    }
+
+    values <- eval(parent_formals[[arg_name]], envir = parent.frame())
+  }
+
+  val <- rlang::eval_bare(arg_expr, env = rlang::caller_env())
+
+  # Early escape hatch for performance in the typical use case
+  if (!multiple && is.character(val) && length(val) == 1L && val %in% values) {
+    return(val)
+  }
+
+  # This is retained for non-typical cases and for its characteristic error msg
+  rlang::arg_match(
+    arg = val,
+    values = values,
+    multiple = multiple,
+    error_arg = arg_name,
+    error_call = caller_env_last_export()
+  )
+}
+
+
+# Find the environment of the exported function at the top of the call stack,
+# i.e., the last or outermost exported function that was called. This is useful
+# as a helper within `abort_in_export()` so that the function that was called by
+# the user is named in the error message as the site where the error occurred.
+caller_env_last_export <- function(package_name = NULL) {
+  # If `package_name` is not provided, try detect it in the package environment
+  if (is.null(package_name)) {
+    pkg_env <- parent.env(environment())
+    if (isNamespace(pkg_env)) {
+      package_name <- getNamespaceName(pkg_env)
+    } else {
+      cli::cli_abort(c(
+        "Could not determine package name.",
+        "i" = "Please provide the `package_name` argument."
+      ))
+    }
+  }
+
+  # Get all frames and calls on the call stack
+  frames <- sys.frames()
+  calls <- sys.calls()
+
+  # Get the namespace of the package
+  ns <- tryCatch(
+    getNamespace(package_name),
+    error = function(e) {
+      cli::cli_abort(
+        "Package \"{package_name}\" not found or not loaded.",
+        "x" = "Original error:",
+        "x" = "{e}"
+      )
+    }
+  )
+
+  # Get list of exported functions from the package
+  exports <- getNamespaceExports(ns)
+
+  # Find the last (most recent in call stack) exported function
+  for (i in seq_along(calls)) {
+    fn <- calls[[i]][[1]]
+
+    # Get name of the current function. If not found, skip to the next element.
+    if (is.name(fn)) {
+      fn_name <- as.character(fn)
+    } else if (is.call(fn)) {
+      fn_name <- deparse(fn)[1]
+    } else {
+      next
+    }
+
+    # Remove any package prefix (e.g., "pkg::fn" --> "fn")
+    name_bare <- sub("^.*::", "", fn_name)
+
+    # When an exported function is found, return the environment of its frame
+    if (name_bare %in% exports) {
+      return(frames[[i]])
+    }
+  }
+
+  cli::cli_warn("No exported function found on the call stack.")
+  environment()
+}
+
+
 # Specific logic ----------------------------------------------------------
 
 # Folder into which CLOSURE-type results will be written, with a helpful check
-create_results_folder <- function(path, n = 1) {
+create_results_folder <- function(path) {
   if (dir.exists(path)) {
-    cli::cli_abort(
-      c(
-        "Name of new folder must not be taken.",
-        "x" = "Folder already exists:",
-        "x" = path
-      ),
-      call = rlang::caller_env(n)
+    abort_in_export(
+      "Name of new folder must not be taken.",
+      "x" = "Folder already exists:",
+      "x" = path
     )
   }
 
@@ -600,7 +682,7 @@ prepare_folder_mean_sd_n <- function(inputs, path) {
 
   close(connection)
 
-  # Parquet file with the inputs
+  # Write a Parquet file with the inputs
   inputs |>
     tibble::new_tibble(
       nrow = 1L,

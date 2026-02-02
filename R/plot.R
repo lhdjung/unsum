@@ -19,7 +19,7 @@
 #'   - `"mean"` draws a single line for the overall mean.
 #'   - `"all"` draws a separate line for each sample, colored by its horns
 #'   index value. *Note*: This is invalid if `data$results` does not include the
-#'   `samples` and `horns` columns. If many samples were found, it can be very
+#'   `sample` and `horns` columns. If many samples were found, it can be very
 #'   slow or even crash your R session.
 #' @param pad String (length 1). How far should the ECDF line(s) stretch?
 #'   - `"extend"`, the default, draws the lines to both ends of the y-axis
@@ -104,8 +104,8 @@ closure_plot_ecdf <- function(
   technique <- "CLOSURE"
   check_generator_output(data, technique)
 
-  samples <- rlang::arg_match(samples)
-  pad <- rlang::arg_match(pad)
+  samples <- arg_match_in_export(samples)
+  pad <- arg_match_in_export(pad)
 
   check_length(line_color_single, 1L)
   check_length(line_color_multiple, 3L)

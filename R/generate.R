@@ -61,47 +61,38 @@ generate_from_mean_sd_n <- function(
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
 
-  check_scale(scale_min, scale_max, mean_num, n = 2)
+  check_scale(scale_min, scale_max, mean_num)
 
   # SPRITE-specific validation
   if (technique == "SPRITE") {
     if (is.null(n_items)) {
-      cli::cli_abort(
-        c(
-          "`n_items` is required for SPRITE technique.",
-          "i" = "`n_items` must be at least 2 (representing the number of items/questions in your scale)."
-        ),
-        call = rlang::caller_env()
+      abort_in_export(
+        "`n_items` is required for SPRITE technique.",
+        "i" = "`n_items` must be at least 2 (representing the number of items/questions in your scale)."
       )
     }
     if (n_items < 2) {
-      cli::cli_abort(
-        c(
-          "`n_items` must be at least 2 for SPRITE.",
-          "x" = "`n_items` is: {n_items}",
-          "i" = "SPRITE requires at least 2 items to generate valid samples."
-        ),
-        call = rlang::caller_env()
+      abort_in_export(
+        "`n_items` must be at least 2 for SPRITE.",
+        "x" = "`n_items` is: {n_items}",
+        "i" = "SPRITE requires at least 2 items to generate valid samples."
       )
     }
 
     # Prevent overflow crashes - SPRITE with n_items > 1 is prone to overflow
     # Be very conservative and require stop_after in most cases
     if (n_items > 1 && is.null(stop_after)) {
-      cli::cli_abort(
-        c(
-          "`stop_after` is required when using SPRITE with `n_items > 1`.",
-          "x" = "Current parameters: n_items={n_items}, n={n}",
-          "i" = "Add `stop_after` to limit results and prevent overflow.",
-          "i" = "Recommended: `stop_after = 100` for exploratory analysis.",
-          "i" = "This is a known limitation of the current SPRITE implementation."
-        ),
-        call = rlang::caller_env()
+      abort_in_export(
+        "`stop_after` is required when using SPRITE with `n_items > 1`.",
+        "x" = "Current parameters: n_items={n_items}, n={n}",
+        "i" = "Add `stop_after` to limit results and prevent overflow.",
+        "i" = "Recommended: `stop_after = 100` for exploratory analysis.",
+        "i" = "This is a known limitation of the current SPRITE implementation."
       )
     }
   }
 
-  include <- rlang::arg_match(include)
+  include <- arg_match_in_export(include)
 
   # Should results be directly loaded into memory rather than written to disk?
   in_memory_mode <- is.null(path)
@@ -133,17 +124,14 @@ generate_from_mean_sd_n <- function(
     parquet_config <- NULL
     # Error if `include` was specified even though `path` was not
     if (include != "stats_and_horns") {
-      cli::cli_abort(
-        c(
-          "`include` requires `path` to be specified.",
-          "x" = "`include` is \"{include}\".",
-          "x" = "`path` is `NULL`.",
-          "i" = "The purpose of `include` is to choose which files \
+      abort_in_export(
+        "`include` requires `path` to be specified.",
+        "x" = "`include` is \"{include}\".",
+        "x" = "`path` is `NULL`.",
+        "i" = "The purpose of `include` is to choose which files \
           to read into R after writing them to a folder chosen via `path`.",
-          "i" = "Specify `path` as a string that points to a folder \
+        "i" = "Specify `path` as a string that points to a folder \
           on your computer, or as \".\" for your current working directory."
-        ),
-        call = rlang::caller_env()
       )
     }
   } else {

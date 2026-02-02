@@ -67,7 +67,7 @@ plot_frequency_bar <- function(
     samples <- "all"
     frequency_rows_subset <- "all"
   } else {
-    min_max <- rlang::arg_match(min_max)
+    min_max <- arg_match_in_export(min_max)
 
     check_length(facet_labels, 2L, allow_null = TRUE)
     check_length(facet_labels_parens, 1L, allow_null = TRUE)
@@ -103,8 +103,8 @@ plot_frequency_bar <- function(
   }
 
   # Check inputs here because demo plots don't have `samples`
-  format <- rlang::arg_match(format)
-  samples <- rlang::arg_match(samples)
+  format <- arg_match_in_export(format)
+  samples <- arg_match_in_export(samples)
 
   # How many subsets of samples are there? E.g., 2 with min-max grouping
   n_samples_groups <- length(unique(data$samples))

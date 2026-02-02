@@ -197,7 +197,7 @@ closure_read <- function(
   include = c("stats_only", "stats_and_horns", "capped_error", "all"),
   samples_cap = NULL
 ) {
-  include <- rlang::arg_match(include)
+  include <- arg_match_in_export(include)
 
   check_type(path, "character")
   check_type(samples_cap, "double", allow_null = TRUE)

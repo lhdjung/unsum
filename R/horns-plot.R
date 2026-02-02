@@ -27,7 +27,7 @@ plot_horns_frequency <- function(
 
   check_length(text_limits, 2L)
 
-  show_labels <- rlang::arg_match(show_labels)
+  show_labels <- arg_match_in_export(show_labels)
 
   # Key statistics about the horns index distribution. Lines and labels will be
   # placed at or around these three points (min and max label placement varies).
