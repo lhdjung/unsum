@@ -5,17 +5,17 @@
 #' Iterative Techniques) algorithm. SPRITE reconstructs possible sample
 #' distributions given summary statistics and multi-item scale information.
 #'
-#' **Important:** `stop_after` is required when `n_items > 1` to prevent
+#' **Important:** `stop_after` is required when `items > 1` to prevent
 #' overflow errors in the current implementation.
 #'
-#' @param n_items Numeric (length 1). Number of items/questions in your scale.
+#' @param items Numeric (length 1). Number of items/questions in your scale.
 #'   Must be at least 2. This represents how many individual items were averaged
 #'   to produce each participant's mean score.
-#' @param stop_after Numeric (length 1). **Required** for SPRITE when `n_items > 1`.
+#' @param stop_after Numeric (length 1). **Required** for SPRITE when `items > 1`.
 #'   Limits the number of samples returned to prevent overflow. Recommended value:
 #'   100-1000 depending on your needs.
 #' @param dont_test Logical (length 1). If `TRUE`, skip GRIMMER validation tests.
-#'   Automatically enabled when `n_items > 1`. Default is `FALSE`.
+#'   Automatically enabled when `items > 1`. Default is `FALSE`.
 #' @inheritParams closure_generate
 #'
 #' @return `r expand_section("generate_return", "SPRITE")`
@@ -34,7 +34,7 @@
 #'   mean = "3.0",
 #'   sd = "1.0",
 #'   n = 10,
-#'   n_items = 2,
+#'   items = 2,
 #'   scale_min = 1,
 #'   scale_max = 5,
 #'   stop_after = 100
@@ -45,7 +45,7 @@
 #'   mean = "3.5",
 #'   sd = "1.7",
 #'   n = 70,
-#'   n_items = 5,
+#'   items = 5,
 #'   scale_min = 1,
 #'   scale_max = 5,
 #'   stop_after = 100  # Recommended for large parameter combinations

@@ -42,7 +42,7 @@ generate_from_mean_sd_n <- function(
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
   rounding_error_sd = NULL,
-  n_items = NULL
+  items = NULL
 ) {
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
@@ -56,7 +56,7 @@ generate_from_mean_sd_n <- function(
   check_value(rounding, "character")
   check_value(threshold, c("double", "integer"))
   check_value(ask_to_proceed, "logical")
-  check_value(n_items, c("double", "integer"), allow_null = TRUE)
+  check_value(items, c("double", "integer"), allow_null = TRUE)
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
@@ -65,26 +65,26 @@ generate_from_mean_sd_n <- function(
 
   # SPRITE-specific validation
   if (technique == "SPRITE") {
-    if (is.null(n_items)) {
+    if (is.null(items)) {
       abort_in_export(
-        "`n_items` is required for SPRITE technique.",
-        "i" = "`n_items` must be at least 2 (representing the number of items/questions in your scale)."
+        "`items` is required for SPRITE technique.",
+        "i" = "`items` must be at least 2 (representing the number of items/questions in your scale)."
       )
     }
-    if (n_items < 2) {
+    if (items < 2) {
       abort_in_export(
-        "`n_items` must be at least 2 for SPRITE.",
-        "x" = "`n_items` is: {n_items}",
+        "`items` must be at least 2 for SPRITE.",
+        "x" = "`items` is: {items}",
         "i" = "SPRITE requires at least 2 items to generate valid samples."
       )
     }
 
-    # Prevent overflow crashes - SPRITE with n_items > 1 is prone to overflow
+    # Prevent overflow crashes - SPRITE with items > 1 is prone to overflow
     # Be very conservative and require stop_after in most cases
-    if (n_items > 1 && is.null(stop_after)) {
+    if (items > 1 && is.null(stop_after)) {
       abort_in_export(
-        "`stop_after` is required when using SPRITE with `n_items > 1`.",
-        "x" = "Current parameters: n_items={n_items}, n={n}",
+        "`stop_after` is required when using SPRITE with `items > 1`.",
+        "x" = "Current parameters: items={items}, n={n}",
         "i" = "Add `stop_after` to limit results and prevent overflow.",
         "i" = "Recommended: `stop_after = 100` for exploratory analysis.",
         "i" = "This is a known limitation of the current SPRITE implementation."
@@ -219,8 +219,8 @@ generate_from_mean_sd_n <- function(
   }
 
   # Compute CLOSURE samples by calling into pre-compiled Rust code.
-  # For CLOSURE, n_items defaults to 1; for SPRITE, it must be provided
-  n_items_val <- if (is.null(n_items)) 1L else as.integer(n_items)
+  # For CLOSURE, items defaults to 1; for SPRITE, it must be provided
+  items_val <- if (is.null(items)) 1L else as.integer(items)
 
   out <- create_combinations(
     mean = mean_num,
@@ -231,7 +231,7 @@ generate_from_mean_sd_n <- function(
     technique = technique,
     rounding_error_mean = rounding_error_mean,
     rounding_error_sd = rounding_error_sd,
-    n_items = n_items_val,
+    items = items_val,
     restrict_exact = NULL,
     restrict_min = NULL,
     write = parquet_config,

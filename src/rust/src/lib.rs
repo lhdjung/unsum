@@ -208,7 +208,7 @@ fn create_combinations(
     technique: &str,
     rounding_error_mean: f64,
     rounding_error_sd: f64,
-    n_items: Option<u32>,
+    items: Option<u32>,
     restrict_exact: Robj,
     restrict_min: Robj,
     write: Robj,
@@ -261,10 +261,10 @@ fn create_combinations(
                 )
             }
             "SPRITE" => {
-                let n_items_val = n_items.ok_or_else(|| {
-                    return format!("n_items is required for SPRITE technique");
+                let items_val = items.ok_or_else(|| {
+                    return format!("items is required for SPRITE technique");
                 }).unwrap_or_else(|_| {
-                    // Return error if n_items is missing
+                    // Return error if items is missing
                     return 2; // Default fallback
                 });
 
@@ -276,7 +276,7 @@ fn create_combinations(
                     scale_max,
                     rounding_error_mean,
                     rounding_error_sd,
-                    n_items_val,
+                    items_val,
                     restrict_exact_parsed,
                     restrict_min_parsed,
                     streaming_config,
@@ -326,10 +326,10 @@ fn create_combinations(
             }
         }
         "SPRITE" => {
-            let n_items_val = match n_items {
+            let items_val = match items {
                 Some(val) => val,
                 None => {
-                    return Robj::from("Error: n_items is required for SPRITE technique");
+                    return Robj::from("Error: items is required for SPRITE technique");
                 }
             };
 
@@ -341,7 +341,7 @@ fn create_combinations(
                 scale_max,
                 rounding_error_mean,
                 rounding_error_sd,
-                n_items_val,
+                items_val,
                 restrict_exact_parsed,
                 restrict_min_parsed,
                 None, // No parquet config - just return results in memory

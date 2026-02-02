@@ -49,7 +49,7 @@ new_generator_mean_sd_n <- function(technique) {
         ask_to_proceed = ask_to_proceed,
         rounding_error_mean = NULL,
         rounding_error_sd = NULL,
-        n_items = n_items
+        items = items
       )
     })
   )
@@ -70,8 +70,11 @@ new_plot_fn_bar <- function(technique, bar_color) {
     args_all <- args_all |>
       formals_add("freqs", .after = "data") |>
       formals_remove(
-        "data", "min_max", "samples",
-        "facet_labels", "facet_labels_parens"
+        "data",
+        "min_max",
+        "samples",
+        "facet_labels",
+        "facet_labels_parens"
       )
 
     data_arg <- rlang::expr(freqs)

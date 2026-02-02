@@ -76,7 +76,7 @@ data_age <- sprite_generate(
   n = 30,
   scale_min = 12,
   scale_max = 25,
-  n_items = 2,
+  items = 2,
   stop_after = 100 * 1000,
   ask_to_proceed = FALSE
 )
