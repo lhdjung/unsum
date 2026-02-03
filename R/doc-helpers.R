@@ -13,6 +13,8 @@ expand_section <- function(section, technique) {
   out <- switch(
     section,
 
+    # Generator ---------------------------------------------------------------
+
     # Three sections in the docs of generators, i.e., `closure_generate()` etc.
     writing = glue::glue(
       "Writing to disk: Specify `path` if the expected runtime is very
@@ -79,6 +81,8 @@ expand_section <- function(section, technique) {
         saved."
     ),
 
+    # Downstream functions (any) ----------------------------------------------
+
     # `data` parameter of functions that are downstream from a generator
     param_data = if (technique == "CLOSURE") {
       glue::glue(
@@ -87,6 +91,85 @@ expand_section <- function(section, technique) {
     } else {
       glue::glue("List returned by [`{lowtech}_generate()`].")
     },
+
+    # Readers and writers -----------------------------------------------------
+
+    read_write_description = glue::glue(
+      "You can use `{lowtech}_write()` to save the results of
+      [`{lowtech}_generate()`] on your computer. A message will show the exact
+      location.
+
+      The data are saved in a new folder as five separate files, one for each
+      tibble in `{lowtech}_generate()`'s output.
+
+      `{lowtech}_read()` is the opposite: it reads those files back into R,
+      recreating the original {technique} list. This is useful for later
+      analyses if you don't want to re-run a lengthy `{lowtech}_generate()`
+      call. It also works with results that `{lowtech}_generate()` wrote
+      to disk itself using `path = \"your/path\"`."
+    ),
+
+    read_write_param_path = glue::glue(
+      "String (length 1). File path where `{lowtech}_write()` will create a
+      new folder with the results. Set it to `\".\"` to choose the current
+      working directory. For `{lowtech}_read()`, the path to an existing
+      folder with results."
+    ),
+
+    read_write_param_include = glue::glue(
+      "String (length 1). Which parts of the detailed results should be read in?
+      - With `\"stats_only\"`, the default, no results are read.
+      - `\"stats_and_horns\"` reads the horns index values, but not the samples.
+      - `\"capped_error\"` checks whether the number of samples is higher than a
+      given threshold (see `samples_cap`). If so, it throws an error;
+      but if not, it reads both the samples and the horns values.
+      - `\"all\"` reads both the samples and the horns values."
+    ),
+
+    read_write_folder_name = glue::glue(
+      "Folder name: The new folder's name will contain all the inputs that
+      determine the {technique} results. Dashes separate values and
+      underscores replace decimal periods. For example:
+
+      \\preformatted{{
+
+      {technique}-3_5-1_0-90-1-5-up_or_down-5
+      }}
+
+      The order is the same as in `{lowtech}_generate()`:
+
+      \\preformatted{{
+
+      {lowtech}_generate(
+        mean = \"3.5\",
+        sd = \"1.0\",
+        n = 90,
+        scale_min = 1,
+        scale_max = 5,
+        rounding = \"up_or_down\",  # default
+        threshold = 5             # default
+      )
+
+     }}"
+    ),
+
+    read_write_details = glue::glue(
+      "`{lowtech}_write()` saves all tibbles as Parquet files. This is much
+      faster and takes up far less disk space --- roughly 1% of a CSV file
+      with the same data. Speed and disk space can be relevant with large
+      result sets.
+
+      Use `{lowtech}_read()` to import the {technique} list from the folder
+      back into R. This is based on [`nanoparquet::read_parquet()`]."
+    ),
+
+    read_write_return = glue::glue(
+      "- `{lowtech}_write()` returns the path to the new folder it created.
+      - `{lowtech}_read()` returns a list of the same kind as
+      [`{lowtech}_generate()`]."
+    ),
+
+    # Plot functions ----------------------------------------------------------
 
     # Description section of bar plot functions, i.e., `closure_plot_bar()` etc.
     plot_bar_description = glue::glue(
@@ -116,8 +199,10 @@ expand_section <- function(section, technique) {
       ""
     )
 
-    return(paste(out, appendix))
+    out |>
+      paste(appendix) |>
+      add_class("glue")
+  } else {
+    out
   }
-
-  out
 }

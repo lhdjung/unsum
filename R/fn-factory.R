@@ -1,5 +1,6 @@
 #' @include fn-formals.R generate-basic.R plot-bar-basic.R
 #' @include plot-horns-histogram-basic.R
+NULL
 
 formals_final <- list(
   # Get the list of formals arguments from `generate_from_mean_sd_n()`, then
@@ -12,6 +13,16 @@ formals_final <- list(
       "rounding_error_mean",
       "rounding_error_sd"
     ),
+
+  # Same for Parquet writer functions
+  writer = write_basic |>
+    formals() |>
+    formals_remove("technique"),
+
+  # Same for Parquet reader functions
+  reader = read_basic |>
+    formals() |>
+    formals_remove("technique"),
 
   # Same for bar plot functions
   plot_fn_freq_bar = plot_frequency_bar |>
@@ -51,6 +62,37 @@ new_generator_mean_sd_n <- function(technique) {
         rounding_error_mean = NULL,
         rounding_error_sd = NULL,
         items = items
+      )
+    })
+  )
+}
+
+
+# Build helper that constructs Parquet writer functions like `closure_write()`
+new_writer_fn <- function(technique) {
+  rlang::new_function(
+    args = formals_final$writer,
+    body = rlang::expr({
+      write_basic(
+        data = data,
+        path = path,
+        technique = !!technique
+      )
+    })
+  )
+}
+
+
+# Build helper that constructs Parquet reader functions like `closure_read()`
+new_reader_fn <- function(technique) {
+  rlang::new_function(
+    args = formals_final$reader,
+    body = rlang::expr({
+      read_basic(
+        path = path,
+        technique = !!technique,
+        include = include,
+        samples_cap = samples_cap
       )
     })
   )

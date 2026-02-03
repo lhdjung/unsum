@@ -1,98 +1,4 @@
-#' Write CLOSURE results to disk (and read them back in)
-#'
-#' @description You can use `closure_write()` to save the results of
-#'   [`closure_generate()`] on your computer. A message will show the exact
-#'   location.
-#'
-#'   The data are saved in a new folder as five separate files, one for each
-#'   tibble in `closure_generate()`'s output.
-#'
-#'   `closure_read()` is the opposite: it reads those files back into R,
-#'   recreating the original CLOSURE list. This is useful for later analyses if
-#'   you don't want to re-run a lengthy `closure_generate()` call. It also works
-#'   with results that `closure_generate()` wrote to disk itself using `path =
-#'   "your/path"`.
-#'
-#' @param data List returned by `closure_generate()`.
-#' @param path String (length 1). File path where `closure_write()` will create
-#'   a new folder with the results. Set it to `"."` to choose the current
-#'   working directory. For `closure_read()`, the path to an existing folder
-#'   with results.
-#' @param include String (length 1). Which parts of the detailed results should
-#'   be read in?
-#'   - With `"stats_only"`, the default, no results are read.
-#'   - `"stats_and_horns"` reads the horns index values, but not the samples.
-#'   - `"capped_error"` checks whether the number of samples is higher than a
-#'   given threshold (see `samples_cap`). If so, it throws an error; but if not,
-#'   it reads both the samples and the horns values.
-#'   - `"all"` reads both the samples and the horns values.
-#' @param samples_cap Numeric (length 1). When using `include = "capped_error"`,
-#'   enter a whole number here to specify a cap. Default is `NULL`.
-#'
-#' @section Folder name: The new folder's name will contain all the inputs that
-#'   determine the CLOSURE results. Dashes separate values and underscores
-#'   replace decimal periods. For example:
-#'
-#'   \preformatted{
-#'
-#'   CLOSURE-3_5-1_0-90-1-5-up_or_down-5
-#'   }
-#'
-#'   The order is the same as in `closure_generate()`:
-#'
-#'   \preformatted{
-#'
-#'   closure_generate(
-#'     mean = "3.5",
-#'     sd = "1.0",
-#'     n = 90,
-#'     scale_min = 1,
-#'     scale_max = 5,
-#'     rounding = "up_or_down",  # default
-#'     threshold = 5             # default
-#'   )
-#'  }
-#'
-#' @details `closure_write()` saves all tibbles as Parquet files. This is much
-#'   faster and takes up far less disk space --- roughly 1% of a CSV file with
-#'   the same data. Speed and disk space can be relevant with large result sets.
-#'
-#'   Use `closure_read()` to import the CLOSURE list from the folder back into
-#'   R. This is based on [`nanoparquet::read_parquet()`].
-#'
-#' @returns
-#'   - `closure_write()` returns the path to the new folder it created.
-#'   - `closure_read()` returns a list of the same kind as
-#' [`closure_generate()`].
-#'
-#' @include utils.R
-#'
-#' @export
-#'
-#' @examples
-#' data <- closure_generate(
-#'   mean = "2.7",
-#'   sd = "0.6",
-#'   n = 45,
-#'   scale_min = 1,
-#'   scale_max = 5
-#' )
-#'
-#' # Writing to a temporary folder just for this example.
-#' # You should write to a real folder instead.
-#' # A simple way is path = "." for your current directory.
-#' path_new_folder <- closure_write(data, path = tempdir())
-#'
-#' # In a later session, conveniently read the files
-#' # back into R. This returns the original list,
-#' # identical except for floating-point error.
-#' # (Of course, the `path_new_folder` variable will
-#' # no longer be available -- instead, paste the path
-#' # to your folder here.)
-#' closure_read(path_new_folder)
-
-closure_write <- function(data, path) {
-  technique <- "CLOSURE"
+write_basic <- function(data, path, technique) {
   check_generator_output(data, technique)
 
   check_value(path, "character")
@@ -100,13 +6,6 @@ closure_write <- function(data, path) {
   # Translate "." to the user's working directory. If the path was manually
   # given, `trimws()` removes leading or trailing whitespace, e.g., linebreaks.
   path <- if (path == ".") getwd() else trimws(path)
-
-  # "closure_generate" --> "CLOSURE" etc.
-  technique <- data$inputs |>
-    class() |>
-    call_on(function(x) x[grepl("_generate$", x)]) |>
-    sub("_generate$", "", x = _) |>
-    toupper()
 
   # Refuse to rewrite data that were already saved to disk
   if (
@@ -190,10 +89,9 @@ closure_write <- function(data, path) {
 # include <- "stats_only"
 # samples_cap <- NULL
 
-#' @rdname closure_write
-#' @export
-closure_read <- function(
+read_basic <- function(
   path,
+  technique,
   include = c("stats_only", "stats_and_horns", "capped_error", "all"),
   samples_cap = NULL
 ) {
@@ -201,9 +99,6 @@ closure_read <- function(
 
   check_type(path, "character")
   check_type(samples_cap, "double", allow_null = TRUE)
-
-  # TODO: Parameterize!
-  technique <- "CLOSURE"
 
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)

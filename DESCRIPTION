@@ -27,10 +27,10 @@ Imports:
     utils
 Collate: 
     'doc-helpers.R'
-    'utils.R'
     'read-write-basic.R'
     'performance.R'
     'horns.R'
+    'utils.R'
     'plot-horns-histogram-basic.R'
     'plot-bar-basic.R'
     'generate-basic.R'
@@ -45,6 +45,7 @@ Collate:
     'horns_discrete_implementation.R'
     'plot-bar.R'
     'plot-ecdf-basic.R'
+    'read-write.R'
     'zzz.R'
 Config/rextendr/version: 0.4.2
 SystemRequirements: Cargo (Rust's package manager), rustc
