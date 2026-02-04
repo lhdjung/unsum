@@ -107,17 +107,31 @@ For odd $n$ with uneven split:
 With $\frac{n-1}{2}$ at position $l$ and $\frac{n+1}{2}$ at position $u$:
 \begin{align}
 \bar{x} &= \frac{l \cdot \frac{n-1}{2} + u \cdot \frac{n+1}{2}}{n} \\
+  &= \frac{l(n-1) + u(n+1)}{2n} \\
+  &= \frac{ln - l + un + u}{2n} \\
+  &= \frac{n(l + u) + (u - l)}{2n} \\
   &= \frac{l+u}{2} + \frac{u-l}{2n}
 \end{align}
 
 As $l$ and $u$ are the only values at which any observations are located, we can express the deviations from the mean $\bar{x}$ as $d_l$ and $d_u$:
 \begin{align}
 d_l &= l - \bar{x} \\
+  &= l - \left(\frac{l+u}{2} + \frac{u-l}{2n}\right) \\
+  &= \frac{2l - (l+u)}{2} - \frac{u-l}{2n} \\
+  &= \frac{l-u}{2} - \frac{u-l}{2n} \\
+  &= -\frac{u-l}{2} - \frac{u-l}{2n} \\
+  &= \left(-\frac{u-l}{2}\right) \cdot 1 + \left(-\frac{u-l}{2}\right) \cdot \frac{1}{n} \\
+  &= -\frac{u-l}{2} \left(1 + \frac{1}{n}\right) \\
   &= -\frac{u-l}{2} \cdot \frac{n+1}{n}
 \end{align}
 
 \begin{align}
 d_u &= u - \bar{x} \\
+  &= u - \left(\frac{l+u}{2} + \frac{u-l}{2n}\right) \\
+  &= \frac{2u - (l+u)}{2} - \frac{u-l}{2n} \\
+  &= \frac{u-l}{2} - \frac{u-l}{2n} \\
+  &= \frac{u-l}{2} \cdot 1 - \frac{u-l}{2} \cdot \frac{1}{n} \\
+  &= \frac{u-l}{2} \left(1 - \frac{1}{n}\right) \\
   &= \frac{u-l}{2} \cdot \frac{n-1}{n}
 \end{align}
 
@@ -248,7 +262,7 @@ Therefore, the formula that includes the generalized parity correction (and, as 
 \begin{proposition}[Convergence]
 As $n \to \infty$:
 \begin{enumerate}
-\item The parity correction converges to 1 for odd $n$, while it is exactly 1 for all even $n$. The sequence as a whole oscillates between 1 and lower values asymptotically approaching 1. Therefore, the odd-even distinction vanishes ass odd $n$ values increase: $\frac{2 n^2 - 1 + (-1)^n}{2 n^2} \to 1, \ n \text{ is odd}$
+\item The parity correction converges to 1 for odd $n$, while it is exactly 1 for all even $n$. The sequence as a whole oscillates between 1 and lower values asymptotically approaching 1. Therefore, the odd-even distinction vanishes as odd $n$ values increase: $\frac{2 n^2 - 1 + (-1)^n}{2 n^2} \to 1, \ n \text{ is odd}$
 \item Bessel's correction also converges to 1, so the sample-population distinction vanishes: $\frac{n}{n - 1} \to 1$
 \item Therefore, the horns index converges to the infinite-$n$ horns index: $h \to h^*$
 \end{enumerate}
