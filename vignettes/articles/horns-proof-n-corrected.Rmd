@@ -24,16 +24,16 @@ We also define a special case, $h^*$. The difference is that $h$ accounts for fi
 
 \section{Basic concepts}
 
-Let $k$ be the number of scale points, $n$ the sample size, $\bar{x}$ the arithmetic mean, $s^2$ the sample variance, and $\sigma^2$ the population variance.
+Let $l$ and $u$ be the lower and upper bounds of the scale, $n$ the sample size, $\bar{x}$ the arithmetic mean, $s^2$ the sample variance, and $\sigma^2$ the population variance.
 
 \begin{definition}[Horns index]
 $$h = \frac{s^2}{s^2_{\max}}$$
-where $s^2_{\max}$ is the maximum attainable $s^2$ given $k$ and $n$.
+where $s^2_{\max}$ is the maximum attainable $s^2$ given $l$, $u$, and $n$.
 \end{definition}
 
 \begin{definition}[Infinite-$n$ horns index]
 $$h^* = \frac{\sigma^2}{\sigma^2_{\max | n = \infty}}$$
-where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $k$ and $n$.
+where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $l$ and $u$, as well as assuming $n = \infty$.
 
 The maximum variance formulas on which the definitions of $h$ and $h^*$ rely will be the subject of the remainder of this document. Note that they account for the parity of $n$, i.e., its property of being even or odd.
 
@@ -44,7 +44,7 @@ The maximum variance formulas on which the definitions of $h$ and $h^*$ rely wil
 \subsection{The geometric constraint}
 
 \begin{theorem}[Maximum configuration]
-Maximum variance is achieved by placing all observations at the scale extremes (positions 1 and $k$). In particular, with an even $n$, this requires placing $\frac{n}{2}$ at position 1 and $\frac{n}{2}$ at position $k$. With an odd $n$, however, $\frac{n - 1}{2}$ are placed at position 1 and $\frac{n + 1}{2}$ at position $k$.
+Maximum variance is achieved by placing all observations at the scale extremes (positions $l$ and $u$). In particular, with an even $n$, this requires placing $\frac{n}{2}$ at position $l$ and $\frac{n}{2}$ at position $u$. With an odd $n$, however, $\frac{n - 1}{2}$ are placed at position $l$ and $\frac{n + 1}{2}$ at position $u$.
 
 \end{theorem}
 
@@ -53,42 +53,42 @@ Maximum variance is achieved by placing all observations at the scale extremes (
 \begin{theorem}[Maximum variance for even $n$]
 For even $n$ with perfect split:
 \begin{itemize}
-\item Mean: $\bar{x} = \frac{k + 1}{2}$ \ \ (\emph{Note}: These equations are statements to be proven, not definitions.)
-\item Sum of squared deviations: $SSD = n \cdot \frac{(k-1)^2}{4}$
-\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4}$
-\item Sample variance: $s^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{n}{n-1}$
+\item Mean: $\bar{x} = \frac{l + u}{2}$ \ \ (\emph{Note}: These equations are statements to be proven, not definitions.)
+\item Sum of squared deviations: $SSD = n \cdot \frac{(u-l)^2}{4}$
+\item Population variance: $\sigma^2_{\max} = \frac{(u-l)^2}{4}$
+\item Sample variance: $s^2_{\max} = \frac{(u-l)^2}{4} \cdot \frac{n}{n-1}$
 \end{itemize}
 \end{theorem}
 
 \begin{proof}
-With $\frac{n}{2}$ observations at each extreme:
+With $\frac{n}{2}$ observations at each extreme, the mean is identical to the scale midpoint:
 
 \begin{align}
-\bar{x} &= \frac{\frac{n}{2} \cdot 1 + \frac{n}{2} \cdot k}{n} \\
-  &= \frac{n + nk}{ 2n } \\
-  &= \frac{k + 1}{2}
+\bar{x} &= \frac{\frac{n}{2} \cdot l + \frac{n}{2} \cdot u}{n} \\
+  &= \frac{nl + nu}{ 2n } \\
+  &= \frac{l + u}{2}
 \end{align}
 
 
 The sum of squared deviations:
 \begin{align}
-SSD &= \frac{n}{2}\left(1 - \frac{k+1}{2}\right)^2 + \frac{n}{2}\left(k - \frac{k+1}{2}\right)^2 \\
-  &= \frac{n}{2}\left(\frac{2 - (k+1)}{2}\right)^2 + \frac{n}{2}\left(\frac{2k - (k+1)}{2}\right)^2 \\
-  &= \frac{n}{2}\left(\frac{1-k}{2}\right)^2 + \frac{n}{2}\left(\frac{k-1}{2}\right)^2 \\
-  &= 2 \ \frac{n}{2} \left(\frac{k-1}{2}\right)^2 \\
-  &= \frac{n \ (k-1)^2}{4}
+SSD &= \frac{n}{2}\left(l - \frac{l+u}{2}\right)^2 + \frac{n}{2}\left(u - \frac{l+u}{2}\right)^2 \\
+  &= \frac{n}{2}\left(\frac{2l - (l+u)}{2}\right)^2 + \frac{n}{2}\left(\frac{2u - (l+u)}{2}\right)^2 \\
+  &= \frac{n}{2}\left(\frac{l-u}{2}\right)^2 + \frac{n}{2}\left(\frac{u-l}{2}\right)^2 \\
+  &= 2 \ \frac{n}{2} \left(\frac{u-l}{2}\right)^2 \\
+  &= \frac{n \ (u-l)^2}{4}
 \end{align}
 
 Therefore, with an even $n$, the maximal population variance $\sigma^2_{\max}$ and the maximal sample variance $s^2_{\max}$ are as follows:
 
 \begin{align}
 \sigma^2_{\max} &= \frac{SSD}{n} \\
-  &= \frac{(k-1)^2}{4}
+  &= \frac{(u-l)^2}{4}
 \end{align}
 
 \begin{align}
 s^2_{\max} &= \frac{SSD}{n-1} \\
-  &= \frac{(k-1)^2}{4} \cdot \frac{n}{n-1}
+  &= \frac{(u-l)^2}{4} \cdot \frac{n}{n-1}
 \end{align}
 
 \end{proof}
@@ -96,52 +96,52 @@ s^2_{\max} &= \frac{SSD}{n-1} \\
 \begin{theorem}[Maximum variance for odd $n$]
 For odd $n$ with uneven split:
 \begin{itemize}
-\item Mean: $\bar{x} = \frac{k+1}{2} + \frac{k-1}{2n}$ \ \ (\emph{Note}: These equations, too, are statements to be proven, not definitions.)
-\item Sum of squared deviations: $SSD = \frac{(k-1)^2}{4} \cdot n \cdot \frac{n^2 - 1}{n^2}$
-\item Population variance: $\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2}$
-\item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2}$
+\item Mean: $\bar{x} = \frac{l+u}{2} + \frac{u-l}{2n}$ \ \ (\emph{Note}: These equations, too, are statements to be proven, not definitions.)
+\item Sum of squared deviations: $SSD = \frac{(u-l)^2}{4} \cdot n \cdot \frac{n^2 - 1}{n^2}$
+\item Population variance: $\sigma^2_{\max} = \frac{(u-l)^2}{4} \cdot \frac{n^2 - 1}{n^2}$
+\item Sample variance: $s^2_{\max} = \frac{n}{n-1} \cdot \frac{(u-l)^2}{4} \cdot \frac{n^2 - 1}{n^2}$
 \end{itemize}
 \end{theorem}
 
 \begin{proof}
-With $\frac{n-1}{2}$ at position 1 and $\frac{n+1}{2}$ at position $k$:
+With $\frac{n-1}{2}$ at position $l$ and $\frac{n+1}{2}$ at position $u$:
 \begin{align}
-\bar{x} &= \frac{\frac{n-1}{2} + k \cdot \frac{n+1}{2}}{n} \\
-  &= \frac{k+1}{2} + \frac{k-1}{2n}
+\bar{x} &= \frac{l \cdot \frac{n-1}{2} + u \cdot \frac{n+1}{2}}{n} \\
+  &= \frac{l+u}{2} + \frac{u-l}{2n}
 \end{align}
 
-As $1$ and $k$ are the only values at which any observations are located, we can express the deviations from the mean $\bar{x}$ as $d_1$ and $d_k$:
+As $l$ and $u$ are the only values at which any observations are located, we can express the deviations from the mean $\bar{x}$ as $d_l$ and $d_u$:
 \begin{align}
-d_1 &= 1 - \bar{x} \\
-  &= -\frac{k-1}{2} \cdot \frac{n+1}{n}
+d_l &= l - \bar{x} \\
+  &= -\frac{u-l}{2} \cdot \frac{n+1}{n}
 \end{align}
 
 \begin{align}
-d_k &= k - \bar{x} \\
-  &= \frac{k-1}{2} \cdot \frac{n-1}{n}
+d_u &= u - \bar{x} \\
+  &= \frac{u-l}{2} \cdot \frac{n-1}{n}
 \end{align}
 
 So the sum of squares is
-$$SSD = \frac{n-1}{2} \cdot d_1^2 + \frac{n+1}{2} \cdot d_k^2$$
+$$SSD = \frac{n-1}{2} \cdot d_l^2 + \frac{n+1}{2} \cdot d_u^2$$
 
 Square the deviations:
 
-$$d_1^2 = \left(-\frac{k-1}{2} \cdot \frac{n+1}{n}\right)^2 = \frac{(k-1)^2}{4} \cdot \frac{(n+1)^2}{n^2}$$
+$$d_l^2 = \left(-\frac{u-l}{2} \cdot \frac{n+1}{n}\right)^2 = \frac{(u-l)^2}{4} \cdot \frac{(n+1)^2}{n^2}$$
 
-$$d_k^2 = \left(\frac{k-1}{2} \cdot \frac{n-1}{n}\right)^2 = \frac{(k-1)^2}{4} \cdot \frac{(n-1)^2}{n^2}$$
+$$d_u^2 = \left(\frac{u-l}{2} \cdot \frac{n-1}{n}\right)^2 = \frac{(u-l)^2}{4} \cdot \frac{(n-1)^2}{n^2}$$
 
 Substitute into the SSD formula:
 
 \begin{align}
-SSD &= \left[ \frac{n-1}{2} \cdot \frac{(k-1)^2}{4} \cdot \frac{(n+1)^2}{n^2} \right] + \left[ \frac{n+1}{2} \cdot \frac{(k-1)^2}{4} \cdot \frac{(n-1)^2}{n^2} \right] \\
-  &= \left[ \frac{(k-1)^2}{4} \cdot \frac{n-1}{2} \cdot \frac{(n+1)^2}{n^2} \right] + \left[ \frac{(k-1)^2}{4} \cdot \frac{n+1}{2} \cdot \frac{(n-1)^2}{n^2} \right]
+SSD &= \left[ \frac{n-1}{2} \cdot \frac{(u-l)^2}{4} \cdot \frac{(n+1)^2}{n^2} \right] + \left[ \frac{n+1}{2} \cdot \frac{(u-l)^2}{4} \cdot \frac{(n-1)^2}{n^2} \right] \\
+  &= \left[ \frac{(u-l)^2}{4} \cdot \frac{n-1}{2} \cdot \frac{(n+1)^2}{n^2} \right] + \left[ \frac{(u-l)^2}{4} \cdot \frac{n+1}{2} \cdot \frac{(n-1)^2}{n^2} \right]
 \end{align}
 
 The two terms share common factors:
 
-$$= \frac{(k-1)^2}{4} \left[\frac{n-1}{2} \cdot \frac{(n+1)^2}{n^2} + \frac{n+1}{2} \cdot \frac{(n-1)^2}{n^2}\right]$$
+$$= \frac{(u-l)^2}{4} \left[\frac{n-1}{2} \cdot \frac{(n+1)^2}{n^2} + \frac{n+1}{2} \cdot \frac{(n-1)^2}{n^2}\right]$$
 
-$$= \frac{(k-1)^2}{4} \cdot \frac{1}{n^2} \left[\frac{n-1}{2}(n+1)^2 + \frac{n+1}{2}(n-1)^2\right]$$
+$$= \frac{(u-l)^2}{4} \cdot \frac{1}{n^2} \left[\frac{n-1}{2}(n+1)^2 + \frac{n+1}{2}(n-1)^2\right]$$
 
 Now, to simplify the bracketed expression:
 
@@ -164,22 +164,22 @@ Simplify the sum:
 
 Substitute back into the $SSD$ expression and isolate Popoviciu's bound:
 \begin{align}
-SSD &= \frac{(k-1)^2}{4n^2} \cdot n(n^2-1) \\
-  &= \frac{(k-1)^2 \cdot (n^2-1)}{4n} \\
-  &= \frac{(k-1)^2}{4} \cdot n \cdot \left(\frac{n^2-1}{n^2}\right)
+SSD &= \frac{(u-l)^2}{4n^2} \cdot n(n^2-1) \\
+  &= \frac{(u-l)^2 \cdot (n^2-1)}{4n} \\
+  &= \frac{(u-l)^2}{4} \cdot n \cdot \left(\frac{n^2-1}{n^2}\right)
 \end{align}
 
 The maximal sample and population variance with an odd $n$ are therefore
 \begin{align}
 s^2_{\max} &= \frac{SSD}{n-1} \\
-  &= \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2} \cdot \frac{n}{n-1}
+  &= \frac{(u-l)^2}{4} \cdot \frac{n^2 - 1}{n^2} \cdot \frac{n}{n-1}
 \end{align}
 
 and
 
 \begin{align}
 \sigma^2_{\max} &= \frac{SSD}{n} \\
-  &= \frac{(k-1)^2}{4} \cdot \frac{n^2 - 1}{n^2}
+  &= \frac{(u-l)^2}{4} \cdot \frac{n^2 - 1}{n^2}
 \end{align}
 
 \end{proof}
@@ -213,20 +213,22 @@ We can use this term to modify the odd-$n$ correction factor in a way that rende
 
 Consequently, using this generalized expression instead of the one from Theorem 3 (that is specific to the odd-$n$ case) yields the desired general formula for the maximal sample variance that applies to any $n$:
 
-$$s^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2} \cdot \frac{n}{n-1}$$
+$$s^2_{\max} = \frac{(u-l)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2} \cdot \frac{n}{n-1}$$
 
 As for the maximal \emph{population} variance, the only difference from the maximal sample variance is the absence of Bessel's correction:
 
-$$\sigma^2_{\max} = \frac{(k-1)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2}$$
+$$\sigma^2_{\max} = \frac{(u-l)^2}{4} \cdot \frac{2 n^2 - 1 + (-1)^n}{2 n^2}$$
 
 Petocz (2005) provides two separate bounds for the sample SD distinguished by the parity of $n$:
 
 $$
-s_{max | R,n} = \begin{cases} 
+s_{max | R,n} = \begin{cases}
 \frac{R}{2} \sqrt{\frac{n}{n-1}} & \text{if } n \text{ is even} \\
 \frac{R}{2} \sqrt{\frac{n+1}{n}} & \text{if } n \text{ is odd}
 \end{cases}
 $$
+
+where $R = u - l$ is the range.
 
 Equivalence with the general formula obtains when the latter is used to state an upper bound for the SD rather than the variance. This is obvious in the even-$n$ case where the only correction is Bessel's. In the odd-$n$ case, $\frac{n + 1}{n}$ is the product of Bessel's correction and the odd-$n$ correction used before:
 
