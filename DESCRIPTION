@@ -26,6 +26,7 @@ Imports:
     tibble,
     utils
 Collate: 
+    'constants.R'
     'doc-helpers.R'
     'read-write-basic.R'
     'performance.R'

@@ -1,16 +1,10 @@
 # Global configuration ----------------------------------------------------
 
+#' @include constants.R
+NULL
+
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
-
-# Names of the tibbles in the kind of list returned by `closure_generate()` etc.
-tibble_names <- c(
-  "inputs",
-  "metrics_main",
-  "metrics_horns",
-  "frequency",
-  "results"
-)
 
 
 # Checks ------------------------------------------------------------------
@@ -28,14 +22,7 @@ check_generator_output <- function(
   top_level_is_correct <-
     is.list(data) &&
     any(c(5L, 6L) == length(data)) &&
-    any(
-      names(data) %in%
-        c(
-          tibble_names,
-          c(tibble_names, "directory"),
-          c(tibble_names[!tibble_names == "results"], "directory")
-        )
-    ) &&
+    list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
     inherits(data$inputs, paste0(lowtech, "_generate"))
 
   if (!top_level_is_correct) {
@@ -45,7 +32,7 @@ check_generator_output <- function(
       return(invisible(NULL))
     }
 
-    msg_tibbles_all <- paste0("\"", tibble_names, "\"")
+    msg_tibble_names <- paste0("\"", TIBBLE_NAMES, "\"")
 
     abort_in_export(
       paste0(
@@ -55,7 +42,7 @@ check_generator_output <- function(
         lowtech,
         "_read()`."
       ),
-      "!" = "Such output is a list with the elements {msg_tibbles_all}."
+      "!" = "Such output is a list with the elements {msg_tibble_names}."
     )
   }
 

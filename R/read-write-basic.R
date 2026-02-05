@@ -152,24 +152,15 @@ read_basic <- function(
     })
 
   files_actual <- dir(path)
-  files_expected <- c(
-    "info.txt",
-    "inputs.parquet",
-    "metrics_main.parquet",
-    "metrics_horns.parquet",
-    "frequency.parquet",
-    "horns.parquet",
-    "samples.parquet"
-  )
 
   # Error if the folder contains other files than those needed, or if it does
   # not contain all of those needed. A bespoke message is shown in each case.
-  if (!setequal(files_actual, files_expected)) {
-    files_expected <- sort(files_expected)
+  if (!setequal(files_actual, FILES_EXPECTED)) {
+    msg_files_expected <- sort(FILES_EXPECTED)
     files_actual <- sort(files_actual)
 
-    offenders_missing <- setdiff(files_expected, files_actual)
-    offenders_not_needed <- setdiff(files_actual, files_expected)
+    offenders_missing <- setdiff(msg_files_expected, files_actual)
+    offenders_not_needed <- setdiff(files_actual, msg_files_expected)
 
     msg_missing <- if (length(offenders_missing) == 0) {
       NULL
@@ -186,7 +177,7 @@ read_basic <- function(
     cli::cli_abort(
       c(
         "Folder must contain all correct files (and no others).",
-        "!" = "Expected files: {files_expected}",
+        "!" = "Expected files: {msg_files_expected}",
         msg_missing,
         msg_not_needed
       )
