@@ -77,9 +77,9 @@ write_basic <- function(data, path, technique) {
       file = paste0(path_new_dir, "samples.parquet")
     )
 
-  # Create info.txt and issue an alert. Leave an empty line before.
+  # Create info.md and issue an alert. Leave an empty line before.
   message()
-  write_final_info_txt(path_new_dir, technique)
+  write_final_info_md(path_new_dir, technique)
 
   path_new_dir
 }

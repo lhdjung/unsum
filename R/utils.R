@@ -616,8 +616,8 @@ create_results_folder <- function(path) {
 
 # Where `inputs` is of the form `list(mean, sd, n, scale_min, scale_max)`. It
 # creates a folder named after these summary statistics and returns the path to
-# that new folder. It also writes two files into it: a general info.txt that
-# will be overwritten later, and an inputs.parquet file with the inputs.
+# that new folder. It also writes two files into it: a general info.md that will
+# be overwritten later, and an inputs.parquet file with the inputs.
 prepare_folder_mean_sd_n <- function(inputs, path) {
   slash <- .Platform$file.sep
 
@@ -639,22 +639,22 @@ prepare_folder_mean_sd_n <- function(inputs, path) {
     name_new_dir
   )
 
-  create_results_folder(path_new_dir, n = 3)
+  create_results_folder(path_new_dir)
 
-  path_info_txt <- paste0(path_new_dir, slash, "info.txt")
+  path_info_md <- paste0(path_new_dir, slash, "info.md")
 
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)
 
-  # Create an info.txt file -- empty for now
-  file.create(path_info_txt)
+  # Create an info.md file -- empty for now
+  file.create(path_info_md)
 
-  connection <- file(path_info_txt)
+  connection <- file(path_info_md)
 
-  # While the results are written, provide a message to that effect in info.txt
+  # While the results are written, provide a message to that effect in info.md
   write(
     x = paste0(
-      "DO NOT CHANGE THIS FOLDER OR ITS CONTENTS.\n\nResults of the ",
+      "# DO NOT CHANGE THIS FOLDER OR ITS CONTENTS.\n\nResults of the ",
       technique,
       " technique are currently being written ",
       "to the results.parquet file (unless the process was interrupted). ",
@@ -684,19 +684,19 @@ prepare_folder_mean_sd_n <- function(inputs, path) {
 }
 
 
-# Write the final version of info.txt in a results folder. In `*_generate()`,
+# Write the final version of info.md in a results folder. In `*_generate()`,
 # this overwrites the placeholder text from `prepare_folder_mean_sd_n()`; and in
-# `*_write()`, it creates info.txt in the first place. Also, issue an alert.
-write_final_info_txt <- function(path, technique) {
+# `*_write()`, it creates info.md in the first place. Also, issue an alert.
+write_final_info_md <- function(path, technique) {
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)
 
-  # Open a connection to info.txt via a path like path/to/your/info.txt
+  # Open a connection to info.md via a path like path/to/your/info.md
   connection <- path |>
-    paste0(.Platform$file.sep, "info.txt") |>
+    paste0(.Platform$file.sep, "info.md") |>
     file()
 
-  # Create or overwrite info.txt
+  # Create or overwrite info.md
   write(
     x = paste0(
       "This folder contains the results of ",

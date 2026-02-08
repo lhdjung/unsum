@@ -119,7 +119,7 @@ generate_from_mean_sd_n <- function(
   }
 
   # If files should be written to disk, prepare a new folder for them, write
-  # info.txt and inputs.parquet into it, and record the new path.
+  # info.md and inputs.parquet into it, and record the new path.
   if (in_memory_mode) {
     parquet_config <- NULL
     # Error if `include` was specified even though `path` was not
@@ -218,10 +218,10 @@ generate_from_mean_sd_n <- function(
     }
   }
 
-  # Compute CLOSURE samples by calling into pre-compiled Rust code.
-  # For CLOSURE, items defaults to 1; for SPRITE, it must be provided
+  # For CLOSURE, `items` defaults to 1; for SPRITE, it must be provided
   items_val <- if (is.null(items)) 1L else as.integer(items)
 
+  # Compute CLOSURE samples by calling into pre-compiled Rust code.
   out <- create_combinations(
     mean = mean_num,
     sd = sd_num,
@@ -332,8 +332,8 @@ generate_from_mean_sd_n <- function(
     # were just written to disk into R. Note that R never held them in memory
     # before this point; they were created on the Rust level. The `include`
     # argument controls which parts of the results are loaded. This is to
-    # prevent out-of-memory errors due to large data.
-    out_summary <- switch(
+    # prevent out-of-memory errors and long read times due to large data.
+    out <- switch(
       technique,
       "CLOSURE" = closure_read(path_new_dir, include = include),
 
@@ -343,12 +343,12 @@ generate_from_mean_sd_n <- function(
       )
     )
 
-    # Overwrite info.txt which now contains instructions for importing the
-    # files, etc.; and issue an alert. As both steps give confirmatory signals
-    # to the user, this is only done after reading the data successfully.
-    write_final_info_txt(path_new_dir, technique)
+    # Overwrite info.md which now contains instructions for importing the files,
+    # etc.; and issue an alert. As both steps give confirmatory signals to the
+    # user, this is only done after reading the data successfully.
+    write_final_info_md(path_new_dir, technique)
 
     # Return the list
-    out_summary
+    out
   }
 }
