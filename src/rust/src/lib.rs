@@ -166,13 +166,13 @@ fn parse_restrict_min(robj: &Robj) -> Result<RestrictionsOption> {
 /// Convert ResultListFromMeanSdN to named R list pairs.
 /// Callers can extend the returned vector before building the final list.
 fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, Robj)> {
-    let metrics_main: Robj = list!(
-        samples_all = rl.metrics_main.samples_all,
-        values_all = rl.metrics_main.values_all
+    let metrics_main: Robj = data_frame!(
+        samples_all = rl.metrics_main.samples_all as f64,
+        values_all = rl.metrics_main.values_all as f64
     )
     .into();
 
-    let metrics_horns: Robj = list!(
+    let metrics_horns: Robj = data_frame!(
         mean = rl.metrics_horns.mean,
         uniform = rl.metrics_horns.uniform,
         sd = rl.metrics_horns.sd,
@@ -219,16 +219,17 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     // Get the horns values as a numeric vector
     let horns_vec = results_table.horns.clone();
 
-    // Return as a simple list with named elements
-    // R users can convert this to a data frame using:
-    // df <- data.frame(
-    //   id = results$id,
-    //   sample = I(results$samples),  # I() preserves the list structure
-    //   horns = results$horns
-    // )
-    let results_list = list!(id = id_vec, sample = samples_list, horns = horns_vec);
+    // Build a data frame with id, sample (list-column), and horns
+    let n_rows = id_vec.len();
+    let mut df: Robj = list!(id = id_vec, sample = samples_list, horns = horns_vec).into();
+    df.set_attrib("class", "data.frame").unwrap();
+    df.set_attrib(
+        "row.names",
+        (1..=n_rows as i32).collect::<Vec<i32>>(),
+    )
+    .unwrap();
 
-    results_list.into()
+    df
 }
 
 
