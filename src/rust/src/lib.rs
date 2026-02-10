@@ -1,18 +1,11 @@
+use closure_core::{
+    closure_count, closure_parallel, closure_parallel_streaming, sprite_parallel,
+    sprite_parallel_streaming, ParquetConfig, RestrictionsMinimum, RestrictionsOption,
+    ResultListFromMeanSdN, StreamingConfig,
+};
 /// This is part of unsum, an R package that uses extendr for Rust integration
-
 use extendr_api::prelude::*;
 use extendr_api::Robj;
-use closure_core::{
-    closure_parallel,
-    closure_parallel_streaming,
-    sprite_parallel,
-    sprite_parallel_streaming,
-    ResultListFromMeanSdN,
-    ParquetConfig,
-    StreamingConfig,
-    RestrictionsMinimum,
-    RestrictionsOption,
-};
 use std::collections::HashMap;
 
 /// Local wrapper for ParquetConfig to allow TryFrom<Robj> implementation.
@@ -26,12 +19,14 @@ impl TryFrom<Robj> for ParquetConfigR {
     fn try_from(robj: Robj) -> Result<Self> {
         // Extract the fields from the R list/object
         // Assuming the R side passes a list with 'file_path' and 'batch_size' fields
-        let file_path = robj.dollar("file_path")?
+        let file_path = robj
+            .dollar("file_path")?
             .as_str()
             .ok_or_else(|| Error::Other("file_path must be a string".into()))?
             .to_string();
 
-        let batch_size = robj.dollar("batch_size")?
+        let batch_size = robj
+            .dollar("batch_size")?
             .as_real()
             .ok_or_else(|| Error::Other("batch_size must be numeric".into()))?
             as usize;
@@ -51,21 +46,24 @@ impl TryFrom<Robj> for StreamingConfigR {
 
     fn try_from(robj: Robj) -> Result<Self> {
         // Extract the fields from the R list/object
-        let file_path = robj.dollar("file_path")?
+        let file_path = robj
+            .dollar("file_path")?
             .as_str()
             .ok_or_else(|| Error::Other("file_path must be a string".into()))?
             .to_string();
 
-        let batch_size = robj.dollar("batch_size")?
+        let batch_size = robj
+            .dollar("batch_size")?
             .as_real()
             .ok_or_else(|| Error::Other("batch_size must be numeric".into()))?
             as usize;
 
         // Optional show_progress field, defaults to true for better user experience
-        let show_progress = robj.dollar("show_progress")
+        let show_progress = robj
+            .dollar("show_progress")
             .ok()
             .and_then(|r| r.as_bool())
-            .unwrap_or(true);  // Default to true to show progress by default
+            .unwrap_or(true); // Default to true to show progress by default
 
         Ok(StreamingConfigR(StreamingConfig {
             file_path,
@@ -100,21 +98,23 @@ fn parse_restrict_exact(robj: &Robj) -> Result<Option<HashMap<i32, usize>>> {
     let mut map = HashMap::new();
 
     // Get keys (names) and values
-    let names = robj.get_attrib("names").ok_or_else(|| {
-        Error::Other("restrict_exact must have names".into())
-    })?;
-    let names_vec: Vec<&str> = names.as_str_vector().ok_or_else(|| {
-        Error::Other("restrict_exact names must be strings".into())
-    })?;
+    let names = robj
+        .get_attrib("names")
+        .ok_or_else(|| Error::Other("restrict_exact must have names".into()))?;
+    let names_vec: Vec<&str> = names
+        .as_str_vector()
+        .ok_or_else(|| Error::Other("restrict_exact names must be strings".into()))?;
 
     for (i, name) in names_vec.iter().enumerate() {
-        let key: i32 = name.parse().map_err(|_| {
-            Error::Other("restrict_exact names must be integers".into())
-        })?;
+        let key: i32 = name
+            .parse()
+            .map_err(|_| Error::Other("restrict_exact names must be integers".into()))?;
 
-        let value = robj.index(i + 1)?.as_real().ok_or_else(|| {
-            Error::Other("restrict_exact values must be numeric".into())
-        })? as usize;
+        let value = robj
+            .index(i + 1)?
+            .as_real()
+            .ok_or_else(|| Error::Other("restrict_exact values must be numeric".into()))?
+            as usize;
 
         map.insert(key, value);
     }
@@ -139,21 +139,23 @@ fn parse_restrict_min(robj: &Robj) -> Result<RestrictionsOption> {
     let mut map = HashMap::new();
 
     // Get keys (names) and values
-    let names = robj.get_attrib("names").ok_or_else(|| {
-        Error::Other("restrict_min must have names".into())
-    })?;
-    let names_vec: Vec<&str> = names.as_str_vector().ok_or_else(|| {
-        Error::Other("restrict_min names must be strings".into())
-    })?;
+    let names = robj
+        .get_attrib("names")
+        .ok_or_else(|| Error::Other("restrict_min must have names".into()))?;
+    let names_vec: Vec<&str> = names
+        .as_str_vector()
+        .ok_or_else(|| Error::Other("restrict_min names must be strings".into()))?;
 
     for (i, name) in names_vec.iter().enumerate() {
-        let key: i32 = name.parse().map_err(|_| {
-            Error::Other("restrict_min names must be integers".into())
-        })?;
+        let key: i32 = name
+            .parse()
+            .map_err(|_| Error::Other("restrict_min names must be integers".into()))?;
 
-        let value = robj.index(i + 1)?.as_real().ok_or_else(|| {
-            Error::Other("restrict_min values must be numeric".into())
-        })? as usize;
+        let value = robj
+            .index(i + 1)?
+            .as_real()
+            .ok_or_else(|| Error::Other("restrict_min values must be numeric".into()))?
+            as usize;
 
         map.insert(key, value);
     }
@@ -167,7 +169,8 @@ fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, R
     let metrics_main: Robj = list!(
         samples_all = rl.metrics_main.samples_all,
         values_all = rl.metrics_main.values_all
-    ).into();
+    )
+    .into();
 
     let metrics_horns: Robj = list!(
         mean = rl.metrics_horns.mean,
@@ -179,7 +182,8 @@ fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, R
         median = rl.metrics_horns.median,
         max = rl.metrics_horns.max,
         range = rl.metrics_horns.range
-    ).into();
+    )
+    .into();
 
     let frequency = frequency_table_to_robj(&rl.frequency);
     let results = results_table_to_robj(&rl.results);
@@ -199,7 +203,8 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     let id_vec: Vec<f64> = results_table.id.clone();
 
     // Convert each sample to an R integer vector and collect into a list
-    let samples_robjs: Vec<Robj> = results_table.sample
+    let samples_robjs: Vec<Robj> = results_table
+        .sample
         .iter()
         .map(|sample| {
             // Each sample becomes an R integer vector
@@ -221,11 +226,7 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     //   sample = I(results$samples),  # I() preserves the list structure
     //   horns = results$horns
     // )
-    let results_list = list!(
-        id = id_vec,
-        sample = samples_list,
-        horns = horns_vec
-    );
+    let results_list = list!(id = id_vec, sample = samples_list, horns = horns_vec);
 
     results_list.into()
 }
@@ -285,27 +286,27 @@ fn create_combinations(
 
         // Use streaming mode - writes directly to disk without keeping results in memory
         let result = match technique_upper.as_str() {
-            "CLOSURE" => {
-                closure_parallel_streaming(
-                    mean,
-                    sd,
-                    n,
-                    scale_min,
-                    scale_max,
-                    rounding_error_mean,
-                    rounding_error_sd,
-                    1,
-                    streaming_config,
-                    stop_after,
-                )
-            }
+            "CLOSURE" => closure_parallel_streaming(
+                mean,
+                sd,
+                n,
+                scale_min,
+                scale_max,
+                rounding_error_mean,
+                rounding_error_sd,
+                1,
+                streaming_config,
+                stop_after,
+            ),
             "SPRITE" => {
-                let items_val = items.ok_or_else(|| {
-                    return format!("items is required for SPRITE technique");
-                }).unwrap_or_else(|_| {
-                    // Return error if items is missing
-                    return 2; // Default fallback
-                });
+                let items_val = items
+                    .ok_or_else(|| {
+                        return format!("items is required for SPRITE technique");
+                    })
+                    .unwrap_or_else(|_| {
+                        // Return error if items is missing
+                        return 2; // Default fallback
+                    });
 
                 sprite_parallel_streaming(
                     mean,
@@ -323,7 +324,10 @@ fn create_combinations(
                 )
             }
             _ => {
-                return Robj::from(format!("Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'", technique));
+                return Robj::from(format!(
+                    "Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'",
+                    technique
+                ));
             }
         };
 
@@ -393,7 +397,10 @@ fn create_combinations(
             }
         }
         _ => {
-            return Robj::from(format!("Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'", technique));
+            return Robj::from(format!(
+                "Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'",
+                technique
+            ));
         }
     };
 
