@@ -7,6 +7,7 @@ use closure_core::{
     closure_parallel_streaming,
     sprite_parallel,
     sprite_parallel_streaming,
+    ResultListFromMeanSdN,
     ParquetConfig,
     StreamingConfig,
     RestrictionsMinimum,
@@ -160,6 +161,37 @@ fn parse_restrict_min(robj: &Robj) -> Result<RestrictionsOption> {
     Ok(RestrictionsOption::Opt(Some(RestrictionsMinimum::new(map))))
 }
 
+/// Convert ResultListFromMeanSdN to named R list pairs.
+/// Callers can extend the returned vector before building the final list.
+fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, Robj)> {
+    let metrics_main: Robj = list!(
+        samples_all = rl.metrics_main.samples_all,
+        values_all = rl.metrics_main.values_all
+    ).into();
+
+    let metrics_horns: Robj = list!(
+        mean = rl.metrics_horns.mean,
+        uniform = rl.metrics_horns.uniform,
+        sd = rl.metrics_horns.sd,
+        cv = rl.metrics_horns.cv,
+        mad = rl.metrics_horns.mad,
+        min = rl.metrics_horns.min,
+        median = rl.metrics_horns.median,
+        max = rl.metrics_horns.max,
+        range = rl.metrics_horns.range
+    ).into();
+
+    let frequency = frequency_table_to_robj(&rl.frequency);
+    let results = results_table_to_robj(&rl.results);
+
+    vec![
+        ("metrics_main", metrics_main),
+        ("metrics_horns", metrics_horns),
+        ("frequency", frequency),
+        ("results", results),
+    ]
+}
+
 /// Helper function to convert ResultsTable to R list
 /// Returns a simple list that can be converted to a data frame on the R side
 fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Robj {
@@ -196,6 +228,13 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     );
 
     results_list.into()
+}
+
+#[extendr]
+fn create_empty_results(scale_min: i32, scale_max: i32) -> Robj {
+    let empty = ResultListFromMeanSdN::empty(scale_min, scale_max);
+    let pairs = result_list_to_pairs(&empty);
+    Robj::from(List::from_pairs(pairs))
 }
 
 #[extendr]
@@ -358,42 +397,9 @@ fn create_combinations(
         }
     };
 
-    // Create the main metrics list
-    let metrics_main = list!(
-        samples_all = closure_results.metrics_main.samples_all,
-        values_all = closure_results.metrics_main.values_all
-    );
-
-    // Create the horns metrics list
-    let metrics_horns = list!(
-        mean = closure_results.metrics_horns.mean,
-        uniform = closure_results.metrics_horns.uniform,
-        sd = closure_results.metrics_horns.sd,
-        cv = closure_results.metrics_horns.cv,
-        mad = closure_results.metrics_horns.mad,
-        min = closure_results.metrics_horns.min,
-        median = closure_results.metrics_horns.median,
-        max = closure_results.metrics_horns.max,
-        range = closure_results.metrics_horns.range
-    );
-
-    // Convert frequency table to R data frame
-    let frequency = frequency_table_to_robj(&closure_results.frequency);
-
-    // Convert results table to R data frame
-    let results = results_table_to_robj(&closure_results.results);
-
-    // Create the comprehensive result list following the new API structure
-    // The order matches the ClosureResults struct: metrics_main, metrics_horns, frequency, results
-    let result_list = list!(
-        metrics_main = metrics_main,
-        metrics_horns = metrics_horns,
-        frequency = frequency,
-        results = results,
-        streaming_mode = false
-    );
-
-    result_list.into()
+    let mut pairs = result_list_to_pairs(&closure_results);
+    pairs.push(("streaming_mode", Robj::from(false)));
+    Robj::from(List::from_pairs(pairs))
 }
 
 // Macro to generate exports.
@@ -402,4 +408,5 @@ fn create_combinations(
 extendr_module! {
     mod unsum;
     fn create_combinations;
+    fn create_empty_results;
 }
