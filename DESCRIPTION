@@ -27,6 +27,7 @@ Imports:
     utils
 Collate: 
     'constants.R'
+    'extendr-wrappers.R'
     'doc-helpers.R'
     'read-write-basic.R'
     'performance.R'
@@ -40,7 +41,6 @@ Collate:
     'generate.R'
     'count.R'
     'demo-plot.R'
-    'extendr-wrappers.R'
     'horns-corrected.R'
     'horns-plot-for-export.R'
     'horns_discrete_implementation.R'

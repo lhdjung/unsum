@@ -12,5 +12,9 @@ NULL
 
 create_combinations <- function(mean, sd, n, scale_min, scale_max, technique, rounding_error_mean, rounding_error_sd, items, restrict_exact, restrict_min, write, stop_after) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, technique, rounding_error_mean, rounding_error_sd, items, restrict_exact, restrict_min, write, stop_after)
 
+create_empty_results <- function(scale_min, scale_max) .Call(wrap__create_empty_results, scale_min, scale_max)
+
+count_closure_combinations <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd) .Call(wrap__count_closure_combinations, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd)
+
 
 # nolint end

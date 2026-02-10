@@ -231,6 +231,30 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     results_list.into()
 }
 
+
+#[extendr]
+fn count_closure_combinations(
+    mean: f64,
+    sd: f64,
+    n: i32,
+    scale_min: i32,
+    scale_max: i32,
+    rounding_error_mean: f64,
+    rounding_error_sd: f64,
+) -> Robj {
+    let count = closure_count(
+        mean,
+        sd,
+        n,
+        scale_min,
+        scale_max,
+        rounding_error_mean,
+        rounding_error_sd,
+    );
+
+    Robj::from(count)
+}
+
 #[extendr]
 fn create_empty_results(scale_min: i32, scale_max: i32) -> Robj {
     let empty = ResultListFromMeanSdN::empty(scale_min, scale_max);
@@ -416,4 +440,5 @@ extendr_module! {
     mod unsum;
     fn create_combinations;
     fn create_empty_results;
+    fn count_closure_combinations;
 }
