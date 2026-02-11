@@ -5,6 +5,7 @@
 
 <!-- badges: start -->
 
+[![extendr](https://img.shields.io/badge/extendr-*-276DC2)](https://extendr.github.io/extendr/extendr_api/)
 <!-- badges: end -->
 
 The goal of unsum is to **un**do **sum**marization: reconstruct all
@@ -58,16 +59,16 @@ data <- closure_generate(
 
 data
 #> $inputs
-#> # A tibble: 1 × 7
-#>   mean  sd        n scale_min scale_max rounding   threshold
-#>   <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
-#> 1 2.7   1.9     130         1         5 up_or_down         5
+#> # A tibble: 1 × 8
+#>   technique mean  sd        n scale_min scale_max rounding   threshold
+#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
+#> 1 CLOSURE   2.7   1.9     130         1         5 up_or_down         5
 #> 
 #> $metrics_main
-#> # A tibble: 1 × 3
-#>   samples_initial samples_all values_all
-#>             <int>       <dbl>      <dbl>
-#> 1              15        5359     696670
+#> # A tibble: 1 × 2
+#>   samples_all values_all
+#>         <dbl>      <dbl>
+#> 1        5359     696670
 #> 
 #> $metrics_horns
 #> # A tibble: 1 × 9
@@ -98,17 +99,17 @@ data
 #> $results
 #> # A tibble: 5,359 × 3
 #>       id sample      horns
-#>    <int> <list>      <dbl>
-#>  1     1 <int [130]> 0.851
-#>  2     2 <int [130]> 0.851
-#>  3     3 <int [130]> 0.855
-#>  4     4 <int [130]> 0.856
-#>  5     5 <int [130]> 0.849
-#>  6     6 <int [130]> 0.851
-#>  7     7 <int [130]> 0.851
-#>  8     8 <int [130]> 0.855
-#>  9     9 <int [130]> 0.859
-#> 10    10 <int [130]> 0.852
+#>    <dbl> <list>      <dbl>
+#>  1     1 <int [130]> 0.941
+#>  2     2 <int [130]> 0.941
+#>  3     3 <int [130]> 0.941
+#>  4     4 <int [130]> 0.937
+#>  5     5 <int [130]> 0.934
+#>  6     6 <int [130]> 0.941
+#>  7     7 <int [130]> 0.930
+#>  8     8 <int [130]> 0.937
+#>  9     9 <int [130]> 0.934
+#> 10    10 <int [130]> 0.941
 #> # ℹ 5,349 more rows
 ```
 
