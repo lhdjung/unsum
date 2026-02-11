@@ -67,7 +67,7 @@ closure_count_all <- function(
   rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
 
   # Call into the Rust implementation
-  out <- count_closure_combinations(
+  count_closure_combinations(
     mean = mean_num,
     sd = sd_num,
     n = n,
@@ -76,8 +76,6 @@ closure_count_all <- function(
     rounding_error_mean = rounding_error_mean,
     rounding_error_sd = rounding_error_sd
   )
-
-  as.integer(out)
 }
 
 
@@ -96,7 +94,5 @@ closure_count_initial <- function(scale_min, scale_max) {
 
   range_size <- scale_max - scale_min + 1
 
-  as.integer(
-    (range_size * (range_size + 1)) / 2
-  )
+  (range_size * (range_size + 1)) / 2
 }
