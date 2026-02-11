@@ -606,7 +606,7 @@ create_results_folder <- function(path) {
     abort_in_export(
       "Name of new folder must not be taken.",
       "x" = "Folder already exists:",
-      "x" = path
+      path
     )
   }
 
