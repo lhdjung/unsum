@@ -7,6 +7,82 @@ NULL
 utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
 
 
+# Build mode ---------------------------------------------------------------
+
+#' Switch Rust build to debug mode
+#'
+#' Modifies `tools/config.R` so that `devtools::load_all()` produces a debug
+#' (unoptimized) build. Debug builds compile faster but run much slower.
+#'
+#' @return Invisible `NULL`, called for side effect.
+#' @noRd
+use_debug <- function() {
+  switch_build_mode(debug = TRUE)
+}
+
+#' Switch Rust build to release mode
+#'
+#' Modifies `tools/config.R` so that `devtools::load_all()` produces a release
+#' (optimized) build. Release builds compile slower but run much faster.
+#'
+#' @return Invisible `NULL`, called for side effect.
+#' @noRd
+use_release <- function() {
+  switch_build_mode(debug = FALSE)
+}
+
+switch_build_mode <- function(debug) {
+  root <- rprojroot::find_package_root_file()
+  mode_label <- if (debug) "debug" else "release"
+
+  # 1. Update tools/config.R (persists the setting for configure / R CMD INSTALL)
+  config_path <- file.path(root, "tools", "config.R")
+  txt <- readLines(config_path)
+
+  target <- if (debug) "is_debug <- TRUE" else "is_debug <- FALSE"
+  pattern <- "^is_debug <- (TRUE|FALSE)$"
+  idx <- grep(pattern, txt)
+
+  if (length(idx) != 1L) {
+    cli::cli_abort(
+      "Expected exactly one {.code is_debug <- ...} line in {.file tools/config.R}, found {length(idx)}."
+    )
+  }
+
+  config_already_set <- trimws(txt[idx]) == target
+
+  if (!config_already_set) {
+    txt[idx] <- target
+    writeLines(txt, config_path)
+  }
+
+  # 2. Re-source config.R to regenerate src/Makevars immediately.
+  #    devtools::load_all() does not always re-run configure, so
+  #    we must regenerate Makevars ourselves.
+  old_wd <- setwd(root)
+  on.exit(setwd(old_wd), add = TRUE)
+  source("tools/config.R", local = TRUE)
+
+  # 3. Remove the compiled shared object to force recompilation
+  pkg <- sub("^package:", "", search()[[2]])
+
+  for (ext in c(".so", ".dll")) {
+    f <- file.path(root, "src", paste0(pkg, ext))
+    if (file.exists(f)) file.remove(f)
+  }
+
+  if (config_already_set) {
+    cli::cli_alert_info("Build mode is already set to {.strong {mode_label}}.")
+  } else {
+    cli::cli_alert_success("Switched build mode to {.strong {mode_label}}.")
+  }
+
+  message()
+  cli::cli_alert_info("Run {.code devtools::load_all()} to recompile.")
+  invisible(NULL)
+}
+
+
 # Checks ------------------------------------------------------------------
 
 # Error if the input is not an unchanged list containing the results of a
