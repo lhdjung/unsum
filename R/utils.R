@@ -141,8 +141,10 @@ check_generator_output <- function(
     class() |>
     grepl(paste0("^", lowtech, "_read_include_"), x = _)
 
+  reading_class_exists <- any(is_reading_class)
+
   # Data that were already written to disk and read back into R -- special case
-  if (any(is_reading_class)) {
+  if (reading_class_exists) {
     reading_class <- class(data$inputs)[is_reading_class]
     reading_class <- sub(
       pattern = paste0("^", lowtech, "_read_include_"),
@@ -194,7 +196,7 @@ check_generator_output <- function(
   # In case the "results" tibble was returned directly by a function like
   # `closure_generate()` or by a reading function with a setting that makes for
   # equivalent "results"
-  if (!any(is_reading_class) || any(reading_class == "capped_error")) {
+  if (!reading_class_exists || any(reading_class == "capped_error")) {
     # Results (5 / 5)
     check_component_tibble(
       x = data$results,
@@ -214,12 +216,17 @@ check_generator_output <- function(
   # groups, they must sum up to 3 in total. If they sum up to 0, the absolute
   # frequencies must also sum up to 0: it only makes sense if no values at all
   # were found. These comparisons use `near()`, copied from dplyr, to account
-  # for accidental floating-point inaccuracies.
+  # for accidental floating-point inaccuracies. Empty results *can* be allowed.
   f_relative_sum <- sum(data$frequency$f_relative)
   freqs_sum_up <- near(f_relative_sum, 3) ||
-    (near(f_relative_sum, 0) && near(sum(data$frequency$f_absolute), 0))
+    (allow_empty &&
+      is.nan(f_relative_sum) &&
+      near(sum(data$frequency$f_absolute), 0))
 
-  if (!freqs_sum_up) {
+  # Need `isTRUE()` because `freqs_sum_up` can be `NA` but the condition must
+  # still be met. Also, the error message doesn't mention `allow_empty` because
+  # the message is user-facing and `allow_empty` is not.
+  if (!isTRUE(freqs_sum_up)) {
     cli::cli_abort(
       c(
         "The `f_relative` column in `frequency` must sum up to 1 \
