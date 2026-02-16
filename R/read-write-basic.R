@@ -146,16 +146,64 @@ read_basic <- function(
 
   name_dir <- path |>
     strsplit(slash) |>
-    call_on(function(x) {
+    call_on(\(x) {
       vec <- x[[1]]
       vec[length(vec)]
     })
 
   files_actual <- dir(path)
 
+  # See comment right below
+  parquet_opts <- nanoparquet::parquet_options(
+    class = c("tbl_df", "tbl")
+  )
+
+  # Function to read the small Parquet files into tibbles. Since tibbles usually
+  # have the "tbl_df" class but `read_parquet()` does not currently add it
+  # (although it does add "tbl"), tweak nanoparquet's options just to be sure.
+  read_file <- function(name) {
+    path |>
+      paste0(slash, name, ".parquet") |>
+      nanoparquet::read_parquet(options = parquet_opts)
+  }
+
+  # The following two component tibbles will be needed even with empty results
+  inputs <- "inputs" |>
+    read_file() |>
+    add_class(c(
+      paste0(lowtech, "_read_include_", include),
+      paste0(lowtech, "_generate")
+    ))
+
+  directory <- tibble::new_tibble(
+    list(path = path),
+    nrow = 1L
+  )
+
   # Error if the folder contains other files than those needed, or if it does
   # not contain all of those needed. A bespoke message is shown in each case.
   if (!setequal(files_actual, FILES_EXPECTED)) {
+    sample_meta <- path |>
+      paste0(slash, "sample.parquet") |>
+      nanoparquet::read_parquet_metadata(options = parquet_opts)
+
+    # Escape hatch for empty results
+    if (sample_meta$file_meta_data$num_rows == 0) {
+      out_empty <- c(
+        list(inputs = inputs),
+
+        inputs$scale_min |>
+          create_empty_results(inputs$scale_max) |>
+          lapply(tibble::as_tibble),
+
+        list(directory = directory)
+      )
+
+      check_generator_output(out_empty, technique, allow_empty = TRUE)
+
+      return(out_empty)
+    }
+
     msg_files_expected <- sort(FILES_EXPECTED)
     files_actual <- sort(files_actual)
 
@@ -184,33 +232,11 @@ read_basic <- function(
     )
   }
 
-  # See comment right below
-  parquet_options_list <- nanoparquet::parquet_options(
-    class = c("tbl_df", "tbl")
-  )
-
-  # Function to read the small Parquet files into tibbles. Since tibbles usually
-  # have the "tbl_df" class but `read_parquet()` does not currently add it
-  # (although it does add "tbl"), tweak nanoparquet's options just to be sure.
-  # This is not needed in the rest of the package because no other instance of
-  # `read_parquet()` returns a data frame that is part of a function's output.
-  read_file <- function(name) {
-    path |>
-      paste0(slash, name, ".parquet") |>
-      nanoparquet::read_parquet(options = parquet_options_list)
-  }
-
   # Read all the small files into a list. At this point, `out` corresponds to
   # `include == "stats_only"` because all of the additions further below
   # correspond to other variants of `include`.
   out <- list(
-    inputs = "inputs" |>
-      read_file() |>
-      add_class(c(
-        paste0(lowtech, "_read_include_", include),
-        paste0(lowtech, "_generate")
-      )),
-
+    inputs = inputs,
     metrics_main = "metrics_main" |> read_file(),
     metrics_horns = "metrics_horns" |> read_file(),
     frequency = "frequency" |> read_file()
