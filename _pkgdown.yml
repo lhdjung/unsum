@@ -17,14 +17,15 @@ reference:
 - contents:
   - closure_plot_bar
   - closure_plot_ecdf
+  - sprite_plot_bar
   - horns-frequency
-  - horns_plot
   - demo_plot_bar
 - title: Metrics
 - contents:
-  - closure_count_initial
+  - closure_count_all
   - closure_gauge_complexity
   - horns
-- title: Write and read
+- title: Read and write
 - contents:
   - closure_write
+  - sprite_write
