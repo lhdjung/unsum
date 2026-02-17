@@ -43,8 +43,41 @@ plot_horns_frequency <- function(
 
   n_samples_all <- data$metrics_main$samples_all
 
+  path <- data$directory$path
+
   # Reduce the input to a tibble that only includes the horns values
   data <- data$results["horns"]
+
+  # Error if no "horns" column is present
+  if (is.null(data)) {
+    fn_name <- caller_fn_name()
+
+    msg_reader_call <- paste0(
+      tolower(technique),
+      "_read(\"stats_and_horns\") |>"
+    )
+
+    msg_read <- if (is.null(path)) {
+      NULL
+    } else {
+      c(
+        "i" = "To read these values from disk and plot them, run:",
+        "\n",
+        "{.emph path <- \"{path}\"}",
+        "\n",
+        "{.emph path |>}\n",
+        " " = "{.emph {msg_reader_call}}\n",
+        " " = "{.emph {fn_name}()}"
+      )
+    }
+
+    abort_in_export(
+      "Need \"horns\" column in `results` tibble.",
+      "x" = "This function is all about visualizing the distribution of
+      horns index values.",
+      msg_read
+    )
+  }
 
   # Position labels: min label to the left, max label to the right. Add a small
   # horizontal offset from the line.
