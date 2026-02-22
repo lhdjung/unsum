@@ -271,7 +271,7 @@ df4 <- tibble(
 )
 
 df4 <- df4 |>
-  mutate(id = seq_len(nrow(df4)), .before = inflation)
+  mutate(id = as.double(seq_len(nrow(df4))), .before = inflation)
 
 
 ggplot(df4, aes(x = n)) +
