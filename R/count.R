@@ -44,13 +44,13 @@ closure_count_all <- function(
 ) {
   # Same procedure as in `generate_from_mean_sd_n()`, and therefore
   # `closure_generate()`
-  check_value(mean, "character")
-  check_value(sd, "character")
-  check_value(n, c("double", "integer"))
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
-  check_value(rounding, "character")
-  check_value(threshold, c("double", "integer"))
+  check_single(mean, "character")
+  check_single(sd, "character")
+  check_single(n, c("double", "integer"))
+  check_single(scale_min, c("double", "integer"))
+  check_single(scale_max, c("double", "integer"))
+  check_single(rounding, "character")
+  check_single(threshold, c("double", "integer"))
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
@@ -87,8 +87,8 @@ closure_count_all <- function(
 #' @rdname closure_count_all
 #' @export
 closure_count_initial <- function(scale_min, scale_max) {
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
+  check_single(scale_min, c("double", "integer"))
+  check_single(scale_max, c("double", "integer"))
 
   check_scale(scale_min, scale_max)
 

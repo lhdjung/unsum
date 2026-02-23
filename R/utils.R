@@ -407,7 +407,7 @@ check_scale <- function(
 # Make sure a value has the right type (or one of multiple allowed types), has
 # length 1, and is not `NA`. Multiple allowed types are often `c("double",
 # "integer")` which allows any numeric value, but no values of any other types.
-check_value <- function(x, type, allow_null = FALSE) {
+check_single <- function(x, type, allow_null = FALSE) {
   if (allow_null && is.null(x)) {
     return(invisible(NULL))
   }

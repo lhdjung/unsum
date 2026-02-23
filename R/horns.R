@@ -125,8 +125,8 @@
 horns <- function(freqs, scale_min, scale_max) {
   check_type(freqs, "double")
 
-  check_value(scale_min, "double")
-  check_value(scale_max, "double")
+  check_single(scale_min, "double")
+  check_single(scale_max, "double")
 
   check_scale(scale_min, scale_max)
 

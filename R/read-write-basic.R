@@ -1,7 +1,7 @@
 write_basic <- function(data, path, technique) {
   check_generator_output(data, technique)
 
-  check_value(path, "character")
+  check_single(path, "character")
 
   # Translate "." to the user's working directory. If the path was manually
   # given, `trimws()` removes leading or trailing whitespace, e.g., linebreaks.

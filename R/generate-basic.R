@@ -46,17 +46,17 @@ generate_from_mean_sd_n <- function(
 ) {
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
-  check_value(mean, "character")
-  check_value(sd, "character")
-  check_value(n, c("double", "integer"))
-  check_value(scale_min, c("double", "integer"))
-  check_value(scale_max, c("double", "integer"))
-  check_value(path, "character", allow_null = TRUE)
-  check_value(stop_after, c("double", "integer"), allow_null = TRUE)
-  check_value(rounding, "character")
-  check_value(threshold, c("double", "integer"))
-  check_value(ask_to_proceed, "logical")
-  check_value(items, c("double", "integer"), allow_null = TRUE)
+  check_single(mean, "character")
+  check_single(sd, "character")
+  check_single(n, c("double", "integer"))
+  check_single(scale_min, c("double", "integer"))
+  check_single(scale_max, c("double", "integer"))
+  check_single(path, "character", allow_null = TRUE)
+  check_single(stop_after, c("double", "integer"), allow_null = TRUE)
+  check_single(rounding, "character")
+  check_single(threshold, c("double", "integer"))
+  check_single(ask_to_proceed, "logical")
+  check_single(items, c("double", "integer"), allow_null = TRUE)
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
