@@ -70,7 +70,7 @@ write_basic <- function(data, path, technique) {
   data$results$sample |>
     as_wide_n_tibble() |>
     nanoparquet::write_parquet(
-      file = paste0(path_new_dir, "samples.parquet")
+      file = paste0(path_new_dir, "sample.parquet")
     )
 
   # Create info.md and issue an alert. Leave an empty line before.
@@ -296,7 +296,7 @@ read_basic <- function(
 
         # Result samples (2 / 3)
         sample = path |>
-          paste0(slash, "samples.parquet") |>
+          paste0(slash, "sample.parquet") |>
           nanoparquet::read_parquet() |>
           t() |>
           tibble::as_tibble(.name_repair = "minimal") |>
@@ -305,7 +305,7 @@ read_basic <- function(
           tryCatch(
             error = function(e) {
               abort_in_export(
-                "Reading samples.parquet from disk failed.",
+                "Reading sample.parquet from disk failed.",
                 "x" = "Original error:",
                 "x" = "{e}",
                 "i" = "If memory is lacking, try\
