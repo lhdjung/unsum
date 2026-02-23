@@ -135,14 +135,12 @@ horns <- function(freqs, scale_min, scale_max) {
 
   # Error if arguments are incompatible in terms of length
   if (k != length(scale_min:scale_max)) {
-    cli::cli_abort(
-      c(
-        "Scale implied by `scale_min` ({scale_min}) \
+    abort_in_export(
+      "Scale implied by `scale_min` ({scale_min}) \
         and `scale_max` ({scale_max}) must match `freqs` in length.",
-        "x" = "Scale: length {length(scale_min:scale_max)} \
+      "x" = "Scale: length {length(scale_min:scale_max)} \
         (i.e., {scale_min} through {scale_max})",
-        "x" = "`freqs`: length {k}"
-      )
+      "x" = "`freqs`: length {k}"
     )
   }
 

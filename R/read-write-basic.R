@@ -13,12 +13,10 @@ write_basic <- function(data, path, technique) {
       any(names(data) == "directory") &&
       any(names(data$directory) == "path")
   ) {
-    cli::cli_abort(
-      c(
-        "Results were already saved to disk.",
-        "x" = "Folder with {technique} results is (or was) present at:",
-        "x" = data$directory$path
-      )
+    abort_in_export(
+      "Results were already saved to disk.",
+      "x" = "Folder with {technique} results is (or was) present at:",
+      "x" = data$directory$path
     )
   }
 
@@ -26,11 +24,9 @@ write_basic <- function(data, path, technique) {
     !any(names(data) == "results") ||
       !identical(names(data$results), c("id", "sample", "horns"))
   ) {
-    cli::cli_abort(
-      c(
-        "{technique} list must include a full `results` tibble.",
-        "!" = "Results include samples and horns index values."
-      )
+    abort_in_export(
+      "{technique} list must include a full `results` tibble.",
+      "!" = "Results include samples and horns index values."
     )
   }
 
@@ -113,32 +109,26 @@ read_basic <- function(
   # Check whether the `samples` and `samples_cap` arguments are consistent -- if
   # the former has either of these two values, the latter must be specified.
   if (include == "capped_error" && is.null(samples_cap)) {
-    cli::cli_abort(
-      c(
-        "If `include` is \"{include}\", `samples_cap` must be specified.",
-        "i" = "Use `samples_cap` to state a threshold -- if there are \
+    abort_in_export(
+      "If `include` is \"{include}\", `samples_cap` must be specified.",
+      "i" = "Use `samples_cap` to state a threshold -- if there are \
         more than this many samples, there will be an error."
-      )
     )
   }
 
   if (include != "capped_error" && !is.null(samples_cap)) {
-    cli::cli_abort(
-      c(
-        "If `samples_cap` is specified, `include` must be \"capped_error\".",
-        "x" = "`include` is: \"{include}\"",
-        "x" = "`samples_cap` is: `{samples_cap}`"
-      )
+    abort_in_export(
+      "If `samples_cap` is specified, `include` must be \"capped_error\".",
+      "x" = "`include` is: \"{include}\"",
+      "x" = "`samples_cap` is: `{samples_cap}`"
     )
   }
 
   if (!dir.exists(path)) {
-    cli::cli_abort(
-      c(
-        "Must choose an existing folder.",
-        "x" = "Chosen folder does not exist:",
-        "x" = path
-      )
+    abort_in_export(
+      "Must choose an existing folder.",
+      "x" = "Chosen folder does not exist:",
+      "x" = path
     )
   }
 
@@ -204,6 +194,7 @@ read_basic <- function(
       return(out_empty)
     }
 
+    # Error path
     msg_files_expected <- sort(FILES_EXPECTED)
     files_actual <- sort(files_actual)
 
@@ -222,13 +213,11 @@ read_basic <- function(
       c("x" = "Unnecessary files: {offenders_not_needed}")
     }
 
-    cli::cli_abort(
-      c(
-        "Folder must contain all correct files (and no others).",
-        "!" = "Expected files: {msg_files_expected}",
-        msg_missing,
-        msg_not_needed
-      )
+    abort_in_export(
+      "Folder must contain all correct files (and no others).",
+      "!" = "Expected files: {msg_files_expected}",
+      msg_missing,
+      msg_not_needed
     )
   }
 
@@ -253,8 +242,8 @@ read_basic <- function(
     !near(as.numeric(mean_sd_str[1]), as.numeric(out$inputs$mean)) ||
       !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
   ) {
-    cli::cli_abort(
-      "Mean and SD in inputs.csv must match those in the folder's name."
+    abort_in_export(
+      "Mean and SD in inputs.parquet must match those in the folder's name."
     )
   }
 
@@ -264,7 +253,7 @@ read_basic <- function(
       out$inputs$sd <- mean_sd_str[2]
     },
     error = function(e) {
-      cli::cli_abort("\"inputs\" must have \"mean\" and \"sd\" columns.")
+      abort_in_export("\"inputs\" must have \"mean\" and \"sd\" columns.")
     }
   )
 
@@ -273,7 +262,7 @@ read_basic <- function(
       out$frequency$value <- as.integer(out$frequency$value)
     },
     error = function(e) {
-      cli::cli_abort("\"frequency\" must have a \"value\" column.")
+      abort_in_export("\"frequency\" must have a \"value\" column.")
     }
   )
 
@@ -290,12 +279,10 @@ read_basic <- function(
       nrow = n_samples_all
     )
   } else if (include == "capped_error" && n_samples_all > samples_cap) {
-    cli::cli_abort(
-      c(
-        "Number of samples exceeds the cap.",
-        "x" = "`samples_cap` is: {samples_cap}",
-        "x" = "Number of samples is: {n_samples_all}"
-      )
+    abort_in_export(
+      "Number of samples exceeds the cap.",
+      "x" = "`samples_cap` is: {samples_cap}",
+      "x" = "Number of samples is: {n_samples_all}"
     )
   } else if (include %in% c("all", "capped_error")) {
     # Read in the results separately. This requires transposing the samples via
@@ -317,17 +304,14 @@ read_basic <- function(
           unname() |>
           tryCatch(
             error = function(e) {
-              cli::cli_abort(
-                c(
-                  "Reading samples.parquet from disk failed.",
-                  "x" = "Original error:",
-                  "x" = "{e}",
-                  "i" = "If memory is lacking, try\
+              abort_in_export(
+                "Reading samples.parquet from disk failed.",
+                "x" = "Original error:",
+                "x" = "{e}",
+                "i" = "If memory is lacking, try\
                   `include = \"stats_and_horns\"`.\
                   In case even this takes up too much memory, use\
                   `include = \"stats_only\"`."
-                ),
-                call = rlang::caller_env(4)
               )
             }
           ),
@@ -351,13 +335,10 @@ read_basic <- function(
   tryCatch(
     check_generator_output(out, technique),
     error = function(e) {
-      cli::cli_abort(
-        c(
-          "Something went wrong when reading from disk.",
-          "x" = "Original error:",
-          "x" = "{e}"
-        ),
-        call = rlang::caller_env(4)
+      abort_in_export(
+        "Something went wrong when reading from disk.",
+        "x" = "Original error:",
+        "x" = "{e}"
       )
     }
   )

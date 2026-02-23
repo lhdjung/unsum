@@ -130,37 +130,28 @@ closure_plot_ecdf <- function(
     # Error if the raw data are not available -- visualizing all samples is not
     # possible in this case
     if (is.null(data[["results"]][["sample"]])) {
-      cli::cli_abort(
-        c(
-          "Visualizing all samples requires those samples.",
-          "x" = "`samples` is \"all\" but the actual samples \
+      abort_in_export(
+        "Visualizing all samples requires those samples.",
+        "x" = "`samples` is \"all\" but the actual samples \
           are not present. Most likely, they were written to disk instead.",
-          "i" = "See `closure_read()` for options to read \
+        "i" = "See `closure_read()` for options to read \
           all samples from disk. If successful, this will \
           enable you to visualize each individual sample."
-        ),
-        call = rlang::caller_env()
       )
     }
 
     # This error shouldn't occur if the initial checks work
     if (is.null(data[["results"]][["horns"]])) {
-      cli::cli_abort(
-        "Column `horns` missing.",
-        call = rlang::caller_env()
-      )
+      abort_in_export("Column `horns` missing.")
     }
 
     # Error if the user tries to match the curves of all samples with the range
     if (pad == "match") {
-      cli::cli_abort(
-        c(
-          "In `closure_plot_ecdf()`, matching the y-axis range is \
+      abort_in_export(
+        "In `closure_plot_ecdf()`, matching the y-axis range is \
           currently not supported when visualizing each individual sample.",
-          "x" = "You chose `samples = \"all\"`, but also `pad = \"match\"`.",
-          "i" = "Use `pad = \"extend\"` or `pad = \"stop\"` instead."
-        ),
-        call = rlang::caller_env()
+        "x" = "You chose `samples = \"all\"`, but also `pad = \"match\"`.",
+        "i" = "Use `pad = \"extend\"` or `pad = \"stop\"` instead."
       )
     }
 

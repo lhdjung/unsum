@@ -111,14 +111,9 @@ check_generator_output <- function(
     msg_tibble_names <- paste0("\"", TIBBLE_NAMES, "\"")
 
     abort_in_export(
-      paste0(
-        "Input must be the output of `",
-        lowtech,
-        "_generate()` or `",
-        lowtech,
-        "_read()`."
-      ),
-      "!" = "Such output is a list with the elements {msg_tibble_names}."
+      "Input must be the output of `{lowtech}_generate()` or
+      `{lowtech}_read()`.",
+      "i" = "Such output is a list with the elements {msg_tibble_names}."
     )
   }
 
@@ -191,9 +186,8 @@ check_generator_output <- function(
       all(is.nan(data$frequency$f_average)) &&
       all(is.nan(data$frequency$f_relative))
   ) {
-    cli::cli_abort(
-      "Results are empty; there is nothing to process any further.",
-      call = rlang::caller_env()
+    abort_in_export(
+      "Results are empty; there is nothing to process any further."
     )
   }
 
@@ -229,11 +223,11 @@ check_generator_output <- function(
     )
 
     if (length(reading_class) > 1) {
-      cli::cli_abort("Cannot handle manipulated S3 classes.")
+      abort_in_export("Cannot handle modified S3 classes.")
     }
 
     if (!any(names(data) == "directory")) {
-      cli::cli_abort("Cannot handle manipulated output; \"directory\" missing.")
+      abort_in_export("Cannot handle modified output; \"directory\" missing.")
     }
 
     check_component_tibble(
@@ -247,11 +241,9 @@ check_generator_output <- function(
 
     # Contradictory data
     if (reading_class == "stats_only" && any(names(data) == "results")) {
-      cli::cli_abort(
-        c(
-          "Cannot hold \"results\" tibble because reading function \
-          was called with `include == \"stats_only\"`."
-        )
+      abort_in_export(
+        "Cannot hold \"results\" tibble because reading function \
+        was called with `include == \"stats_only\"`."
       )
     }
 
@@ -303,13 +295,10 @@ check_generator_output <- function(
   # still be met. Also, the error message doesn't mention `allow_empty` because
   # the message is user-facing and `allow_empty` is not.
   if (!isTRUE(freqs_sum_up)) {
-    cli::cli_abort(
-      c(
-        "The `f_relative` column in `frequency` must sum up to 1 \
+    abort_in_export(
+      "The `f_relative` column in `frequency` must sum up to 1 \
         (or 0, if `f_absolute` does).",
-        "x" = "It actually sums up to {f_relative_sum}."
-      ),
-      call = rlang::caller_env()
+      "x" = "It actually sums up to {f_relative_sum}."
     )
   }
 }
