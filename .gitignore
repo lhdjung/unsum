@@ -15,8 +15,8 @@ src/Makevars
 src/Makevars.win
 special-scripts/*.html
 special-scripts/*.pdf
-CLOSURE-*
-SPRITE-*
+CLOSURE-*/
+SPRITE-*/
 
 # macOS
 .DS_Store
