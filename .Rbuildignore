@@ -20,3 +20,4 @@
 ^[.]?air[.]toml$
 ^\.vscode$
 ^vignettes/articles$
+^R/doc-helpers\.R$
