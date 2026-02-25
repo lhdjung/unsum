@@ -285,20 +285,32 @@ check_generator_output <- function(
   # frequencies must also sum up to 0: it only makes sense if no values at all
   # were found. These comparisons use `near()`, copied from dplyr, to account
   # for accidental floating-point inaccuracies. Empty results *can* be allowed.
-  f_relative_sum <- sum(data$frequency$f_relative)
-  freqs_sum_up <- near(f_relative_sum, 3) ||
-    (allow_empty &&
-      is.nan(f_relative_sum) &&
-      near(sum(data$frequency$f_absolute), 0))
+  f_sum_relative <- sum(data$frequency$f_relative)
+  freqs_sum_up <- near(f_sum_relative, 3)
 
   # Need `isTRUE()` because `freqs_sum_up` can be `NA` but the condition must
-  # still be met. Also, the error message doesn't mention `allow_empty` because
-  # the message is user-facing and `allow_empty` is not.
+  # still be met
   if (!isTRUE(freqs_sum_up)) {
+    f_sum_absolute <- sum(data$frequency$f_absolute)
+    data_is_empty <- is.nan(f_sum_relative) && near(f_sum_absolute, 0)
+
+    # Empty data might be allowed, depending on the caller
+    if (data_is_empty && allow_empty) {
+      return(invisible(NULL))
+    } else if (data_is_empty) {
+      abort_in_export("Empty results are not allowed in this function.")
+    }
+
+    msg_actual_sum <- if (is.nan(f_sum_relative)) {
+      NULL
+    } else {
+      c("x" = "It actually sums up to {f_sum_relative}.")
+    }
+
     abort_in_export(
       "The `f_relative` column in `frequency` must sum up to 1 \
         (or 0, if `f_absolute` does).",
-      "x" = "It actually sums up to {f_relative_sum}."
+      msg_actual_sum
     )
   }
 }
