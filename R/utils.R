@@ -558,6 +558,32 @@ caller_fn_name <- function(n = 1) {
 
 # Specific logic ----------------------------------------------------------
 
+# Translate "." to the user's working directory. If the path was manually given,
+# `trimws()` removes leading or trailing whitespace, e.g., linebreaks.
+path_sanitize <- function(path) {
+  out <- switch(path, "." = getwd(), trimws(path))
+
+  # Error if `path` was given as a period with whitespace, as empty, or as
+  # whitespace-only (which was trimmed above)
+  if (out %in% c("", ".")) {
+    msg_main <- if (out == ".") {
+      "In `path`, whitespace around the period is not allowed."
+    } else if (path == "") {
+      "`path` cannot be \"\", an empty string."
+    } else {
+      "`path` cannot consist of whitespace."
+    }
+
+    abort_in_export(
+      msg_main,
+      "i" = "Did you mean \".\" for your current working directory?"
+    )
+  }
+
+  out
+}
+
+
 # Folder into which CLOSURE-type results will be written, with a helpful check
 create_results_folder <- function(path) {
   if (dir.exists(path)) {

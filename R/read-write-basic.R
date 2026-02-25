@@ -1,3 +1,6 @@
+#' @include utils.R
+NULL
+
 write_basic <- function(data, path, technique) {
   check_generator_output(data, technique)
 
@@ -5,7 +8,7 @@ write_basic <- function(data, path, technique) {
 
   # Translate "." to the user's working directory. If the path was manually
   # given, `trimws()` removes leading or trailing whitespace, e.g., linebreaks.
-  path <- if (path == ".") getwd() else trimws(path)
+  path <- path_sanitize(path)
 
   # Refuse to rewrite data that were already saved to disk
   if (
