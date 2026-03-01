@@ -280,6 +280,27 @@ ggplot(df4, aes(x = n)) +
   labs(x = "Sample size", y = "Horns index") +
   scale_y_continuous(limits = c(0.66, 0.665))
 
+
+# Difference between the max variance corrected for odd N and the uncorrected
+# horns index (i.e., uncorrected minus corrected)
+diff_odd <- function(n) 1 / n^2
+df <- tibble(n = 2:50, diff = diff_odd(n), diff_rounded = round(diff, 2))
+
+
+ggplot(df, aes(x = n, y = diff)) +
+  geom_point(size = 2) +
+  geom_line() +
+  labs(x = "Sample size", y = "Odd-N correction")
+
+
+# Some salient numbers -- the difference is hardly appreciable even at low N
+df |>
+  filter(n %in% c(5, 10, 20))
+
+# With N >= 15, the difference rounded to two decimal places is zero
+df |>
+  filter(diff_rounded == 0)
+
 ##
 #
 #
