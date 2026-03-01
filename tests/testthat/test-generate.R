@@ -1,3 +1,5 @@
+# CLOSURE -----------------------------------------------------------------
+
 # Use R wrapper around Rust implementation
 data_r_1 <- closure_generate(
   mean = "3.5",
@@ -6,6 +8,7 @@ data_r_1 <- closure_generate(
   scale_min = 1,
   scale_max = 5
 )
+
 
 data_r_2 <- closure_generate(
   mean = "3.7",
@@ -21,9 +24,19 @@ test_that("The results pass unsum's internal check for `closure_generate()` outp
   data_r_2 |> check_generator_output("CLOSURE") |> expect_no_error()
 })
 
+
+maybe_wrong_1 <- data_r_1 |> count_wrong_stats()
+maybe_wrong_2 <- data_r_2 |> count_wrong_stats()
+
+test_that("All samples yield the original mean and SD", {
+  maybe_wrong_1 |> any_wrong_stats() |> expect_false()
+  maybe_wrong_2 |> any_wrong_stats() |> expect_false()
+})
+
+
 # Adjust results of R wrapper to format of data saved on disk
-data_r_1 <- data_r_1$results$sample |> as_wide_n_tibble()
-data_r_2 <- data_r_2$results$sample |> as_wide_n_tibble()
+wide_n_1 <- data_r_1$results$sample |> as_wide_n_tibble()
+wide_n_2 <- data_r_2$results$sample |> as_wide_n_tibble()
 
 
 # Check results for identity after sorting columns. Different CLOSURE
@@ -34,8 +47,8 @@ data_r_2 <- data_r_2$results$sample |> as_wide_n_tibble()
 # effects are ignored below.
 
 ok <- test_that("All implementations return identical results (after sorting the columns)", {
-  .data_rust_1 |> identical_sorted_cols(data_r_1) |> expect_true()
-  .data_rust_2 |> identical_sorted_cols(data_r_2) |> expect_true()
+  .data_rust_1 |> identical_sorted_cols(wide_n_1) |> expect_true()
+  .data_rust_2 |> identical_sorted_cols(wide_n_2) |> expect_true()
 })
 
 
@@ -43,11 +56,11 @@ ok <- test_that("All implementations return identical results (after sorting the
 if (!ok) {
   .data_rust_1 <- sort_cols(.data_rust_1)
   .data_python_1 <- sort_cols(.data_python_1)
-  data_r_1 <- sort_cols(data_r_1)
+  wide_n_1 <- sort_cols(wide_n_1)
 
   all.equal(.data_rust_1, .data_python_1, x_arg = "rust", y_arg = "python")
-  all.equal(.data_rust_1, data_r_1, x_arg = "rust", y_arg = "r")
-  all.equal(.data_python_1, data_r_1, x_arg = "python", y_arg = "r")
+  all.equal(.data_rust_1, wide_n_1, x_arg = "rust", y_arg = "r")
+  all.equal(.data_python_1, wide_n_1, x_arg = "python", y_arg = "r")
 }
 
 
