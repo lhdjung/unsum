@@ -1,0 +1,202 @@
+---
+title: "Analysis: Vendored Git Dependency Workflow in extendr/rextendr Packages"
+output: html_document
+---
+
+## The Problem
+
+When `closure-core` (a git dependency) gains new public API — for example `closure_count()` or `ResultListFromMeanSdN::empty()` — the Rust compiler in `unsum` reports errors like:
+
+```
+error[E0432]: unresolved import `closure_core::closure_count`
+error[E0599]: no function or associated item named `empty` found for struct `ResultListFromMeanSdN`
+```
+
+These look like Rust API errors, but the *actual cause* is that `Cargo.lock` still pins `closure-core` to an old commit that predates those functions.
+
+---
+
+## How the Build System Works
+
+`unsum` uses the standard rextendr vendoring setup:
+
+1. **`src/rust/vendor.tar.xz`** — the source of truth. Contains a snapshot of all Rust dependencies.
+2. **`src/rust/vendor-config.toml`** — tells cargo to resolve all sources (crates.io and git) from the extracted vendor directory.
+3. **`src/Makevars.in`** — at build time, if `vendor.tar.xz` exists, it is extracted to `src/vendor/` and `vendor-config.toml` is placed at `src/.cargo/config.toml`. Then `cargo build --offline` is run.
+
+```makefile
+if [ -f ./rust/vendor.tar.xz ]; then \
+    tar xf rust/vendor.tar.xz && \
+    mkdir -p $(CARGOTMP) && \
+    cp rust/vendor-config.toml $(CARGOTMP)/config.toml; \
+fi
+```
+
+This means **`vendor.tar.xz` is used for every build** (local `devtools::install()` and CRAN), not just CRAN. The expanded `src/rust/vendor/` directory you see in the repo is just the remnant of a previous build; it is not what gets compiled.
+
+The `vendor-config.toml` redirects the git source:
+
+```toml
+[source."git+https://github.com/lhdjung/closure-core.git"]
+git = "https://github.com/lhdjung/closure-core.git"
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"
+```
+
+So cargo uses the vendored closure-core files regardless of what commit hash is in `Cargo.lock` — **but the vendored files are only as new as the last time `vendor.tar.xz` was created**.
+
+---
+
+## The Root Cause
+
+`Cargo.lock` pins git dependencies to a specific commit:
+
+```toml
+[[package]]
+name = "closure-core"
+version = "1.0.0"
+source = "git+https://github.com/lhdjung/closure-core.git#d1aaf214e4fcba8b4891f97e66fedf8c9babf34d"
+```
+
+When new API is added to `closure-core` and pushed to GitHub, two things must happen for `unsum` to see it:
+
+1. **`Cargo.lock` must be updated** to reference the new commit hash.
+2. **`vendor.tar.xz` must be regenerated** to contain the new source files.
+
+If only (1) happens (e.g., by manually editing `Cargo.lock`), the Cargo.lock now points to a newer commit, but the vendored source files inside `vendor.tar.xz` are still the old ones. Cargo is redirected to the vendor directory, which doesn't have the new functions — hence the compilation error.
+
+If only (2) happens without updating `Cargo.lock`, cargo may refuse to build because the lock file does not match.
+
+Both must be done together, in the right order.
+
+---
+
+## The Recurring Manual Fix (and Why It Works Anyway)
+
+Manually editing the git hash in `Cargo.lock` (line 363 at the time of writing) *sometimes* works, because:
+
+- The vendor config matches by base git URL, not by commit hash. So any hash pointing to `github.com/lhdjung/closure-core.git` will be redirected to the vendored directory.
+- If the vendored closure-core happens to already have the new API (e.g., because `vendor.tar.xz` was recently regenerated), updating the hash alone is sufficient.
+- If the vendored closure-core does *not* have the new API, the hash update does nothing and the build still fails.
+
+In the incident that prompted this document: `vendor.tar.xz` contained the old closure-core at `d1aaf214`, which lacked both `closure_count` and `ResultListFromMeanSdN::empty()`. Updating the hash in `Cargo.lock` to the newer commit `da4ef4c4` worked because — presumably — `vendor.tar.xz` had already been regenerated at some point to include the new API. The hash update just corrected the mismatch between what the lock file claimed and what was vendored.
+
+This is fragile. It relies on implicit knowledge of what's actually inside `vendor.tar.xz`.
+
+---
+
+## The Correct Workflow
+
+The right tool for regenerating the vendor is `rextendr::vendor_pkgs()`. It runs `cargo vendor`, collects all dependencies (including git ones) into `src/rust/vendor/`, and archives them as `vendor.tar.xz`.
+
+The problem with git dependencies is that `cargo vendor` uses whatever commit is pinned in `Cargo.lock`. To pick up new commits, the lock file must be updated *first*.
+
+**Full correct workflow after updating `closure-core` on GitHub:**
+
+```r
+# From the unsum project root in R:
+
+# Step 1: Update Cargo.lock to the latest closure-core commit.
+# This requires temporarily bypassing the vendor redirect so cargo can
+# reach the real git source. Do this in a terminal:
+#
+#   cd src/rust
+#   mv ../../.cargo/config.toml /tmp/backup-vendor-config.toml  # or just delete src/.cargo/
+#   cargo update -p closure-core
+#   mv /tmp/backup-vendor-config.toml ../../.cargo/config.toml
+#
+# OR: just manually replace the commit hash in Cargo.lock (line with "closure-core").
+
+# Step 2: Re-vendor with the updated Cargo.lock.
+rextendr::vendor_pkgs()
+# This runs cargo vendor, creates vendor.tar.xz, and removes the expanded vendor/ dir.
+```
+
+`rextendr::vendor_pkgs()` handles step 2 correctly. The awkward part is step 1.
+
+### Easier Step 1: Manual Hash Update
+
+Since closure-core is a repo you control, the pragmatic approach for step 1 is:
+
+1. Find the latest commit hash on GitHub (or via `git -C /path/to/closure-core rev-parse HEAD`).
+2. Replace the old hash in `src/rust/Cargo.lock` at the `closure-core` entry.
+3. Then run `rextendr::vendor_pkgs()`.
+
+```bash
+# Get the latest commit hash from the local clone:
+git -C ~/rust_projects/closure-core rev-parse HEAD
+```
+
+Then in `src/rust/Cargo.lock`, find:
+```
+source = "git+https://github.com/lhdjung/closure-core.git#<OLD_HASH>"
+```
+and replace `<OLD_HASH>` with the new one.
+
+Then in R: `rextendr::vendor_pkgs()`.
+
+---
+
+## Why the Diagnosis Is Confusing
+
+Several things make this hard to debug:
+
+1. **The error looks like a Rust API mismatch**, not a version/vendoring problem. "No `closure_count` in the root" sounds like the function was removed or renamed, not that an old snapshot is being compiled.
+
+2. **Cargo reports the git source in compile output** even when the vendor redirect is active:
+   ```
+   Compiling closure-core v1.0.0 (https://github.com/lhdjung/closure-core.git#d1aaf214)
+   ```
+   This makes it look like cargo is fetching from GitHub and the new code *should* be there.
+
+3. **The expanded `src/rust/vendor/` directory** (remnant of previous builds) may contain newer files than `vendor.tar.xz`, creating a false impression of what's actually compiled. The tarball always wins.
+
+4. **`vendor.tar.xz` is present during local development**, so the offline path is always taken — it's not only for CRAN. Developers may not realize their local builds are also using the tarball.
+
+---
+
+## Potential Improvement to rextendr
+
+`rextendr::vendor_pkgs()` could optionally run `cargo update -p <crate>` (or `cargo update` broadly) before vendoring. A possible interface:
+
+```r
+# Hypothetical future API:
+rextendr::vendor_pkgs(update = "closure-core")
+# or
+rextendr::vendor_pkgs(update = TRUE)  # update all
+```
+
+This would:
+1. Temporarily bypass the vendor redirect (modify or remove the CARGO_HOME config).
+2. Run `cargo update -p closure-core` to fetch the latest commit from git.
+3. Run `cargo vendor` as usual.
+4. Restore any config changes.
+5. Archive as `vendor.tar.xz`.
+
+This would make the whole "update a git dependency" workflow a single R function call, which is the appropriate level of abstraction for this tooling.
+
+The relevant rextendr source is in `R/cran-compliance.R`. The `vendor_pkgs()` function is the right place to add this capability.
+
+---
+
+## Summary
+
+| What changed | What you must do |
+|---|---|
+| New crate added to `Cargo.toml` | Update `Cargo.lock` hash (or `cargo update`), then `vendor_pkgs()` |
+| Existing git dep gets new API | Update `Cargo.lock` hash (or `cargo update`), then `vendor_pkgs()` |
+| Existing crates.io dep bumped in `Cargo.toml` | `vendor_pkgs()` (cargo resolves the new version automatically) |
+| No dependency changes | Nothing needed |
+
+**The two-step rule:** update `Cargo.lock` first, then regenerate `vendor.tar.xz` via `rextendr::vendor_pkgs()`.
+
+---
+
+## References
+
+- [rextendr on CRAN](https://cran.r-project.org/web/packages/rextendr/rextendr.pdf)
+- [rextendr source: R/cran-compliance.R](https://rdrr.io/github/extendr/rextendr/src/R/cran-compliance.R)
+- [Using Rust code in R packages (rextendr vignette)](https://extendr.rs/rextendr/articles/package.html)
+- [rextendr GitHub](https://github.com/extendr/rextendr)
