@@ -12,11 +12,8 @@ env_not_cran <- Sys.getenv("NOT_CRAN")
 vendor_exists <- file.exists("src/rust/vendor.tar.xz")
 
 is_not_cran <- env_not_cran != ""
-is_debug <- FALSE
+is_debug <- env_debug != ""
 
-if (!is_not_cran) {
-  is_debug <- FALSE
-}
 
 if (is_debug) {
   # if we have DEBUG then we set not cran to true
