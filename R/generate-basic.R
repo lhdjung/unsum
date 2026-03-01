@@ -33,6 +33,7 @@ generate_from_mean_sd_n <- function(
   n,
   scale_min,
   scale_max,
+  items = 1,
   technique,
   path = NULL,
   stop_after = NULL,
@@ -41,8 +42,7 @@ generate_from_mean_sd_n <- function(
   threshold = 5,
   ask_to_proceed = TRUE,
   rounding_error_mean = NULL,
-  rounding_error_sd = NULL,
-  items = NULL
+  rounding_error_sd = NULL
 ) {
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
@@ -65,28 +65,15 @@ generate_from_mean_sd_n <- function(
 
   # SPRITE-specific validation
   if (technique == "SPRITE") {
-    if (is.null(items)) {
-      abort_in_export(
-        "`items` is required for SPRITE technique.",
-        "i" = "`items` must be at least 2 (representing the number of items/questions in your scale)."
-      )
-    }
-    if (items < 2) {
-      abort_in_export(
-        "`items` must be at least 2 for SPRITE.",
-        "x" = "`items` is: {items}",
-        "i" = "SPRITE requires at least 2 items to generate valid samples."
-      )
-    }
-
     # Prevent overflow crashes - SPRITE with items > 1 is prone to overflow
     # Be very conservative and require stop_after in most cases
     if (items > 1 && is.null(stop_after)) {
       abort_in_export(
-        "`stop_after` is required when using SPRITE with `items > 1`.",
-        "x" = "Current parameters: items={items}, n={n}",
+        "`stop_after` is required when using SPRITE with multi-item scales.",
+        "x" = "Currently using: `items = {items}`",
         "i" = "Add `stop_after` to limit results and prevent overflow.",
-        "i" = "Recommended: `stop_after = 100` for exploratory analysis.",
+        "i" = "For example: `stop_after = 1000` will stop after SPRITE found
+        the first 1000 results.",
         "i" = "This is a known limitation of the current SPRITE implementation."
       )
     }
@@ -336,6 +323,7 @@ generate_from_mean_sd_n <- function(
     out <- switch(
       technique,
       "CLOSURE" = closure_read(path_new_dir, include = include),
+      "SPRITE" = sprite_read(path_new_dir, include = include),
 
       # Error if `technique` is allowed but file reading is not supported yet
       cli::cli_abort(
