@@ -2,6 +2,7 @@
 ^\.Rproj\.user$
 ^src/\.cargo$
 ^src/\.claude$
+^.claude$
 ^LICENSE\.md$
 ^README\.Rmd$
 ^special-scripts$
@@ -20,4 +21,5 @@
 ^[.]?air[.]toml$
 ^\.vscode$
 ^vignettes/articles$
+^vignettes/.quarto$
 ^R/doc-helpers\.R$
