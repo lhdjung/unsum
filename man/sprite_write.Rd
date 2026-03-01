@@ -98,7 +98,6 @@ data <- sprite_generate(
   n = 45,
   scale_min = 1,
   scale_max = 5,
-  items = 3,
   stop_after = 1000
 )
 

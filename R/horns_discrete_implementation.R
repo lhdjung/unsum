@@ -119,7 +119,7 @@ horns <- function(
 
     # Sum of squared deviations for maximum configuration
     ss_max <- n1 * (1 - mean_at_max)^2 + n2 * (k - mean_at_max)^2
-    # This simplifies to: n * (k-1)²/4
+    # This simplifies to: n * (k-1)^2/4
   } else {
     # Odd N: uneven split required
     n1 <- (n - 1) / 2
@@ -128,7 +128,7 @@ horns <- function(
 
     # Sum of squared deviations for maximum configuration
     ss_max <- n1 * (1 - mean_at_max)^2 + n2 * (k - mean_at_max)^2
-    # After algebra, this equals: n * (k-1)²/4 * (1 - 1/n²)
+    # After algebra, this equals: n * (k-1)^2/4 * (1 - 1/n^2)
   }
 
   if (use_sample_variance) {
@@ -257,7 +257,7 @@ compare_horns_versions <- function(
       )
       if (!details$is_even_n) {
         cat(
-          "  Odd-N geometric factor: 1 - 1/n² =",
+          "  Odd-N geometric factor: 1 - 1/n^2 =",
           sprintf("%.4f", details$odd_n_factor),
           "\n"
         )
@@ -274,7 +274,7 @@ compare_horns_versions <- function(
   }
 
   if (details$h > 0.8) {
-    cat("  ⚠ High h suggests distribution is near maximum dispersion\n")
+    cat("  ! High h suggests distribution is near maximum dispersion\n")
   }
 
   return(invisible(details))
@@ -376,7 +376,7 @@ demonstrate_sample_size_effects <- function(
     "Even?",
     "Max(sample)",
     "Max(pop)",
-    "→ Theor"
+    "-> Theor"
   ))
   cat(rep("-", 50), "\n", sep = "")
 
@@ -387,7 +387,7 @@ demonstrate_sample_size_effects <- function(
       ifelse(results$is_even[i], "Yes", "No"),
       results$max_var_sample[i],
       results$max_var_pop[i],
-      ifelse(i == nrow(results), sprintf("→ %.6f", theoretical_max), "")
+      ifelse(i == nrow(results), sprintf("-> %.6f", theoretical_max), "")
     ))
   }
 
@@ -406,7 +406,7 @@ demonstrate_sample_size_effects <- function(
     # print(results_even)
     # print(results_odd)
 
-    p <- ggplot2::ggplot(results, ggplot2::aes(x = n, y = bias)) +
+    p <- ggplot2::ggplot(results, ggplot2::aes(x = n, y = .data$bias)) +
 
       # Even-N line
       ggplot2::geom_line(
@@ -419,7 +419,10 @@ demonstrate_sample_size_effects <- function(
       ggplot2::geom_line(linewidth = 1, color = "red", data = results_odd) +
 
       ggplot2::geom_point(size = 3) +
-      ggplot2::geom_label(ggplot2::aes(label = round(bias, 2)), vjust = -0.5) +
+      ggplot2::geom_label(
+        ggplot2::aes(label = round(.data$bias, 2)),
+        vjust = -0.5
+      ) +
       ggplot2::scale_x_continuous(
         breaks = results$n,
         labels = results$n

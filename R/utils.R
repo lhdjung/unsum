@@ -4,7 +4,11 @@
 NULL
 
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
-utils::globalVariables(c(".", "value", ".data", "group_frequency_table"))
+# fmt: skip
+utils::globalVariables(c(
+  ".", "value", ".data", "group_frequency_table",
+  "formals_final", "path", "include", "samples_cap", "data", "frequency"
+))
 
 
 # Build mode ---------------------------------------------------------------
