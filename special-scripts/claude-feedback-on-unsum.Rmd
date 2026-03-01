@@ -1,0 +1,450 @@
+---
+title: "Architectural feedback on unsum"
+author: "Claude Sonnet 4.6 (generated 2026-03-01)"
+output: rmarkdown::github_document
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Files read
+
+`R/generate.R`, `R/generate-basic.R`, `R/doc-helpers.R`, `R/fn-factory.R`,
+`R/fn-formals.R`, `R/read-write.R`, `R/read-write-basic.R`, `R/utils.R`,
+`R/plot-bar.R`, `R/plot-bar-basic.R`, `R/plot-ecdf-basic.R`, `R/horns.R`,
+`R/constants.R`, `tests/testthat/test-generate.R`, and the S7 HTML docs under
+`special-scripts/s7-docs/`.
+
+---
+
+## Overall architecture
+
+The package is built around a single core pattern: a "generator" function
+(`closure_generate()`, `sprite_generate()`) returns a named list of five tibbles
+(`inputs`, `metrics_main`, `metrics_horns`, `frequency`, `results`), and every
+downstream function (`closure_plot_bar()`, `closure_write()`, etc.) consumes
+that list.
+
+The main structural layers are:
+
+| Layer | Files | Role |
+|---|---|---|
+| Core algorithm | `generate-basic.R` | `generate_from_mean_sd_n()`, the one function that actually calls the Rust code |
+| Function factory | `fn-factory.R` | `new_generator_mean_sd_n()` etc. build public API functions programmatically |
+| Formals DSL | `fn-formals.R` | Manipulation of pairlists to share argument signatures |
+| I/O | `read-write-basic.R`, `read-write.R` | Write/read results as Parquet files |
+| Validation | `utils.R` | `check_generator_output()`, plus many smaller checks |
+| Documentation | `doc-helpers.R` | `expand_section()` generates roxygen sections at build time |
+
+---
+
+## What works well
+
+### The function-factory pattern
+
+`new_generator_mean_sd_n()`, `new_writer_fn()`, `new_reader_fn()`, and
+`new_plot_fn_bar()` in `fn-factory.R` cleanly eliminate copy-paste between
+technique-specific functions. Adding a third technique would mean registering it
+in the factory — no new code per exported function. That is good design.
+
+### `generate_from_mean_sd_n()` as a single source of truth
+
+All technique-specific generator functions delegate to one implementation. The
+`technique` argument gates the small differences. This is easier to maintain
+than separate per-technique functions would be.
+
+### Separation of in-memory vs. disk mode
+
+The `in_memory_mode` flag in `generate_from_mean_sd_n()` cleanly bifurcates the
+two very different execution paths. The logic is easy to follow.
+
+### Thorough validation
+
+`check_generator_output()` (~230 lines in `utils.R`) validates types, shapes,
+column names, cross-field constraints (frequencies summing to 1), and the
+reading-class pattern. It catches a wide class of user errors.
+
+### The `fn-formals.R` mini-library
+
+The formals DSL (`formals_add()`, `formals_remove()`, `formals_add_defaults()`,
+etc.) is well-written and internally documented. It is the only thing making the
+function-factory approach viable, since the factory must compose argument lists
+at build time rather than repeat them.
+
+---
+
+## What is worth improving (independent of S7)
+
+### 1. The S3 class is on the wrong object
+
+The S3 class that identifies the output type is attached to `data$inputs`, not
+to `data` itself:
+
+```r
+# generate-basic.R, line ~279:
+class = technique |> tolower() |> paste0("_generate")
+# applied to data$inputs (a 1×8 tibble), not to the outer list
+```
+
+As a result every internal check must write `inherits(data$inputs,
+"closure_generate")` rather than `inherits(data, "closure_generate")`.
+
+**Your objection (printing).** Fair point: a classed list without a `print`
+method prints as a plain list followed by:
+
+```
+attr(,"class")
+[1] "closure_generate" "list"
+```
+
+That is ugly. But it is also easily fixed: define `print.closure_generate`.
+Once R can dispatch to a named method it never falls back to showing the raw
+attribute. A minimal implementation:
+
+```r
+print.closure_generate <- function(x, ...) {
+  print(unclass(x), ...)
+  invisible(x)
+}
+```
+
+That prints exactly what users see today, with no `attr(,"class")` line. A
+richer version could add a header line such as `<CLOSURE results: 1,248 samples>`
+before the tibbles.
+
+**Your objection (`inherits()` / `is()` / `UseMethod()` are dev tools).** Fully
+agreed — users will not call these on package output. The real beneficiary is
+the internal code. `check_generator_output()` and `write_basic()` both have to
+reach into `data$inputs` just to establish what kind of object `data` is, which
+is non-obvious to a contributor reading either function. Putting the class on
+the list itself is a code-clarity win, not a user-facing one.
+
+**Does S7 help with printing?** Yes, in the sense that S7 objects have a
+default `print` generic and R will call a registered `method(print,
+ClosureResult)` automatically — no `attr(,"class")` noise. But this is not a
+meaningful advantage over defining `print.closure_generate` in S3. Both solve
+the printing problem with one short function.
+
+### 2. The reading-class pattern is fragile
+
+Classes like `"closure_read_include_stats_only"` are stored as strings inside
+the `inputs` tibble's class vector and then parsed back with regex:
+
+```r
+sub(
+  pattern = paste0("^", lowtech, "_read_include_"),
+  replacement = "",
+  x = reading_class
+)
+```
+
+**Your objection.** You ask: wouldn't even a cleaned-up version still need to
+parse the string to recover the technique and the `include` variant?
+
+The technique is not the issue — every function that calls
+`check_generator_output()` already has `technique` (or `lowtech`) in scope as
+a parameter. You never need to extract it from the class string. The `include`
+variant is the only thing being parsed, and for that, a direct `inherits()`
+call is cleaner than regex:
+
+```r
+# Instead of regex-parsing a class string out of data$inputs, check the
+# top-level list directly (after moving the class there):
+if (inherits(data, paste0(lowtech, "_read_include_stats_only"))) {
+  # ...
+} else if (inherits(data, paste0(lowtech, "_read_include_stats_and_horns"))) {
+  # ...
+}
+```
+
+This still concatenates strings, but it is _checking_ rather than _parsing_:
+you are asking "does this object have this class?" rather than "extract the
+suffix and treat it as a value." The distinction matters because `inherits()`
+is a primitive predicate with well-defined failure modes, while regex parsing on
+a class vector is not.
+
+That said, you raised this in the context of point 3 (structural variants),
+which is the more pressing concern. See there for a fuller treatment.
+
+### 3. `TIBBLE_NAMES_POSSIBLE_FORMS` signals an unmodeled variant
+
+```r
+TIBBLE_NAMES_POSSIBLE_FORMS <- list(
+  TIBBLE_NAMES,                                              # 5 elements
+  c(TIBBLE_NAMES, "directory"),                             # 6 elements
+  c(TIBBLE_NAMES[!TIBBLE_NAMES == "results"], "directory")  # 5 elements
+)
+```
+
+**Your context.** You described the actual design pressure behind this: loading
+all samples into memory is sometimes infeasible (hundreds of millions of values,
+potentially hundreds of MB for the `sample` column alone), so `include` controls
+how much is read. You experimented with `NA` placeholders but found them
+unacceptable:
+
+- A `sample` column of `NA_real_` for 10 M rows costs 80 MB — as much as the
+  real data would.
+- A single-row NA tibble for `"stats_only"` wastes space proportional to the
+  number of samples and adds no information.
+
+This is a real constraint. The three structural forms are not an accident; they
+are the deliberate result of a memory-management feature that should be kept.
+The question is only how to model them cleanly.
+
+**Why a zero-row sentinel won't work.** A zero-row `results` tibble with the
+full schema would be type-consistent, but it conflates two meanings that need to
+stay distinct: "no results were found" (genuinely empty run) versus "results
+exist on disk but were not loaded." Downstream code already handles the former
+as a special case; merging the two signals would break that.
+
+**The actual problem is that the variant is encoded in the wrong place.** The
+`include` variant is currently written into the class of `data$inputs` (a nested
+tibble) and then decoded with regex. This is fragile because the class is far
+from the list element it describes (`results`), and it requires string parsing
+rather than type-level inspection. Two concrete alternatives:
+
+**Alternative A — put the variant class on the top-level list (S3, minimal
+change).** After moving the main class to the list (point 1), encode the `include`
+variant there too:
+
+```r
+class(out) <- c(
+  paste0(lowtech, "_read_include_", include),  # e.g. "closure_read_include_stats_only"
+  paste0(lowtech, "_generate"),
+  "list"
+)
+```
+
+`check_generator_output()` then dispatches with `inherits(data, ...)` rather
+than extracting a suffix from a nested tibble's class vector. The regex is gone.
+The structural forms are still three, but the code that branches on them is
+simpler. `TIBBLE_NAMES_POSSIBLE_FORMS` can be replaced by two `inherits()`
+predicates.
+
+**Alternative B — S7 subclasses (clean model, bigger refactor).** This is
+actually the strongest concrete argument for S7 in this codebase, stronger than
+the class-placement issue. With S7 you model each variant as a distinct class
+with only the properties it actually contains:
+
+```r
+# Base: stats only (what closure_read(..., include = "stats_only") returns)
+ClosureResultStats <- new_class("ClosureResultStats",
+  properties = list(
+    inputs        = class_data.frame,
+    metrics_main  = class_data.frame,
+    metrics_horns = class_data.frame,
+    frequency     = class_data.frame,
+    directory     = class_data.frame
+  )
+)
+
+# Adds horns column to results (include = "stats_and_horns")
+ClosureResultHorns <- new_class("ClosureResultHorns",
+  parent = ClosureResultStats,
+  properties = list(results = class_data.frame)  # id + horns only
+)
+
+# Full results (in-memory generate, or include = "all")
+ClosureResultFull <- new_class("ClosureResultFull",
+  parent = ClosureResultHorns
+  # results inherits from parent; sample column presence is checked in validator
+)
+```
+
+Each subclass has a tight validator. No nullable properties. No `NULL`
+placeholders. No sentinel tibbles. `check_generator_output()` is replaced by
+the validators, which run automatically. `method(closure_plot_bar,
+ClosureResultStats) <- ...` and `method(closure_plot_bar, ClosureResultFull)
+<- ...` can behave differently without any `if/switch` inside the function
+body. This is the correct model for the domain.
+
+The cost is the refactor involved. But if the structural variants are causing
+ongoing complexity in `check_generator_output()` — which they clearly are — S7
+subclasses are the principled solution, not a workaround.
+
+### 4. `check_generator_output()` is doing the job of a class validator
+
+At 230 lines of imperative logic, this function duplicates what a proper class
+validator would express declaratively. Every time the output structure changes,
+this function must be manually updated. If you forget to call it at a new call
+site, the invariants are unguarded. This is not a crisis, but it is the main
+structural argument for S7 (see below).
+
+### 5. `doc-helpers.R`: clever but fragile
+
+`expand_section()` runs inside roxygen2's inline-R evaluation at build time.
+This creates a hidden dependency: the package must be partially loadable before
+its docs can be built. If `expand_section()` errors, documentation breaks
+silently. Contributors who don't know to look here will be confused.
+
+The function avoids duplicating text between CLOSURE and SPRITE. But as the
+number of techniques grows and they diverge in behavior, `expand_section()` will
+grow conditional branches. At some point the indirection cost exceeds the
+de-duplication benefit. For now it is acceptable.
+
+---
+
+## Should you use S7 for the output of generator functions?
+
+### What S7 would give you
+
+With S7, `closure_generate()` could return a first-class object:
+
+```r
+ClosureResult <- new_class(
+  "ClosureResult",
+  properties = list(
+    inputs        = class_data.frame,
+    metrics_main  = class_data.frame,
+    metrics_horns = class_data.frame,
+    frequency     = class_data.frame,
+    results   = new_property(class_data.frame | class_null, default = NULL),
+    directory = new_property(class_data.frame | class_null, default = NULL)
+  ),
+  validator = function(self) {
+    # ... the logic currently in check_generator_output()
+  }
+)
+```
+
+Key benefits:
+
+- The class is on the right object (the list, not a nested tibble).
+- `inherits(data, "ClosureResult")` works naturally.
+- The validator runs automatically on every construction, not only where you
+  remember to call `check_generator_output()`.
+- Property type declarations are documentation: anyone reading the class
+  definition immediately knows the output structure.
+- Downstream functions can register S7 methods instead of checking inside the
+  function body:
+  ```r
+  method(closure_plot_bar, ClosureResult) <- function(data, ...) { ... }
+  ```
+- `$` access still works on S7 objects (`data$results`), so the user-facing API
+  is unchanged.
+
+### What S7 would cost you
+
+**Optional fields are awkward.** `results` and `directory` are conditionally
+present. In S7 you model these with nullable properties (`class_data.frame |
+class_null`). This works but makes the type signature looser than ideal. The
+alternative is subclasses:
+
+```r
+ClosureResultFull     <- new_class("ClosureResultFull",     parent = ClosureResult)
+ClosureResultStats    <- new_class("ClosureResultStats",    parent = ClosureResult)
+ClosureResultFromDisk <- new_class("ClosureResultFromDisk", parent = ClosureResult)
+```
+
+Subclasses make the `include`-variant logic explicit, which is good, but they
+add three new public-facing names and increase the cognitive load of the factory.
+
+**The function-factory pattern becomes harder to compose with S7.** Currently
+`new_generator_mean_sd_n("CLOSURE")` and `new_generator_mean_sd_n("SPRITE")`
+produce two functions with the same logic. With S7, you need two classes
+(`ClosureResult`, `SpriteResult`) and two validators. The factory must now know
+about these classes, coupling two concerns that are currently separate.
+
+**`@` vs `$` in documentation.** S7 objects support `$` for property access,
+so `data$results` continues to work. But the canonical accessor shown in S7
+docs and error messages is `@`. Users unfamiliar with S7 will encounter a new
+symbol.
+
+**S7 dependency.** S7 is stable and on CRAN, but it adds a dependency to a
+package that currently relies only on well-established packages (rlang, cli,
+ggplot2, nanoparquet, etc.).
+
+**The `technique` string dispatch would still exist.** Many internal functions
+switch on `technique` to branch between CLOSURE-specific and SPRITE-specific
+code paths. S7 method dispatch can replace some of these, but not all — some
+branches are in non-generic code (e.g., `closure_read()` vs. `sprite_read()`).
+Full replacement of string switching with S7 dispatch would require a more
+comprehensive redesign than just adding class definitions.
+
+### The honest comparison
+
+| Concern | S3 with fixes | S7 |
+|---|---|---|
+| Class on the right object | Fixable: add class to list | Yes, naturally |
+| Optional fields | Named constant + length check | Nullable props or subclasses |
+| Validation | Explicit call to `check_generator_output()` | Automatic on construction |
+| Method dispatch | `switch(technique, ...)` inside functions | `method(generic, Class) <-` |
+| `inherits(data, "closure_generate")` | Works after fix | Works out of the box |
+| `$` access for users | No change | Still works |
+| Breaking changes | Moving class to list | Moving class to list + `@` convention |
+| Contributor learning curve | Familiar S3 | New system for most R devs |
+| Dependency | None added | S7 |
+| Print/format/[ methods | Add `print.closure_generate` etc. | `method(print, ClosureResult)` |
+
+### Recommendation
+
+**Revised, in light of discussion:** the `include`-variant problem (point 3
+above) is a stronger argument for S7 than I initially gave it credit for. Let
+me separate the two choices:
+
+**Short-term (S3, low risk).** Move the class to the top-level list. Add
+`print.closure_generate` to eliminate the `attr(,"class")` line. Encode the
+`include` variant in the list's own class vector instead of in `data$inputs`,
+so `check_generator_output()` can use `inherits()` rather than regex. These
+three changes together resolve points 1 and 2 with no new dependencies and no
+API breakage visible to users.
+
+**Medium-term (S7, principled).** The `include` variants are genuinely different
+types — they have different schemas, support different downstream operations, and
+should have different validators. S7 subclasses model this correctly. A class
+hierarchy like `ClosureResultStats → ClosureResultHorns → ClosureResultFull`
+means:
+
+- `check_generator_output()` is retired; validators on each class handle
+  structural checks automatically.
+- Downstream functions that require `sample` values (e.g., `closure_plot_ecdf()`
+  with `samples = "all"`) can express this with a typed method signature rather
+  than an `if (is.null(data$results$sample))` check.
+- No `TIBBLE_NAMES_POSSIBLE_FORMS` constant; the structure is captured in the
+  class definitions.
+- No regex on class strings; no sentinel tibbles; no nullable properties.
+
+The refactor is real work (likely 1–2 days), and adds the S7 dependency. Whether
+it is worth doing now or later depends on whether the current complexity in
+`check_generator_output()` is actively causing bugs or just causing friction.
+If it is friction only, the S3 fixes above are the right call for now.
+
+If you do adopt S7, the cleanest path is:
+
+1. Define per-technique base classes (`ClosureResult`, `SpriteResult`), both
+   inheriting from a shared abstract class (e.g., `UnsumResult`) that holds the
+   common properties.
+2. Define `*Stats`, `*Horns`, `*Full` subclasses for the `include` variants,
+   with only the properties that variant actually has.
+3. Register `print`, `format`, `plot_bar`, `plot_ecdf`, `write`, `read` as
+   S7 generics with methods for each subclass.
+4. Retire `check_generator_output()` in favor of the subclass validators.
+
+---
+
+## Minor observations
+
+**`closure_to_sprite()` in `doc-helpers.R`** has a `TODO: Find use case or
+remove it` comment and appears to do nothing that the caller could not do
+inline. Remove it unless a use case materialises.
+
+**Interactive testing comments** are scattered through `generate-basic.R` and
+`plot-bar-basic.R` as commented-out assignments. These are useful during
+development but add noise to the source. A scratch file that is listed in
+`.Rbuildignore` would be a cleaner home for them.
+
+**`check_generator_output()` calls `check_scale()` redundantly.** The scale was
+already validated in `generate_from_mean_sd_n()` before any results were
+produced. The second call inside `check_generator_output()` guards against
+users altering `data$inputs` between generation and a downstream call — which
+is a real concern. A comment making this intent explicit would help.
+
+**`has_reading_class(inputs, include = NULL)`** builds its regex pattern as
+`paste0("^.*_read_include_", NULL)`, which silently coerces `NULL` to `""` and
+therefore matches any reading class. This is intentional but not obvious. A
+comment or a named constant for the two regimes would help.
+
+**`fn-formals.R` could be a standalone package or `{usethis}` PR.** The formals
+DSL is genuinely useful and entirely self-contained (it only depends on rlang
+and cli). If other package authors could benefit, it would be worth extracting.
