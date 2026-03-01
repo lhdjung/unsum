@@ -35,8 +35,8 @@ test_that("All samples yield the original mean and SD", {
 
 
 # Adjust results of R wrapper to format of data saved on disk
-wide_n_1 <- data_r_1$results$sample |> as_wide_n_tibble()
-wide_n_2 <- data_r_2$results$sample |> as_wide_n_tibble()
+wide_n_1 <- data_r_1@results$sample |> as_wide_n_tibble()
+wide_n_2 <- data_r_2@results$sample |> as_wide_n_tibble()
 
 
 # Check results for identity after sorting columns. Different CLOSURE
@@ -70,7 +70,7 @@ f_absolute_centered <- closure_generate(
   n = 50,
   scale_min = 1,
   scale_max = 7
-)$frequency$f_absolute
+)@frequency$f_absolute
 
 f_absolute_skewed_left <- closure_generate(
   mean = "2.5",
@@ -78,7 +78,7 @@ f_absolute_skewed_left <- closure_generate(
   n = 50,
   scale_min = 1,
   scale_max = 7
-)$frequency$f_absolute
+)@frequency$f_absolute
 
 f_absolute_skewed_right <- closure_generate(
   mean = "5.3",
@@ -86,7 +86,7 @@ f_absolute_skewed_right <- closure_generate(
   n = 50,
   scale_min = 1,
   scale_max = 7
-)$frequency$f_absolute
+)@frequency$f_absolute
 
 
 test_that("absolute frequencies are correct", {

@@ -10,7 +10,7 @@ path_closure <- closure_generate(
   scale_min = 1,
   scale_max = 5,
   path = temp_folder
-)$directory$path
+)@directory$path
 
 
 test_that("`closure_read()` works", {

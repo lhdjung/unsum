@@ -58,7 +58,7 @@ decimal_places_scalar <- function(x, sep = "\\.") {
 count_wrong_stats <- function(data) {
   name_fn_all <- c("mean", "sd")
 
-  offenders <- name_fn_all[name_fn_all %in% names(data$results)]
+  offenders <- name_fn_all[name_fn_all %in% names(data@results)]
   if (length(offenders) > 0) {
     cli::cli_abort(c(
       "Can't add columns that already exist.",
@@ -72,13 +72,13 @@ count_wrong_stats <- function(data) {
   names(which_unequal) <- name_fn_all
 
   for (name_fn in name_fn_all) {
-    input_stat <- data$inputs[[name_fn]]
+    input_stat <- data@inputs[[name_fn]]
     input_stat_num <- as.numeric(input_stat)
 
     digits <- decimal_places_scalar(input_stat)
 
     # Which samples, if any, don't conform to the input summary stats?
-    which_unequal_current <- data$results$sample |>
+    which_unequal_current <- data@results$sample |>
       vapply(
         function(sample) {
           # Get the summary function by name and call it on the current sample
@@ -101,7 +101,7 @@ count_wrong_stats <- function(data) {
   }
 
   list(
-    original = data$inputs,
+    original = data@inputs,
     recomputed = tibble::tibble(
       input = name_fn_all,
       count = vapply(which_unequal, length, integer(1)),
