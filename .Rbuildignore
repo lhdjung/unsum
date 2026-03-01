@@ -22,4 +22,3 @@
 ^\.vscode$
 ^vignettes/articles$
 ^vignettes/.quarto$
-^R/doc-helpers\.R$

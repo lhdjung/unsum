@@ -1,17 +1,6 @@
 # Note: Any variables prefixed with `.` are used for text
 # replacement in the Makevars.in and Makevars.win.in
 
-# doc-helpers.R is excluded from built tarballs via .Rbuildignore but
-# devtools::document() keeps it in Collate. When installing from a tarball
-# the file is absent from R/, so drop it from Collate to stay consistent.
-# When installing from source the file is present, so leave Collate alone.
-if (!file.exists("R/doc-helpers.R")) {
-  desc <- readLines("DESCRIPTION")
-  desc <- desc[!grepl("'doc-helpers\\.R'", desc, fixed = FALSE)]
-  writeLines(desc, "DESCRIPTION")
-  message("Removed 'doc-helpers.R' from Collate (tarball install).")
-}
-
 # check the packages MSRV first
 source("tools/msrv.R")
 
