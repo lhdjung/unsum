@@ -1,13 +1,5 @@
 #!/usr/bin/env sh
 : "${R_HOME=`R RHOME`}"
 
-# doc-helpers.R is excluded from built tarballs via .Rbuildignore but kept in
-# R/ for devtools::document(). When installing from a tarball the file is
-# absent, so remove it from Collate to keep them in sync. When installing from
-# source (devtools::install, pre-check) the file is present, so leave Collate
-# alone — both sides agree and R CMD INSTALL proceeds normally.
-if [ ! -f R/doc-helpers.R ]; then
-    sed -i.bak "/'doc-helpers\.R'/d" DESCRIPTION && rm -f DESCRIPTION.bak
-fi
 
 "${R_HOME}/bin/Rscript" tools/config.R
