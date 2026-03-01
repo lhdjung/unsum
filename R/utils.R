@@ -3,6 +3,10 @@
 #' @include constants.R standalone-last-export.R
 NULL
 
+# Note: S7 class definitions live in R/classes.R, which is loaded after this
+# file. `check_generator_output()` uses `S7::S7_inherits()`, which is fine because
+# classes.R is loaded before any user-facing function is called.
+
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 # fmt: skip
 utils::globalVariables(c(
@@ -89,245 +93,53 @@ switch_build_mode <- function(debug) {
 
 # Checks ------------------------------------------------------------------
 
-# Error if the input is not an unchanged list containing the results of a
-# function such as `closure_generate()`. Empty result sets error by default.
+# Check that `data` is an S7 UnsumResult object. This is the successor to the
+# former ~230-line function: structural validation now happens automatically in
+# S7 class constructors, so only the type check and the empty-results guard
+# remain here. Callers that tolerate empty results pass `allow_empty = TRUE`.
 check_generator_output <- function(
   data,
   technique,
   allow_empty = FALSE
 ) {
-  # "CLOSURE" --> "closure" etc.
-  lowtech <- tolower(technique)
+  # Demo plots are not based on generated samples
+  if (technique == "DEMO") {
+    return(invisible(NULL))
+  }
 
-  top_level_is_correct <-
-    is.list(data) &&
-    any(c(5L, 6L) == length(data)) &&
-    list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
-    inherits(data$inputs, paste0(lowtech, "_generate"))
-
-  if (!top_level_is_correct) {
-    # Demo plots are not based on generated samples, so they will inevitably
-    # fail the current check and need an escape hatch like this
-    if (technique == "DEMO") {
-      return(invisible(NULL))
-    }
-
-    msg_tibble_names <- paste0("\"", TIBBLE_NAMES, "\"")
-
+  if (!S7::S7_inherits(data, UnsumResult)) {
+    lowtech <- tolower(technique)
     abort_in_export(
-      "Input must be the output of `{lowtech}_generate()` or
-      `{lowtech}_read()`.",
-      "i" = "Such output is a list with the elements {msg_tibble_names}."
+      "Input must be the output of `{lowtech}_generate()` or `{lowtech}_read()`.",
+      "i" = "Expected an S7 UnsumResult object."
     )
   }
 
-  # Check the formats of the 5 or 6 tibbles that are elements of `data`, i.e.,
-  # of the output of a function like `closure_generate()`:
-
-  # Inputs (1 / 5)
-  check_component_tibble(
-    x = data$inputs,
-    dims = c(1L, 8L),
-    technique = technique,
-    col_names_types = list(
-      "technique" = "character",
-      "mean" = "character",
-      "sd" = "character",
-      "n" = c("integer", "double"),
-      "scale_min" = c("integer", "double"),
-      "scale_max" = c("integer", "double"),
-      "rounding" = "character",
-      "threshold" = c("integer", "double")
+  if (!allow_empty) {
+    scale_length <- data@inputs$scale_max - data@inputs$scale_min + 1L
+    is_empty <- (
+      nrow(data@frequency) == scale_length &&
+        all(is.nan(data@frequency$f_average)) &&
+        all(is.nan(data@frequency$f_relative))
     )
-  )
-
-  # (Intermezzo to make sure that the assumptions in the second check hold)
-  check_scale(
-    scale_min = data$inputs$scale_min,
-    scale_max = data$inputs$scale_max,
-    mean = data$inputs$mean,
-    warning = "Don't change {technique} results before this step."
-  )
-
-  # Main metrics (2 / 5)
-  check_component_tibble(
-    x = data$metrics_main,
-    dims = c(1L, 2L),
-    technique = technique,
-    col_names_types = list(
-      "samples_all" = "double",
-      "values_all" = "double"
-    )
-  )
-
-  # Horns metrics (3 / 5)
-  check_component_tibble(
-    x = data$metrics_horns,
-    dims = c(1L, 9L),
-    technique = technique,
-    col_names_types = list(
-      "mean" = "double",
-      "uniform" = "double",
-      "sd" = "double",
-      "cv" = "double",
-      "mad" = "double",
-      "min" = "double",
-      "median" = "double",
-      "max" = "double",
-      "range" = "double"
-    )
-  )
-
-  # Length of the scale implied by the inputs. In `data$frequency`, each
-  # `samples` category will have this very length. Empty results will only have
-  # one such category, "all".
-  scale_length <- data$inputs$scale_max - data$inputs$scale_min + 1
-
-  # (Intermezzo to check for empty results)
-  if (
-    !allow_empty &&
-      scale_length == nrow(data$frequency) &&
-      all(is.nan(data$frequency$f_average)) &&
-      all(is.nan(data$frequency$f_relative))
-  ) {
-    abort_in_export(
-      "Results are empty; there is nothing to process any further."
-    )
-  }
-
-  # Frequency (4 / 5)
-  check_component_tibble(
-    x = data$frequency,
-    dims = c(3 * scale_length, 5),
-    technique = technique,
-    col_names_types = list(
-      "samples" = "character",
-      "value" = "integer",
-      "f_average" = "double",
-      "f_absolute" = "double",
-      "f_relative" = "double"
-    )
-  )
-
-  # (Long intermezzo before the final tibble check)
-
-  is_reading_class <- data$inputs |>
-    class() |>
-    grepl(paste0("^", lowtech, "_read_include_"), x = _)
-
-  reading_class_exists <- any(is_reading_class)
-
-  # Data that were already written to disk and read back into R -- special case
-  if (reading_class_exists) {
-    reading_class <- class(data$inputs)[is_reading_class]
-    reading_class <- sub(
-      pattern = paste0("^", lowtech, "_read_include_"),
-      replacement = "",
-      x = reading_class
-    )
-
-    if (length(reading_class) > 1) {
-      abort_in_export("Cannot handle modified S3 classes.")
-    }
-
-    if (!any(names(data) == "directory")) {
-      abort_in_export("Cannot handle modified output; \"directory\" missing.")
-    }
-
-    check_component_tibble(
-      x = data$directory,
-      dims = c(1L, 1L),
-      technique = technique,
-      col_names_types = list(
-        "path" = "character"
-      )
-    )
-
-    # Contradictory data
-    if (reading_class == "stats_only" && any(names(data) == "results")) {
-      abort_in_export(
-        "Cannot hold \"results\" tibble because reading function \
-        was called with `include == \"stats_only\"`."
-      )
-    }
-
-    # Check for "results" tibble without a "sample" column
-    if (reading_class == "stats_and_horns") {
-      check_component_tibble(
-        x = data$results,
-        dims = c(data$metrics_main$samples_all, 2L),
-        technique = technique,
-        col_names_types = list(
-          "id" = "double",
-          "horns" = "double"
-        )
-      )
+    if (is_empty) {
+      abort_in_export("Results are empty; there is nothing to process any further.")
     }
   }
 
-  # In case the "results" tibble was returned directly by a function like
-  # `closure_generate()` or by a reading function with a setting that makes for
-  # equivalent "results"
-  if (!reading_class_exists || any(reading_class == "capped_error")) {
-    # Results (5 / 5)
-    check_component_tibble(
-      x = data$results,
-      dims = c(data$metrics_main$samples_all, 3L),
-      technique = technique,
-      col_names_types = list(
-        "id" = "double",
-        "sample" = "list",
-        "horns" = "double"
-      )
-    )
-  }
-
-  # Additional checks:
-
-  # The relative frequencies must sum up to 1 or 0 per group. As there are 3
-  # groups, they must sum up to 3 in total. If they sum up to 0, the absolute
-  # frequencies must also sum up to 0: it only makes sense if no values at all
-  # were found. These comparisons use `near()`, copied from dplyr, to account
-  # for accidental floating-point inaccuracies. Empty results *can* be allowed.
-  f_sum_relative <- sum(data$frequency$f_relative)
-  freqs_sum_up <- near(f_sum_relative, 3)
-
-  # Need `isTRUE()` because `freqs_sum_up` can be `NA` but the condition must
-  # still be met
-  if (!isTRUE(freqs_sum_up)) {
-    f_sum_absolute <- sum(data$frequency$f_absolute)
-    data_is_empty <- is.nan(f_sum_relative) && near(f_sum_absolute, 0)
-
-    # Empty data might be allowed, depending on the caller
-    if (data_is_empty && allow_empty) {
-      return(invisible(NULL))
-    } else if (data_is_empty) {
-      abort_in_export("Empty results are not allowed in this function.")
-    }
-
-    msg_actual_sum <- if (is.nan(f_sum_relative)) {
-      NULL
-    } else {
-      c("x" = "It actually sums up to {f_sum_relative}.")
-    }
-
-    abort_in_export(
-      "The `f_relative` column in `frequency` must sum up to 1 \
-        (or 0, if `f_absolute` does).",
-      msg_actual_sum
-    )
-  }
+  invisible(NULL)
 }
 
 
 # Check each element of the output of a function like `closure_generate()` for
-# correct format.
+# correct format. Still used by `closure_horns_histogram()` in horns-analyze.R.
 check_component_tibble <- function(
   x,
   dims,
-  technique,
+  technique = NULL,
   col_names_types,
-  msg_main = NULL
+  msg_main = NULL,
+  ...
 ) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
@@ -361,12 +173,9 @@ check_component_tibble <- function(
       "These column names and types"
     }
 
-    # "CLOSURE" --> "closure" etc.
-    lowtech <- tolower(technique)
-
     if (is.null(msg_main)) {
-      msg_main <- "{technique} data must not be changed before passing them \
-        to other `{lowtech}_*()` functions."
+      lowtech <- if (!is.null(technique)) tolower(technique) else "?"
+      msg_main <- "Data must not be changed before passing to `{lowtech}_*()` functions."
     }
 
     abort_in_export(
@@ -671,10 +480,7 @@ prepare_folder_mean_sd_n <- function(inputs, path) {
 
   # Write a Parquet file with the inputs
   inputs |>
-    tibble::new_tibble(
-      nrow = 1L,
-      class = paste0(lowtech, "_generate")
-    ) |>
+    tibble::new_tibble(nrow = 1L) |>
     nanoparquet::write_parquet(
       file = paste0(path_new_dir, slash, "inputs.parquet")
     )
@@ -750,14 +556,3 @@ as_wide_n_tibble <- function(samples_all) {
 }
 
 
-# Run this on a `data$inputs` tibble to check whether `data` was already written
-# to disk before. If so, this will have been marked by an (invisible) S3 class.
-has_reading_class <- function(inputs, include = NULL) {
-  pattern <- paste0("^.*_read_include_", include)
-
-  # Search the `inputs` classes for one like "closure_read_include_stats_only"
-  inputs |>
-    class() |>
-    grepl(pattern, x = _) |>
-    any()
-}

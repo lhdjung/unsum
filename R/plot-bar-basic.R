@@ -79,7 +79,7 @@ plot_frequency_bar <- function(
     }
 
     # Derive internal values from `min_max`
-    min_max_values <- c(data$metrics_horns$min, data$metrics_horns$max)
+    min_max_values <- c(data@metrics_horns$min, data@metrics_horns$max)
 
     frequency_rows_subset <- switch(
       min_max,
@@ -98,7 +98,7 @@ plot_frequency_bar <- function(
     # Zoom in on the frequency table -- the only element of `data` needed here.
     # Filter its rows to only keep those with a specific subset of samples, such
     # as "horns_min" and "horns_max".
-    data <- data$frequency
+    data <- data@frequency
     data <- data[data$samples %in% frequency_rows_subset, ]
   }
 

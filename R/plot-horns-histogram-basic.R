@@ -31,22 +31,29 @@ plot_horns_frequency <- function(
 
   # Key statistics about the horns index distribution. Lines and labels will be
   # placed at or around these three points (min and max label placement varies).
-  h_min <- data$metrics_horns$min
-  h_max <- data$metrics_horns$max
-  h_uniform <- data$metrics_horns$uniform
+  h_min <- data@metrics_horns$min
+  h_max <- data@metrics_horns$max
+  h_uniform <- data@metrics_horns$uniform
 
   # If the minimum horns value is too close to 0 for the min label to fit on its
   # left, or the maximum value is too close to 1 for the max label to fit on its
   # right, check the distribution shape to decide where to place labels. Get the
   # median of the distribution to understand where most data lies.
-  h_median <- data$metrics_horns$median
+  h_median <- data@metrics_horns$median
 
-  n_samples_all <- data$metrics_main$samples_all
+  n_samples_all <- data@metrics_main$samples_all
 
-  path <- data$directory$path
+  # `directory` is only present in from-disk classes; in-memory results have none
+  path <- if (S7::S7_inherits(data, ClosureResultFromDisk) || S7::S7_inherits(data, SpriteResultFromDisk)) {
+    data@directory$path
+  } else {
+    NULL
+  }
 
-  # Reduce the input to a tibble that only includes the horns values
-  data <- data$results["horns"]
+  # Reduce the input to a tibble that only includes the horns values.
+  # Classes without a `results` property (stats-only) have no horns column.
+  has_results <- !S7::S7_inherits(data, ClosureResultStatsOnly) && !S7::S7_inherits(data, SpriteResultStatsOnly)
+  data <- if (has_results) data@results["horns"] else NULL
 
   # Error if no "horns" column is present
   if (is.null(data)) {

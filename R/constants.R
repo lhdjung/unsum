@@ -11,13 +11,6 @@ TIBBLE_NAMES <- c(
   "results"
 )
 
-# All possible combinations of tibble names in valid generator output
-TIBBLE_NAMES_POSSIBLE_FORMS <- list(
-  TIBBLE_NAMES,
-  c(TIBBLE_NAMES, "directory"),
-  c(TIBBLE_NAMES[!TIBBLE_NAMES == "results"], "directory")
-)
-
 # Names of the files expected in a folder with unsum results written to disk
 FILES_EXPECTED <- c(
   "info.md",

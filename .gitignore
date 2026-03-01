@@ -27,4 +27,5 @@ SPRITE-*/
 # Don't ignore the vendor archive itself, but ignore extracted vendor dirs with ._* files
 **/._*
 src/vendor/
+src/rust/vendor/
 src/._vendor

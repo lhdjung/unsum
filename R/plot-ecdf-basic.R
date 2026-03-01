@@ -56,7 +56,7 @@
 #'
 #' @return A ggplot object.
 #'
-#' @include utils.R
+#' @include classes.R
 #'
 #' @export
 #'
@@ -111,14 +111,14 @@ closure_plot_ecdf <- function(
   check_length(line_color_multiple, 3L)
 
   # For the reference line and the x-axis
-  inputs <- data$inputs
-  metrics_main <- data$metrics_main
+  inputs <- data@inputs
+  metrics_main <- data@metrics_main
   values_unique <- inputs$scale_min:inputs$scale_max
 
   # Horns index values for all three subsets of samples
-  h_mean <- data$metrics_horns$mean
-  h_min <- data$metrics_horns$min
-  h_max <- data$metrics_horns$max
+  h_mean <- data@metrics_horns$mean
+  h_min <- data@metrics_horns$min
+  h_max <- data@metrics_horns$max
 
   # Will be changed if `samples` is "mean_min_max"
   scale_legend <- NULL
@@ -129,8 +129,10 @@ closure_plot_ecdf <- function(
   # Hard mode: drawing each individual sample on the plot
   if (samples == "all") {
     # Error if the raw data are not available -- visualizing all samples is not
-    # possible in this case
-    if (is.null(data[["results"]][["sample"]])) {
+    # possible in this case. Only ClosureResultFull (in-memory) and
+    # ClosureResultAll (from disk with include = "all") carry individual samples.
+    has_samples <- S7::S7_inherits(data, ClosureResultFull) || S7::S7_inherits(data, ClosureResultAll)
+    if (!has_samples) {
       abort_in_export(
         "Visualizing all samples requires those samples.",
         "x" = "`samples` is \"all\" but the actual samples \
@@ -139,11 +141,6 @@ closure_plot_ecdf <- function(
           all samples from disk. If successful, this will \
           enable you to visualize each individual sample."
       )
-    }
-
-    # This error shouldn't occur if the initial checks work
-    if (is.null(data[["results"]][["horns"]])) {
-      abort_in_export("Column `horns` missing.")
     }
 
     # Error if the user tries to match the curves of all samples with the range
@@ -161,10 +158,10 @@ closure_plot_ecdf <- function(
     # shown, enable grouping the values by sample using a `sample_id` column.
     data <- tibble::new_tibble(
       x = list(
-        value = data$results$sample |>
+        value = data@results$sample |>
           unlist(use.names = FALSE),
 
-        horns = data$results$horns |>
+        horns = data@results$horns |>
           rep(each = inputs$n),
 
         sample_id = metrics_main$samples_all |>
@@ -200,7 +197,7 @@ closure_plot_ecdf <- function(
   } else {
     # If `samples` is `"mean_min_max"` or `"mean"`, the plot is based on the
     # pre-computed aggregate frequencies, not on each individual sample
-    data <- data$frequency
+    data <- data@frequency
 
     # Frequency-based ECDF plots that do not require individual samples
     if (samples == "mean") {

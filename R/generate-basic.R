@@ -256,41 +256,40 @@ generate_from_mean_sd_n <- function(
     ))
   }
 
-  # Assemble the summary statistics that make up much of the output's structure.
-  # In memory mode (i.e., without writing to disk), this is done manually here.
-  # An S3 class like "closure_generate" is added -- it will be recognized by
-  # downstream functions, such as `closure_plot_bar()`. All elements here are
-  # created using the low-level `new_tibble()` instead of `tibble()`: once for
-  # passing the S3 class, and three times for performance and consistency.
+  # Assemble the summary statistics and return an S7 result object. In memory
+  # mode (i.e., without writing to disk), this is done manually here. All
+  # tibble elements use the low-level `new_tibble()` for performance and
+  # consistency. The S7 class replaces the former S3 class on `data$inputs`.
   if (in_memory_mode) {
-    out_summary <- list(
-      inputs = tibble::new_tibble(
-        x = list(
-          technique = technique,
-          mean = mean,
-          sd = sd,
-          n = n,
-          scale_min = scale_min,
-          scale_max = scale_max,
-          rounding = rounding,
-          threshold = threshold
-        ),
-        nrow = 1L,
-        # The class is, e.g., "closure_generate"
-        class = technique |> tolower() |> paste0("_generate")
+    inputs_tbl <- tibble::new_tibble(
+      x = list(
+        technique = technique,
+        mean = mean,
+        sd = sd,
+        n = n,
+        scale_min = scale_min,
+        scale_max = scale_max,
+        rounding = rounding,
+        threshold = threshold
       ),
+      nrow = 1L
+    )
 
-      metrics_main = out$metrics_main |>
-        as.list() |>
-        tibble::new_tibble(nrow = 1L),
+    metrics_main_tbl <- out$metrics_main |>
+      as.list() |>
+      tibble::new_tibble(nrow = 1L)
 
-      metrics_horns = out$metrics_horns |>
-        as.list() |>
-        tibble::new_tibble(nrow = 1L),
+    metrics_horns_tbl <- out$metrics_horns |>
+      as.list() |>
+      tibble::new_tibble(nrow = 1L)
 
-      frequency = out$frequency |>
-        as.list() |>
-        tibble::new_tibble(nrow = nrow(out$frequency))
+    frequency_tbl <- out$frequency |>
+      as.list() |>
+      tibble::new_tibble(nrow = nrow(out$frequency))
+
+    results_tbl <- tibble::new_tibble(
+      x = out$results,
+      nrow = n_samples_all
     )
 
     # In memory mode (i.e., without writing to disk), a message about successful
@@ -304,15 +303,20 @@ generate_from_mean_sd_n <- function(
       }
     })
 
-    # Combine the statistics with the results and return the completed list
-    c(
-      out_summary,
-      list(
-        results = tibble::new_tibble(
-          x = out$results,
-          nrow = n_samples_all
-        )
-      )
+    # Construct and return the appropriate S7 class
+    make_result <- switch(
+      technique,
+      "CLOSURE" = ClosureResultFull,
+      "SPRITE"  = SpriteResultFull,
+      cli::cli_abort("Internal error: unsupported technique \"{technique}\".")
+    )
+
+    make_result(
+      inputs        = inputs_tbl,
+      metrics_main  = metrics_main_tbl,
+      metrics_horns = metrics_horns_tbl,
+      frequency     = frequency_tbl,
+      results       = results_tbl
     )
   } else {
     # In writing mode, read the statistics -- and, optionally, results -- that
