@@ -10,13 +10,13 @@ closure_generate(
   n,
   scale_min,
   scale_max,
+  items = 1,
   path = NULL,
   stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
-  ask_to_proceed = TRUE,
-  items = NULL
+  ask_to_proceed = TRUE
 )
 }
 \arguments{

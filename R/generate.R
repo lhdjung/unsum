@@ -103,10 +103,10 @@ closure_generate <- new_generator_mean_sd_n("CLOSURE")
 
 #' Generate SPRITE samples
 #'
-#' @description Generate samples using the SPRITE (Sample Parameter
-#'   Reconstruction via Iterative Techniques) algorithm. SPRITE reconstructs
-#'   possible sample distributions given summary statistics and multi-item scale
-#'   information.
+#' @description Call `sprite_generate()` to find possible samples using SPRITE
+#'   (sample parameter reconstruction via iterative techniques). SPRITE
+#'   reconstructs possible sample distributions given summary statistics and
+#'   multi-item scale information.
 #'
 #'   `stop_after` is required when `items > 1` to prevent overflow errors in the
 #'   current implementation.
@@ -134,22 +134,21 @@ closure_generate <- new_generator_mean_sd_n("CLOSURE")
 #' data_simple <- sprite_generate(
 #'   mean = "3.0",
 #'   sd = "1.0",
-#'   n = 10,
-#'   items = 2,
+#'   n = 120,
 #'   scale_min = 1,
 #'   scale_max = 5,
-#'   stop_after = 100
+#'   stop_after = 150
 #' )
 #'
 #' # Larger example - use stop_after to avoid overflow
-#' data_high <- sprite_generate(
+#' sprite_generate(
 #'   mean = "3.5",
 #'   sd = "1.7",
-#'   n = 70,
+#'   n = 1000,
 #'   items = 5,
 #'   scale_min = 1,
 #'   scale_max = 5,
-#'   stop_after = 100  # Recommended for large parameter combinations
+#'   stop_after = 1000
 #' )
 #' }
 #'

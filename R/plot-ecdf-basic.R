@@ -126,6 +126,7 @@ closure_plot_ecdf <- function(
   # Will be changed if `samples` is "all"
   scale_gradient <- NULL
 
+  # Hard mode: drawing each individual sample on the plot
   if (samples == "all") {
     # Error if the raw data are not available -- visualizing all samples is not
     # possible in this case
@@ -197,6 +198,8 @@ closure_plot_ecdf <- function(
       pad = pad %in% c("extend", "match")
     )
   } else {
+    # If `samples` is `"mean_min_max"` or `"mean"`, the plot is based on the
+    # pre-computed aggregate frequencies, not on each individual sample
     data <- data$frequency
 
     # Frequency-based ECDF plots that do not require individual samples
@@ -223,7 +226,7 @@ closure_plot_ecdf <- function(
       data <- data |>
         split(data$samples) |>
         lapply(mutate_ecdf, pad = pad) |>
-        call_on(function(x) x[group_order]) |>
+        call_on(\(x) x[group_order]) |>
         do.call(what = rbind)
 
       # Apply custom legend labels

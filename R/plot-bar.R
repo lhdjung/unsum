@@ -81,6 +81,17 @@ closure_plot_bar <- new_plot_fn_bar("CLOSURE", "#5D3FD3")
 #' @export
 #'
 #' @examples
+#' # Run SPRITE first
+#' data <- sprite_generate(
+#'   mean = "3.0",
+#'   sd = "1.0",
+#'   n = 120,
+#'   scale_min = 1,
+#'   scale_max = 5,
+#'   stop_after = 150
+#' )
+#'
+#' sprite_plot_bar(data)
 
 # This constructs a function that wraps `plot_frequency_bar()`; see there
 sprite_plot_bar <- new_plot_fn_bar("SPRITE", "royalblue1")

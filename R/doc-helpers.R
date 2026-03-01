@@ -199,6 +199,10 @@ expand_section <- function(section, technique) {
       ""
     )
 
+    if (appendix == "") {
+      return(out)
+    }
+
     out |>
       paste(appendix) |>
       add_class("glue")

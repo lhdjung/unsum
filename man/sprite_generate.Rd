@@ -10,13 +10,13 @@ sprite_generate(
   n,
   scale_min,
   scale_max,
+  items = 1,
   path = NULL,
   stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
-  ask_to_proceed = TRUE,
-  items = NULL
+  ask_to_proceed = TRUE
 )
 }
 \arguments{
@@ -30,6 +30,10 @@ sprite_generate(
 possible values. For example, with a 1-7 Likert scale, use \code{scale_min = 1}
 and \code{scale_max = 7}. Prefer the empirical min and max if available: they
 constrain the possible values further.}
+
+\item{items}{Numeric (length 1). Number of items/questions in your scale.
+Must be at least 2. This represents how many individual items were averaged
+to produce each participant's mean score.}
 
 \item{path}{String (length 1). Optionally, choose the directory where a new
 folder with CLOSURE results should be created. Use \code{path = "."} for your
@@ -60,10 +64,6 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 \item{ask_to_proceed}{Logical (length 1). If the runtime is predicted to be
 very long in an interactive setting, should the function prompt you to
 proceed or abort? Default is \code{TRUE}.}
-
-\item{items}{Numeric (length 1). Number of items/questions in your scale.
-Must be at least 2. This represents how many individual items were averaged
-to produce each participant's mean score.}
 }
 \value{
 \code{sprite_generate()} returns a named list of tibbles (data frames):
@@ -118,10 +118,10 @@ saved.
 }
 }
 \description{
-Generate samples using the SPRITE (Sample Parameter
-Reconstruction via Iterative Techniques) algorithm. SPRITE reconstructs
-possible sample distributions given summary statistics and multi-item scale
-information.
+Call \code{sprite_generate()} to find possible samples using SPRITE
+(sample parameter reconstruction via iterative techniques). SPRITE
+reconstructs possible sample distributions given summary statistics and
+multi-item scale information.
 
 \code{stop_after} is required when \code{items > 1} to prevent overflow errors in the
 current implementation.
@@ -157,22 +157,21 @@ and those that do will most likely lead to empty results.
 data_simple <- sprite_generate(
   mean = "3.0",
   sd = "1.0",
-  n = 10,
-  items = 2,
+  n = 120,
   scale_min = 1,
   scale_max = 5,
-  stop_after = 100
+  stop_after = 150
 )
 
 # Larger example - use stop_after to avoid overflow
-data_high <- sprite_generate(
+sprite_generate(
   mean = "3.5",
   sd = "1.7",
-  n = 70,
+  n = 1000,
   items = 5,
   scale_min = 1,
   scale_max = 5,
-  stop_after = 100  # Recommended for large parameter combinations
+  stop_after = 1000
 )
 }
 

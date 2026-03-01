@@ -75,3 +75,16 @@ mean samples with the minimum or maximum horns index (\eqn{h}).
 This displays the typical sample with the least or most amount
 of variance from among all SPRITE samples.
 }
+\examples{
+# Run SPRITE first
+data <- sprite_generate(
+  mean = "3.0",
+  sd = "1.0",
+  n = 120,
+  scale_min = 1,
+  scale_max = 5,
+  stop_after = 150
+)
+
+sprite_plot_bar(data)
+}
