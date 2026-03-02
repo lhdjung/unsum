@@ -131,7 +131,10 @@ closure_plot_ecdf <- function(
     # Error if the raw data are not available -- visualizing all samples is not
     # possible in this case. Only ClosureResultFull (in-memory) and
     # ClosureResultAll (from disk with include = "all") carry individual samples.
-    has_samples <- S7::S7_inherits(data, ClosureResultFull) || S7::S7_inherits(data, ClosureResultAll)
+    has_samples <-
+      S7::S7_inherits(data, ClosureResultFull) ||
+      S7::S7_inherits(data, ClosureResultAll)
+
     if (!has_samples) {
       abort_in_export(
         "Visualizing all samples requires those samples.",

@@ -410,8 +410,11 @@ formals_rename <- function(fmls, ...) {
 
   mapping <- c(...)
 
-  if (!is.character(mapping) || is.null(names(mapping)) ||
-    any(names(mapping) == "")) {
+  if (
+    !is.character(mapping) ||
+      is.null(names(mapping)) ||
+      any(names(mapping) == "")
+  ) {
     cli::cli_abort("All arguments must be named: `new_name = \"old_name\"`.")
   }
 

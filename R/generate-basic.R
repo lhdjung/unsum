@@ -307,16 +307,16 @@ generate_from_mean_sd_n <- function(
     make_result <- switch(
       technique,
       "CLOSURE" = ClosureResultFull,
-      "SPRITE"  = SpriteResultFull,
+      "SPRITE" = SpriteResultFull,
       cli::cli_abort("Internal error: unsupported technique \"{technique}\".")
     )
 
     make_result(
-      inputs        = inputs_tbl,
-      metrics_main  = metrics_main_tbl,
+      inputs = inputs_tbl,
+      metrics_main = metrics_main_tbl,
       metrics_horns = metrics_horns_tbl,
-      frequency     = frequency_tbl,
-      results       = results_tbl
+      frequency = frequency_tbl,
+      results = results_tbl
     )
   } else {
     # In writing mode, read the statistics -- and, optionally, results -- that

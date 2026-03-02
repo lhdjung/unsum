@@ -13,16 +13,19 @@ validate_tibble_structure <- function(x, name, dims, col_names_types) {
   }
 
   if (nrow(x) != dims[1] || ncol(x) != dims[2]) {
+    # fmt: skip
     return(paste0(
-      "`", name, "` must have ", dims[1], " row(s) and ", dims[2], " column(s),",
-      " but has ", nrow(x), " and ", ncol(x), "."
+      "`", name, "` must have ", dims[1], " row(s) and ",
+      dims[2], " column(s), but has ", nrow(x), " and ", ncol(x), "."
     ))
   }
 
   if (!identical(names(x), names(col_names_types))) {
+    # fmt: skip
     return(paste0(
       "`", name, "` must have column names: ",
-      paste(names(col_names_types), collapse = ", "), "."
+      paste(names(col_names_types), collapse = ", "),
+      "."
     ))
   }
 
@@ -34,8 +37,10 @@ validate_tibble_structure <- function(x, name, dims, col_names_types) {
 
   if (!all(type_ok)) {
     bad <- names(col_names_types)[!type_ok]
+    # fmt: skip
     return(paste0(
-      "Column(s) ", paste(bad, collapse = ", "), " in `", name, "` have wrong types."
+      "Column(s) ", paste(bad, collapse = ", "), " in `", name,
+      "` have wrong types."
     ))
   }
 
@@ -55,74 +60,99 @@ validate_tibble_structure <- function(x, name, dims, col_names_types) {
 UnsumResult <- S7::new_class(
   "UnsumResult",
   properties = list(
-    inputs        = S7::new_property(S7::class_any),
-    metrics_main  = S7::new_property(S7::class_any),
+    inputs = S7::new_property(S7::class_any),
+    metrics_main = S7::new_property(S7::class_any),
     metrics_horns = S7::new_property(S7::class_any),
-    frequency     = S7::new_property(S7::class_any)
+    frequency = S7::new_property(S7::class_any)
   ),
   validator = function(self) {
     err <- validate_tibble_structure(
-      self@inputs, "inputs", c(1L, 8L),
+      self@inputs,
+      "inputs",
+      c(1L, 8L),
       list(
         technique = "character",
-        mean      = "character",
-        sd        = "character",
-        n         = c("integer", "double"),
+        mean = "character",
+        sd = "character",
+        n = c("integer", "double"),
         scale_min = c("integer", "double"),
         scale_max = c("integer", "double"),
-        rounding  = "character",
+        rounding = "character",
         threshold = c("integer", "double")
       )
     )
-    if (!is.null(err)) return(err)
+
+    if (!is.null(err)) {
+      return(err)
+    }
 
     err <- validate_tibble_structure(
-      self@metrics_main, "metrics_main", c(1L, 2L),
+      self@metrics_main,
+      "metrics_main",
+      c(1L, 2L),
       list(samples_all = "double", values_all = "double")
     )
-    if (!is.null(err)) return(err)
+
+    if (!is.null(err)) {
+      return(err)
+    }
 
     err <- validate_tibble_structure(
-      self@metrics_horns, "metrics_horns", c(1L, 9L),
+      self@metrics_horns,
+      "metrics_horns",
+      c(1L, 9L),
       list(
-        mean    = "double",
+        mean = "double",
         uniform = "double",
-        sd      = "double",
-        cv      = "double",
-        mad     = "double",
-        min     = "double",
-        median  = "double",
-        max     = "double",
-        range   = "double"
+        sd = "double",
+        cv = "double",
+        mad = "double",
+        min = "double",
+        median = "double",
+        max = "double",
+        range = "double"
       )
     )
-    if (!is.null(err)) return(err)
+
+    if (!is.null(err)) {
+      return(err)
+    }
 
     # The frequency table has 3 groups (all, horns_min, horns_max) of
     # scale_length rows each, for a total of 3 * scale_length rows. Empty
     # results are the exception: they have only one group ("all"), so only
     # scale_length rows.
     scale_length <- self@inputs$scale_max - self@inputs$scale_min + 1L
-    n_freq_rows  <- nrow(self@frequency)
+    n_freq_rows <- nrow(self@frequency)
 
     if (!n_freq_rows %in% c(scale_length, 3L * scale_length)) {
       return(paste0(
-        "`frequency` must have ", scale_length, " or ", 3L * scale_length,
-        " rows, but has ", n_freq_rows, "."
+        "`frequency` must have ",
+        scale_length,
+        " or ",
+        3L * scale_length,
+        " rows, but has ",
+        n_freq_rows,
+        "."
       ))
     }
 
     err <- validate_tibble_structure(
-      self@frequency, "frequency", c(n_freq_rows, 5L),
+      self@frequency,
+      "frequency",
+      c(n_freq_rows, 5L),
       list(
-        samples    = "character",
-        value      = "integer",
-        f_average  = "double",
+        samples = "character",
+        value = "integer",
+        f_average = "double",
         f_absolute = "double",
         f_relative = "double"
       )
     )
-    if (!is.null(err)) return(err)
+
+    if (!is.null(err)) {
+      return(err)
+    }
 
     NULL
   },
@@ -133,7 +163,7 @@ UnsumResult <- S7::new_class(
 # CLOSURE-specific abstract base class
 ClosureResult <- S7::new_class(
   "ClosureResult",
-  parent   = UnsumResult,
+  parent = UnsumResult,
   abstract = TRUE,
   validator = function(self) {
     if (!identical(self@inputs$technique, "CLOSURE")) {
@@ -146,7 +176,7 @@ ClosureResult <- S7::new_class(
 # SPRITE-specific abstract base class
 SpriteResult <- S7::new_class(
   "SpriteResult",
-  parent   = UnsumResult,
+  parent = UnsumResult,
   abstract = TRUE,
   validator = function(self) {
     if (!identical(self@inputs$technique, "SPRITE")) {
@@ -166,13 +196,19 @@ SpriteResult <- S7::new_class(
 #' @noRd
 ClosureResultFull <- S7::new_class(
   "ClosureResultFull",
-  parent     = ClosureResult,
+  parent = ClosureResult,
   properties = list(results = S7::new_property(S7::class_any)),
-  validator  = function(self) {
+  validator = function(self) {
     n_samples <- self@metrics_main$samples_all
-    if (n_samples == 0) return(NULL)
+
+    if (n_samples == 0) {
+      return(NULL)
+    }
+
     validate_tibble_structure(
-      self@results, "results", c(n_samples, 3L),
+      self@results,
+      "results",
+      c(n_samples, 3L),
       list(id = "double", sample = "list", horns = "double")
     )
   }
@@ -184,12 +220,14 @@ ClosureResultFull <- S7::new_class(
 # Abstract base: all CLOSURE results read back from a folder on disk
 ClosureResultFromDisk <- S7::new_class(
   "ClosureResultFromDisk",
-  parent     = ClosureResult,
+  parent = ClosureResult,
   properties = list(directory = S7::new_property(S7::class_any)),
-  abstract   = TRUE,
-  validator  = function(self) {
+  abstract = TRUE,
+  validator = function(self) {
     validate_tibble_structure(
-      self@directory, "directory", c(1L, 1L),
+      self@directory,
+      "directory",
+      c(1L, 1L),
       list(path = "character")
     )
   }
@@ -217,13 +255,19 @@ ClosureResultStatsOnly <- S7::new_class(
 #' @noRd
 ClosureResultStatsAndHorns <- S7::new_class(
   "ClosureResultStatsAndHorns",
-  parent     = ClosureResultFromDisk,
+  parent = ClosureResultFromDisk,
   properties = list(results = S7::new_property(S7::class_any)),
-  validator  = function(self) {
+  validator = function(self) {
     n_samples <- self@metrics_main$samples_all
-    if (n_samples == 0) return(NULL)
+
+    if (n_samples == 0) {
+      return(NULL)
+    }
+
     validate_tibble_structure(
-      self@results, "results", c(n_samples, 2L),
+      self@results,
+      "results",
+      c(n_samples, 2L),
       list(id = "double", horns = "double")
     )
   }
@@ -240,13 +284,19 @@ ClosureResultStatsAndHorns <- S7::new_class(
 #' @noRd
 ClosureResultAll <- S7::new_class(
   "ClosureResultAll",
-  parent     = ClosureResultFromDisk,
+  parent = ClosureResultFromDisk,
   properties = list(results = S7::new_property(S7::class_any)),
-  validator  = function(self) {
+  validator = function(self) {
     n_samples <- self@metrics_main$samples_all
-    if (n_samples == 0) return(NULL)
+
+    if (n_samples == 0) {
+      return(NULL)
+    }
+
     validate_tibble_structure(
-      self@results, "results", c(n_samples, 3L),
+      self@results,
+      "results",
+      c(n_samples, 3L),
       list(id = "double", sample = "list", horns = "double")
     )
   }
@@ -262,13 +312,19 @@ ClosureResultAll <- S7::new_class(
 #' @noRd
 SpriteResultFull <- S7::new_class(
   "SpriteResultFull",
-  parent     = SpriteResult,
+  parent = SpriteResult,
   properties = list(results = S7::new_property(S7::class_any)),
-  validator  = function(self) {
+  validator = function(self) {
     n_samples <- self@metrics_main$samples_all
-    if (n_samples == 0) return(NULL)
+
+    if (n_samples == 0) {
+      return(NULL)
+    }
+
     validate_tibble_structure(
-      self@results, "results", c(n_samples, 3L),
+      self@results,
+      "results",
+      c(n_samples, 3L),
       list(id = "double", sample = "list", horns = "double")
     )
   }
@@ -280,12 +336,14 @@ SpriteResultFull <- S7::new_class(
 # Abstract base: all SPRITE results read back from a folder on disk
 SpriteResultFromDisk <- S7::new_class(
   "SpriteResultFromDisk",
-  parent     = SpriteResult,
+  parent = SpriteResult,
   properties = list(directory = S7::new_property(S7::class_any)),
-  abstract   = TRUE,
-  validator  = function(self) {
+  abstract = TRUE,
+  validator = function(self) {
     validate_tibble_structure(
-      self@directory, "directory", c(1L, 1L),
+      self@directory,
+      "directory",
+      c(1L, 1L),
       list(path = "character")
     )
   }
@@ -310,13 +368,19 @@ SpriteResultStatsOnly <- S7::new_class(
 #' @noRd
 SpriteResultStatsAndHorns <- S7::new_class(
   "SpriteResultStatsAndHorns",
-  parent     = SpriteResultFromDisk,
+  parent = SpriteResultFromDisk,
   properties = list(results = S7::new_property(S7::class_any)),
-  validator  = function(self) {
+  validator = function(self) {
     n_samples <- self@metrics_main$samples_all
-    if (n_samples == 0) return(NULL)
+
+    if (n_samples == 0) {
+      return(NULL)
+    }
+
     validate_tibble_structure(
-      self@results, "results", c(n_samples, 2L),
+      self@results,
+      "results",
+      c(n_samples, 2L),
       list(id = "double", horns = "double")
     )
   }
@@ -331,13 +395,19 @@ SpriteResultStatsAndHorns <- S7::new_class(
 #' @noRd
 SpriteResultAll <- S7::new_class(
   "SpriteResultAll",
-  parent     = SpriteResultFromDisk,
+  parent = SpriteResultFromDisk,
   properties = list(results = S7::new_property(S7::class_any)),
-  validator  = function(self) {
+  validator = function(self) {
     n_samples <- self@metrics_main$samples_all
-    if (n_samples == 0) return(NULL)
+
+    if (n_samples == 0) {
+      return(NULL)
+    }
+
     validate_tibble_structure(
-      self@results, "results", c(n_samples, 3L),
+      self@results,
+      "results",
+      c(n_samples, 3L),
       list(id = "double", sample = "list", horns = "double")
     )
   }

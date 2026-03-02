@@ -11,7 +11,10 @@ write_basic <- function(data, path, technique) {
   path <- path_sanitize(path)
 
   # Refuse to rewrite data that were already saved to disk
-  if (S7::S7_inherits(data, ClosureResultFromDisk) || S7::S7_inherits(data, SpriteResultFromDisk)) {
+  if (
+    S7::S7_inherits(data, ClosureResultFromDisk) ||
+      S7::S7_inherits(data, SpriteResultFromDisk)
+  ) {
     abort_in_export(
       "Results were already saved to disk.",
       "x" = "Folder with {technique} results is (or was) present at:",
@@ -21,7 +24,10 @@ write_basic <- function(data, path, technique) {
 
   # Only ClosureResultFull / SpriteResultFull carry a full results tibble with
   # samples. Any other subclass lacks samples and cannot be written this way.
-  if (!S7::S7_inherits(data, ClosureResultFull) && !S7::S7_inherits(data, SpriteResultFull)) {
+  if (
+    !S7::S7_inherits(data, ClosureResultFull) &&
+      !S7::S7_inherits(data, SpriteResultFull)
+  ) {
     abort_in_export(
       "{technique} list must include a full `results` tibble.",
       "!" = "Results include samples and horns index values."
@@ -178,17 +184,17 @@ read_basic <- function(
       make_stats_only <- switch(
         technique,
         "CLOSURE" = ClosureResultStatsOnly,
-        "SPRITE"  = SpriteResultStatsOnly,
+        "SPRITE" = SpriteResultStatsOnly,
         cli::cli_abort("Internal error: unsupported technique \"{technique}\".")
       )
 
       out_empty <- tryCatch(
         make_stats_only(
-          inputs        = inputs,
-          metrics_main  = empty_parts$metrics_main,
+          inputs = inputs,
+          metrics_main = empty_parts$metrics_main,
           metrics_horns = empty_parts$metrics_horns,
-          frequency     = empty_parts$frequency,
-          directory     = directory
+          frequency = empty_parts$frequency,
+          directory = directory
         ),
         error = function(e) {
           abort_in_export(
@@ -231,9 +237,9 @@ read_basic <- function(
 
   # Read the four summary tibbles. The technique class is determined by the
   # `technique` parameter (passed from `closure_read()` / `sprite_read()`).
-  metrics_main_tbl  <- "metrics_main"  |> read_file()
+  metrics_main_tbl <- "metrics_main" |> read_file()
   metrics_horns_tbl <- "metrics_horns" |> read_file()
-  frequency_tbl     <- "frequency"     |> read_file()
+  frequency_tbl <- "frequency" |> read_file()
 
   # Parse mean and SD from the folder name
   mean_sd_str <- name_dir |>
@@ -254,7 +260,7 @@ read_basic <- function(
   tryCatch(
     {
       inputs$mean <- mean_sd_str[1]
-      inputs$sd   <- mean_sd_str[2]
+      inputs$sd <- mean_sd_str[2]
     },
     error = function(e) {
       abort_in_export("\"inputs\" must have \"mean\" and \"sd\" columns.")
@@ -271,31 +277,31 @@ read_basic <- function(
   )
 
   n_samples_all <- metrics_main_tbl$samples_all
-  path_horns    <- paste0(path, slash, "horns.parquet")
+  path_horns <- paste0(path, slash, "horns.parquet")
 
   # Helper: construct the right pair of S7 classes based on technique
   make_from_disk <- switch(
     technique,
     "CLOSURE" = list(
-      stats_only      = ClosureResultStatsOnly,
+      stats_only = ClosureResultStatsOnly,
       stats_and_horns = ClosureResultStatsAndHorns,
-      all             = ClosureResultAll
+      all = ClosureResultAll
     ),
     "SPRITE" = list(
-      stats_only      = SpriteResultStatsOnly,
+      stats_only = SpriteResultStatsOnly,
       stats_and_horns = SpriteResultStatsAndHorns,
-      all             = SpriteResultAll
+      all = SpriteResultAll
     ),
     cli::cli_abort("Internal error: unsupported technique \"{technique}\".")
   )
 
   # Shared base arguments for all from-disk S7 constructors
   base_args <- list(
-    inputs        = inputs,
-    metrics_main  = metrics_main_tbl,
+    inputs = inputs,
+    metrics_main = metrics_main_tbl,
     metrics_horns = metrics_horns_tbl,
-    frequency     = frequency_tbl,
-    directory     = directory
+    frequency = frequency_tbl,
+    directory = directory
   )
 
   # Adjudicate which additional parts of the results to read from disk, if any.
@@ -315,7 +321,7 @@ read_basic <- function(
   results_tbl <- if (include == "stats_and_horns") {
     tibble::new_tibble(
       x = list(
-        id    = as.double(seq_len(n_samples_all)),
+        id = as.double(seq_len(n_samples_all)),
         horns = nanoparquet::read_parquet(path_horns)[[1]]
       ),
       nrow = n_samples_all
@@ -347,9 +353,9 @@ read_basic <- function(
 
     tibble::new_tibble(
       x = list(
-        id     = as.double(seq_len(n_samples_all)),
+        id = as.double(seq_len(n_samples_all)),
         sample = sample_col,
-        horns  = nanoparquet::read_parquet(path_horns)[[1]]
+        horns = nanoparquet::read_parquet(path_horns)[[1]]
       ),
       nrow = n_samples_all
     )

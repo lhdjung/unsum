@@ -43,8 +43,11 @@ plot_horns_frequency <- function(
 
   n_samples_all <- data@metrics_main$samples_all
 
-  # `directory` is only present in from-disk classes; in-memory results have none
-  path <- if (S7::S7_inherits(data, ClosureResultFromDisk) || S7::S7_inherits(data, SpriteResultFromDisk)) {
+  # `directory` is only present in from-disk classes, not in-memory results
+  path <- if (
+    S7::S7_inherits(data, ClosureResultFromDisk) ||
+      S7::S7_inherits(data, SpriteResultFromDisk)
+  ) {
     data@directory$path
   } else {
     NULL
@@ -52,7 +55,8 @@ plot_horns_frequency <- function(
 
   # Reduce the input to a tibble that only includes the horns values.
   # Classes without a `results` property (stats-only) have no horns column.
-  has_results <- !S7::S7_inherits(data, ClosureResultStatsOnly) && !S7::S7_inherits(data, SpriteResultStatsOnly)
+  has_results <- !S7::S7_inherits(data, ClosureResultStatsOnly) &&
+    !S7::S7_inherits(data, SpriteResultStatsOnly)
   data <- if (has_results) data@results["horns"] else NULL
 
   # Error if no "horns" column is present
