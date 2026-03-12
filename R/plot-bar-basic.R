@@ -398,26 +398,23 @@ plot_frequency_bar <- function(
           alpha = 0.5,
           linewidth = 8
         )
-      } else if (overlay == "pointinterval") {
-        ggdist::stat_pointinterval(
-          data = data_overlay,
-          ggplot2::aes(x = value, y = frequency),
-          .width = c(0.5, 0.95),
-          alpha = 0.7,
-          linewidth = 4
-        )
-      } else if (overlay == "dots") {
-        # Dots must render after the main bars so below-bar white dots appear
-        # on the bar surface rather than underneath it; see separate block below
+      } else if (overlay %in% c("pointinterval", "dots")) {
+        # These must render after the main bars; see separate block below
         NULL
       }
     } +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
 
-    # Dots overlay: rendered after the bars so below-bar white dots appear
-    # as circles on the bar surface, above-bar dots appear above the bar
+    # Overlays rendered after the bars so they appear on top
     {
-      if (overlay == "dots" && !is.null(data_overlay)) {
+      if (overlay == "pointinterval" && !is.null(data_overlay)) {
+        ggdist::stat_pointinterval(
+          data = data_overlay,
+          ggplot2::aes(x = value, y = frequency),
+          .width = c(0.5, 0.95),
+          colour = "black"
+        )
+      } else if (overlay == "dots" && !is.null(data_overlay)) {
         list(
           if (nrow(data_dots_below) > 0L) {
             ggdist::stat_dots(
