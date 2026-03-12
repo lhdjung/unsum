@@ -32,7 +32,7 @@ plot_frequency_bar <- function(
     "relative"
   ),
   samples = c("mean", "all"),
-  overlay = c("all_avg", "none", "interval", "dots"),
+  overlay = c("all_avg", "none", "interval", "pointinterval", "dots"),
   facet_labels = c("Minimal variance", "Maximal variance"),
   facet_labels_parens = "h",
   bar_alpha = 0.75,
@@ -115,7 +115,7 @@ plot_frequency_bar <- function(
   samples <- arg_match_in_export(samples)
   overlay <- arg_match_in_export(overlay)
 
-  need_all_samples <- overlay %in% c("dots", "interval")
+  need_all_samples <- overlay %in% c("dots", "interval", "pointinterval")
 
   if (overlay != "none") {
     # Need the ggdist package to visualize the distribution of all samples
@@ -197,8 +197,6 @@ plot_frequency_bar <- function(
   } else {
     cli::cli_abort("Internal error: invalid \"overlay\" variant \"{overlay}\".")
   }
-
-  print(data_overlay)
 
   # How many subsets of samples are there? E.g., 2 with min-max grouping
   n_samples_groups <- length(unique(data$samples))
@@ -399,6 +397,14 @@ plot_frequency_bar <- function(
           .width = c(0.5, 0.8, 0.95),
           alpha = 0.5,
           linewidth = 8
+        )
+      } else if (overlay == "pointinterval") {
+        ggdist::stat_pointinterval(
+          data = data_overlay,
+          ggplot2::aes(x = value, y = frequency),
+          .width = c(0.5, 0.95),
+          alpha = 0.7,
+          linewidth = 4
         )
       } else if (overlay == "dots") {
         # Dots must render after the main bars so below-bar white dots appear
