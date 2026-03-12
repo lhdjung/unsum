@@ -365,6 +365,20 @@ plot_frequency_bar <- function(
     geom_text_frequency <- NULL
   }
 
+  # For the dots overlay: precompute the above/below split here so both the
+  # before-bars and after-bars positions in the ggplot chain can reference them
+  if (overlay == "dots" && !is.null(data_overlay)) {
+    key_overlay <- paste(data_overlay$value, data_overlay$samples)
+    key_bars <- paste(data$value, data$samples)
+    bar_ht <- data$frequency[match(key_overlay, key_bars)]
+    data_overlay$frequency <- pmax(data_overlay$frequency, 0)
+    data_dots_above <- data_overlay[data_overlay$frequency > bar_ht, ]
+    data_dots_below <- data_overlay[data_overlay$frequency <= bar_ht, ]
+  } else {
+    data_dots_above <- NULL
+    data_dots_below <- NULL
+  }
+
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
     # Overlay geom: visualizes the frequency distribution across all CLOSURE
@@ -387,16 +401,41 @@ plot_frequency_bar <- function(
           linewidth = 8
         )
       } else if (overlay == "dots") {
-        ggdist::stat_dots(
-          data = data_overlay,
-          ggplot2::aes(x = value, y = frequency),
-          side = "both",
-          color = bar_color,
-          alpha = 0.5
-        )
+        # Dots must render after the main bars so below-bar white dots appear
+        # on the bar surface rather than underneath it; see separate block below
+        NULL
       }
     } +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
+
+    # Dots overlay: rendered after the bars so below-bar white dots appear
+    # as circles on the bar surface, above-bar dots appear above the bar
+    {
+      if (overlay == "dots" && !is.null(data_overlay)) {
+        list(
+          if (nrow(data_dots_below) > 0L) {
+            ggdist::stat_dots(
+              data = data_dots_below,
+              ggplot2::aes(x = value, y = frequency),
+              fill = "white",
+              colour = "white",
+              side = "both",
+              alpha = 0.5
+            )
+          },
+          if (nrow(data_dots_above) > 0L) {
+            ggdist::stat_dots(
+              data = data_dots_above,
+              ggplot2::aes(x = value, y = frequency),
+              fill = bar_color,
+              colour = bar_color,
+              side = "both",
+              alpha = 0.5
+            )
+          }
+        )
+      }
+    } +
 
     # Text labels on top of the bars
     geom_text_frequency +
