@@ -1,6 +1,6 @@
 Package: unsum
 Title: Reconstruct Raw Data from Summary Statistics
-Version: 0.2.0
+Version: 0.2.0.9000
 Authors@R: c(
     person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre")),
     person("Nathanael", "Larigaldie", role = "ctb")
@@ -26,21 +26,22 @@ Imports:
     tibble,
     utils
 Collate: 
-    'constants.R'
-    'extendr-wrappers.R'
     'doc-helpers.R'
     'standalone-last-export.R'
+    'constants.R'
     'utils.R'
     'read-write-basic.R'
     'performance.R'
     'horns.R'
+    'extendr-wrappers.R'
+    'count.R'
     'plot-horns-histogram-basic.R'
     'plot-bar-basic.R'
     'generate-basic.R'
     'fn-formals.R'
     'fn-factory.R'
     'generate.R'
-    'count.R'
+    'compare-sprite-closure.R'
     'demo-plot.R'
     'horns-corrected.R'
     'horns-plot-for-export.R'
@@ -53,8 +54,9 @@ Config/rextendr/version: 0.4.2.9000
 SystemRequirements: Cargo (Rust's package manager), rustc
 URL: https://github.com/lhdjung/unsum, https://lhdjung.github.io/unsum/
 BugReports: https://github.com/lhdjung/unsum/issues
-Suggests: 
+Suggests:
     devtools,
+    ggdist,
     glue,
     knitr,
     rmarkdown,
