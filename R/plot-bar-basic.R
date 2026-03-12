@@ -32,6 +32,7 @@ plot_frequency_bar <- function(
     "relative"
   ),
   samples = c("mean", "all"),
+  overlay = c("all_avg", "none", "interval", "dots"),
   facet_labels = c("Minimal variance", "Maximal variance"),
   facet_labels_parens = "h",
   bar_alpha = 0.75,
@@ -44,6 +45,8 @@ plot_frequency_bar <- function(
   mark_decimal = "."
 ) {
   check_generator_output(data, technique)
+
+  data_overlay <- NULL
 
   # With a demo plot, construct a frequency table like those from `*_generate()`
   # from the input `data`, which is simply a vector of frequencies.
@@ -95,6 +98,11 @@ plot_frequency_bar <- function(
       "max" = facet_labels[2L]
     )
 
+    # Save components needed for overlay modes before `data` is overwritten
+    data_frequency_all <- data$frequency[data$frequency$samples == "all", ]
+    data_results <- data$results
+    data_inputs <- data$inputs
+
     # Zoom in on the frequency table -- the only element of `data` needed here.
     # Filter its rows to only keep those with a specific subset of samples, such
     # as "horns_min" and "horns_max".
@@ -105,6 +113,92 @@ plot_frequency_bar <- function(
   # Check inputs here because demo plots don't have `samples`
   format <- arg_match_in_export(format)
   samples <- arg_match_in_export(samples)
+  overlay <- arg_match_in_export(overlay)
+
+  need_all_samples <- overlay %in% c("dots", "interval")
+
+  if (overlay != "none") {
+    # Need the ggdist package to visualize the distribution of all samples
+    if (need_all_samples) {
+      rlang::check_installed(
+        "ggdist",
+        reason = paste0("for overlay = \"", overlay, "\".")
+      )
+    }
+
+    # Two possible errors -- one by the developer, one by the user
+    if (technique == "DEMO") {
+      cli::cli_abort(c(
+        "Internal error: DEMO plots need `overlay == {.val none}`.",
+        "x" = "DEMO plot with `overlay == {.val {overlay}}`."
+      ))
+    } else if (samples != "mean") {
+      abort_in_export(
+        "Overlay mode {.val {overlay}} requires `samples` to be {.val mean}.",
+        "x" = "`samples` was specified as {.val {samples}}."
+      )
+    }
+  }
+
+  # Build overlay data. All overlay modes require `samples == "mean"` so that
+  # both the main bars and the overlay show per-sample averages and are on the
+  # same scale.
+  if (overlay == "none") {
+    data_overlay <- NULL
+  } else if (overlay == "all_avg") {
+    # Gray background bars: the mean frequency across all CLOSURE samples
+    data_overlay <- data_frequency_all
+    data_overlay$f_absolute <- data_overlay$f_average
+    data_overlay$f_average <- NULL
+  } else if (need_all_samples) {
+    # Build a per-sample frequency table with one row per CLOSURE sample per
+    # scale value. Requires individual sample vectors.
+    if (!"sample" %in% names(data_results)) {
+      lowtech <- tolower(technique)
+      fn_name_gen <- paste0(lowtech, "_generate")
+      fn_name_read <- paste0(lowtech, "_read")
+      abort_in_export(
+        "Overlay mode {.val {overlay}} requires individual sample data.",
+        "i" = "Newly generate with `include = \"all\"` in `{fn_name_gen}()`
+        or newly read with `{fn_name_read}()`."
+      )
+    }
+
+    scale_vals <- seq(data_inputs$scale_min, data_inputs$scale_max)
+    n_scale_vals <- length(scale_vals)
+    scale_min_val <- data_inputs$scale_min
+
+    data_overlay <- do.call(
+      what = rbind,
+      args = lapply(data_results$sample, \(samp) {
+        counts <- tabulate(samp - scale_min_val + 1L, nbins = n_scale_vals)
+        freq <- switch(
+          format,
+          "relative" = counts / sum(counts),
+          "percent" = 100 * counts / sum(counts),
+          as.double(counts)
+        )
+
+        if (length(scale_vals) != length(freq)) {
+          cli::cli_abort(c(
+            "Internal error: incongruent lengths.",
+            "x" = "`scale_vals` is length {length(scale_vals)}",
+            "x" = "`freq` is length {length(freq)}"
+          ))
+        }
+
+        # tibble::tibble(value = scale_vals, frequency = freq)
+        tibble::new_tibble(
+          list(value = scale_vals, frequency = freq),
+          nrow = length(freq)
+        )
+      })
+    )
+  } else {
+    cli::cli_abort("Internal error: invalid \"overlay\" variant \"{overlay}\".")
+  }
+
+  print(data_overlay)
 
   # How many subsets of samples are there? E.g., 2 with min-max grouping
   n_samples_groups <- length(unique(data$samples))
@@ -188,6 +282,19 @@ plot_frequency_bar <- function(
     cli::cli_abort("Internal error: unhandled `format` type.")
   }
 
+  # Apply format transformation to the all_avg overlay; interval/dots build
+  # their overlay with the format already applied
+  if (!is.null(data_overlay) && overlay == "all_avg") {
+    if (format %in% c("absolute", "absolute_percent")) {
+      data_overlay$f_relative <- NULL
+    } else if (format == "relative") {
+      data_overlay$f_absolute <- NULL
+    } else if (format == "percent") {
+      data_overlay$f_relative <- round(100 * data_overlay$f_relative, 2)
+      data_overlay$f_absolute <- NULL
+    }
+  }
+
   # Ensure consistent column names to be referenced later
   names(data)[!(names(data) %in% c("samples", "group_frequency_table"))] <- c(
     "value",
@@ -199,6 +306,25 @@ plot_frequency_bar <- function(
       levels = frequency_rows_subset,
       labels = seq_along(frequency_rows_subset)
     )
+
+  # Rename overlay columns consistently, then duplicate it for each facet so
+  # it appears in every panel
+  if (!is.null(data_overlay)) {
+    names(data_overlay)[
+      !(names(data_overlay) %in% c("samples", "group_frequency_table"))
+    ] <- c(
+      "value",
+      "frequency"
+    )
+    data_overlay <- do.call(
+      rbind,
+      lapply(seq_along(frequency_rows_subset), function(i) {
+        d <- data_overlay
+        d$samples <- factor(i, levels = seq_along(frequency_rows_subset))
+        d
+      })
+    )
+  }
 
   # The text geom is pre-defined here because whether it has a non-`NULL` value
   # depends on a logical argument.
@@ -226,15 +352,13 @@ plot_frequency_bar <- function(
     text_offset_adjusted <- text_offset * max(data$frequency)
 
     # Prepare the text labels above the bars
-    geom_text_frequency <- ggplot2::geom_text(
+    geom_text_frequency <- ggplot2::geom_label(
       ggplot2::aes(
         y = frequency + text_offset_adjusted,
-        label = paste0(
-          format_number_label(frequency),
-          label_percent
-        )
+        label = paste0(format_number_label(frequency), label_percent)
       ),
       color = text_color,
+      fill = "white",
       size = text_size / 3
     )
   } else {
@@ -243,6 +367,35 @@ plot_frequency_bar <- function(
 
   # Construct the bar plot
   ggplot2::ggplot(data, ggplot2::aes(x = value, y = frequency)) +
+    # Overlay geom: visualizes the frequency distribution across all CLOSURE
+    # samples; rendered first so the main bars appear on top
+    {
+      if (is.null(data_overlay)) {
+        NULL
+      } else if (overlay == "all_avg") {
+        ggplot2::geom_col(
+          data = data_overlay,
+          alpha = 0.3,
+          fill = "gray50"
+        )
+      } else if (overlay == "interval") {
+        ggdist::stat_interval(
+          data = data_overlay,
+          ggplot2::aes(x = value, y = frequency),
+          .width = c(0.5, 0.8, 0.95),
+          alpha = 0.5,
+          linewidth = 8
+        )
+      } else if (overlay == "dots") {
+        ggdist::stat_dots(
+          data = data_overlay,
+          ggplot2::aes(x = value, y = frequency),
+          side = "both",
+          color = bar_color,
+          alpha = 0.5
+        )
+      }
+    } +
     ggplot2::geom_col(alpha = bar_alpha, fill = bar_color) +
 
     # Text labels on top of the bars
@@ -308,6 +461,7 @@ plot_frequency_bar <- function(
       labels = format_number_label,
       expand = ggplot2::expansion(c(0.01, 0.05))
     ) +
+
     ggplot2::labs(
       x = "Scale value",
       y = label_y_axis
