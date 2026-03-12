@@ -324,6 +324,29 @@ plot_frequency_bar <- function(
     )
   }
 
+  # For pointinterval/dots overlays: compute the text anchor per (value,
+  # samples) so labels appear above the overlay geom, not the bar top.
+  # pointinterval: upper end of the 95% interval (97.5th percentile)
+  # dots: topmost dot (maximum frequency across all samples)
+  if (overlay %in% c("pointinterval", "dots") && !is.null(data_overlay)) {
+    summary_fn <- if (overlay == "pointinterval") {
+      function(x) quantile(x, 0.975, names = FALSE)
+    } else {
+      max
+    }
+    freqs_by_key <- split(
+      data_overlay$frequency,
+      paste(data_overlay$value, data_overlay$samples)
+    )
+    data$y_text <- vapply(
+      freqs_by_key[paste(data$value, data$samples)],
+      summary_fn,
+      numeric(1)
+    )
+  } else {
+    data$y_text <- data$frequency
+  }
+
   # The text geom is pre-defined here because whether it has a non-`NULL` value
   # depends on a logical argument.
   if (show_text) {
@@ -344,15 +367,16 @@ plot_frequency_bar <- function(
         unlist(use.names = FALSE)
     )
 
-    # Adjust the text offset using the height of the highest bar so that the
-    # distance between text and bars is robust to very different values, such as
-    # absolute vs. relative values.
-    text_offset_adjusted <- text_offset * max(data$frequency)
+    # Adjust the text offset using the highest label anchor so that the
+    # distance between text and geoms is robust to very different values, such
+    # as absolute vs. relative values. With pointinterval overlay, the anchor
+    # is the upper interval end; otherwise, the bar top.
+    text_offset_adjusted <- text_offset * max(data$y_text)
 
-    # Prepare the text labels above the bars
+    # Prepare the text labels above the bars (or above the pointinterval end)
     geom_text_frequency <- ggplot2::geom_label(
       ggplot2::aes(
-        y = frequency + text_offset_adjusted,
+        y = y_text + text_offset_adjusted,
         label = paste0(format_number_label(frequency), label_percent)
       ),
       color = text_color,
@@ -445,9 +469,7 @@ plot_frequency_bar <- function(
 
     # Conditionally facet the plot -- needed for `closure_plot_bar()`
     {
-      if (!show_text) {
-        NULL
-      } else if (technique == "DEMO") {
+      if (technique == "DEMO") {
         # Compute the horns index for the example frequency distribution, then
         # add the uniform horns index based only on the number of scale points.
         label_h <- data$frequency |>
