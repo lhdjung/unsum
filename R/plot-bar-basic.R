@@ -187,7 +187,6 @@ plot_frequency_bar <- function(
           ))
         }
 
-        # tibble::tibble(value = scale_vals, frequency = freq)
         tibble::new_tibble(
           list(value = scale_vals, frequency = freq),
           nrow = length(freq)
@@ -314,6 +313,7 @@ plot_frequency_bar <- function(
       "value",
       "frequency"
     )
+
     data_overlay <- do.call(
       rbind,
       lapply(seq_along(frequency_rows_subset), function(i) {
@@ -329,20 +329,17 @@ plot_frequency_bar <- function(
   # pointinterval: upper end of the 95% interval (97.5th percentile)
   # dots: topmost dot (maximum frequency across all samples)
   if (overlay %in% c("pointinterval", "dots") && !is.null(data_overlay)) {
-    summary_fn <- if (overlay == "pointinterval") {
-      function(x) quantile(x, 0.975, names = FALSE)
-    } else {
-      max
-    }
-    freqs_by_key <- split(
-      data_overlay$frequency,
-      paste(data_overlay$value, data_overlay$samples)
+    summary_fn <- switch(
+      overlay,
+      "pointinterval" = function(x) quantile(x, 0.975, names = FALSE),
+      "dots" = max,
+      cli::cli_abort("Internal error: invalid \"overlay\" variant.")
     )
-    data$y_text <- vapply(
-      freqs_by_key[paste(data$value, data$samples)],
-      summary_fn,
-      numeric(1)
-    )
+
+    data$y_text <- data_overlay$frequency |>
+      split(paste(data_overlay$value, data_overlay$samples)) |>
+      call_on(\(x) x[paste(data$value, data$samples)]) |>
+      vapply(summary_fn, numeric(1))
   } else {
     data$y_text <- data$frequency
   }
@@ -392,8 +389,10 @@ plot_frequency_bar <- function(
   if (overlay == "dots" && !is.null(data_overlay)) {
     key_overlay <- paste(data_overlay$value, data_overlay$samples)
     key_bars <- paste(data$value, data$samples)
+
     bar_ht <- data$frequency[match(key_overlay, key_bars)]
     data_overlay$frequency <- pmax(data_overlay$frequency, 0)
+
     data_dots_above <- data_overlay[data_overlay$frequency > bar_ht, ]
     data_dots_below <- data_overlay[data_overlay$frequency <= bar_ht, ]
   } else {
@@ -431,14 +430,16 @@ plot_frequency_bar <- function(
 
     # Overlays rendered after the bars so they appear on top
     {
-      if (overlay == "pointinterval" && !is.null(data_overlay)) {
+      if (is.null(data_overlay)) {
+        NULL
+      } else if (overlay == "pointinterval") {
         ggdist::stat_pointinterval(
           data = data_overlay,
           ggplot2::aes(x = value, y = frequency),
           .width = c(0.5, 0.95),
           colour = "black"
         )
-      } else if (overlay == "dots" && !is.null(data_overlay)) {
+      } else if (overlay == "dots") {
         list(
           if (nrow(data_dots_below) > 0L) {
             ggdist::stat_dots(
@@ -471,10 +472,14 @@ plot_frequency_bar <- function(
     {
       if (technique == "DEMO") {
         # Compute the horns index for the example frequency distribution, then
-        # add the uniform horns index based only on the number of scale points.
-        label_h <- data$frequency |>
-          horns(1, nrow(data)) |>
-          c(horns_uniform(1, nrow(data))) |>
+        # also the uniform horns index based only on the number of scale points.
+        horns_values_both <- c(
+          horns(data$frequency, 1, nrow(data)),
+          horns_uniform(1, nrow(data))
+        )
+
+        # Format the two values for a string label
+        label_h <- horns_values_both |>
           call_on(scales::label_number(
             accuracy = 0.01,
             decimal.mark = mark_decimal
@@ -535,8 +540,10 @@ plot_frequency_bar <- function(
       # Enable markdown formatting in x and y axis labels (e.g., "h" in italics)
       axis.title.x = ggtext::element_markdown(),
       axis.title.y = ggtext::element_markdown(),
+
       # Enable markdown formatting in facet labels and control their size
       strip.text = ggtext::element_markdown(size = text_size),
+
       # Leave out vertical grid lines because the x-axis is categorical
       panel.grid.major.x = ggplot2::element_blank(),
       panel.grid.minor.x = ggplot2::element_blank()
