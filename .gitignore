@@ -6,11 +6,8 @@
 .quarto
 inst/doc
 docs
-src/rust/vendor
-src/rust/vendor*
-src/rust/vendor/*
 src/rust/vendor/
-src/vendor*
+src/vendor/
 src/Makevars
 src/Makevars.win
 special-scripts/*.html
@@ -27,4 +24,6 @@ SPRITE-*/
 # Don't ignore the vendor archive itself, but ignore extracted vendor dirs with ._* files
 **/._*
 src/vendor/
+src/rust/vendor/
+src/rust/vendor.tar.xz
 src/._vendor

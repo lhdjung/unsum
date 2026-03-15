@@ -5,7 +5,9 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(curl:*)",
       "Bash(cargo check:*)",
-      "Bash(tar xf:*)"
+      "Bash(tar xf:*)",
+      "Read(//Users/lukasjung/rust_projects/closure-core/**)",
+      "Bash(cargo build:*)"
     ]
   }
 }
