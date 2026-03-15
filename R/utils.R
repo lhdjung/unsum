@@ -99,26 +99,30 @@ check_generator_output <- function(
   # "CLOSURE" --> "closure" etc.
   lowtech <- tolower(technique)
 
-  top_level_is_correct <-
-    is.list(data) &&
-    any(c(6L, 7L, 8L) == length(data)) &&
-    list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
-    inherits(data$inputs, paste0(lowtech, "_generate"))
+  # S7 result objects have already passed property type validation at
+  # construction time; skip the structural list check for them.
+  if (!S7::S7_inherits(data, ResultListFromMeanSdN)) {
+    top_level_is_correct <-
+      is.list(data) &&
+      any(c(6L, 7L, 8L) == length(data)) &&
+      list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
+      inherits(data$inputs, paste0(lowtech, "_generate"))
 
-  if (!top_level_is_correct) {
-    # Demo plots are not based on generated samples, so they will inevitably
-    # fail the current check and need an escape hatch like this
-    if (technique == "DEMO") {
-      return(invisible(NULL))
+    if (!top_level_is_correct) {
+      # Demo plots are not based on generated samples, so they will inevitably
+      # fail the current check and need an escape hatch like this
+      if (technique == "DEMO") {
+        return(invisible(NULL))
+      }
+
+      msg_tibble_names <- paste0("\"", TIBBLE_NAMES, "\"")
+
+      abort_in_export(
+        "Input must be the output of `{lowtech}_generate()` or
+        `{lowtech}_read()`.",
+        "i" = "Such output is a list with the elements {msg_tibble_names}."
+      )
     }
-
-    msg_tibble_names <- paste0("\"", TIBBLE_NAMES, "\"")
-
-    abort_in_export(
-      "Input must be the output of `{lowtech}_generate()` or
-      `{lowtech}_read()`.",
-      "i" = "Such output is a list with the elements {msg_tibble_names}."
-    )
   }
 
   # Check the formats of the 5 or 6 tibbles that are elements of `data`, i.e.,
@@ -587,6 +591,12 @@ add_class <- function(x, new_class) {
 # function with `n = 0`.
 caller_fn_name <- function(n = 1) {
   as.character(rlang::caller_call(n + 1)[[1L]])
+}
+
+
+# Check whether an S7 object has a specific property, named as a string.
+has_property <- function(x, name) {
+  tryCatch(!is.null(S7::prop(x, name)), error = function(e) FALSE)
 }
 
 

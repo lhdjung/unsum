@@ -14,7 +14,7 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends:
     R (>= 4.2.0)
-Imports: 
+Imports:
     cli,
     ggplot2 (>= 3.4.0),
     ggtext,
@@ -22,6 +22,7 @@ Imports:
     nanoparquet,
     rlang,
     roundwork,
+    S7,
     scales,
     tibble,
     utils
@@ -49,6 +50,7 @@ Collate:
     'plot-bar.R'
     'plot-ecdf-basic.R'
     'read-write.R'
+    's7-result.R'
     'zzz.R'
 Config/rextendr/version: 0.4.2.9000
 SystemRequirements: Cargo (Rust's package manager), rustc

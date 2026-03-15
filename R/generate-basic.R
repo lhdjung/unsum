@@ -325,15 +325,24 @@ generate_from_mean_sd_n <- function(
       }
     })
 
-    # Combine the statistics with the results and return the completed list
-    c(
-      out_summary,
-      list(
-        results = tibble::new_tibble(
-          x = out$results,
-          nrow = n_samples_all
-        )
-      )
+    result_class <- switch(
+      technique,
+      CLOSURE = ClosureResult,
+      SPRITE = SpriteResult
+    )
+
+    .s7_constructing$active <- TRUE
+    on.exit(.s7_constructing$active <- FALSE, add = TRUE)
+
+    # fmt: skip
+    result_class(
+      inputs            = out_summary$inputs,
+      metrics_main      = out_summary$metrics_main,
+      metrics_horns     = out_summary$metrics_horns,
+      modality_analysis = out_summary$modality_analysis,
+      frequency         = out_summary$frequency,
+      frequency_dist    = out_summary$frequency_dist,
+      results           = tibble::new_tibble(x = out$results, nrow = n_samples_all)
     )
   } else {
     # In writing mode, read the statistics -- and, optionally, results -- that
