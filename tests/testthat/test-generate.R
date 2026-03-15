@@ -165,3 +165,74 @@ test_that("absolute frequencies are correct", {
       18850L
     ))
 })
+
+
+# SPRITE ------------------------------------------------------------------
+
+plot_bar_both <- TRUE
+
+inputs_constant <- list(
+  mean = "3.5",
+  sd = "1.7",
+  n = 75,
+  scale_min = 1,
+  scale_max = 5
+)
+
+# Splicing the input list into calls to the the SPRITE and CLOSURE generators
+subset <- rlang::inject(sprite_generate(!!!inputs_constant))
+superset <- rlang::inject(closure_generate(!!!inputs_constant))
+
+test_that("The subset/superset example data have the right shape (constant input)", {
+  subset |> check_generator_output("SPRITE") |> expect_no_error()
+  superset |> check_generator_output("CLOSURE") |> expect_no_error()
+})
+
+test_that("The subset/superset example data recompute correctly (constant input)", {
+  subset |> count_wrong_stats() |> any_wrong_stats() |> expect_false()
+  superset |> count_wrong_stats() |> any_wrong_stats() |> expect_false()
+})
+
+test_that("SPRITE results are a subset of CLOSURE results (constant input)", {
+  subset |> is_contained_in(superset) |> expect_true()
+})
+
+if (plot_bar_both && !is_empty(subset) && !is_empty(superset)) {
+  sprite_plot_bar(subset)
+  closure_plot_bar(superset)
+}
+
+
+endpoint <- 5
+
+inputs_random <- list(
+  mean = 1 |> runif(min = 1, max = endpoint) |> round(1) |> as.character(),
+  sd = 1 |> rnorm(mean = 0.8, sd = 0.5) |> round(1) |> as.character(),
+  n = 1 |> rnorm(mean = 25, sd = 10) |> round(),
+  scale_min = 1,
+  scale_max = endpoint
+)
+
+# Splice as above
+subset <- rlang::inject(sprite_generate(!!!inputs_random))
+superset <- rlang::inject(closure_generate(!!!inputs_random))
+
+# fmt: skip
+test_that("The subset/superset example data have the right shape (random input)", {
+  subset |> check_generator_output("SPRITE", allow_empty = TRUE) |> expect_no_error()
+  superset |> check_generator_output("CLOSURE", allow_empty = TRUE) |> expect_no_error()
+})
+
+test_that("The subset/superset example data recompute correctly (random input)", {
+  subset |> count_wrong_stats() |> any_wrong_stats() |> expect_false()
+  superset |> count_wrong_stats() |> any_wrong_stats() |> expect_false()
+})
+
+test_that("SPRITE results are a subset of CLOSURE results (random input)", {
+  subset |> is_contained_in(superset) |> expect_true()
+})
+
+if (plot_bar_both && !is_empty(subset) && !is_empty(superset)) {
+  sprite_plot_bar(subset)
+  closure_plot_bar(superset)
+}
