@@ -84,12 +84,11 @@ fn frequency_dist_to_robj(freq_dist: &FrequencyDist) -> Robj {
     df.into()
 }
 
-/// Helper function to convert ModalityAnalysis to an R list.
-///
-/// Returns a named list with:
-///   - `count_ranges`:   data frame (value, count_lo, count_hi)
-///   - `pair_orderings`: data frame (value_a, value_b, resolved, a_greater)
-///   - `non_unimodal`, `j_shape_low`, `j_shape_high`: scalar logicals
+/// Helper function to convert ModalityAnalysis to a named R list of three
+/// data frames:
+///   - `count_ranges`:   (value, count_lo, count_hi) — one row per scale value
+///   - `pair_orderings`: (value_a, value_b, resolved, a_greater) — one row per adjacent pair
+///   - `conclusion`:     (unimodal, j_shape_low, j_shape_high) — exactly one row
 fn modality_analysis_to_robj(ma: &ModalityAnalysis) -> Robj {
     let count_ranges: Robj = data_frame!(
         value    = ma.value.clone(),
@@ -99,19 +98,24 @@ fn modality_analysis_to_robj(ma: &ModalityAnalysis) -> Robj {
     .into();
 
     let pair_orderings: Robj = data_frame!(
-        value_a    = ma.pair_value_a.clone(),
-        value_b    = ma.pair_value_b.clone(),
-        resolved   = ma.pair_resolved.clone(),
-        a_greater  = ma.pair_a_greater.clone()
+        value_a   = ma.pair_value_a.clone(),
+        value_b   = ma.pair_value_b.clone(),
+        resolved  = ma.pair_resolved.clone(),
+        a_greater = ma.pair_a_greater.clone()
+    )
+    .into();
+
+    let conclusion: Robj = data_frame!(
+        unimodal    = vec![ma.unimodal],
+        j_shape_low  = vec![ma.j_shape_low],
+        j_shape_high = vec![ma.j_shape_high]
     )
     .into();
 
     list!(
         count_ranges   = count_ranges,
         pair_orderings = pair_orderings,
-        non_unimodal   = ma.non_unimodal,
-        j_shape_low    = ma.j_shape_low,
-        j_shape_high   = ma.j_shape_high
+        conclusion     = conclusion
     )
     .into()
 }
