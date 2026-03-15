@@ -1,7 +1,7 @@
 use closure_core::{
     closure_count, closure_parallel, closure_parallel_streaming, sprite_parallel,
-    sprite_parallel_streaming, ParquetConfig, RestrictionsMinimum, RestrictionsOption,
-    ResultListFromMeanSdN, StreamingConfig,
+    sprite_parallel_streaming, ModalityAnalysis, ParquetConfig, RestrictionsMinimum,
+    RestrictionsOption, ResultListFromMeanSdN, StreamingConfig, FrequencyDist,
 };
 /// This is part of unsum, an R package that uses extendr for Rust integration
 use extendr_api::prelude::*;
@@ -71,6 +71,49 @@ impl TryFrom<Robj> for StreamingConfigR {
             show_progress,
         }))
     }
+}
+
+/// Helper function to convert FrequencyDist to R data frame
+fn frequency_dist_to_robj(freq_dist: &FrequencyDist) -> Robj {
+    let n_samples_i32: Vec<i32> = freq_dist.n_samples.iter().map(|&x| x as i32).collect();
+    let df = data_frame!(
+        value = freq_dist.value.clone(),
+        count = freq_dist.count.clone(),
+        n_samples = n_samples_i32
+    );
+    df.into()
+}
+
+/// Helper function to convert ModalityAnalysis to an R list.
+///
+/// Returns a named list with:
+///   - `count_ranges`:   data frame (value, count_lo, count_hi)
+///   - `pair_orderings`: data frame (value_a, value_b, resolved, a_greater)
+///   - `non_unimodal`, `j_shape_low`, `j_shape_high`: scalar logicals
+fn modality_analysis_to_robj(ma: &ModalityAnalysis) -> Robj {
+    let count_ranges: Robj = data_frame!(
+        value    = ma.value.clone(),
+        count_lo = ma.count_lo.clone(),
+        count_hi = ma.count_hi.clone()
+    )
+    .into();
+
+    let pair_orderings: Robj = data_frame!(
+        value_a    = ma.pair_value_a.clone(),
+        value_b    = ma.pair_value_b.clone(),
+        resolved   = ma.pair_resolved.clone(),
+        a_greater  = ma.pair_a_greater.clone()
+    )
+    .into();
+
+    list!(
+        count_ranges   = count_ranges,
+        pair_orderings = pair_orderings,
+        non_unimodal   = ma.non_unimodal,
+        j_shape_low    = ma.j_shape_low,
+        j_shape_high   = ma.j_shape_high
+    )
+    .into()
 }
 
 /// Helper function to convert FrequencyTable to R data frame
@@ -186,13 +229,17 @@ fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, R
     .into();
 
     let frequency = frequency_table_to_robj(&rl.frequency);
+    let frequency_dist = frequency_dist_to_robj(&rl.frequency_dist);
+    let modality_analysis = modality_analysis_to_robj(&rl.modality_analysis);
     let results = results_table_to_robj(&rl.results);
 
     vec![
-        ("metrics_main", metrics_main),
-        ("metrics_horns", metrics_horns),
-        ("frequency", frequency),
-        ("results", results),
+        ("metrics_main",      metrics_main),
+        ("metrics_horns",     metrics_horns),
+        ("frequency",         frequency),
+        ("frequency_dist",    frequency_dist),
+        ("modality_analysis", modality_analysis),
+        ("results",           results),
     ]
 }
 
