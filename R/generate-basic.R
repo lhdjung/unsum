@@ -271,8 +271,6 @@ generate_from_mean_sd_n <- function(
   # created using the low-level `new_tibble()` instead of `tibble()`: once for
   # passing the S3 class, and three times for performance and consistency.
   if (in_memory_mode) {
-    print(out$modality_analysis)
-
     out_summary <- list(
       inputs = tibble::new_tibble(
         x = list(
@@ -298,8 +296,15 @@ generate_from_mean_sd_n <- function(
         as.list() |>
         tibble::new_tibble(nrow = 1L),
 
-      modality_analysis = out$modality_analysis |>
-        as.list(),
+      modality_analysis = list(
+        count_ranges = out$modality_analysis$count_ranges |>
+          tibble::as_tibble(),
+        pair_orderings = out$modality_analysis$pair_orderings |>
+          tibble::as_tibble(),
+        conclusion = out$modality_analysis$conclusion |>
+          as.list() |>
+          tibble::new_tibble(nrow = 1L)
+      ),
 
       frequency = out$frequency |>
         as.list() |>

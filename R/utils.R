@@ -101,7 +101,7 @@ check_generator_output <- function(
 
   top_level_is_correct <-
     is.list(data) &&
-    any(c(5L, 6L) == length(data)) &&
+    any(c(6L, 7L, 8L) == length(data)) &&
     list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
     inherits(data$inputs, paste0(lowtech, "_generate"))
 
