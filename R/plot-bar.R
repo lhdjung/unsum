@@ -14,6 +14,19 @@
 #' @param samples String (length 1). How to aggregate the samples? Either take
 #'   the average sample (`"mean"`, the default) or the sum of all samples
 #'   (`"all"`). This only matters if absolute frequencies are shown.
+#' @param overlay String (length 1). Visualization mode for the frequency
+#'   distribution across all samples, overlaid behind the main bars. Only
+#'   applies when `samples = "mean"`. Options:
+#'   - `"all_avg"` (default): gray background bars showing the mean frequency
+#'   across all samples.
+#'   - `"none"`: no overlay.
+#'   - `"interval"`: nested quantile intervals via [ggdist::stat_interval()]
+#'   (requires the `ggdist` package and `include = "all"` in
+#'   [closure_generate()]).
+#'   - `"pointinterval"`: median point with quantile interval lines via
+#'   [ggdist::stat_pointinterval()] (same requirements as `"interval"`).
+#'   - `"dots"`: quantile dot plot via [ggdist::stat_dots()] (same
+#'   requirements as `"interval"`).
 #' @param facet_labels String (length 2). Labels of the two individual panels.
 #'   Set it to `NULL` to remove the labels. Default is
 #'   `c("Minimal variance", "Maximal variance")`.

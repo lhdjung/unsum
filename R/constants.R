@@ -8,6 +8,7 @@ TIBBLE_NAMES <- c(
   "metrics_main",
   "metrics_horns",
   "frequency",
+  "frequency_dist",
   "results"
 )
 
@@ -25,6 +26,7 @@ FILES_EXPECTED <- c(
   "metrics_main.parquet",
   "metrics_horns.parquet",
   "frequency.parquet",
+  "frequency_dist.parquet",
   "horns.parquet",
   "sample.parquet"
 )

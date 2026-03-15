@@ -231,7 +231,8 @@ read_basic <- function(
     inputs = inputs,
     metrics_main = "metrics_main" |> read_file(),
     metrics_horns = "metrics_horns" |> read_file(),
-    frequency = "frequency" |> read_file()
+    frequency = "frequency" |> read_file(),
+    frequency_dist = "frequency_dist" |> read_file()
   )
 
   # Parse mean and SD from the folder name

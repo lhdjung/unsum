@@ -116,6 +116,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
         "data",
         "min_max",
         "samples",
+        "overlay",
         "facet_labels",
         "facet_labels_parens"
       )
@@ -125,12 +126,14 @@ new_plot_fn_bar <- function(technique, bar_color) {
     min_max_arg <- NULL
     facet_labels_arg <- NULL
     facet_labels_parens_arg <- NULL
+    overlay_arg <- "none"
   } else {
     data_arg <- rlang::expr(data)
     samples_arg <- rlang::expr(samples)
     min_max_arg <- rlang::expr(min_max)
     facet_labels_arg <- rlang::expr(facet_labels)
     facet_labels_parens_arg <- rlang::expr(facet_labels_parens)
+    overlay_arg <- rlang::expr(overlay)
   }
 
   rlang::new_function(
@@ -142,6 +145,7 @@ new_plot_fn_bar <- function(technique, bar_color) {
         min_max = !!min_max_arg,
         format = format,
         samples = !!samples_arg,
+        overlay = !!overlay_arg,
         facet_labels = !!facet_labels_arg,
         facet_labels_parens = !!facet_labels_parens_arg,
         bar_alpha = bar_alpha,

@@ -17,6 +17,7 @@
 # n <- 30
 # scale_min <- 1
 # scale_max <- 8
+# items <- 1
 # technique <- "CLOSURE"
 # path <- "."
 # stop_after <- NULL
@@ -62,6 +63,13 @@ generate_from_mean_sd_n <- function(
   sd_num <- as.numeric(sd)
 
   check_scale(scale_min, scale_max, mean_num)
+
+  if (sd_num < 0) {
+    abort_in_export(
+      "Standard deviation cannot be negative.",
+      "x" = "`sd` was specified as {.val {sd}}."
+    )
+  }
 
   # SPRITE-specific validation
   if (technique == "SPRITE") {
@@ -263,6 +271,8 @@ generate_from_mean_sd_n <- function(
   # created using the low-level `new_tibble()` instead of `tibble()`: once for
   # passing the S3 class, and three times for performance and consistency.
   if (in_memory_mode) {
+    print(out$modality_analysis)
+
     out_summary <- list(
       inputs = tibble::new_tibble(
         x = list(
@@ -288,9 +298,15 @@ generate_from_mean_sd_n <- function(
         as.list() |>
         tibble::new_tibble(nrow = 1L),
 
+      modality_analysis = out$modality_analysis |>
+        as.list(),
+
       frequency = out$frequency |>
         as.list() |>
-        tibble::new_tibble(nrow = nrow(out$frequency))
+        tibble::new_tibble(nrow = nrow(out$frequency)),
+
+      frequency_dist = out$frequency_dist |>
+        tibble::as_tibble()
     )
 
     # In memory mode (i.e., without writing to disk), a message about successful

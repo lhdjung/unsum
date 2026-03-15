@@ -124,7 +124,7 @@ check_generator_output <- function(
   # Check the formats of the 5 or 6 tibbles that are elements of `data`, i.e.,
   # of the output of a function like `closure_generate()`:
 
-  # Inputs (1 / 5)
+  # Inputs (1 / 6)
   check_component_tibble(
     x = data$inputs,
     dims = c(1L, 8L),
@@ -149,7 +149,7 @@ check_generator_output <- function(
     warning = "Don't change {technique} results before this step."
   )
 
-  # Main metrics (2 / 5)
+  # Main metrics (2 / 6)
   check_component_tibble(
     x = data$metrics_main,
     dims = c(1L, 2L),
@@ -160,7 +160,7 @@ check_generator_output <- function(
     )
   )
 
-  # Horns metrics (3 / 5)
+  # Horns metrics (3 / 6)
   check_component_tibble(
     x = data$metrics_horns,
     dims = c(1L, 9L),
@@ -195,7 +195,7 @@ check_generator_output <- function(
     )
   }
 
-  # Frequency (4 / 5)
+  # Frequency (4 / 6)
   check_component_tibble(
     x = data$frequency,
     dims = c(3 * scale_length, 5),
@@ -206,6 +206,20 @@ check_generator_output <- function(
       "f_average" = "double",
       "f_absolute" = "double",
       "f_relative" = "double"
+    )
+  )
+
+  # Frequency distribution (5 / 6)
+  check_component_tibble(
+    x = data$frequency_dist,
+    # Dimensions can't be checked because the correct dimensions of this
+    # particular tibble can't be inferred from any other statistics
+    dims = NULL,
+    technique = technique,
+    col_names_types = list(
+      "value" = "integer",
+      "count" = "integer",
+      "n_samples" = "integer"
     )
   )
 
@@ -269,7 +283,7 @@ check_generator_output <- function(
   # `closure_generate()` or by a reading function with a setting that makes for
   # equivalent "results"
   if (!reading_class_exists || any(reading_class == "capped_error")) {
-    # Results (5 / 5)
+    # Results (6 / 6)
     check_component_tibble(
       x = data$results,
       dims = c(data$metrics_main$samples_all, 3L),
@@ -331,7 +345,7 @@ check_component_tibble <- function(
 ) {
   tibble_is_correct <-
     inherits(x, "tbl_df") &&
-    all(dim(x) == dims) &&
+    (is.null(dims) || all(dim(x) == dims)) &&
     identical(names(x), names(col_names_types)) &&
     all(
       mapply(
@@ -367,6 +381,10 @@ check_component_tibble <- function(
     if (is.null(msg_main)) {
       msg_main <- "{technique} data must not be changed before passing them \
         to other `{lowtech}_*()` functions."
+    }
+
+    if (is.null(dims)) {
+      abort_in_export(msg_main)
     }
 
     abort_in_export(

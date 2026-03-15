@@ -6,8 +6,13 @@
 #   scale_min = 1,
 #   scale_max = 5
 # )
+# technique <- "CLOSURE"
+# min_max <- "both"
 # format <- "absolute_percent"
 # samples <- "mean"
+# overlay <- "dots"
+# facet_labels <- c("Minimal variance", "Maximal variance")
+# facet_labels_parens <- "h"
 # bar_alpha <- 0.75
 # bar_color <- "#5D3FD3"
 # show_text <- TRUE
@@ -17,8 +22,6 @@
 # mark_decimal <- "."
 # text_size <- 12
 # frequency_rows_subset <- c("horns_min", "horns_max")
-# facet_labels <- c("Minimal variance", "Maximal variance")
-# facet_labels_parens <- "h"
 # min_max_values <- c(0.41, 0.42)
 
 plot_frequency_bar <- function(
@@ -448,7 +451,7 @@ plot_frequency_bar <- function(
               fill = "white",
               colour = "white",
               side = "both",
-              alpha = 0.5
+              alpha = bar_alpha
             )
           },
           if (nrow(data_dots_above) > 0L) {
@@ -458,7 +461,7 @@ plot_frequency_bar <- function(
               fill = bar_color,
               colour = bar_color,
               side = "both",
-              alpha = 0.5
+              alpha = bar_alpha
             )
           }
         )
