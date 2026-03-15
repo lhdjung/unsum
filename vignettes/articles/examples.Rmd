@@ -18,31 +18,75 @@ library(unsum)
 3,800,640 values in a few seconds:
 ```{r}
 closure_generate(
-    mean = "3.8",
-    sd = "1.5",
-    n = 120,
-    scale_min = 1,
-    scale_max = 5
+  mean = "3.8",
+  sd = "1.5",
+  n = 120,
+  scale_min = 1,
+  scale_max = 5
 )
 ```
 
 16,701,150 values in a few seconds:
 ```{r}
 closure_generate(
+  mean = "3.0",
+  sd = "1.0",
+  n = 150,
+  scale_min = 1,
+  scale_max = 5
+)
+```
+
+25,278,450 values in a few seconds:
+```{r}
+closure_generate(
+  mean = "3.0",
+  sd = "1.5",
+  n = 150,
+  scale_min = 1,
+  scale_max = 5
+)
+```
+
+31,235,760 values in a few seconds:
+```{r}
+closure_generate(
     mean = "3.0",
-    sd = "1.0",
-    n = 150,
+    sd = "1.7",
+    n = 180,
     scale_min = 1,
     scale_max = 5
 )
 ```
 
-25,278,450 in a few seconds:
+38,740,810 values in a few seconds:
 ```{r}
 closure_generate(
     mean = "3.0",
-    sd = "1.5",
-    n = 150,
+    sd = "1.7",
+    n = 190,
+    scale_min = 1,
+    scale_max = 5
+)
+```
+
+52,231,000 values in a few seconds:
+```{r}
+closure_generate(
+    mean = "3.0",
+    sd = "1.7",
+    n = 200,
+    scale_min = 1,
+    scale_max = 5
+)
+```
+
+132,389,600 values in a few seconds:
+```{r}
+closure_generate(
+    mean = "3.0",
+    sd = "1.2",
+    n = 200,
     scale_min = 1,
     scale_max = 5
 )
