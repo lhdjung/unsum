@@ -13,7 +13,9 @@
 # -- "Predicates" run checks on a list of arguments and return logical vectors.
 # Currently, there is only one predicate.
 
-# -- "Helpers" are only needed by the other functions.
+# -- "Getters" can be used in conjunction with other functions here.
+
+# -- "Helpers" are only needed internally by the other functions.
 
 # If you use these functions as build helpers but not in the final binary, you
 # could run `rm(list = ls(pattern = "^formals_"))` in a zzz.R file. This will
@@ -277,7 +279,8 @@ formals_remove_defaults_all <- function(fmls) {
 #' @param ... New arguments (see above).
 #' @param .before,.after Strings. Specify exactly one of these two arguments.
 #'   Use it to name the one existing argument before or after which you want to
-#'   place the new arguments.
+#'   place the new arguments. Accepts `formals_first()` or `formals_last()` to
+#'   select the first or last argument, regardless of its name.
 #'
 #' @returns Pairlist of arguments.
 #' @noRd
@@ -410,8 +413,11 @@ formals_rename <- function(fmls, ...) {
 
   mapping <- c(...)
 
-  if (!is.character(mapping) || is.null(names(mapping)) ||
-    any(names(mapping) == "")) {
+  if (
+    !is.character(mapping) ||
+      is.null(names(mapping)) ||
+      any(names(mapping) == "")
+  ) {
     cli::cli_abort("All arguments must be named: `new_name = \"old_name\"`.")
   }
 
@@ -537,6 +543,31 @@ formals_have_defaults <- function(fmls) {
 }
 
 
+# Getters -----------------------------------------------------------------
+
+#' Select the first or last argument
+#'
+#' These can be used inside of `formals_add()` to specify `.before` or `.after`
+#' to make sure you always select the first or last argument.
+#'
+#' @returns String (length 1). It is empty but will instruct `formals_add()` to
+#'   pick the first or last argument, respectively.
+#' @noRd
+#'
+#' @examples
+formals_first <- function() {
+  out <- ""
+  class(out) <- c("formals_first", "character")
+  out
+}
+
+formals_last <- function() {
+  out <- ""
+  class(out) <- c("formals_last", "character")
+  out
+}
+
+
 # Helpers -----------------------------------------------------------------
 
 #' Check whether object is pairlist
@@ -573,12 +604,13 @@ formals_check_pairlist <- function(x) {
 #' Get the index of a given argument
 #'
 #' @description Helper that throws an error if the position argument in
-#' `formals_add()`, i.e., `.before` or `.after`, is not a length-1 string that
-#' is the name of an existing argument. If the check passes, it returns the
-#' index of that argument.
+#'   `formals_add()`, i.e., `.before` or `.after`, is not a length-1 string that
+#'   is the name of an existing argument. If the check passes, it returns the
+#'   index of that argument.
 #'
 #' @param names_old String. Vector of the names of the existing arguments.
-#' @param name_next String (length 1). Value of `.before` or `.after`.
+#' @param name_next String (length 1). Value of `.before` or `.after`. Accepts
+#'   `formals_first()` or `formals_last()` to select the first or last argument.
 #'
 #' @returns Integer (length 1).
 #' @noRd
@@ -590,18 +622,32 @@ formals_check_pairlist <- function(x) {
 #' # Throws an error if the name is not found
 #' try(formals_get_index(c("x", "y"), "z"))
 formals_get_index <- function(names_old, name_next) {
-  if (
-    is.character(name_next) &&
-      length(name_next) == 1 &&
-      name_next %in% names_old
-  ) {
-    return(match(name_next, names_old))
+  if (!is.character(name_next) || length(name_next) != 1) {
+    name <- deparse(substitute(name_next))
+    cli::cli_abort(
+      c(
+        "`{name}` must be a single string that matches an existing argument.",
+        i = "Name that argument or use `formals_first()` / `formals_last()`."
+      ),
+      call = rlang::caller_env()
+    )
   }
 
-  name <- deparse(substitute(name_next))
+  name_target <- if (name_next %in% names_old) {
+    name_next
+  } else if (inherits(name_next, "formals_first")) {
+    names_old[1]
+  } else if (inherits(name_next, "formals_last")) {
+    names_old[length(names_old)]
+  } else {
+    cli::cli_abort(
+      c(
+        "String must match an existing argument.",
+        i = "Name that argument or use `formals_first()` / `formals_last()`."
+      ),
+      call = rlang::caller_env()
+    )
+  }
 
-  cli::cli_abort(
-    "`{name}` must be a single string that names an existing argument.",
-    call = rlang::caller_env()
-  )
+  match(name_target, names_old)
 }
