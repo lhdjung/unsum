@@ -545,26 +545,37 @@ formals_have_defaults <- function(fmls) {
 
 # Getters -----------------------------------------------------------------
 
-#' Select the first or last argument
+#' Select an argument by position
 #'
-#' These can be used inside of `formals_add()` to specify `.before` or `.after`
-#' to make sure you always select the first or last argument.
+#' @description These can be used inside of `formals_add()` to specify `.before`
+#'   or `.after` to make sure you always select the first or last argument; or
+#'   to pick the argument with some specific index.
+#'
+#'   Don't collect the values of these functions in `c()` or similar. Best is to
+#'   just call the functions right where they are needed. To use them in other
+#'   places than `formals_add()`, pass their results to `formals_get_index()`.
+#'
+#' @param n Integer (length 1). Only in `formals_nth()`. Index of the argument
+#'   to be selected.
 #'
 #' @returns String (length 1). It is empty but will instruct `formals_add()` to
-#'   pick the first or last argument, respectively.
+#'   pick the respective argument.
 #' @noRd
 #'
 #' @examples
-formals_first <- function() {
-  out <- ""
-  class(out) <- c("formals_first", "character")
-  out
-}
-
-formals_last <- function() {
-  out <- ""
-  class(out) <- c("formals_last", "character")
-  out
+#' formals_first()
+#'
+#' formals_last()
+#'
+#' formals_nth(4)
+formals_first <- function() `attr<-`("", "position", 1)
+formals_last <- function() `attr<-`("", "position", Inf)
+formals_nth <- function(n) {
+  if (rlang::is_scalar_integerish(n) && n > 0) {
+    `attr<-`("", "position", n)
+  } else {
+    cli::cli_abort("`n` must be a single positive whole number.")
+  }
 }
 
 
@@ -610,7 +621,8 @@ formals_check_pairlist <- function(x) {
 #'
 #' @param names_old String. Vector of the names of the existing arguments.
 #' @param name_next String (length 1). Value of `.before` or `.after`. Accepts
-#'   `formals_first()` or `formals_last()` to select the first or last argument.
+#'   `formals_first()`, `formals_last()`, and `formals_nth()` to select an
+#'   argument by position.
 #'
 #' @returns Integer (length 1).
 #' @noRd
@@ -622,32 +634,39 @@ formals_check_pairlist <- function(x) {
 #' # Throws an error if the name is not found
 #' try(formals_get_index(c("x", "y"), "z"))
 formals_get_index <- function(names_old, name_next) {
-  if (!is.character(name_next) || length(name_next) != 1) {
-    name <- deparse(substitute(name_next))
-    cli::cli_abort(
-      c(
-        "`{name}` must be a single string that matches an existing argument.",
-        i = "Name that argument or use `formals_first()` / `formals_last()`."
-      ),
-      call = rlang::caller_env()
-    )
+  inputs_are_valid <-
+    is.character(names_old) &&
+    is.character(name_next) &&
+    length(names_old) > 0 &&
+    length(name_next) == 1 &&
+    # Get the target name from the argument names, then run a final check.
+    # `name_target` will be `NULL` or a valid name from within `names_old`.
+    {
+      name_target <- if (name_next %in% names_old) {
+        name_next
+      } else {
+        position <- attr(name_next, "position")
+        if (!is.null(position)) names_old[min(position, length(names_old))]
+      }
+      # This must be `TRUE` for `inputs_are_valid` to be `TRUE`:
+      length(name_target) == 1 && !is.na(name_target)
+    }
+
+  if (inputs_are_valid) {
+    index <- match(name_target, names_old)
+    return(index)
   }
 
-  name_target <- if (name_next %in% names_old) {
-    name_next
-  } else if (inherits(name_next, "formals_first")) {
-    names_old[1]
-  } else if (inherits(name_next, "formals_last")) {
-    names_old[length(names_old)]
-  } else {
-    cli::cli_abort(
-      c(
-        "String must match an existing argument.",
-        i = "Name that argument or use `formals_first()` / `formals_last()`."
-      ),
-      call = rlang::caller_env()
-    )
-  }
+  name <- deparse(substitute(name_next))
 
-  match(name_target, names_old)
+  cli::cli_abort(
+    c(
+      "`{name}` must be a single string that matches an existing argument.",
+      i = "Name that argument or call one of these functions in its place:",
+      "*" = "`formals_first()`",
+      "*" = "`formals_last()`",
+      "*" = "`formals_nth()`"
+    ),
+    call = rlang::caller_env()
+  )
 }
