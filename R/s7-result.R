@@ -64,13 +64,15 @@ ResultListFromMeanSdN <- S7::new_class(
   "ResultListFromMeanSdN",
   abstract = TRUE,
   properties = list(
-    inputs            = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("inputs")),
-    metrics_main      = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("metrics_main")),
-    metrics_horns     = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("metrics_horns")),
-    modality_analysis = S7::new_property(S7::class_list,       setter = new_read_only_setter("modality_analysis")),
-    frequency         = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency")),
-    frequency_dist    = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency_dist")),
-    results           = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("results"))
+    inputs              = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("inputs")),
+    metrics_main        = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("metrics_main")),
+    metrics_horns       = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("metrics_horns")),
+    modality_counts     = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_counts")),
+    modality_pairs      = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_pairs")),
+    modality_conclusion = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_conclusion")),
+    frequency           = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency")),
+    frequency_dist      = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency_dist")),
+    results             = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("results"))
   )
 )
 
@@ -162,7 +164,7 @@ S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
   msg_samples_all <- format_comma(samples_all)
   msg_sample_s <- if (samples_all == 1L) "sample" else "samples"
 
-  has_directory <- has_property(data, "directory")
+  has_directory <- has_property(x, "directory")
 
   cli::cli_h1(
     "{.bold {technique} results: {msg_samples_all} {msg_sample_s}}"
@@ -192,13 +194,23 @@ S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
   cat("\n")
 
   hidden <- c(
+    modality_counts = paste0(
+      "min/max counts per scale value (",
+      nrow(x@modality_counts),
+      " rows)"
+    ),
+    modality_pairs = paste0(
+      "frequency ordering between adjacent values (",
+      nrow(x@modality_pairs),
+      " rows)"
+    ),
+    modality_conclusion = "unimodal/J-shape flags (1 row)",
     frequency = paste0("full frequency table (", nrow(x@frequency), " rows)"),
     frequency_dist = paste0(
       "per-value count distributions (",
       format_comma(nrow(x@frequency_dist)),
       " rows)"
     ),
-    modality_analysis = "ordering and modality analysis (3 tibbles):",
     results = paste0(
       "all samples and their horns indices (",
       msg_samples_all,
@@ -206,27 +218,10 @@ S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
     )
   )
 
-  modality <- c(
-    count_ranges = "min and max counts per value across all samples",
-    pair_orderings = "frequency comparisons between scale values",
-    conclusion = "implications for shape of the original distribution"
-  )
-
   message("With hidden elements:")
 
-  # Print each hidden tibble, also with a brief description
   for (name in names(hidden)) {
     cli::cli_alert_info("Access {.field ${name}} for {hidden[name]}")
-
-    if (name == "modality_analysis") {
-      for (name_mod in names(modality)) {
-        nrow_current <- nrow(x$modality_analysis[[name_mod]])
-        cli::cli_alert(paste0(
-          "    Access {.field $...${name_mod}} for {modality[name_mod]} ",
-          "({nrow_current} row{?s})"
-        ))
-      }
-    }
   }
 
   invisible(x)

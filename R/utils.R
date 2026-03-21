@@ -49,7 +49,8 @@ switch_build_mode <- function(debug) {
 
   if (length(idx) != 1L) {
     cli::cli_abort(
-      "Expected exactly one {.code is_debug <- ...} line in {.file tools/config.R}, found {length(idx)}."
+      "Expected exactly one {.code is_debug <- ...} line in
+      {.file tools/config.R}, found {length(idx)}."
     )
   }
 
@@ -104,7 +105,7 @@ check_generator_output <- function(
   if (!S7::S7_inherits(data, ResultListFromMeanSdN)) {
     top_level_is_correct <-
       is.list(data) &&
-      any(c(6L, 7L, 8L) == length(data)) &&
+      any(c(6L, 7L, 9L, 10L) == length(data)) &&
       list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
       inherits(data$inputs, paste0(lowtech, "_generate"))
 
@@ -226,6 +227,46 @@ check_generator_output <- function(
       "n_samples" = "integer"
     )
   )
+
+  # Modality tibbles — only present for in-memory results (not disk reads)
+  if (
+    !S7::S7_inherits(data, ResultListFromMeanSdN) &&
+      any(names(data) == "modality_counts")
+  ) {
+    check_component_tibble(
+      x = data$modality_counts,
+      dims = c(scale_length, 3L),
+      technique = technique,
+      col_names_types = list(
+        "value" = "integer",
+        "count_lo" = "integer",
+        "count_hi" = "integer"
+      )
+    )
+
+    check_component_tibble(
+      x = data$modality_pairs,
+      dims = c(scale_length - 1L, 4L),
+      technique = technique,
+      col_names_types = list(
+        "value_a" = "integer",
+        "value_b" = "integer",
+        "resolved" = "logical",
+        "a_greater" = "logical"
+      )
+    )
+
+    check_component_tibble(
+      x = data$modality_conclusion,
+      dims = c(1L, 3L),
+      technique = technique,
+      col_names_types = list(
+        "unimodal" = "logical",
+        "j_shape_low" = "logical",
+        "j_shape_high" = "logical"
+      )
+    )
+  }
 
   # (Long intermezzo before the final tibble check)
 

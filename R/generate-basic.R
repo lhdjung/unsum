@@ -296,15 +296,15 @@ generate_from_mean_sd_n <- function(
         as.list() |>
         tibble::new_tibble(nrow = 1L),
 
-      modality_analysis = list(
-        count_ranges = out$modality_analysis$count_ranges |>
-          tibble::as_tibble(),
-        pair_orderings = out$modality_analysis$pair_orderings |>
-          tibble::as_tibble(),
-        conclusion = out$modality_analysis$conclusion |>
-          as.list() |>
-          tibble::new_tibble(nrow = 1L)
-      ),
+      modality_counts = out$modality_counts |>
+        tibble::as_tibble(),
+
+      modality_pairs = out$modality_pairs |>
+        tibble::as_tibble(),
+
+      modality_conclusion = out$modality_conclusion |>
+        as.list() |>
+        tibble::new_tibble(nrow = 1L),
 
       frequency = out$frequency |>
         as.list() |>
@@ -336,13 +336,15 @@ generate_from_mean_sd_n <- function(
 
     # fmt: skip
     result_class(
-      inputs            = out_summary$inputs,
-      metrics_main      = out_summary$metrics_main,
-      metrics_horns     = out_summary$metrics_horns,
-      modality_analysis = out_summary$modality_analysis,
-      frequency         = out_summary$frequency,
-      frequency_dist    = out_summary$frequency_dist,
-      results           = tibble::new_tibble(x = out$results, nrow = n_samples_all)
+      inputs              = out_summary$inputs,
+      metrics_main        = out_summary$metrics_main,
+      metrics_horns       = out_summary$metrics_horns,
+      modality_counts     = out_summary$modality_counts,
+      modality_pairs      = out_summary$modality_pairs,
+      modality_conclusion = out_summary$modality_conclusion,
+      frequency           = out_summary$frequency,
+      frequency_dist      = out_summary$frequency_dist,
+      results             = tibble::new_tibble(x = out$results, nrow = n_samples_all)
     )
   } else {
     # In writing mode, read the statistics -- and, optionally, results -- that

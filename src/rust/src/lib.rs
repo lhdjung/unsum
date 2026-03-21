@@ -1,7 +1,7 @@
 use closure_core::{
     closure_count, closure_parallel, closure_parallel_streaming, sprite_parallel,
-    sprite_parallel_streaming, ModalityAnalysis, ParquetConfig, RestrictionsMinimum,
-    RestrictionsOption, ResultListFromMeanSdN, StreamingConfig, FrequencyDist,
+    sprite_parallel_streaming, FrequencyDist, ModalityConclusion, ModalityCounts, ModalityPairs,
+    ParquetConfig, RestrictionsMinimum, RestrictionsOption, ResultListFromMeanSdN, StreamingConfig,
 };
 /// This is part of unsum, an R package that uses extendr for Rust integration
 use extendr_api::prelude::*;
@@ -84,38 +84,33 @@ fn frequency_dist_to_robj(freq_dist: &FrequencyDist) -> Robj {
     df.into()
 }
 
-/// Helper function to convert ModalityAnalysis to a named R list of three
-/// data frames:
-///   - `count_ranges`:   (value, count_lo, count_hi) — one row per scale value
-///   - `pair_orderings`: (value_a, value_b, resolved, a_greater) — one row per adjacent pair
-///   - `conclusion`:     (unimodal, j_shape_low, j_shape_high) — exactly one row
-fn modality_analysis_to_robj(ma: &ModalityAnalysis) -> Robj {
-    let count_ranges: Robj = data_frame!(
-        value    = ma.value.clone(),
-        count_lo = ma.count_lo.clone(),
-        count_hi = ma.count_hi.clone()
+/// (value, count_lo, count_hi) — one row per scale value
+fn modality_counts_to_robj(mc: &ModalityCounts) -> Robj {
+    data_frame!(
+        value = mc.value.clone(),
+        count_lo = mc.count_lo.clone(),
+        count_hi = mc.count_hi.clone()
     )
-    .into();
+    .into()
+}
 
-    let pair_orderings: Robj = data_frame!(
-        value_a   = ma.pair_value_a.clone(),
-        value_b   = ma.pair_value_b.clone(),
-        resolved  = ma.pair_resolved.clone(),
-        a_greater = ma.pair_a_greater.clone()
+/// (value_a, value_b, resolved, a_greater) — one row per adjacent pair
+fn modality_pairs_to_robj(mp: &ModalityPairs) -> Robj {
+    data_frame!(
+        value_a = mp.value_a.clone(),
+        value_b = mp.value_b.clone(),
+        resolved = mp.resolved.clone(),
+        a_greater = mp.a_greater.clone()
     )
-    .into();
+    .into()
+}
 
-    let conclusion: Robj = data_frame!(
-        unimodal    = vec![ma.unimodal],
-        j_shape_low  = vec![ma.j_shape_low],
-        j_shape_high = vec![ma.j_shape_high]
-    )
-    .into();
-
-    list!(
-        count_ranges   = count_ranges,
-        pair_orderings = pair_orderings,
-        conclusion     = conclusion
+/// (unimodal, j_shape_low, j_shape_high) — exactly one row
+fn modality_conclusion_to_robj(mc: &ModalityConclusion) -> Robj {
+    data_frame!(
+        unimodal = vec![mc.unimodal],
+        j_shape_low = vec![mc.j_shape_low],
+        j_shape_high = vec![mc.j_shape_high]
     )
     .into()
 }
@@ -234,16 +229,20 @@ fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, R
 
     let frequency = frequency_table_to_robj(&rl.frequency);
     let frequency_dist = frequency_dist_to_robj(&rl.frequency_dist);
-    let modality_analysis = modality_analysis_to_robj(&rl.modality_analysis);
+    let modality_counts = modality_counts_to_robj(&rl.modality_counts);
+    let modality_pairs = modality_pairs_to_robj(&rl.modality_pairs);
+    let modality_conclusion = modality_conclusion_to_robj(&rl.modality_conclusion);
     let results = results_table_to_robj(&rl.results);
 
     vec![
-        ("metrics_main",      metrics_main),
-        ("metrics_horns",     metrics_horns),
-        ("frequency",         frequency),
-        ("frequency_dist",    frequency_dist),
-        ("modality_analysis", modality_analysis),
-        ("results",           results),
+        ("metrics_main", metrics_main),
+        ("metrics_horns", metrics_horns),
+        ("frequency", frequency),
+        ("frequency_dist", frequency_dist),
+        ("modality_counts", modality_counts),
+        ("modality_pairs", modality_pairs),
+        ("modality_conclusion", modality_conclusion),
+        ("results", results),
     ]
 }
 
@@ -274,15 +273,11 @@ fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Rob
     let n_rows = id_vec.len();
     let mut df: Robj = list!(id = id_vec, sample = samples_list, horns = horns_vec).into();
     df.set_attrib("class", "data.frame").unwrap();
-    df.set_attrib(
-        "row.names",
-        (1..=n_rows as i32).collect::<Vec<i32>>(),
-    )
-    .unwrap();
+    df.set_attrib("row.names", (1..=n_rows as i32).collect::<Vec<i32>>())
+        .unwrap();
 
     df
 }
-
 
 #[extendr]
 fn count_closure_combinations(
