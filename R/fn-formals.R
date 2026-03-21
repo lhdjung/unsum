@@ -524,26 +524,47 @@ formals_reorder <- function(fmls, ...) {
 #'
 #' @examples
 #' # Check a function where some arguments have defaults
-#' mean.default |> formals() |> formals_have_defaults()
+#' mean.default |> formals() |> formals_defaults_exist()
 #'
 #' # All `FALSE` when no argument has a default
-#' formals_new_without_defaults("a", "b") |> formals_have_defaults()
-formals_have_defaults <- function(fmls) {
+#' formals_new_without_defaults("a", "b") |> formals_defaults_exist()
+formals_defaults_exist <- function(fmls) {
   formals_check_pairlist(fmls)
-
-  defaults_are_missing <- logical(length(fmls))
-
-  # Loop needed here because `missing()` doesn't work with `vapply()` etc.
-  for (i in seq_along(fmls)) {
-    current_arg <- fmls[[i]]
-    defaults_are_missing[i] <- missing(current_arg)
-  }
-
-  !defaults_are_missing
+  formals_defaults_types(fmls) != ""
 }
 
 
 # Getters -----------------------------------------------------------------
+
+#' Get the types of default arguments
+#'
+#' @description For each argument in a list of arguments, this checks the type
+#'   of that argument's default. Whenever there is no default, is uses `""` (an
+#'   empty string).
+#'
+#' @param fmls Pairlist of arguments.
+#'
+#' @returns String vector with the same length as `fmls`. No `NA` elements.
+#' @noRd
+#'
+#' @examples
+#' # Get the defaults' types where they exist, and `""` where they don't
+#' mean.default |> formals() |> formals_defaults_types()
+formals_defaults_types <- function(fmls) {
+  formals_check_pairlist(fmls)
+
+  out <- character(length(fmls))
+
+  for (i in seq_along(fmls)) {
+    current_arg <- fmls[[i]]
+    if (!missing(current_arg)) {
+      out[i] <- typeof(current_arg)
+    }
+  }
+
+  out
+}
+
 
 #' Select an argument by position
 #'
