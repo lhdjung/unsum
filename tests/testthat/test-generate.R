@@ -206,9 +206,21 @@ if (plot_bar_both && !is_empty(subset) && !is_empty(superset)) {
 endpoint <- 5
 
 inputs_random <- list(
-  mean = 1 |> runif(min = 1, max = endpoint) |> round(1) |> as.character(),
-  sd = 1 |> rnorm(mean = 0.8, sd = 0.5) |> round(1) |> as.character(),
-  n = 1 |> rnorm(mean = 25, sd = 10) |> round(),
+  mean = 1 |>
+    runif(min = 1, max = endpoint) |>
+    round(1) |>
+    as.character(),
+
+  sd = 1 |>
+    rnorm(mean = 0.8, sd = 0.5) |>
+    round(1) |>
+    max(0) |>
+    as.character(),
+
+  n = 1 |>
+    rnorm(mean = 25, sd = 10) |>
+    round(),
+
   scale_min = 1,
   scale_max = endpoint
 )
