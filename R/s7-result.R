@@ -156,7 +156,13 @@ S7::method(as.list, ResultListFromMeanSdN) <- function(x) {
 # Print -------------------------------------------------------------------
 
 # Print method for CLOSURE and SPRITE results
-S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
+S7::method(print, ResultListFromMeanSdN) <- function(
+  x,
+  show = c("some", "all", "none"),
+  ...
+) {
+  show <- rlang::arg_match(show)
+
   technique <- x@inputs$technique[[1L]]
   samples_all <- x@metrics_main$samples_all
 
@@ -170,6 +176,7 @@ S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
     "{.bold {technique} results: {msg_samples_all} {msg_sample_s}}"
   )
 
+  # Elements that are shown by default
   visible <- c(
     # fmt: skip
     inputs = paste0(
@@ -182,17 +189,7 @@ S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
     }
   )
 
-  # Print each visible tibble with a header like `$inputs` that emphasizes its
-  # name within the result list. It is followed by a brief description. These
-  # two elements are separated by a middle dot rendered via `\u00B7`.
-  for (name in names(visible)) {
-    cat("\n")
-    cli::cli_text("{.field ${name}} \u00B7 {visible[name]}")
-    print(x[[name]])
-  }
-
-  cat("\n")
-
+  # Elements that are not shown by default
   hidden <- c(
     modality_counts = paste0(
       "min/max counts per scale value (",
@@ -218,11 +215,50 @@ S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
     )
   )
 
-  message("With hidden elements:")
+  # The optional `show` argument in the explicit print method, like
+  # `print(my_closure_results, show = "all")`, controls elements' visibility
+  switch(
+    show,
+    "all" = {
+      visible <- c(visible, hidden)
+    },
+    "none" = {
+      hidden <- c(visible, hidden)
+      visible <- NULL
+    }
+  )
 
-  for (name in names(hidden)) {
-    cli::cli_alert_info("Access {.field ${name}} for {hidden[name]}")
+  # Print each visible tibble with a header like `$inputs` that emphasizes its
+  # name within the result list. It is followed by a brief description. These
+  # two elements are separated by a middle dot rendered via `\u00B7`.
+  for (name in names(visible)) {
+    cat("\n")
+    cli::cli_text("{.field ${name}} \u00B7 {visible[name]}")
+    print(x[[name]])
   }
+
+  cat("\n")
+
+  msg_some <- "{.emph # Use `print(show = \"some\")` to see a few elements}"
+  msg_none <- "{.emph # Use `print(show = \"none\")` to hide elements}"
+
+  # All "show" variants other than "all" have some elements to hide
+  if (show == "all") {
+    cli::cli_inform(msg_some)
+    cli::cli_inform(msg_none)
+  } else {
+    message("With hidden elements:")
+
+    for (name in names(hidden)) {
+      cli::cli_alert_info("Access {.field ${name}} for {hidden[name]}")
+    }
+
+    cat("\n")
+    cli::cli_inform("{.emph # Use `print(show = \"all\")` to see all elements}")
+    cli::cli_inform(switch(show, "some" = msg_none, "none" = msg_some))
+  }
+
+  cat("\n")
 
   invisible(x)
 }

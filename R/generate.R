@@ -60,6 +60,16 @@ NULL
 #' @section `r expand_section("memory", "CLOSURE")`
 #' @section `r expand_section("rounding", "CLOSURE")`
 #'
+#' @section Printing: When printing results, you can use `print()` explicitly
+#'   with the `show` argument to control which elements are shown. Set `show` to
+#'   one of:
+#'  - `"some"` (the default): show some elements, hide others. The hidden ones
+#'  have brief descriptions.
+#'  - `"all"`: show all elements.
+#'  - `"none"`: show no elements, only their descriptions.
+#'
+#' For example: `print(your_results, show = "all")`
+#'
 #' @include utils.R count.R horns.R performance.R read-write-basic.R
 #'   fn-factory.R extendr-wrappers.R
 #'
@@ -126,6 +136,8 @@ closure_generate <- new_generator_mean_sd_n("CLOSURE")
 #' @section `r expand_section("writing", "SPRITE")`
 #' @section `r expand_section("memory", "SPRITE")`
 #' @section `r expand_section("rounding", "SPRITE")`
+#'
+#' @inheritSection closure_generate Printing
 #'
 #' @include doc-helpers.R
 #' @export
