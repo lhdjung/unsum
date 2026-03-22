@@ -11,6 +11,17 @@ utils::globalVariables(c(
 ))
 
 
+# Register S7 methods when the package is loaded; see
+# https://rconsortium.github.io/S7/articles/packages.html
+.onLoad <- function(...) {
+  S7::methods_register()
+}
+
+# Enable usage of <S7_object>@name in package code
+#' @rawNamespace if (getRversion() < "4.3.0") importFrom("S7", "@")
+NULL
+
+
 # Build mode ---------------------------------------------------------------
 
 #' Switch Rust build to debug mode
