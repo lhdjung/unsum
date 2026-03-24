@@ -74,28 +74,13 @@ test_that("R-computed frequency_dist: n_samples sum to total per value", {
   expect_true(all(sums_by_value == n_samples_total))
 })
 
-test_that("R-computed frequency_dist: weighted count sum matches frequency table", {
-  # sum(count * n_samples) for each scale value equals the total number of
-  # times that value appears across all samples, i.e. f_absolute.
-  weighted_sums <- tapply(
-    fd_r$count * fd_r$n_samples,
-    fd_r$value,
-    sum
-  )
-
-  # $frequency has one row per (samples, value) group; restrict to "all" so
-  # f_absolute is not summed across horns_min/horns_max groups as well
-  freq_all <- fd_data$frequency[fd_data$frequency$samples == "all", ]
-  freq_by_value <- tapply(
-    freq_all$f_absolute,
-    freq_all$value,
-    sum
-  )
-
-  expect_equal(
-    as.integer(weighted_sums[as.character(scale_vals)]),
-    as.integer(freq_by_value[as.character(scale_vals)])
-  )
+test_that("f_count in frequency table sums to n for each samples group", {
+  # The medoid is a single sample of size n, so its per-value counts must sum
+  # to n regardless of the samples group.
+  for (grp in c("all", "horns_min", "horns_max")) {
+    rows <- fd_data$frequency[fd_data$frequency$samples == grp, ]
+    expect_equal(sum(rows$f_count), fd_data$inputs$n)
+  }
 })
 
 

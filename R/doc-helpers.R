@@ -26,7 +26,7 @@ expand_section <- function(section, technique) {
     ),
     memory = glue::glue(
       "More about memory: Some output columns that contain counts, such as
-      `f_absolute`, are doubles instead of integers. This is because doubles are
+      `f_count`, are doubles instead of integers. This is because doubles are
       able to contain much larger numbers. When counting {technique} results, it
       is possible to exceed the limit of 32-bit integers in R, which is roughly
       two billion."
@@ -65,10 +65,8 @@ expand_section <- function(section, technique) {
         those samples with the highest horns index.
         - `value`: integer. Scale values derived from `scale_min` and
         `scale_max`.
-        - `f_average`: double. Count of scale values in the mean `results`
-        sample.
-        - `f_absolute`: double. Count of individual scale values found in the
-        `results` samples.
+        - `f_count`: double. Count of scale values in the group's medoid
+        sample (the actual sample closest to the group centroid by EMD).
         - `f_relative`: double. Values' share of total values found.
       - **`results`**:
         - `id`: integer. Runs from `1` to `samples_all`.

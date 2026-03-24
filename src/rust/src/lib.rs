@@ -105,12 +105,13 @@ fn modality_pairs_to_robj(mp: &ModalityPairs) -> Robj {
     .into()
 }
 
-/// (unimodal, j_shape_low, j_shape_high) — exactly one row
+/// (can_be_unimodal, can_be_bimodal, j_shape_low, j_shape_high) — exactly one row
 fn modality_conclusion_to_robj(mc: &ModalityConclusion) -> Robj {
     data_frame!(
-        unimodal = vec![mc.unimodal],
-        j_shape_low = vec![mc.j_shape_low],
-        j_shape_high = vec![mc.j_shape_high]
+        can_be_unimodal = vec![mc.can_be_unimodal],
+        can_be_bimodal  = vec![mc.can_be_bimodal],
+        j_shape_low     = vec![mc.j_shape_low],
+        j_shape_high    = vec![mc.j_shape_high]
     )
     .into()
 }
@@ -118,12 +119,11 @@ fn modality_conclusion_to_robj(mc: &ModalityConclusion) -> Robj {
 /// Helper function to convert FrequencyTable to R data frame
 /// The frequency table now includes a 'samples' column as the first column
 fn frequency_table_to_robj(freq_table: &closure_core::FrequencyTable) -> Robj {
-    // Create a data frame with columns: samples, value, f_average, f_absolute, f_relative
+    // Create a data frame with columns: samples, value, f_count, f_relative
     let df = data_frame!(
         samples = freq_table.samples_group().to_vec(),
         value = freq_table.value().to_vec(),
-        f_average = freq_table.f_average().to_vec(),
-        f_absolute = freq_table.f_absolute().to_vec(),
+        f_count = freq_table.f_count().to_vec(),
         f_relative = freq_table.f_relative().to_vec()
     );
 

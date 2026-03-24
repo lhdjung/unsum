@@ -203,7 +203,7 @@ check_generator_output <- function(
   if (
     !allow_empty &&
       scale_length == nrow(data$frequency) &&
-      all(is.nan(data$frequency$f_average)) &&
+      all(is.nan(data$frequency$f_count)) &&
       all(is.nan(data$frequency$f_relative))
   ) {
     abort_in_export(
@@ -214,13 +214,12 @@ check_generator_output <- function(
   # Frequency (4 / 6)
   check_component_tibble(
     x = data$frequency,
-    dims = c(3 * scale_length, 5),
+    dims = c(3 * scale_length, 4),
     technique = technique,
     col_names_types = list(
       "samples" = "character",
       "value" = "integer",
-      "f_average" = "double",
-      "f_absolute" = "double",
+      "f_count" = "double",
       "f_relative" = "double"
     )
   )
@@ -269,10 +268,11 @@ check_generator_output <- function(
 
     check_component_tibble(
       x = data$modality_conclusion,
-      dims = c(1L, 3L),
+      dims = c(1L, 4L),
       technique = technique,
       col_names_types = list(
-        "unimodal" = "logical",
+        "can_be_unimodal" = "logical",
+        "can_be_bimodal" = "logical",
         "j_shape_low" = "logical",
         "j_shape_high" = "logical"
       )
@@ -365,8 +365,8 @@ check_generator_output <- function(
   # Need `isTRUE()` because `freqs_sum_up` can be `NA` but the condition must
   # still be met
   if (!isTRUE(freqs_sum_up)) {
-    f_sum_absolute <- sum(data$frequency$f_absolute)
-    data_is_empty <- is.nan(f_sum_relative) && near(f_sum_absolute, 0)
+    f_sum_count <- sum(data$frequency$f_count)
+    data_is_empty <- is.nan(f_sum_relative) && near(f_sum_count, 0)
 
     # Empty data might be allowed, depending on the caller
     if (data_is_empty && allow_empty) {
@@ -383,7 +383,7 @@ check_generator_output <- function(
 
     abort_in_export(
       "The `f_relative` column in `frequency` must sum up to 1 \
-        (or 0, if `f_absolute` does).",
+        (or 0, if `f_count` does).",
       msg_actual_sum
     )
   }

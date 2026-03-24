@@ -204,7 +204,7 @@ closure_plot_ecdf <- function(
 
     # Frequency-based ECDF plots that do not require individual samples
     if (samples == "mean") {
-      data <- data[data$samples == "all", c("samples", "value", "f_absolute")]
+      data <- data[data$samples == "all", c("samples", "value", "f_count")]
       data <- mutate_ecdf(data, pad = pad)
 
       legend_position <- "none"
@@ -215,7 +215,7 @@ closure_plot_ecdf <- function(
         direction = "hv"
       )
     } else if (samples == "mean_min_max") {
-      data <- data[c("samples", "value", "f_absolute")]
+      data <- data[c("samples", "value", "f_count")]
 
       # Necessary (and current) order of the unique values in `data$samples`
       group_order <- c("all", "horns_min", "horns_max")
@@ -311,7 +311,7 @@ closure_plot_ecdf <- function(
 #' the frequency table used inside of `closure_plot_ecdf()`.
 #'
 #' @param data Data frame that contains these columns (and no others):
-#'   `"samples"`, `"value"`, `"f_absolute"`.
+#'   `"samples"`, `"value"`, `"f_count"`.
 #' @param pad String. If `"extend"` or `"match"`, the groups will be padded with
 #'   extra rows that have zeros for frequencies. In an ECDF ggplot created
 #'   manually using `ggplot2::geom_step()`, this will have the same effect as
@@ -321,10 +321,10 @@ closure_plot_ecdf <- function(
 #'
 #' @noRd
 mutate_ecdf <- function(data, pad) {
-  cumulative_freq <- cumsum(data$f_absolute)
+  cumulative_freq <- cumsum(data$f_count)
 
   # Normalize to get cumulative probabilities (ECDF values)
-  total_freq <- sum(data$f_absolute)
+  total_freq <- sum(data$f_count)
   data$ecdf <- cumulative_freq / total_freq
 
   if (pad == "stop") {
@@ -343,7 +343,7 @@ mutate_ecdf <- function(data, pad) {
   pad_start <- list(
     samples = data$samples[1],
     value = value_first - value_pad,
-    f_absolute = 0,
+    f_count = 0,
     ecdf = 0
   )
 
@@ -352,7 +352,7 @@ mutate_ecdf <- function(data, pad) {
   pad_end <- list(
     samples = data$samples[1],
     value = value_last + value_pad,
-    f_absolute = 0,
+    f_count = 0,
     ecdf = 1
   )
 

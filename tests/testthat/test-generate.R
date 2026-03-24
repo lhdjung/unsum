@@ -64,106 +64,21 @@ if (!ok) {
 }
 
 
-f_absolute_centered <- closure_generate(
-  mean = "4.0",
-  sd = "1.0",
-  n = 50,
-  scale_min = 1,
-  scale_max = 7
-)$frequency$f_absolute
+test_that("f_count sums to n for each samples group", {
+  freq_centered <- closure_generate(
+    mean = "4.0",
+    sd = "1.0",
+    n = 50,
+    scale_min = 1,
+    scale_max = 7
+  )$frequency
 
-f_absolute_skewed_left <- closure_generate(
-  mean = "2.5",
-  sd = "1.7",
-  n = 50,
-  scale_min = 1,
-  scale_max = 7
-)$frequency$f_absolute
-
-f_absolute_skewed_right <- closure_generate(
-  mean = "5.3",
-  sd = "1.7",
-  n = 50,
-  scale_min = 1,
-  scale_max = 7
-)$frequency$f_absolute
-
-
-test_that("absolute frequencies are correct", {
-  f_absolute_centered |>
-    expect_equal(c(
-      6575L,
-      17570L,
-      65388L,
-      209734L,
-      65388L,
-      17570L,
-      6575L,
-      333L,
-      920L,
-      3493L,
-      13108L,
-      3493L,
-      920L,
-      333L,
-      382L,
-      991L,
-      3587L,
-      10430L,
-      3587L,
-      991L,
-      382L
-    ))
-
-  f_absolute_skewed_left |>
-    expect_equal(c(
-      571399L,
-      341334L,
-      194430L,
-      147830L,
-      107079L,
-      69040L,
-      44938L,
-      27281L,
-      18458L,
-      10370L,
-      7729L,
-      5225L,
-      3212L,
-      2075L,
-      15109L,
-      7965L,
-      4557L,
-      3615L,
-      2784L,
-      1830L,
-      1240L
-    ))
-
-  f_absolute_skewed_right |>
-    expect_equal(c(
-      80279L,
-      123068L,
-      191619L,
-      269477L,
-      357529L,
-      626871L,
-      708557L,
-      1970L,
-      3059L,
-      4979L,
-      7495L,
-      10162L,
-      17953L,
-      16332L,
-      2320L,
-      3537L,
-      5252L,
-      6862L,
-      9021L,
-      15508L,
-      18850L
-    ))
+  # Each samples group's medoid is a single sample of size n=50
+  for (grp in c("all", "horns_min", "horns_max")) {
+    freq_centered[freq_centered$samples == grp, ]$f_count |>
+      sum() |>
+      expect_equal(50)
+  }
 })
 
 

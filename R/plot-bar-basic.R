@@ -61,8 +61,7 @@ plot_frequency_bar <- function(
       list(
         samples = rep("all", length(data)),
         value = seq_along(data),
-        # `f_average` is not supported
-        f_absolute = data,
+        f_count = data,
         f_relative = data / sum(data)
       ),
       nrow = length(data)
@@ -149,10 +148,8 @@ plot_frequency_bar <- function(
   if (overlay == "none") {
     data_overlay <- NULL
   } else if (overlay == "all_avg") {
-    # Gray background bars: the mean frequency across all CLOSURE samples
+    # Gray background bars: the medoid frequency across all CLOSURE samples
     data_overlay <- data_frequency_all
-    data_overlay$f_absolute <- data_overlay$f_average
-    data_overlay$f_average <- NULL
   } else if (need_all_samples) {
     # Build a per-sample frequency table with one row per CLOSURE sample per
     # scale value. Requires individual sample vectors.
@@ -208,7 +205,6 @@ plot_frequency_bar <- function(
   # full absolute values by the average values, and prepare a label to signpost
   # the average inside of the plot.
   if (samples == "mean") {
-    data$f_absolute <- data$f_average
     label_avg_all <- "avg. sample, *n* = "
     label_values <- " "
   } else if (samples == "all" && n_samples_groups == 1) {
@@ -220,9 +216,6 @@ plot_frequency_bar <- function(
   } else {
     cli::cli_abort("Internal error: unhandled `samples` type.")
   }
-
-  # After that, the average is not needed in any case, even if it was before
-  data$f_average <- NULL
 
   # Create a function that formats labels for large numbers. By default, they
   # are formatted like, e.g., "12,345.67". In terms of `accuracy`, relative
@@ -253,7 +246,7 @@ plot_frequency_bar <- function(
     # size of the average sample -- or the total number of values found by the
     # CLOSURE-type technique.
     label_mean_count <- if (samples == "mean") {
-      data$f_absolute |>
+      data$f_count |>
         call_on(function(x) sum(x) / n_samples_groups) |>
         call_on(scales::label_number(
           accuracy = 1,
@@ -273,11 +266,11 @@ plot_frequency_bar <- function(
     data$f_relative <- NULL
   } else if (format == "relative") {
     label_y_axis <- "Relative frequency"
-    data$f_absolute <- NULL
+    data$f_count <- NULL
   } else if (format == "percent") {
     label_y_axis <- "Percentage of all values"
     data$f_relative <- round(100 * data$f_relative, 2)
-    data$f_absolute <- NULL
+    data$f_count <- NULL
   } else {
     cli::cli_abort("Internal error: unhandled `format` type.")
   }
@@ -288,10 +281,10 @@ plot_frequency_bar <- function(
     if (format %in% c("absolute", "absolute_percent")) {
       data_overlay$f_relative <- NULL
     } else if (format == "relative") {
-      data_overlay$f_absolute <- NULL
+      data_overlay$f_count <- NULL
     } else if (format == "percent") {
       data_overlay$f_relative <- round(100 * data_overlay$f_relative, 2)
-      data_overlay$f_absolute <- NULL
+      data_overlay$f_count <- NULL
     }
   }
 
