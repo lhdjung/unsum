@@ -2,6 +2,8 @@
 title: "Usage examples"
 ---
 
+NOTE: Be sure to test these in release mode! Use `devtools::install()` to switch into it.
+
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -81,7 +83,7 @@ closure_generate(
 )
 ```
 
-132,389,600 values in a few seconds:
+132,389,600 values in less than 3 seconds:
 ```{r}
 closure_generate(
     mean = "3.0",
