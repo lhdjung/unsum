@@ -86,7 +86,7 @@ test_that("f_count sums to n for each samples group", {
 
 plot_bar_both <- TRUE
 
-inputs_constant <- list(
+inputs_constant_closure <- list(
   mean = "3.5",
   sd = "1.7",
   n = 75,
@@ -94,9 +94,11 @@ inputs_constant <- list(
   scale_max = 5
 )
 
+inputs_constant_sprite <- c(inputs_constant_closure, stop_after = 100)
+
 # Splicing the input list into calls to the the SPRITE and CLOSURE generators
-subset <- rlang::inject(sprite_generate(!!!inputs_constant))
-superset <- rlang::inject(closure_generate(!!!inputs_constant))
+subset <- rlang::inject(sprite_generate(!!!inputs_constant_sprite))
+superset <- rlang::inject(closure_generate(!!!inputs_constant_closure))
 
 test_that("The subset/superset example data have the right shape (constant input)", {
   subset |> check_generator_output("SPRITE") |> expect_no_error()
@@ -112,15 +114,16 @@ test_that("SPRITE results are a subset of CLOSURE results (constant input)", {
   subset |> is_contained_in(superset) |> expect_true()
 })
 
+
 if (plot_bar_both && !is_empty(subset) && !is_empty(superset)) {
-  sprite_plot_bar(subset)
-  closure_plot_bar(superset)
+  subset |> sprite_plot_bar() |> print()
+  superset |> closure_plot_bar() |> print()
 }
 
 
 endpoint <- 5
 
-inputs_random <- list(
+inputs_random_closure <- list(
   mean = 1 |>
     runif(min = 1, max = endpoint) |>
     round(1) |>
@@ -140,9 +143,11 @@ inputs_random <- list(
   scale_max = endpoint
 )
 
+inputs_random_sprite <- c(inputs_random_closure, stop_after = 100)
+
 # Splice as above
-subset <- rlang::inject(sprite_generate(!!!inputs_random))
-superset <- rlang::inject(closure_generate(!!!inputs_random))
+subset <- rlang::inject(sprite_generate(!!!inputs_random_sprite))
+superset <- rlang::inject(closure_generate(!!!inputs_random_closure))
 
 # fmt: skip
 test_that("The subset/superset example data have the right shape (random input)", {
@@ -160,6 +165,6 @@ test_that("SPRITE results are a subset of CLOSURE results (random input)", {
 })
 
 if (plot_bar_both && !is_empty(subset) && !is_empty(superset)) {
-  sprite_plot_bar(subset)
-  closure_plot_bar(superset)
+  subset |> sprite_plot_bar() |> print()
+  superset |> closure_plot_bar() |> print()
 }
