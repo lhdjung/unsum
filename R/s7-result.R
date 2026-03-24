@@ -14,16 +14,13 @@ abort_read_only <- function(x, prop_name) {
   if (S7::S7_inherits(x, ResultListFromMeanSdN)) {
     technique <- x@inputs$technique
     lowtech <- tolower(technique)
-    msg_generate <- c(
-      "i" = "Use {.fn {lowtech}_generate} to create a new result list."
-    )
 
     cli::cli_abort(
       c(
         "{technique} results are read-only.",
         x = "Their elements, such as {.field {prop_name}}, cannot be assigned
         new values.",
-        msg_generate
+        "i" = "Use {.emph `{lowtech}_generate()`} to create a new result list."
       ),
       # Prevent a confusing mention of the current function in the error message
       call = rlang::caller_env()
@@ -129,15 +126,23 @@ S7::method(`[[<-`, ResultListFromMeanSdN) <- function(x, name, value) {
   new_read_only_setter(name)(x)
 }
 
+
+# The next two functions have constant output because their values are derived
+# from invariants of the `ResultListFromMeanSdN` class. This constant output is
+# computed at build-time using quasiquotation.
+
 # Allow the user to get the length, i.e., the number of elements
-S7::method(length, ResultListFromMeanSdN) <- function(x) {
-  length(ResultListFromMeanSdN@properties)
-}
+S7::method(length, ResultListFromMeanSdN) <- rlang::new_function(
+  args = rlang::pairlist2(x = ),
+  body = rlang::expr(!!length(ResultListFromMeanSdN@properties))
+)
 
 # Allow the user to get the names of the elements
-S7::method(names, ResultListFromMeanSdN) <- function(x) {
-  names(ResultListFromMeanSdN@properties)
-}
+S7::method(names, ResultListFromMeanSdN) <- rlang::new_function(
+  args = rlang::pairlist2(x = ),
+  body = rlang::expr(!!names(ResultListFromMeanSdN@properties))
+)
+
 
 # Allow the user to convert the results object to an actual list. This is based
 # on the `length()` and `names()` methods from above.
@@ -201,7 +206,7 @@ S7::method(print, ResultListFromMeanSdN) <- function(
       nrow(x@modality_pairs),
       " rows)"
     ),
-    modality_conclusion = "unimodal/J-shape flags (1 row)",
+    modality_conclusion = "flagging modality and J-shape status (1 row)",
     frequency = paste0("full frequency table (", nrow(x@frequency), " rows)"),
     frequency_dist = paste0(
       "per-value count distributions (",
