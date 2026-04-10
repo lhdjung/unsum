@@ -15,6 +15,7 @@ rm(
   new_generator_mean_sd_n,
   new_plot_fn_bar,
   new_plot_fn_horns_frequency,
+  new_read_only_setter,
 
   # Build mode setters
   use_debug,

@@ -20,7 +20,8 @@ abort_read_only <- function(x, prop_name) {
         "{technique} results are read-only.",
         x = "Their elements, such as {.field {prop_name}}, cannot be assigned
         new values.",
-        "i" = "Use {.emph `{lowtech}_generate()`} to create a new result list."
+        "i" = "To change results experimentally, use `as.list()` to
+        convert them to a list first."
       ),
       # Prevent a confusing mention of the current function in the error message
       call = rlang::caller_env()
@@ -31,7 +32,7 @@ abort_read_only <- function(x, prop_name) {
   cli::cli_abort(
     c(
       "This object is read-only.",
-      x = "Its elements, like like {.field {prop_name}}, cannot be assigned
+      x = "Its elements, like {.field {prop_name}}, cannot be assigned
       new values."
     ),
     call = rlang::caller_env()
@@ -96,7 +97,7 @@ SpriteResult <- S7::new_class(
 # To ensure immutability, enable throwing the bespoke error from the "read-only
 # setter" when the user attempts to subassign elements of a result list
 S7::method(`$<-`, ResultListFromMeanSdN) <- function(x, name, value) {
-  new_read_only_setter(name)(x)
+  abort_read_only(x, name)
 }
 
 # Allow access to list elements via `$` which S7 does not support by default
@@ -118,14 +119,16 @@ S7::method(`[[`, ResultListFromMeanSdN) <- function(x, name) {
 # When the user tries to subassign `x[name] <- new_value`, throw a more accurate
 # and informative error than "S7 objects are not subsettable"
 S7::method(`[<-`, ResultListFromMeanSdN) <- function(x, name, value) {
-  new_read_only_setter(name)(x)
+  abort_read_only(x, name)
 }
 
 # Same but for `x[[name]] <- new_value`
 S7::method(`[[<-`, ResultListFromMeanSdN) <- function(x, name, value) {
-  new_read_only_setter(name)(x)
+  abort_read_only(x, name)
 }
 
+
+# More methods ------------------------------------------------------------
 
 # The next two functions have constant output because their values are derived
 # from invariants of the `ResultListFromMeanSdN` class. This constant output is
