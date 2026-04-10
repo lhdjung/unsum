@@ -378,7 +378,7 @@ check_generator_output <- function(
     msg_actual_sum <- if (is.nan(f_sum_relative)) {
       NULL
     } else {
-      c("x" = "It actually sums up to {f_sum_relative}.")
+      c("x" = "It actually sums up to {.val {f_sum_relative}}.")
     }
 
     abort_in_export(
@@ -467,8 +467,8 @@ check_scale <- function(
     abort_in_export(
       "Scale minimum can't be greater than scale maximum.",
       "!" = warning,
-      "x" = "`scale_min` is {scale_min}.",
-      "x" = "`scale_max` is {scale_max}."
+      "x" = "`scale_min` is {.val {scale_min}}.",
+      "x" = "`scale_max` is {.val {scale_max}}."
     )
   }
 
@@ -478,16 +478,16 @@ check_scale <- function(
       abort_in_export(
         "Mean can't be less than scale minimum.",
         "!" = warning,
-        "x" = "`mean` is {mean}.",
-        "x" = "`scale_min` is {scale_min}."
+        "x" = "`mean` is {.val {mean}}.",
+        "x" = "`scale_min` is {.val {scale_min}}."
       )
     }
     if (as.numeric(mean) > as.numeric(scale_max)) {
       abort_in_export(
         "Mean can't be greater than scale maximum.",
         "!" = warning,
-        "x" = "`mean` is {mean}.",
-        "x" = "`scale_max` is {scale_max}."
+        "x" = "`mean` is {.val {mean}}.",
+        "x" = "`scale_max` is {.val {scale_max}}."
       )
     }
   }
@@ -567,7 +567,7 @@ check_whole_number <- function(
 
   abort_in_export(
     "`{name}` must be a whole number (integer or double).",
-    "x" = "It is actually: {x}"
+    "x" = "It is actually: {.val {x}}"
   )
 }
 
@@ -672,7 +672,7 @@ path_sanitize <- function(path) {
 
     abort_in_export(
       msg_main,
-      "i" = "Did you mean \".\" for your current working directory?"
+      "i" = "Did you mean {.val {\".\"}} for your current working directory?"
     )
   }
 

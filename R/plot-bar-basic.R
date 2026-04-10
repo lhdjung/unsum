@@ -124,15 +124,15 @@ plot_frequency_bar <- function(
     if (need_all_samples) {
       rlang::check_installed(
         "ggdist",
-        reason = paste0("for overlay = \"", overlay, "\".")
+        reason = "for overlay = {.val {overlay}}."
       )
     }
 
     # Two possible errors -- one by the developer, one by the user
     if (technique == "DEMO") {
       cli::cli_abort(c(
-        "Internal error: DEMO plots need `overlay == {.val none}`.",
-        "x" = "DEMO plot with `overlay == {.val {overlay}}`."
+        "Internal error: DEMO plots need `overlay == \"none\"`.",
+        "x" = "DEMO plot with `overlay == \"{overlay}\"`."
       ))
     } else if (samples != "mean") {
       abort_in_export(
@@ -182,8 +182,8 @@ plot_frequency_bar <- function(
         if (length(scale_vals) != length(freq)) {
           cli::cli_abort(c(
             "Internal error: incongruent lengths.",
-            "x" = "`scale_vals` is length {length(scale_vals)}",
-            "x" = "`freq` is length {length(freq)}"
+            "x" = "`scale_vals` is length {.val {length(scale_vals)}}.",
+            "x" = "`freq` is length {.val {length(freq)}}."
           ))
         }
 

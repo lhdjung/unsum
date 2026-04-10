@@ -120,13 +120,15 @@ generate_from_mean_sd_n <- function(
     # Error if `include` was specified even though `path` was not
     if (include != "stats_and_horns") {
       abort_in_export(
-        "`include` requires `path` to be specified.",
-        "x" = "`include` is \"{include}\".",
-        "x" = "`path` is `NULL`.",
+        "Need to specify `path` when using `include`.",
+        # "`include` requires `path` to be specified.",
+        "x" = "`include` is {.val {include}}.",
+        "x" = "`path` is not provided.",
         "i" = "The purpose of `include` is to choose which files \
-          to read into R after writing them to a folder chosen via `path`.",
+        to read from a folder chosen via `path` into R.",
         "i" = "Specify `path` as a string that points to a folder \
-          on your computer, or as \".\" for your current working directory."
+        on your computer, or as {.val {\".\"}} for your current \
+        working directory."
       )
     }
   } else {
@@ -259,8 +261,8 @@ generate_from_mean_sd_n <- function(
   } else if (!is.null(stop_after) && n_samples_all < stop_after) {
     cli::cli_warn(c(
       "{technique} found fewer samples than requested via `stop_after`.",
-      "!" = "`stop_after` is: {stop_after}",
-      "!" = "Samples found: {n_samples_all}"
+      "!" = "`stop_after` is: {.val {stop_after}}",
+      "!" = "Samples found: {.val {n_samples_all}}"
     ))
   }
 
