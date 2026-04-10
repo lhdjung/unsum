@@ -57,10 +57,10 @@ new_read_only_setter <- function(prop_name) {
   }
 }
 
-# fmt: skip
 ResultListFromMeanSdN <- S7::new_class(
   "ResultListFromMeanSdN",
   abstract = TRUE,
+  # fmt: skip
   properties = list(
     inputs              = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("inputs")),
     metrics_main        = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("metrics_main")),
@@ -149,7 +149,9 @@ S7::method(names, ResultListFromMeanSdN) <- rlang::new_function(
 
 # Allow the user to convert the results object to an actual list. This is based
 # on the `length()` and `names()` methods from above.
-S7::method(as.list, ResultListFromMeanSdN) <- function(x) {
+S7::method(as.list, ResultListFromMeanSdN) <- function(x, ...) {
+  rlang::check_dots_empty()
+
   out <- vector("list", length(x))
   names_all <- names(x)
 
@@ -169,8 +171,9 @@ S7::method(print, ResultListFromMeanSdN) <- function(
   show = c("some", "all", "none"),
   ...
 ) {
-  show <- rlang::arg_match(show)
+  rlang::check_dots_empty()
 
+  show <- rlang::arg_match(show)
   technique <- x@inputs$technique[[1L]]
   samples_all <- x@metrics_main$samples_all
 
