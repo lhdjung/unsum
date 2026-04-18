@@ -366,7 +366,7 @@ check_generator_output <- function(
   # still be met
   if (!isTRUE(freqs_sum_up)) {
     f_sum_count <- sum(data$frequency$f_count)
-    data_is_empty <- is.nan(f_sum_relative) && near(f_sum_count, 0)
+    data_is_empty <- is.nan(f_sum_relative)
 
     # Empty data might be allowed, depending on the caller
     if (data_is_empty && allow_empty) {
