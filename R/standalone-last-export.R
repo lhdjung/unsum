@@ -1,10 +1,14 @@
 # ---
 # repo: lhdjung/unsum
 # file: standalone-last-export.R
-# last-updated: 2026-02-23
+# last-updated: 2026-04-18
 # license: https://unlicense.org
 # imports: [rlang, cli]
 # ---
+
+# ## Changelog
+# 2026-04-18:
+# - Added `name_last_export()`
 
 # Throw an error that names the top-level exported, user-called function as the
 # source; e.g., "Error in `exported_fn()`", not "Error in `internal_helper()`".
@@ -117,4 +121,24 @@ caller_env_last_export <- function(package_name = NULL) {
 
   cli::cli_warn("No exported function found on the call stack.")
   environment()
+}
+
+
+# Like `caller_env_last_export()` but returns the name of the function instead
+# of its environment
+name_last_export <- function(package_name = NULL) {
+  env <- caller_env_last_export(package_name)
+  frames <- sys.frames()
+  calls <- sys.calls()
+
+  for (i in seq_along(frames)) {
+    if (identical(frames[[i]], env)) {
+      fn <- calls[[i]][[1]]
+      fn_name <- if (is.name(fn)) as.character(fn) else deparse(fn)[1]
+      return(sub("^.*::", "", fn_name))
+    }
+  }
+
+  cli::cli_warn("No exported function found on the call stack.")
+  NULL
 }
