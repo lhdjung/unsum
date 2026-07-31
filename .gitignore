@@ -27,3 +27,4 @@ src/vendor/
 src/rust/vendor/
 src/rust/vendor.tar.xz
 src/._vendor
+.positai

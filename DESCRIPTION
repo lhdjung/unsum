@@ -49,8 +49,11 @@ Collate:
     'horns_discrete_implementation.R'
     'plot-bar.R'
     'plot-ecdf-basic.R'
+    'predicates-basic.R'
     'read-write.R'
     's7-result.R'
+    'standalone-new-wrapper.R'
+    'standalone-s7-helpers.R'
     'zzz.R'
 Config/rextendr/version: 0.4.2.9000
 SystemRequirements: Cargo (Rust's package manager), rustc

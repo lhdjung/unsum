@@ -22,3 +22,5 @@
 ^\.vscode$
 ^vignettes/articles$
 ^vignettes/.quarto$
+^\.positai$
+^\.claude$
