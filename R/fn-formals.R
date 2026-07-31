@@ -279,8 +279,9 @@ formals_remove_defaults_all <- function(fmls) {
 #' @param ... New arguments (see above).
 #' @param .before,.after Strings. Specify exactly one of these two arguments.
 #'   Use it to name the one existing argument before or after which you want to
-#'   place the new arguments. Accepts `formals_first()` or `formals_last()` to
-#'   select the first or last argument, regardless of its name.
+#'   place the new arguments. Alternatively, use one of `formals_first()`,
+#'   `formals_last()`, and `formals_nth()` to select an existing argument by
+#'   position, not by name.
 #'
 #' @returns Pairlist of arguments.
 #' @noRd
@@ -291,6 +292,12 @@ formals_remove_defaults_all <- function(fmls) {
 #'
 #' # Add an argument with a default before an existing one
 #' colnames |> formals() |> formals_add(na.action = "omit", .before = "prefix")
+#'
+#' # Add an argument after the last existing one
+#' utils::read.csv |>
+#'   formals() |>
+#'   formals_add("lazy" = FALSE, .after = formals_last())
+
 formals_add <- function(fmls, ..., .before = NULL, .after = NULL) {
   formals_check_pairlist(fmls)
 
@@ -655,29 +662,44 @@ formals_check_pairlist <- function(x) {
 #' # Throws an error if the name is not found
 #' try(formals_get_index(c("x", "y"), "z"))
 formals_get_index <- function(names_old, name_next) {
+  n_args <- length(names_old)
+
   inputs_are_valid <-
     is.character(names_old) &&
     is.character(name_next) &&
-    length(names_old) > 0 &&
-    length(name_next) == 1 &&
-    # Get the target name from the argument names, then run a final check.
-    # `name_target` will be `NULL` or a valid name from within `names_old`.
-    {
-      name_target <- if (name_next %in% names_old) {
-        name_next
-      } else {
-        position <- attr(name_next, "position")
-        if (!is.null(position)) names_old[min(position, length(names_old))]
-      }
-      # This must be `TRUE` for `inputs_are_valid` to be `TRUE`:
-      length(name_target) == 1 && !is.na(name_target)
-    }
+    n_args > 0 &&
+    length(name_next) == 1
 
-  if (inputs_are_valid) {
-    index <- match(name_target, names_old)
-    return(index)
+  # Get the target name from the argument names, then run a final check.
+  # `name_target` will be `NULL` or a valid name from within `names_old`.
+  if (inputs_are_valid && name_next %in% names_old) {
+    name_target <- name_next
+  } else if (inputs_are_valid) {
+    position <- attr(name_next, "position")
+    name_target <- if (is.null(position)) {
+      NULL
+    } else if (identical(position, Inf)) {
+      names_old[n_args]
+    } else if (position > n_args) {
+      name <- deparse(substitute(name_next))
+      cli::cli_abort(
+        c(
+          "Position must be within the list of arguments.",
+          x = "`{name}` indicates {position} but only {n_args} arguments exist."
+        ),
+        call = rlang::caller_env()
+      )
+    } else {
+      names_old[position]
+    }
   }
 
+  if (inputs_are_valid && length(name_target) == 1 && !is.na(name_target)) {
+    return(match(name_target, names_old))
+  }
+
+  # This error branch can't be moved to an earlier place in a productive way
+  # because every other branch would still be explicitly guarded
   name <- deparse(substitute(name_next))
 
   cli::cli_abort(
