@@ -10,7 +10,7 @@ crate-type = [ 'staticlib' ]
 name = 'unsum'
 
 [dependencies]
-closure-core = { git = "https://github.com/lhdjung/closure-core.git" }
+closure-core = { git = "https://github.com/lhdjung/closure-core.git", branch = "frequency-details" }
 extendr-api = '*'
 rand = '*'
 
