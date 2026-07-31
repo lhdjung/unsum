@@ -70,6 +70,7 @@ ResultListFromMeanSdN <- S7::new_class(
     modality_conclusion = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_conclusion")),
     frequency           = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency")),
     frequency_dist      = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency_dist")),
+    directory           = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("directory")),
     results             = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("results"))
   )
 )

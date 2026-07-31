@@ -9,6 +9,7 @@ closure_plot_bar(
   min_max = c("both", "min", "max"),
   format = c("percent", "absolute_percent", "absolute", "relative"),
   samples = c("mean", "all"),
+  overlay = c("all_avg", "none", "interval", "pointinterval", "dots"),
   facet_labels = c("Minimal variance", "Maximal variance"),
   facet_labels_parens = "h",
   bar_alpha = 0.75,
@@ -35,6 +36,22 @@ value and its percentage of all values. Other options are \code{"absolute"} and
 \item{samples}{String (length 1). How to aggregate the samples? Either take
 the average sample (\code{"mean"}, the default) or the sum of all samples
 (\code{"all"}). This only matters if absolute frequencies are shown.}
+
+\item{overlay}{String (length 1). Visualization mode for the frequency
+distribution across all samples, overlaid behind the main bars. Only
+applies when \code{samples = "mean"}. Options:
+\itemize{
+\item \code{"all_avg"} (default): gray background bars showing the mean frequency
+across all samples.
+\item \code{"none"}: no overlay.
+\item \code{"interval"}: nested quantile intervals via \code{\link[ggdist:stat_interval]{ggdist::stat_interval()}}
+(requires the \code{ggdist} package and \code{include = "all"} in
+\code{\link[=closure_generate]{closure_generate()}}).
+\item \code{"pointinterval"}: median point with quantile interval lines via
+\code{\link[ggdist:stat_pointinterval]{ggdist::stat_pointinterval()}} (same requirements as \code{"interval"}).
+\item \code{"dots"}: quantile dot plot via \code{\link[ggdist:stat_dots]{ggdist::stat_dots()}} (same
+requirements as \code{"interval"}).
+}}
 
 \item{facet_labels}{String (length 2). Labels of the two individual panels.
 Set it to \code{NULL} to remove the labels. Default is

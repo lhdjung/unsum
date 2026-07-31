@@ -202,7 +202,7 @@ read_basic <- function(
     files_actual <- sort(files_actual)
 
     offenders_missing <- setdiff(msg_files_expected, files_actual)
-    offenders_not_needed <- setdiff(files_actual, msg_files_expected)
+    offenders_unexpected <- setdiff(files_actual, msg_files_expected)
 
     msg_missing <- if (length(offenders_missing) == 0) {
       NULL
@@ -210,10 +210,10 @@ read_basic <- function(
       c("x" = "Missing files: {offenders_missing}")
     }
 
-    msg_not_needed <- if (length(offenders_not_needed) == 0) {
+    msg_not_needed <- if (length(offenders_unexpected) == 0) {
       NULL
     } else {
-      c("x" = "Unnecessary files: {offenders_not_needed}")
+      c("x" = "Unexpected files: {offenders_unexpected}")
     }
 
     abort_in_export(
@@ -232,7 +232,8 @@ read_basic <- function(
     metrics_main = "metrics_main" |> read_file(),
     metrics_horns = "metrics_horns" |> read_file(),
     frequency = "frequency" |> read_file(),
-    frequency_dist = "frequency_dist" |> read_file()
+    frequency_dist = "frequency_dist" |> read_file(),
+    directory = directory
   )
 
   # Parse mean and SD from the folder name

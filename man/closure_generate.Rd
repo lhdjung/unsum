@@ -98,10 +98,8 @@ with the lowest horns index among all samples, and \code{"horns_max"} for
 those samples with the highest horns index.
 \item \code{value}: integer. Scale values derived from \code{scale_min} and
 \code{scale_max}.
-\item \code{f_average}: double. Count of scale values in the mean \code{results}
-sample.
-\item \code{f_absolute}: double. Count of individual scale values found in the
-\code{results} samples.
+\item \code{f_count}: double. Count of scale values in the group's medoid
+sample (the actual sample closest to the group centroid by EMD).
 \item \code{f_relative}: double. Values' share of total values found.
 }
 \item \strong{\code{results}}:
@@ -144,7 +142,7 @@ than your computer can hold in memory.
 
 \section{More about memory}{
  Some output columns that contain counts, such as
-\code{f_absolute}, are doubles instead of integers. This is because doubles are
+\code{f_count}, are doubles instead of integers. This is because doubles are
 able to contain much larger numbers. When counting CLOSURE results, it
 is possible to exceed the limit of 32-bit integers in R, which is roughly
 two billion. For instance, this will happen with \code{values_all} in the examples
@@ -157,6 +155,20 @@ fully implemented. For example, CLOSURE currently treats all rounding
 bounds as inclusive, even if the \code{rounding} value would imply otherwise.
 Many specifications of the two arguments will not make any difference,
 and those that do will most likely lead to empty results.
+}
+
+\section{Printing}{
+ When printing results, you can use \code{print()} explicitly
+with the \code{show} argument to control which elements are shown. Set \code{show} to
+one of:
+\itemize{
+\item \code{"some"} (the default): show some elements, hide others. The hidden ones
+have brief descriptions.
+\item \code{"all"}: show all elements.
+\item \code{"none"}: show no elements, only their descriptions.
+}
+
+For example: \code{print(your_results, show = "all")}
 }
 
 \examples{

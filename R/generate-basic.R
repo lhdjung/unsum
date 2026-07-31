@@ -19,7 +19,7 @@
 # scale_max <- 8
 # items <- 1
 # technique <- "CLOSURE"
-# path <- "."
+# path <- NULL
 # stop_after <- NULL
 # include <- "stats_and_horns"
 # rounding = "up_or_down"
@@ -273,7 +273,29 @@ generate_from_mean_sd_n <- function(
   # created using the low-level `new_tibble()` instead of `tibble()`: once for
   # passing the S3 class, and three times for performance and consistency.
   if (in_memory_mode) {
-    out_summary <- list(
+    # In memory mode (i.e., without writing to disk), a message about successful
+    # completion is left to display after the rest of the function has finished.
+    # Exception: no message is shown if no results were found.
+    on.exit({
+      .s7_constructing$active <- FALSE
+      if (n_samples_all != 0) {
+        # Empty line before the alert
+        message()
+        cli::cli_alert_success("All {technique} results found")
+      }
+    })
+
+    .s7_constructing$active <- TRUE
+
+    # Build the result list using the appropriate S7 constructor corresponding
+    # to `"technique"`, then return it. The `switch()` that returns the
+    # constructor is inlined because these constructors are memory-heavy.
+    switch(
+      technique,
+      CLOSURE = ClosureResult,
+      SPRITE = SpriteResult,
+      cli::cli_abort("Internal error: invalid `technique`; no S7 class given")
+    )(
       inputs = tibble::new_tibble(
         x = list(
           technique = technique,
@@ -313,40 +335,10 @@ generate_from_mean_sd_n <- function(
         tibble::new_tibble(nrow = nrow(out$frequency)),
 
       frequency_dist = out$frequency_dist |>
-        tibble::as_tibble()
-    )
+        tibble::as_tibble(),
 
-    # In memory mode (i.e., without writing to disk), a message about successful
-    # completion is left to display after the rest of the function has finished.
-    # Exception: no message is shown if no results were found.
-    on.exit({
-      if (n_samples_all != 0) {
-        # Empty line before the alert
-        message()
-        cli::cli_alert_success("All {technique} results found")
-      }
-    })
-
-    result_class <- switch(
-      technique,
-      CLOSURE = ClosureResult,
-      SPRITE = SpriteResult
-    )
-
-    .s7_constructing$active <- TRUE
-    on.exit(.s7_constructing$active <- FALSE, add = TRUE)
-
-    # fmt: skip
-    result_class(
-      inputs              = out_summary$inputs,
-      metrics_main        = out_summary$metrics_main,
-      metrics_horns       = out_summary$metrics_horns,
-      modality_counts     = out_summary$modality_counts,
-      modality_pairs      = out_summary$modality_pairs,
-      modality_conclusion = out_summary$modality_conclusion,
-      frequency           = out_summary$frequency,
-      frequency_dist      = out_summary$frequency_dist,
-      results             = tibble::new_tibble(x = out$results, nrow = n_samples_all)
+      directory = tibble::new_tibble(list(path = NA_character_)),
+      results = tibble::new_tibble(x = out$results, nrow = n_samples_all)
     )
   } else {
     # In writing mode, read the statistics -- and, optionally, results -- that

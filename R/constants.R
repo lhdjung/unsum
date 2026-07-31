@@ -15,9 +15,6 @@ TIBBLE_NAMES <- c(
   "results"
 )
 
-# Tibble names for results read from disk: the three modality_* tibbles are not
-# written to parquet, so disk reads return a list without them.
-TIBBLE_NAMES_DISK <- TIBBLE_NAMES[!startsWith(TIBBLE_NAMES, "modality_")]
 
 # All possible combinations of tibble names in valid generator output.
 # Three in-memory forms (with modality_*) and three disk-read forms (without,
@@ -25,10 +22,7 @@ TIBBLE_NAMES_DISK <- TIBBLE_NAMES[!startsWith(TIBBLE_NAMES, "modality_")]
 TIBBLE_NAMES_POSSIBLE_FORMS <- list(
   TIBBLE_NAMES,
   c(TIBBLE_NAMES, "directory"),
-  c(TIBBLE_NAMES[TIBBLE_NAMES != "results"], "directory"),
-  TIBBLE_NAMES_DISK,
-  c(TIBBLE_NAMES_DISK, "directory"),
-  c(TIBBLE_NAMES_DISK[TIBBLE_NAMES_DISK != "results"], "directory")
+  c(TIBBLE_NAMES[TIBBLE_NAMES != "results"], "directory")
 )
 
 # Names of the files expected in a folder with unsum results written to disk
@@ -37,6 +31,9 @@ FILES_EXPECTED <- c(
   "inputs.parquet",
   "metrics_main.parquet",
   "metrics_horns.parquet",
+  "modality_pairs.parquet",
+  "modality_counts.parquet",
+  "modality_conclusion.parquet",
   "frequency.parquet",
   "frequency_dist.parquet",
   "horns.parquet",
