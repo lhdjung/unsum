@@ -14,6 +14,7 @@ header-includes:
   - \newtheorem{lemma}{Lemma}
   - \newtheorem{proposition}{Proposition}
   - \newtheorem{definition}{Definition}
+  - \newtheorem{corollary}{Corollary}
 ---
 
 \section{Introduction}
@@ -32,21 +33,43 @@ where $s^2_{\max}$ is the maximum attainable $s^2$ given $l$, $u$, and $n$.
 \end{definition}
 
 \begin{definition}[Infinite-$n$ horns index]
-$$h^* = \frac{\sigma^2}{\sigma^2_{\max | n = \infty}}$$
-where $\sigma^2_{\max}$ is the maximum attainable $\sigma^2$ given $l$ and $u$, as well as assuming $n = \infty$.
+$$h^* = \frac{\sigma^2}{\sigma^2_{\max | n \to \infty}}$$
+where $\sigma^2_{\max | n \to \infty}$ is the maximum attainable $\sigma^2$ given $l$ and $u$, in the limit as $n \to \infty$.
+\end{definition}
 
 The maximum variance formulas on which the definitions of $h$ and $h^*$ rely will be the subject of the remainder of this document. Note that they account for the parity of $n$, i.e., its property of being even or odd.
-
-\end{definition}
 
 \section{Maximum variance for finite samples}
 
 \subsection{The geometric constraint}
 
 \begin{theorem}[Maximum configuration]
-Maximum variance is achieved by placing all observations at the scale extremes (positions $l$ and $u$). In particular, with an even $n$, this requires placing $\frac{n}{2}$ at position $l$ and $\frac{n}{2}$ at position $u$. With an odd $n$, however, $\frac{n - 1}{2}$ are placed at position $l$ and $\frac{n + 1}{2}$ at position $u$.
-
+Maximum variance is achieved by placing all observations at the scale extremes (positions $l$ and $u$). In particular, with an even $n$, this requires placing $\frac{n}{2}$ at position $l$ and $\frac{n}{2}$ at position $u$. With an odd $n$, both $k = \frac{n-1}{2}$ and $k = \frac{n+1}{2}$ observations at $l$ achieve the maximum; the two configurations are symmetric, so assume without loss of generality that $\frac{n-1}{2}$ are at $l$ and $\frac{n+1}{2}$ at $u$.
 \end{theorem}
+
+\begin{proof}
+We first derive an alternative expression for $s^2$. Using the identity $2\sum_{i<j}x_ix_j = \left(\sum_i x_i\right)^2 - \sum_i x_i^2$ and the fact that each $x_i^2$ appears in $n-1$ of the $\binom{n}{2}$ pairs:
+\begin{align}
+\sum_{i<j}(x_i - x_j)^2 &= \sum_{i<j}(x_i^2 - 2x_ix_j + x_j^2) \\
+  &= (n-1)\sum_i x_i^2 - 2\sum_{i<j}x_ix_j \\
+  &= (n-1)\sum_i x_i^2 - \left[\left(\sum_i x_i\right)^2 - \sum_i x_i^2\right] \\
+  &= n\sum_i x_i^2 - n^2\bar{x}^2 \\
+  &= n\sum_i(x_i - \bar{x})^2 \\
+  &= n \cdot SSD
+\end{align}
+
+Therefore:
+$$s^2 = \frac{SSD}{n-1} = \frac{1}{n(n-1)}\sum_{i < j}(x_i - x_j)^2$$
+
+Next, we determine which configurations maximize $s^2$. Fix all observations except $x_i$. The contribution of $x_i$ to the sum is
+$$\sum_{j \neq i}(x_i - x_j)^2 = (n-1)x_i^2 - 2x_i \sum_{j\neq i}x_j + \sum_{j \neq i}x_j^2.$$
+This is a quadratic in $x_i$ with positive leading coefficient $n-1$, so it is maximized at one of the endpoints $x_i \in \{l, u\}$. Since this holds for every observation, the maximum of $s^2$ is achieved when all $x_i \in \{l, u\}$.
+
+With $k$ observations at $l$ and $n-k$ at $u$, each of the $k(n-k)$ cross-pairs contributes $(u-l)^2$ and same-extreme pairs contribute 0, giving:
+$$s^2 = \frac{k(n-k)(u-l)^2}{n(n-1)}$$
+
+The product $k(n-k)$ is a downward-opening quadratic in $k$ maximized at $k = n/2$. For even $n$, this is an integer, giving the unique maximum. For odd $n$, the nearest integers $k = (n-1)/2$ and $k = (n+1)/2$ both achieve the same maximum by symmetry.
+\end{proof}
 
 \subsection{Calculating maximum variance}
 
@@ -264,6 +287,18 @@ As $n \to \infty$:
 \begin{enumerate}
 \item The parity correction converges to 1 for odd $n$, while it is exactly 1 for all even $n$. The sequence as a whole oscillates between 1 and lower values asymptotically approaching 1. Therefore, the odd-even distinction vanishes as odd $n$ values increase: $\frac{2 n^2 - 1 + (-1)^n}{2 n^2} \to 1, \ n \text{ is odd}$
 \item Bessel's correction also converges to 1, so the sample-population distinction vanishes: $\frac{n}{n - 1} \to 1$
-\item Therefore, the horns index converges to the infinite-$n$ horns index: $h \to h^*$
+\item Therefore, the horns index converges to the infinite-$n$ horns index. By points 1 and 2, the denominator of $h$ converges: $s^2_{\max} \to \frac{(u-l)^2}{4}$. The numerator also converges, since $s^2 \to \sigma^2$. Therefore:
+$$h = \frac{s^2}{s^2_{\max}} \to \frac{\sigma^2}{\frac{(u-l)^2}{4}} = h^*$$
 \end{enumerate}
 \end{proposition}
+
+\begin{corollary}[Closed forms for $h$ and $h^*$]
+Substituting the formula for $s^2_{\max}$ from Theorem 4:
+$$h = \frac{s^2}{s^2_{\max}} \qquad \text{where} \qquad s^2_{\max} = \frac{(u-l)^2}{4} \cdot \frac{2n^2-1+(-1)^n}{2n^2} \cdot \frac{n}{n-1}$$
+
+The convergence established in Proposition 1 gives the denominator of $h^*$ explicitly:
+$$\sigma^2_{\max | n \to \infty} = \lim_{n \to \infty} \sigma^2_{\max} = \frac{(u-l)^2}{4}$$
+
+and therefore:
+$$h^* = \frac{\sigma^2}{\frac{(u-l)^2}{4}} = \frac{4\sigma^2}{(u-l)^2}$$
+\end{corollary}

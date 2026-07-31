@@ -1,0 +1,10 @@
+---
+title: "Earth mover distance in 1D"
+format: html
+---
+
+$$\text{EMD}(f, g) = \sum_{i=1}^{k} \left|\sum_{j \leq i} f_j - \sum_{j \leq i} g_j\right|$$
+
+For 1D distributions, EMD is mathematically equivalent to the L1 distance between cumulative distribution functions:
+
+$$\text{EMD}(f, g) = \int_{-\infty}^{\infty} |F(x) - G(x)|, dx$$

@@ -83,7 +83,7 @@ closure_generate(
 )
 ```
 
-132,389,600 values in less than 3 seconds:
+132,389,600 values in about 3 seconds:
 ```{r}
 closure_generate(
     mean = "3.0",

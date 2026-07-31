@@ -111,17 +111,6 @@ closure_plot_bar(data, format = "percent")
 
 As you can see, the variability does not change very much. The distribution is starkly bimodal even with the lowest possible amount of variability.
 
-You could also run `closure_plot_horns_histogram()`. It visualizes the distribution of horns values across all samples:
-
-```{r}
-#| fig.alt: >
-#|   Barplot of horns values distribution.
-#|   The scale limits range from 0 to 1,
-#|   but values only start after 0.75
-#|   and end before 0.90.
-closure_plot_horns_histogram(data)
-```
-
 In sum, the horns values are quite tightly confined. Wide variation among them seems to occur only if `mean` and `sd` have no decimal places.
 
 ## Read and write
