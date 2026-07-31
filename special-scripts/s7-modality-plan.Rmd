@@ -1,0 +1,397 @@
+---
+title: "Implementation plan: modality tweaks + S7 result class"
+date: "2026-03-15"
+editor_options:
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+## Overview
+
+Three parallel workstreams, listed in dependency order:
+
+1. **Modality analysis tweaks** — fix a bug in `ModalityAnalysis::new()`,
+   rename `non_unimodal` → `unimodal`, restructure the R-side output into
+   exactly three data frames.
+2. **`ModalityAnalysis` S7 class** — give the modality result its own
+   class and print method before it becomes a property of the parent
+   object.
+3. **Main result S7 class** — replace the plain named list returned by
+   `closure_generate()` / `sprite_generate()` with a proper S7 object
+   that prints concisely, enforces read-only access, and keeps full `$`
+   accessibility.
+
+---
+
+## Workstream 1 · Modality analysis tweaks
+
+### 1a. Fix the `non_unimodal` criterion (closure-core)
+
+**The bug.** `ModalityAnalysis::new()` currently writes:
+
+```rust
+let lo_extreme = count_lo[0].min(count_lo[n_vals - 1]);
+non_unimodal = count_hi[mid_idx] < lo_extreme;
+```
+
+This uses the *minimum* of the two extreme lower bounds, so the
+true-middle value only has to beat the weaker extreme to potentially
+qualify as a mode.  The correct criterion is: the middle value is
+non-unimodal iff at least one extreme *always* beats it — i.e.
+`lo_extreme` should be the *maximum*:
+
+```rust
+let lo_extreme = count_lo[0].max(count_lo[n_vals - 1]);
+```
+
+**Example showing the error.**  With `mean = 3.5, sd = 1.7, n = 70,
+scale 1–5`:
+
+```
+count_ranges:  value 1 [8, 22],  value 3 [0, 18],  value 5 [25, 40]
+```
+
+Old: `min(8, 25)` = 8; `hi_3 = 18 < 8`? **No** → `non_unimodal = FALSE` ✗
+New: `max(8, 25)` = 25; `hi_3 = 18 < 25`? **Yes** → `non_unimodal = TRUE` ✓
+
+Value 3 can never reach value 5's minimum count of 25, so value 3 is
+never the global mode.
+
+### 1b. Rename `non_unimodal` → `unimodal` and flip the value (closure-core)
+
+No double negation.  In the `ModalityAnalysis` struct:
+
+```rust
+// before
+pub non_unimodal: bool,
+
+// after
+pub unimodal: bool,
+```
+
+In `new()`, after fixing the `.min()` → `.max()` issue:
+
+```rust
+// before
+non_unimodal: count_hi[mid_idx] < lo_extreme,
+
+// after
+unimodal: count_hi[mid_idx] >= lo_extreme,
+```
+
+Update the import in `unsum/src/rust/src/lib.rs` accordingly.
+
+### 1c. Restructure the R-side output into three data frames (unsum Rust + R)
+
+`modality_analysis_to_robj()` currently returns a mixed list of two
+data frames plus three scalar logicals.  Change it to return a named
+list of exactly three data frames:
+
+| Name | Columns | Rows |
+|---|---|---|
+| `count_ranges` | `value`, `count_lo`, `count_hi` | one per scale value |
+| `pair_orderings` | `value_a`, `value_b`, `resolved`, `a_greater` | one per adjacent pair |
+| `conclusion` | `unimodal`, `j_shape_low`, `j_shape_high` | exactly one |
+
+`conclusion` follows the same 1-row tibble pattern as `metrics_main`
+and `metrics_horns` — all summary scalars in a single row so the
+structure is consistent throughout the result object.
+
+```rust
+// conclusion: 1-row data frame
+let conclusion: Robj = data_frame!(
+    unimodal    = vec![ma.unimodal],
+    j_shape_low  = vec![ma.j_shape_low],
+    j_shape_high = vec![ma.j_shape_high]
+).into();
+
+list!(
+    count_ranges   = count_ranges,
+    pair_orderings = pair_orderings,
+    conclusion     = conclusion
+).into()
+```
+
+Also update `generate-basic.R` to convert `conclusion` to a tibble the
+same way `metrics_main` is:
+
+```r
+modality_analysis = list(
+  count_ranges   = tibble::as_tibble(out$modality_analysis$count_ranges),
+  pair_orderings = tibble::as_tibble(out$modality_analysis$pair_orderings),
+  conclusion     = tibble::new_tibble(
+    as.list(out$modality_analysis$conclusion), nrow = 1L
+  )
+)
+```
+
+Remove the debug `print(out$modality_analysis)` that is currently on
+line 274 of `generate-basic.R`.
+
+Finally, add `"modality_analysis"` to `TIBBLE_NAMES` in `constants.R`
+after `"frequency_dist"`.
+
+---
+
+## Workstream 2 · `ModalityAnalysis` S7 class
+
+New file: `R/s7-modality-analysis.R`.
+
+### Class definition
+
+```r
+ModalityAnalysis <- S7::new_class(
+  "ModalityAnalysis",
+  properties = list(
+    count_ranges   = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    pair_orderings = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    conclusion     = S7::new_property(S7::class_data.frame, setter = read_only_setter)
+  )
+)
+```
+
+`read_only_setter` is a small helper defined once (see Workstream 3).
+
+### Print method
+
+```r
+S7::method(print, ModalityAnalysis) <- function(x, ...) {
+  cli::cli_alert_info("Modality conclusion:")
+  print(x@conclusion)
+  cli::cli_alert_info(
+    "More detail accessible with {.code $}: {.field count_ranges}, {.field pair_orderings}"
+  )
+  invisible(x)
+}
+```
+
+This mirrors the design principle of Workstream 3: show the summary
+row, point to the detail.
+
+---
+
+## Workstream 3 · Main result S7 class
+
+New file: `R/s7-result.R`.  Requires S7 ≥ 0.2.0 (confirmed: 0.2.1 is
+installed) for `abstract = TRUE` support.
+
+### Shared read-only setter
+
+```r
+read_only_setter <- function(self, value) {
+  cli::cli_abort(
+    "Result objects are read-only.",
+    "i" = "Use {.fn closure_generate} or {.fn sprite_generate} to create a new result."
+  )
+}
+```
+
+### Class definitions
+
+`ResultListFromMeanSdN` is the abstract parent — same name as the Rust
+struct.  Both `ClosureResult` and `SpriteResult` inherit from it; neither
+from the other.  All seven properties live on the abstract class because
+both techniques currently return the same structure.  The concrete
+subclasses exist solely to carry technique-specific validators and serve
+as dispatch points for any future technique-specific methods.
+
+Use `# fmt: skip` above any definition that uses intentional vertical
+alignment for parallelism, to prevent the Air formatter from collapsing
+that structure.
+
+```r
+# fmt: skip
+ResultListFromMeanSdN <- S7::new_class(
+  "ResultListFromMeanSdN",
+  abstract   = TRUE,
+  properties = list(
+    inputs            = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    metrics_main      = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    metrics_horns     = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    modality_analysis = S7::new_property(S7::class_list,       setter = read_only_setter),
+    frequency         = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    frequency_dist    = S7::new_property(S7::class_data.frame, setter = read_only_setter),
+    results           = S7::new_property(S7::class_data.frame, setter = read_only_setter)
+  )
+)
+
+ClosureResult <- S7::new_class(
+  "ClosureResult",
+  parent    = ResultListFromMeanSdN,
+  validator = function(self) check_generator_output(self, "CLOSURE")
+)
+
+SpriteResult <- S7::new_class(
+  "SpriteResult",
+  parent    = ResultListFromMeanSdN,
+  validator = function(self) check_generator_output(self, "SPRITE")
+)
+```
+
+The `include`-variant subclass hierarchy discussed in
+`claude-feedback-on-unsum.Rmd` (`ClosureResultFull`, `ClosureResultStats`,
+etc.) is the natural next step, but it touches `read-write-basic.R` and
+the full `include` plumbing and is **out of scope here**.
+
+### Adapting `check_generator_output()` for S7 objects
+
+`check_generator_output()` opens with a top-level structural check that
+uses `is.list()`, `length()`, and `names()` in ways that may not behave
+as expected on S7 objects.  The per-component checks below it
+(`check_component_tibble(data$inputs, ...)` etc.) use `$` access, which
+S7 supports natively and requires no changes.
+
+Add a guard at the top of `check_generator_output()` that skips the
+structural check when the input is already an S7 object — S7's property
+type constraints already guarantee the structure:
+
+```r
+check_generator_output <- function(data, technique, allow_empty = FALSE) {
+  lowtech <- tolower(technique)
+
+  if (!S7::is(data, ResultListFromMeanSdN)) {
+    top_level_is_correct <-
+      is.list(data) &&
+      any(c(6L, 7L, 8L) == length(data)) &&
+      list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
+      inherits(data$inputs, paste0(lowtech, "_generate"))
+
+    if (!top_level_is_correct) {
+      # ... existing abort ...
+    }
+  }
+
+  # component checks unchanged from here ...
+}
+```
+
+The existing code is not nested — the guard simply wraps only the
+`top_level_is_correct` block.  Everything below it is untouched.
+
+The S3 class on `inputs` (e.g. `"closure_generate"`) is kept for now.
+It becomes redundant once the outer class is the source of truth, and
+can be removed as a follow-on.
+
+### Validators
+
+Each concrete subclass validator simply calls `check_generator_output()`
+with the appropriate technique string.  Since `check_generator_output()`
+either aborts (raising an error that S7 surfaces as a validation failure)
+or returns `NULL`, no tail `NULL` is needed:
+
+```r
+validator = function(self) check_generator_output(self, "CLOSURE")
+```
+
+### Print method
+
+Defined once on the abstract `ResultListFromMeanSdN` class and inherited
+by both subclasses.  `technique` is read from `self@inputs$technique[[1]]`
+— not passed as an argument.
+
+The governing principle: the print method *shortens* output, it does not
+*hide* access.  Large tables are not shown but remain fully accessible
+via `$`.  The `cli_alert_info()` calls at the end are the bridge between
+what is shown and what is available, with one call per hidden field so
+each gets its own line.  The descriptions are kept in a named character
+vector and iterated with a loop to avoid code duplication.
+
+```r
+S7::method(print, ResultListFromMeanSdN) <- function(x, ...) {
+  technique <- x@inputs$technique[[1]]
+  n_samples <- nrow(x@results)
+
+  cli::cli_h1("{technique} result: {n_samples} sample{?s}")
+
+  print(x@inputs)
+  print(x@metrics_main)
+  print(x@metrics_horns)
+
+  # fmt: skip
+  hidden <- c(
+    frequency         = "full frequency table ({nrow(x@frequency)} rows)",
+    frequency_dist    = "per-value count distributions ({nrow(x@frequency_dist)} rows)",
+    modality_analysis = "ordering and modality analysis (3 data frames)",
+    results           = "all samples ({nrow(x@results)} rows)"
+  )
+
+  for (field in names(hidden)) {
+    cli::cli_alert_info("Access {.field ${field}} for {hidden[[field]]}")
+  }
+
+  invisible(x)
+}
+```
+
+What is printed in full: `inputs` (1 row), `metrics_main` (1 row),
+`metrics_horns` (1 row).
+
+What is hidden from print but fully accessible:
+
+| Element | Reason for hiding |
+|---|---|
+| `$frequency` | 3 × k rows (15 rows for a 5-point scale) — readable but not essential at a glance |
+| `$frequency_dist` | Potentially hundreds of rows |
+| `$modality_analysis` | A list of three data frames — better explored interactively |
+| `$results` | Potentially thousands of rows |
+
+### Wire-up in `generate-basic.R`
+
+In the `in_memory_mode` branch, replace the current plain list
+construction with S7 object construction:
+
+```r
+# Before (schematic)
+c(out_summary, list(results = tibble::new_tibble(...)))
+
+# After (schematic)
+ClosureResult(
+  inputs            = ...,
+  metrics_main      = ...,
+  metrics_horns     = ...,
+  modality_analysis = list(count_ranges = ..., pair_orderings = ..., conclusion = ...),
+  frequency         = ...,
+  frequency_dist    = ...,
+  results           = ...
+)
+```
+
+The `class = technique |> tolower() |> paste0("_generate")` attribute
+currently applied to `inputs` can be dropped once all downstream
+`inherits(data$inputs, ...)` call sites are updated — see below.  For
+the initial implementation it is safe to keep it; the outer S7 class is
+the source of truth going forward.
+
+### Update internal `inherits()` calls
+
+Any call of the form `inherits(data$inputs, "closure_generate")` becomes
+`S7::is(data, "ClosureResult")`.  Search targets:
+
+- `R/utils.R` — `check_generator_output()`
+- `R/fn-factory.R`
+- `R/plot-bar-basic.R`
+- `R/read-write-basic.R`
+
+---
+
+## Sequencing
+
+| Step | File(s) | Depends on |
+|---|---|---|
+| 1a Bug fix (`.max()`) | `closure-core/src/lib.rs` | — |
+| 1b Rename → `unimodal` | `closure-core/src/lib.rs` | 1a |
+| 1c Three-df R output | `unsum/src/rust/src/lib.rs`, `R/generate-basic.R`, `R/constants.R` | After closure-core is pushed and Cargo.lock updated |
+| 2 `ModalityAnalysis` S7 | `R/s7-modality-analysis.R` | 1c |
+| 3a–3b Class defs | `R/s7-result.R` | 2 |
+| 3c Validator | `R/s7-result.R` | 3a–3b |
+| 3d Print method | `R/s7-result.R` | 3a–3b, 2 |
+| 3e Wire up in generate | `R/generate-basic.R` | 3a–3d |
+| 3f Update `inherits()` | `R/utils.R`, `R/fn-factory.R`, etc. | 3e |
+
+Steps 1a–1b can go to `closure-core` immediately as a bug fix.  All
+remaining steps are R-only once the updated `closure-core` is wired in
+via `Cargo.lock`.

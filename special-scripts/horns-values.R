@@ -152,39 +152,40 @@ color_horns_uniform_cont <- "purple"
 ggplot(df2, aes(x = scale_length)) +
   geom_line(aes(y = horns_uniform_cont), color = color_horns_uniform_cont) +
   geom_line(aes(y = horns_uniform), color = color_horns_uniform) +
-  geom_line(aes(y = lov_uniform), color = color_lov_uniform) +
-  geom_line(aes(y = dissention_uniform), color = color_dissention_uniform) +
+  # geom_line(aes(y = lov_uniform), color = color_lov_uniform) +
+  # geom_line(aes(y = dissention_uniform), color = color_dissention_uniform) +
   # geom_hline(yintercept = 1 / 3, color = color_horns_uniform_cont) +
 
   # Text labels
+
+  # annotate(
+  #   geom = "text",
+  #   x = 15,
+  #   y = 0.57,
+  #   label = "LOV",
+  #   size = text_label_size,
+  #   color = color_lov_uniform
+  # ) +
+  # annotate(
+  #   geom = "text",
+  #   x = 16,
+  #   y = 0.44,
+  #   label = "Dissention (i.e., 1 - consensus)",
+  #   size = text_label_size,
+  #   color = color_dissention_uniform
+  # ) +
   annotate(
     geom = "text",
-    x = 15,
-    y = 0.57,
-    label = "LOV",
-    size = text_label_size,
-    color = color_lov_uniform
-  ) +
-  annotate(
-    geom = "text",
-    x = 16,
-    y = 0.44,
-    label = "Dissention (i.e., 1 - consensus)",
-    size = text_label_size,
-    color = color_dissention_uniform
-  ) +
-  annotate(
-    geom = "text",
-    x = 11,
-    y = 0.44,
-    label = "Horns index",
+    x = 14,
+    y = 0.45,
+    label = "Horns index of the uniform distribution\n(general case)",
     size = text_label_size,
     color = color_horns_uniform
   ) +
   annotate(
     geom = "text",
-    x = 5.5,
-    y = 0.39,
+    x = 6,
+    y = 0.38,
     label = "Horns index of the\ncontinuous uniform distribution = 1 / 3",
     size = text_label_size,
     color = color_horns_uniform_cont
@@ -198,8 +199,8 @@ ggplot(df2, aes(x = scale_length)) +
   ) +
   labs(
     x = "Number of scale points",
-    y = "Dispersion in a uniform sample",
-    title = "Comparing measures of ordinal dispersion in the uniform case"
+    y = "Horns index",
+    title = "The horns index approximates 1 / 3 for uniform data as scales grow"
   ) +
   theme(
     panel.grid.minor.x = element_blank(),

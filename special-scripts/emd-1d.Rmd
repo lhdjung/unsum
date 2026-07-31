@@ -1,0 +1,164 @@
+---
+title: "EMD via L1 distance between CDFs in 1D"
+output:
+  html_document:
+    mathjax: default
+---
+
+## Setup and notation
+
+Let $k$ be the number of bins and let $\mathbf{p} = (p_1, \ldots, p_k)$ and
+$\mathbf{q} = (q_1, \ldots, q_k)$ be two non-negative frequency vectors with
+equal totals $\sum_i p_i = \sum_i q_i = n$. Define their cumulative sums:
+$$
+P(i) = \sum_{j=1}^{i} p_j, \qquad Q(i) = \sum_{j=1}^{i} q_j.
+$$
+
+The ground distance between bins is $d(i, j) = |i - j|$.
+
+---
+
+## The EMD as a transportation problem
+
+The Earth Mover's Distance (Rubner et al. 2000) is
+
+$$
+\mathrm{EMD}(\mathbf{p}, \mathbf{q})
+  = \min_{\{t_{ij}\}} \sum_{i,j} t_{ij}\, |i - j|
+$$
+
+subject to
+
+$$
+\sum_j t_{ij} = p_i \;\; \forall i, \qquad
+\sum_i t_{ij} = q_j \;\; \forall j, \qquad
+t_{ij} \geq 0.
+$$
+
+The $t_{ij}$ represent how much mass is transported from bin $i$ to bin $j$.
+
+---
+
+## Main result
+
+**Theorem.**
+$$
+\mathrm{EMD}(\mathbf{p}, \mathbf{q}) = \sum_{i=1}^{k} |P(i) - Q(i)|.
+$$
+
+Because $P(k) = Q(k) = n$, the $i = k$ term vanishes and the sum effectively
+runs over the $k - 1$ gaps between adjacent bins.
+
+---
+
+## Proof
+
+### Lower bound
+
+The integer $|i - j|$ counts the number of adjacent gaps crossed when moving
+one unit of mass from bin $i$ to bin $j$:
+$$
+|i - j| = \#\{\ell : \min(i,j) \leq \ell < \max(i,j)\}.
+$$
+
+Substituting and exchanging the order of summation:
+$$
+\sum_{i,j} t_{ij}\, |i - j|
+  = \sum_{\ell=1}^{k-1}
+    \underbrace{\left(
+      \sum_{\substack{i \leq \ell \\ j > \ell}} t_{ij}
+      +
+      \sum_{\substack{i > \ell \\ j \leq \ell}} t_{ij}
+    \right)}_{\text{total flow crossing gap } \ell}.
+$$
+
+Let $R_\ell$ and $L_\ell$ denote the rightward and leftward flow across gap
+$\ell$, respectively. Their difference is fixed by the marginal constraints:
+the mass in $\mathbf{p}$ at positions $\leq \ell$ is $P(\ell)$, and after
+transport it must equal $Q(\ell)$, so
+$$
+R_\ell - L_\ell = P(\ell) - Q(\ell).
+$$
+
+Since total flow at each gap is at least the absolute net flow,
+$$
+R_\ell + L_\ell \geq |R_\ell - L_\ell| = |P(\ell) - Q(\ell)|.
+$$
+
+Summing over all gaps:
+$$
+\sum_{i,j} t_{ij}\, |i - j|
+  = \sum_{\ell=1}^{k-1} (R_\ell + L_\ell)
+  \geq \sum_{\ell=1}^{k-1} |P(\ell) - Q(\ell)|.
+$$
+
+This holds for every feasible plan, so
+$\mathrm{EMD}(\mathbf{p}, \mathbf{q}) \geq \sum_\ell |P(\ell) - Q(\ell)|$.
+
+### Achievability
+
+It remains to exhibit a plan that attains this bound. A plan is tight if and
+only if it has no countercurrents, i.e.\ $R_\ell \cdot L_\ell = 0$ for every
+gap $\ell$. Such a plan exists: process bins left to right, carrying a running
+surplus $\beta \geq 0$ from left to right.
+
+Initialize $\beta = 0$. At each bin $i$, add the local surplus $p_i - q_i$ to
+$\beta$. When $\beta > 0$, surplus mass from the left is waiting to fill
+deficit bins further right; when $\beta < 0$, deficit mass is waiting for
+supply from the right. The net rightward flow across gap $\ell$ is $\beta$
+after processing bin $\ell$, which equals $P(\ell) - Q(\ell)$.
+
+At every gap this plan flows purely rightward (when $P(\ell) > Q(\ell)$) or
+purely leftward (when $P(\ell) < Q(\ell)$), so $R_\ell + L_\ell = |P(\ell) -
+Q(\ell)|$ with no countercurrent. The total cost is
+$\sum_{\ell=1}^{k-1} |P(\ell) - Q(\ell)|$, matching the lower bound.
+
+### Conclusion
+
+Combining both parts:
+$$
+\boxed{\mathrm{EMD}(\mathbf{p}, \mathbf{q}) = \sum_{i=1}^{k} |P(i) - Q(i)|.}
+$$
+
+$\blacksquare$
+
+---
+
+## Relationship to Ling & Okada (2006)
+
+Ling & Okada prove a more general version for 2D histograms, showing that the
+full LP for EMD simplifies under the L₁ Manhattan ground distance (their
+Proposition, Section 3.2). In 2D, eliminating long-range flows in favour of
+neighbor flows reduces the LP variables from $O(N^2)$ to $O(N)$, yielding
+their Tree-EMD algorithm with $O(N^2)$ empirical complexity.
+
+The 1D case is a special instance where the simplification is complete: the LP
+collapses to a closed form. The cut argument above shows that no optimization
+is needed at all — the minimum is uniquely determined by the running CDF
+differences, giving an $O(k)$ algorithm.
+
+This equivalence is also noted by Levina & Bickel (2001), who show that the
+EMD equals the Wasserstein-1 distance for 1D distributions, which in turn
+equals the $L_1$ distance between CDFs.
+
+---
+
+## Note on normalization
+
+The result above applies to unnormalized vectors (both summing to $n$). The
+normalized version, with both vectors summing to 1, gives an EMD that is $1/n$
+times the unnormalized one. For the purpose of ranking samples by distance to a
+group centroid — as in medoid selection — the factor of $n$ is constant across
+all comparisons and cancels.
+
+---
+
+## References
+
+- Ling, H. and Okada, K. (2006). "EMD-L1: An Efficient and Robust Algorithm
+  for Comparing Histogram-Based Descriptors." *ECCV 2006*, LNCS 3953,
+  pp. 330–343.
+- Levina, E. and Bickel, P. (2001). "The Earth Mover's Distance is the Mallows
+  Distance: Some Insights from Statistics." *ICCV 2001*, pp. 251–256.
+- Rubner, Y., Tomasi, C. and Guibas, L. J. (2000). "The Earth Mover's Distance
+  as a Metric for Image Retrieval." *IJCV*, 40(2):99–121.
