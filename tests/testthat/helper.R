@@ -110,7 +110,7 @@ count_wrong_stats <- function(data) {
     original = data$inputs,
     recomputed = tibble::tibble(
       input = name_fn_all,
-      count = vapply(which_unequal, length, integer(1)),
+      count = lengths(which_unequal),
       locations = which_unequal
     )
   )
@@ -225,13 +225,6 @@ is_contained_in <- function(
 
   # Returned if either `TRUE`, or both this and `stop_at_first` are `FALSE`
   maybe_contained
-}
-
-
-# Test CLOSURE / SPRITE results for being empty. Assumes that `data` is output
-# of a generator or reader function but doesn't check this, so use with care.
-is_empty <- function(data) {
-  data$metrics_main$samples_all == 0
 }
 
 
