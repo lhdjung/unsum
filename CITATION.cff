@@ -9,6 +9,7 @@ type: software
 license: MIT
 title: 'unsum: Reconstruct Raw Data from Summary Statistics'
 version: 0.2.0.9000
+date-released: "2026-07-31"
 doi: 10.32614/CRAN.package.unsum
 abstract: Reconstructs all possible raw data that could have led to reported summary
   statistics. Provides a wrapper for the 'Rust' implementation of the 'CLOSURE' algorithm.
