@@ -90,7 +90,7 @@
 #'   [`closure_generate()`] is not based on the R functions presented here.
 #'   Instead, it relies on efficient Rust implementations of the above formulas.
 #'   These Rust functions are part of
-#'   [closure-core](https://crates.io/crates/closure-core), which mainly
+#'   [closure-core](https://github.com/lhdjung/closure-core), which mainly
 #'   implements CLOSURE but does not currently export horns functions for users.
 #'
 #' @returns Numeric (length 1).

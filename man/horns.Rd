@@ -115,7 +115,7 @@ The \code{metrics_horns} tibble that is part of the output of
 \code{\link[=closure_generate]{closure_generate()}} is not based on the R functions presented here.
 Instead, it relies on efficient Rust implementations of the above formulas.
 These Rust functions are part of
-\href{https://crates.io/crates/closure-core}{closure-core}, which mainly
+\href{https://github.com/lhdjung/closure-core}{closure-core}, which mainly
 implements CLOSURE but does not currently export horns functions for users.
 }
 }

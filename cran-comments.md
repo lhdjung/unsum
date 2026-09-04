@@ -8,6 +8,18 @@ are reachable in a browser.
 The 'libs' sub-directory is roughly 8.6Mb because of compiled Rust code.
 
 
+## Resubmission
+
+Fixes both problems from the 0.3.0 pretest:
+
+* Installation ERROR: the vendored 'Rust' sources were archived with macOS
+  extended attributes, which extracted as spurious '._*' C files elsewhere.
+  The archive is now free of them, and offline installation was verified.
+
+* The 'crates.io' URL is valid but returns 404 to non-browser clients.
+  It now points to the crate's source repository instead.
+
+
 ## Fix for current CRAN check problem
 
 This release fixes the following note for unsum 0.2.0:
