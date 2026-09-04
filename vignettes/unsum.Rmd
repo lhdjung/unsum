@@ -13,15 +13,11 @@ knitr::opts_chunk$set(
   comment = "#>",
   out.width = "100%"
 )
-
-devtools::load_all(".")
 ```
 
 ```{r setup}
 library(unsum)
 ```
-
-TODO: INTRODUCE WRITE MODE IN `closure_generate()` AND UPDATE "READ AND WRITE"
 
 Here is a brief walkthrough of using CLOSURE in unsum.
 

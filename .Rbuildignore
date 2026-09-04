@@ -25,3 +25,6 @@
 ^\.positai$
 ^\.claude$
 ^CITATION\.cff$
+^\.crush$
+^CLOSURE-.*$
+^SPRITE-.*$

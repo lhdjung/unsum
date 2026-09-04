@@ -6,13 +6,7 @@
 \alias{horns_rescaled}
 \title{Horns index (\eqn{h})}
 \usage{
-horns(
-  freqs,
-  scale_min,
-  scale_max,
-  use_sample_variance = TRUE,
-  return_details = FALSE
-)
+horns(freqs, scale_min, scale_max)
 
 horns_uniform(scale_min, scale_max)
 

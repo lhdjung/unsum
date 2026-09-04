@@ -1,6 +1,6 @@
 Package: unsum
 Title: Reconstruct Raw Data from Summary Statistics
-Version: 0.2.0.9000
+Version: 0.3.0
 Authors@R: c(
     person("Lukas", "Jung", , "jung-lukas@gmx.net", role = c("aut", "cre")),
     person("Nathanael", "Larigaldie", role = "ctb")
@@ -24,6 +24,7 @@ Imports:
     roundwork,
     S7,
     scales,
+    stats,
     tibble,
     utils
 Collate: 
@@ -46,14 +47,12 @@ Collate:
     'demo-plot.R'
     'horns-corrected.R'
     'horns-plot-for-export.R'
-    'horns_discrete_implementation.R'
     'plot-bar.R'
     'plot-ecdf-basic.R'
     'predicates-basic.R'
     'read-write.R'
     's7-result.R'
     'standalone-new-wrapper.R'
-    'standalone-s7-helpers.R'
     'zzz.R'
 Config/rextendr/version: 0.4.2.9000
 SystemRequirements: Cargo (Rust's package manager), rustc

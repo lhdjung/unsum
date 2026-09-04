@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-[![extendr](https://img.shields.io/badge/extendr-*-276DC2)](https://extendr.github.io/extendr/extendr_api/)
+[![extendr](https://img.shields.io/badge/extendr-*-276DC2)](https://extendr.rs/extendr/extendr_api/)
 <!-- badges: end -->
 
 The goal of unsum is to **un**do **sum**marization: reconstruct all
@@ -147,6 +147,6 @@ Python](https://github.com/larigaldie-n/CLOSURE-Python) by Nathanael
 Larigaldie. The R package unsum provides easy access to an optimized
 implementation in Rust,
 [closure-core](https://github.com/lhdjung/closure-core), via the amazing
-[extendr](https://extendr.github.io/) framework. Rust code tends to run
+[extendr](https://extendr.rs/) framework. Rust code tends to run
 much faster than R or Python code, which is required for many
 applications of CLOSURE.

@@ -96,8 +96,15 @@ SpriteResult <- S7::new_class(
 # Accessors ---------------------------------------------------------------
 
 # To ensure immutability, enable throwing the bespoke error from the "read-only
-# setter" when the user attempts to subassign elements of a result list
-S7::method(`$<-`, ResultListFromMeanSdN) <- function(x, name, value) {
+# setter" when the user attempts to subassign elements of a result list. This
+# covers `x$name <- value`, `x[name] <- value` and `x[[name]] <- value` alike.
+#
+# Unlike all other methods here, the three subassignment methods are registered
+# by hand in `.onLoad()` rather than via `S7::method<-()`. Both create the same
+# S3 method, but `S7::method<-()` stores the function itself in the namespace's
+# S3 methods table, whereas R CMD check's "replacement functions" check expects
+# a function *name* there and fails on anything else.
+abort_read_only_subassign <- function(x, name, value) {
   abort_read_only(x, name)
 }
 
@@ -117,16 +124,6 @@ S7::method(`[[`, ResultListFromMeanSdN) <- function(x, name) {
   S7::prop(x, name)
 }
 
-# When the user tries to subassign `x[name] <- new_value`, throw a more accurate
-# and informative error than "S7 objects are not subsettable"
-S7::method(`[<-`, ResultListFromMeanSdN) <- function(x, name, value) {
-  abort_read_only(x, name)
-}
-
-# Same but for `x[[name]] <- new_value`
-S7::method(`[[<-`, ResultListFromMeanSdN) <- function(x, name, value) {
-  abort_read_only(x, name)
-}
 
 
 # More methods ------------------------------------------------------------

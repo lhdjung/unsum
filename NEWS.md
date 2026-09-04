@@ -1,4 +1,4 @@
-# unsum (development version)
+# unsum 0.3.0
 
 This is the first major version of unsum. As such, it introduces many new features, but also many breaking changes. You may need to adjust your code if you have used unsum before.
 
@@ -38,10 +38,12 @@ Another focus of this release is visualization, with new plotting functions and 
 
 -   Fixed a bug that caused `closure_plot_ecdf()` to return clearly wrong results if the scale did not start at 1.
 -   Fixed bugs in `closure_plot_bar()` that could cause imprecision in the ways that percentages were rounded for display using `frequency = "percent"` or `frequency = "absolute-percent"` (see above for new syntax). This was only intended to limit the length of the percentage text labels, but it could affect the bar sizes, as well.
+-   Fixed a mismatch between `closure_write()` and `closure_read()`: the two disagreed about which files make up a results folder, so writing results and reading them back in again failed.
 
 ## Lifecycle updates
 
 -   The package now requires ggplot2 version 3.4.0 or later and ggtext.
+-   Updated the Rust dependency on extendr to version 0.9.0, which no longer calls the non-API entry point `R_NamespaceRegistry`.
 
 # unsum 0.2.0
 

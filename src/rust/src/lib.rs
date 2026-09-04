@@ -5,7 +5,7 @@ use closure_core::{
 };
 /// This is part of unsum, an R package that uses extendr for Rust integration
 use extendr_api::prelude::*;
-use extendr_api::Robj;
+use extendr_api::{Result, Robj};
 use std::collections::HashMap;
 
 /// Local wrapper for ParquetConfig to allow TryFrom<Robj> implementation.

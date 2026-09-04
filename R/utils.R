@@ -6,8 +6,14 @@ NULL
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 # fmt: skip
 utils::globalVariables(c(
-  ".", "value", ".data", "group_frequency_table",
-  "formals_final", "path", "include", "samples_cap", "data", "frequency"
+  ".", ".data", "data", "directory", "double.eps", "ecdf", "f_count",
+  "f_relative", "file.sep", "file_meta_data", "formals_final", "frequency",
+  "frequency_dist", "group_frequency_table", "hjust", "include", "inputs",
+  "label", "lower", "median", "metrics_horns", "metrics_main",
+  "modality_conclusion", "modality_counts", "modality_pairs", "n", "num_rows",
+  "path", "reader", "results", "sample_id", "samples", "samples_all",
+  "samples_cap", "scale_max", "scale_min", "sd", "total_combinations",
+  "uniform", "value", "values_all", "vjust", "writer", "x", "y", "y_text"
 ))
 
 
@@ -15,6 +21,17 @@ utils::globalVariables(c(
 # https://rconsortium.github.io/S7/articles/packages.html
 .onLoad <- function(...) {
   S7::methods_register()
+
+  # See `abort_read_only_subassign()` in s7-result.R for why these three are
+  # registered by hand instead of via `S7::method<-()`
+  for (generic in c("$<-", "[<-", "[[<-")) {
+    registerS3method(
+      genname = generic,
+      class = "unsum::ResultListFromMeanSdN",
+      method = "abort_read_only_subassign",
+      envir = asNamespace("unsum")
+    )
+  }
 }
 
 # Enable usage of <S7_object>@name in package code

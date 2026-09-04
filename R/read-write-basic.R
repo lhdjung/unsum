@@ -54,8 +54,15 @@ write_basic <- function(data, path, technique) {
 
   data_names <- names(data)
 
-  # Write the small tibbles: those other than the "results"
-  for (name in data_names[data_names != "results"]) {
+  # Write the small tibbles: those persisted as a Parquet file of their own.
+  # "results" is split into horns.parquet and sample.parquet further below, and
+  # the modality_* tibbles and "directory" are not persisted at all, so that
+  # `write_basic()` produces the same files as streaming to disk from Rust.
+  names_on_disk <- FILES_EXPECTED |>
+    setdiff(c("info.md", "horns.parquet", "sample.parquet")) |>
+    sub("\\.parquet$", "", x = _)
+
+  for (name in intersect(data_names, names_on_disk)) {
     nanoparquet::write_parquet(
       data[[name]],
       file = paste0(path_new_dir, name, ".parquet")

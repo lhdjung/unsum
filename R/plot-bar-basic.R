@@ -327,7 +327,7 @@ plot_frequency_bar <- function(
   if (overlay %in% c("pointinterval", "dots") && !is.null(data_overlay)) {
     summary_fn <- switch(
       overlay,
-      "pointinterval" = function(x) quantile(x, 0.975, names = FALSE),
+      "pointinterval" = function(x) stats::quantile(x, 0.975, names = FALSE),
       "dots" = max,
       cli::cli_abort("Internal error: invalid \"overlay\" variant.")
     )

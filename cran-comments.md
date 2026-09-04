@@ -2,27 +2,33 @@
 
 0 errors | 0 warnings | 1 note
 
-* checking installed package size ... NOTE
-    installed size is  6.0Mb
-    sub-directories of 1Mb or more:
-      libs   5.7Mb
+The note lists three URLs as "possibly invalid". All three are reachable in a
+browser; the hosts simply answer automated requests with HTTP 403
+(crates.io, jamesheathers.medium.com, peerj.com).
+
+On some platforms there is an additional note about the installed package
+size: the 'libs' sub-directory is roughly 8.6Mb because the package contains
+compiled Rust code.
 
 
-## Resubmission
-This is a resubmission. In this version I have:
+## Fix for the current CRAN check problem
 
-* Used single quotes in the description field.
+This release fixes the note shown on the CRAN check page for unsum 0.2.0:
 
-* Removed the default path in closure_write().
+    Found non-API call to R: 'R_NamespaceRegistry'
 
-* Used tempdir() directly to write results to disk in the examples of R/read-write.R.
+The call did not come from this package's own code. It came from the
+'extendr-api' Rust crate, which unsum uses for its R/Rust interface. extendr
+removed the 'R_NamespaceRegistry' binding in version 0.9.0, so unsum now
+depends on that version. I confirmed that the symbol is no longer present in
+the compiled shared object, and 'checking compiled code' is now OK.
 
-* Added some new features.
 
-Please also note:
+## Please also note
 
-* CRAN checks previously flagged file writing operations in tools/config.R, which is a script to create Makevars files. The config.R script is used by many 'Rust'-based packages. I believe this to be a false positive.
+* There are currently no references describing the methods in the package.
+  (I will add a reference once there is a manuscript.)
 
-* There are currently no references describing the methods in the package. (I will add a reference once there is a manuscript.)
-
-* The package contains Rust code, which is why the 'libs' sub-directory is 5.7Mb in size.
+* CRAN checks previously flagged file writing operations in tools/config.R,
+  which is a script to create Makevars files. The config.R script is used by
+  many 'Rust'-based packages. I believe this to be a false positive.
