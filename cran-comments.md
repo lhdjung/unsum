@@ -1,9 +1,11 @@
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
+0 errors | 0 warnings | 2 notes
 
-The note lists three URLs as "possibly invalid". However, all three
-are reachable in a browser.
+Two URLs are flagged as "possibly invalid". Both return 403 to automated
+requests but are reachable in a browser.
+
+One example runs slightly over 5 seconds.
 
 The 'libs' sub-directory is roughly 8.6Mb because of compiled Rust code.
 
