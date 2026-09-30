@@ -35,8 +35,8 @@ test_that("All samples yield the original mean and SD", {
 
 
 # Adjust results of R wrapper to format of data saved on disk
-wide_n_1 <- data_r_1$results$sample |> as_wide_n_tibble()
-wide_n_2 <- data_r_2$results$sample |> as_wide_n_tibble()
+wide_n_1 <- data_r_1 |> results_samples() |> as_wide_n_tibble()
+wide_n_2 <- data_r_2 |> results_samples() |> as_wide_n_tibble()
 
 
 # Check results for identity after sorting columns. Different CLOSURE
@@ -64,7 +64,7 @@ if (!ok) {
 }
 
 
-test_that("f_count sums to n for each samples group", {
+test_that("f_representative and f_expected sum to n for each samples group", {
   freq_centered <- closure_generate(
     mean = "4.0",
     sd = "1.0",
@@ -73,11 +73,12 @@ test_that("f_count sums to n for each samples group", {
     scale_max = 7
   )$frequency
 
-  # Each samples group's medoid is a single sample of size n=50
+  # Each samples group's medoid is a single sample of size n=50, and so is the
+  # group's average sample
   for (grp in c("all", "horns_min", "horns_max")) {
-    freq_centered[freq_centered$samples == grp, ]$f_count |>
-      sum() |>
-      expect_equal(50)
+    freq_group <- freq_centered[freq_centered$samples == grp, ]
+    freq_group$f_representative |> sum() |> expect_equal(50)
+    freq_group$f_expected |> sum() |> expect_equal(50)
   }
 })
 

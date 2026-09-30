@@ -68,6 +68,9 @@ ResultListFromMeanSdN <- S7::new_class(
     modality_counts     = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_counts")),
     modality_pairs      = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_pairs")),
     modality_conclusion = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_conclusion")),
+    modality_shapes     = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_shapes")),
+    modality_summary    = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_summary")),
+    modality_prominence = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("modality_prominence")),
     frequency           = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency")),
     frequency_dist      = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("frequency_dist")),
     directory           = S7::new_property(S7::class_data.frame, setter = new_read_only_setter("directory")),
@@ -179,7 +182,8 @@ S7::method(print, ResultListFromMeanSdN) <- function(
   msg_samples_all <- format_comma(samples_all)
   msg_sample_s <- if (samples_all == 1L) "sample" else "samples"
 
-  has_directory <- has_property(x, "directory")
+  # In-memory results carry an `NA` path, so there is nothing to show for them
+  has_directory <- !anyNA(x@directory$path)
 
   cli::cli_h1(
     "{.bold {technique} results: {msg_samples_all} {msg_sample_s}}"
@@ -210,7 +214,21 @@ S7::method(print, ResultListFromMeanSdN) <- function(
       nrow(x@modality_pairs),
       " rows)"
     ),
-    modality_conclusion = "flagging modality and J-shape status (1 row)",
+    modality_conclusion = paste(
+      "flagging modality and J-shape status (1 row);",
+      "`NA` means not found, but the search was partial"
+    ),
+    modality_shapes = paste0(
+      "min/max counts per scale value within each shape class (",
+      nrow(x@modality_shapes),
+      " rows)"
+    ),
+    modality_summary = "number of samples in each shape class (1 row)",
+    modality_prominence = paste0(
+      "shape classes at each mode prominence threshold (",
+      nrow(x@modality_prominence),
+      " rows)"
+    ),
     frequency = paste0("full frequency table (", nrow(x@frequency), " rows)"),
     frequency_dist = paste0(
       "per-value count distributions (",
@@ -218,7 +236,7 @@ S7::method(print, ResultListFromMeanSdN) <- function(
       " rows)"
     ),
     results = paste0(
-      "all samples and their horns indices (",
+      "count of each scale value in every sample, and horns indices (",
       msg_samples_all,
       " rows)"
     )

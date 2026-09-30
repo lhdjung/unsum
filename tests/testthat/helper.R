@@ -55,10 +55,41 @@ decimal_places_scalar <- function(x, sep = "\\.") {
 }
 
 
+# Rebuild the samples in `data$results` from their count columns: a list of
+# sorted vectors of scale values, one per sample
+results_samples <- function(data) {
+  values <- grid_values(data)
+  # Whole scale values as integers, like the samples used to be
+  if (all(is_whole_number(values))) {
+    values <- as.integer(values)
+  }
+  counts <- results_counts(data)
+  lapply(seq_len(nrow(counts)), \(i) rep(values, counts[i, ]))
+}
+
+
+# Transform samples into the "n"-column format of the CSV files made by
+# closure-core's test harness or the original Python implementation: one row
+# per sample, one column per position. Optimized for performance, not
+# readability. As an example, assuming that `data` is `closure_generate()`
+# output, call: `as_wide_n_tibble(results_samples(data))`
+as_wide_n_tibble <- function(samples_all) {
+  n_samples <- length(samples_all)
+  n_final_cols <- length(samples_all[[1]])
+
+  # Use the numbers from 1 to `n_samples` to name the elements of `samples_all`.
+  # Then, turn the list into a tibble, which is necessary to transpose it using
+  # `t()`. Finally, turn the result into a tibble again, but this time, name the
+  # columns like "n1", "n2", etc.
+  `names<-`(samples_all, seq_len(n_samples)) |>
+    tibble::new_tibble(nrow = n_final_cols) |>
+    t() |>
+    tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
+}
+
+
 count_wrong_stats <- function(data) {
   name_fn_all <- c("mean", "sd")
-
-  scale_by <- switch(data$inputs$technique, "SPRITE" = 100, 1)
 
   offenders <- name_fn_all[name_fn_all %in% names(data$results)]
   if (length(offenders) > 0) {
@@ -82,13 +113,12 @@ count_wrong_stats <- function(data) {
     digits <- decimal_places_scalar(input_stat)
 
     # Which samples, if any, don't conform to the input summary stats?
-    which_unequal_current <- data$results$sample |>
+    which_unequal_current <- data |>
+      results_samples() |>
       vapply(
         function(sample) {
-          sample_current <- sample / scale_by
-
           # Get the summary function by name and call it on the current sample
-          result <- eval(call(name_fn, sample_current))
+          result <- eval(call(name_fn, sample))
 
           # Use the poor man's default `reround()` to assert that either
           # possible reconstructed value matches the original input statistic
@@ -155,7 +185,6 @@ is_contained_in <- function(
   subset,
   superset,
   stop_at_first = TRUE,
-  scaling_by = 100,
   name_subset = "SPRITE",
   name_superset = "CLOSURE"
 ) {
@@ -178,16 +207,13 @@ is_contained_in <- function(
   n_samples_subset <- nrow(subset$results)
   maybe_contained <- TRUE
 
-  superset_samples <- superset$results$sample |>
-    lapply(sort) |>
-    lapply(\(x) x * scaling_by)
+  subset_samples <- results_samples(subset)
+  superset_samples <- results_samples(superset)
 
   # Go through each "subset" sample and check that it's actually contained in
   # the superset of results
   for (i in seq_len(n_samples_subset)) {
-    current_subset_sample <- subset$results[i, ]$sample[[1]] |>
-      sort() |>
-      list()
+    current_subset_sample <- subset_samples[i]
 
     # Happy path: skip to next element
     if (current_subset_sample %in% superset_samples) {

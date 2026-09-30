@@ -26,7 +26,7 @@ expand_section <- function(section, technique) {
     ),
     memory = glue::glue(
       "More about memory: Some output columns that contain counts, such as
-      `f_count`, are doubles instead of integers. This is because doubles are
+      `f_expected`, are doubles instead of integers. This is because doubles are
       able to contain much larger numbers. When counting {technique} results, it
       is possible to exceed the limit of 32-bit integers in R, which is roughly
       two billion."
@@ -63,16 +63,33 @@ expand_section <- function(section, technique) {
         samples: `\"all\"` for all samples, `\"horns_min\"` for those samples
         with the lowest horns index among all samples, and `\"horns_max\"` for
         those samples with the highest horns index.
-        - `value`: integer. Scale values derived from `scale_min` and
+        - `value`: double. Scale values derived from `scale_min` and
         `scale_max`.
-        - `f_count`: double. Count of scale values in the group's medoid
-        sample (the actual sample closest to the group centroid by EMD).
-        - `f_relative`: double. Values' share of total values found.
+        - `f_expected`: double. Average count of each scale value across the
+        group's samples.
+        - `f_representative`: double. Count of each scale value in the group's
+        medoid, i.e., the actual sample with the smallest total distance (EMD)
+        to all others. `NaN` if `path` was specified because the medoid can't
+        be found while streaming results to disk.
+        - `f_relative`: double. `f_expected` divided by `n`.
+      - **`modality_counts`**, **`modality_pairs`**, **`modality_shapes`**,
+      **`modality_summary`**, **`modality_prominence`**: the range of counts
+      of each scale value, and the shapes (e.g., one or two modes) that the
+      samples take.
+      - **`modality_conclusion`**: whether any sample can be unimodal,
+      bimodal, or J-shaped. `NA` means that no such sample was found, but the
+      search was partial, so it might still exist. This is always the case with
+      SPRITE, and with CLOSURE if `stop_after` was specified.
       - **`results`**:
-        - `id`: integer. Runs from `1` to `samples_all`.
-        - `sample` (not present by default if `path` was specified): list of
-        integer vectors. Each of these vectors has length `n`. It is a sample
-        (or distribution) of individual scale values found by {technique}.
+        - `id`: double. Runs from `1` to `samples_all`.
+        - `v1`, `v2`, etc. (not present by default if `path` was specified):
+        integer. One column per scale value, holding the number of times this
+        value occurs in the sample. For instance, `v3` counts the 3s. Negative
+        values are marked with `n`, as in `vn2` for -2, and decimal values with
+        `_`, as in `v1_5` for 1.5 (only for SPRITE with `items > 1`). Together,
+        these columns describe each sample completely because the order of
+        values within a sample doesn't matter. The counts of each row sum up to
+        `n`.
         - `horns`: double. Horns index of each sample.
       - **`directory`** (only present if `path` was specified):
         - `path`: string. Location of the folder in which the results were
@@ -97,8 +114,10 @@ expand_section <- function(section, technique) {
       [`{lowtech}_generate()`] on your computer. A message will show the exact
       location.
 
-      The data are saved in a new folder as five separate files, one for each
-      tibble in `{lowtech}_generate()`'s output.
+      The data are saved in a new folder as separate Parquet files, one for
+      each tibble in `{lowtech}_generate()`'s output. `results` is saved as
+      counts.parquet, along with scale_values.parquet which maps the count
+      columns to scale values.
 
       `{lowtech}_read()` is the opposite: it reads those files back into R,
       recreating the original {technique} list. This is useful for later

@@ -1,4 +1,4 @@
-# Helper: compute frequency distribution in R from $results$sample.
+# Helper: compute frequency distribution in R from the samples in $results.
 #
 # For each scale value v and each sample, count how many times v appears.
 # Then tabulate: for each (value, count) pair, how many samples yielded
@@ -8,7 +8,7 @@
 #   n_samples -- number of samples with this (value, count) pair
 compute_frequency_dist_r <- function(data) {
   scale_vals <- seq(data$inputs$scale_min, data$inputs$scale_max)
-  samples <- data$results$sample
+  samples <- results_samples(data)
 
   rows <- lapply(scale_vals, function(v) {
     counts <- vapply(samples, function(s) sum(s == v), integer(1))
@@ -74,12 +74,12 @@ test_that("R-computed frequency_dist: n_samples sum to total per value", {
   expect_true(all(sums_by_value == n_samples_total))
 })
 
-test_that("f_count in frequency table sums to n for each samples group", {
+test_that("f_representative in frequency table sums to n for each samples group", {
   # The medoid is a single sample of size n, so its per-value counts must sum
   # to n regardless of the samples group.
   for (grp in c("all", "horns_min", "horns_max")) {
     rows <- fd_data$frequency[fd_data$frequency$samples == grp, ]
-    expect_equal(sum(rows$f_count), fd_data$inputs$n)
+    expect_equal(sum(rows$f_representative), fd_data$inputs$n)
   }
 })
 

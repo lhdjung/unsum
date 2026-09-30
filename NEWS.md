@@ -1,3 +1,32 @@
+# unsum (development version)
+
+## Breaking changes
+
+-   The `results` tibble no longer has a `sample` list-column. Instead, it has one integer column per scale value that counts how often this value occurs in each sample: `v1` for the 1s, `v2` for the 2s, etc. (`vn2` for -2, and `v1_5` for 1.5 with multi-item SPRITE). Because samples are sorted, these counts describe them completely, and they take up far less memory. To get a sample back as a vector, use `rep()` on the scale values and a row of counts.
+-   In `frequency`, the `f_count` column is replaced by `f_expected`, the average count of each scale value within a group of samples, and `f_representative`, the counts in the group's medoid sample. The latter is `NaN` if results were written to disk via `path`. `f_relative` is now `f_expected / n` in memory and on disk alike.
+-   The `value` columns of `frequency`, `frequency_dist`, `modality_counts`, and `modality_pairs` are now doubles because multi-item SPRITE scales have values like 1.5. These tables now have one row per such value.
+-   `modality_conclusion` can now be `NA`: no sample with that shape was found, but the search was partial (SPRITE, or CLOSURE with `stop_after`). Its columns now describe the shapes of individual samples rather than of per-value count ranges.
+-   Results written to disk use a new layout. Instead of sample.parquet and horns.parquet, a folder has counts.parquet, scale_values.parquet, and format.parquet, as well as the new modality files. Folders written by earlier versions of unsum can't be read anymore.
+
+## New features
+
+-   The output of `closure_generate()` and `sprite_generate()` gains three tibbles: `modality_shapes`, `modality_summary`, and `modality_prominence`. They describe how many samples take which shape (e.g., one or two modes). All modality tibbles are now also written to disk and read back from it.
+-   Large result sets are much faster to return to R, and they take up much less memory.
+
+## Changes in results
+
+-   The underlying Rust crate, closure-core, was updated with many fixes. CLOSURE now finds samples that lie exactly on the bounds of the mean or SD (so there can be more samples than before), and `stop_after` is now an exact upper bound. SPRITE takes rounding errors literally, represents multi-item scales exactly, and reaches many more distinct samples than before.
+
+## Bugfixes
+
+-   Asymmetric rounding methods now search the correct interval. Previously, `closure_generate()`, `sprite_generate()`, and `closure_count_all()` passed a symmetric rounding error around the reported value to the Rust level even if `rounding` was, e.g., `"floor"` or `"ceiling"`. With `"floor"`, this meant only exact matches were found (usually none); with `"ceiling"`, too many.
+-   `closure_generate(items = 2)` now throws an error instead of silently running CLOSURE with `items = 1`. CLOSURE only supports single-item scales; use `sprite_generate()` for others.
+-   Results with negative scale values can now be read back from disk. The minus sign used to be confused with the dashes separating the values in the folder name.
+-   Empty results written to disk via `path` can now be read back with `closure_read()` (and `sprite_read()`) instead of throwing an error.
+-   Errors on the Rust level are now reported as R errors instead of a confusing `$ operator is invalid for atomic vectors` message. In writing mode, the partially created folder is removed.
+-   `n`, `scale_min`, `scale_max`, `stop_after`, and `items` are now checked for being whole numbers, with a clear error message.
+-   Printing in-memory results no longer shows an empty `$directory` element.
+
 # unsum 0.3.0
 
 This could easily be the first major version of unsum because it contains many new features, but also many breaking changes – you may need to adjust your code if you have used unsum before. However, it does not yet rise to the level where I can promise a stable API, so it is officially a minor release.

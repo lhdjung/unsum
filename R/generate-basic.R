@@ -59,6 +59,16 @@ generate_from_mean_sd_n <- function(
   check_single(ask_to_proceed, "logical")
   check_single(items, c("double", "integer"), allow_null = TRUE)
 
+  check_whole_number(n)
+  check_whole_number(scale_min)
+  check_whole_number(scale_max)
+  if (!is.null(stop_after)) {
+    check_whole_number(stop_after)
+  }
+  if (!is.null(items)) {
+    check_whole_number(items)
+  }
+
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
 
@@ -71,11 +81,24 @@ generate_from_mean_sd_n <- function(
     )
   }
 
+  # For CLOSURE, `items` defaults to 1; for SPRITE, it must be provided
+  items_val <- if (is.null(items)) 1L else as.integer(items)
+
+  # closure-core only implements CLOSURE for single-item scales. Passing
+  # anything else through would be silently ignored, so error instead.
+  if (technique == "CLOSURE" && items_val != 1L) {
+    abort_in_export(
+      "CLOSURE requires `items = 1`.",
+      "x" = "`items` is {.val {items}}.",
+      "i" = "For multi-item scales, use `sprite_generate()`."
+    )
+  }
+
   # SPRITE-specific validation
   if (technique == "SPRITE") {
     # Prevent overflow crashes - SPRITE with items > 1 is prone to overflow
     # Be very conservative and require stop_after in most cases
-    if (items > 1 && is.null(stop_after)) {
+    if (items_val > 1L && is.null(stop_after)) {
       abort_in_export(
         "`stop_after` is required when using SPRITE with multi-item scales.",
         "x" = "Currently using: `items = {items}`",
@@ -95,60 +118,40 @@ generate_from_mean_sd_n <- function(
   # TODO: Maybe take `scale_min` and `scale_max` into account; they might
   # further confine the results of `unround()`!
 
-  # Reconstruct the min and max possible values of the unknown original number
-  # that was later rounded to the reported mean and SD values. Subtract each
-  # lower bound (i.e., each minimum) from the respective reported value to
-  # compute the rounding error.
-  mean_sd_unrounded <- roundwork::unround(
+  # Reconstruct the interval of possible values of the unknown original numbers
+  # that were later rounded to the reported mean and SD. closure-core searches
+  # symmetrically around the values it is given, so use the center of each
+  # interval (identical to the reported value unless `rounding` is asymmetric,
+  # e.g., "floor") and half the interval's width as the rounding error.
+  mean_sd_unrounded <- unround_center_error(
     x = c(mean, sd),
     rounding = rounding,
     threshold = threshold
   )
 
+  mean_num <- mean_sd_unrounded$center[1]
+  sd_num <- mean_sd_unrounded$center[2]
+
   if (is.null(rounding_error_mean)) {
-    rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
+    rounding_error_mean <- mean_sd_unrounded$error[1]
   }
 
   if (is.null(rounding_error_sd)) {
-    rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
+    rounding_error_sd <- mean_sd_unrounded$error[2]
   }
 
-  # If files should be written to disk, prepare a new folder for them, write
-  # info.md and inputs.parquet into it, and record the new path.
-  if (in_memory_mode) {
-    parquet_config <- NULL
-    # Error if `include` was specified even though `path` was not
-    if (include != "stats_and_horns") {
-      abort_in_export(
-        "Need to specify `path` when using `include`.",
-        # "`include` requires `path` to be specified.",
-        "x" = "`include` is {.val {include}}.",
-        "x" = "`path` is not provided.",
-        "i" = "The purpose of `include` is to choose which files \
-        to read from a folder chosen via `path` into R.",
-        "i" = "Specify `path` as a string that points to a folder \
-        on your computer, or as {.val {\".\"}} for your current \
-        working directory."
-      )
-    }
-  } else {
-    # In writing mode:
-    path_new_dir <- prepare_folder_mean_sd_n(
-      inputs = list(
-        technique = technique,
-        mean = mean,
-        sd = sd,
-        n = n,
-        scale_min = scale_min,
-        scale_max = scale_max,
-        rounding = rounding,
-        threshold = threshold
-      ),
-      path = path
-    )
-    parquet_config <- list(
-      file_path = path_new_dir,
-      batch_size = 1000
+  # Error if `include` was specified even though `path` was not
+  if (in_memory_mode && include != "stats_and_horns") {
+    abort_in_export(
+      "Need to specify `path` when using `include`.",
+      # "`include` requires `path` to be specified.",
+      "x" = "`include` is {.val {include}}.",
+      "x" = "`path` is not provided.",
+      "i" = "The purpose of `include` is to choose which files \
+      to read from a folder chosen via `path` into R.",
+      "i" = "Specify `path` as a string that points to a folder \
+      on your computer, or as {.val {\".\"}} for your current \
+      working directory."
     )
   }
 
@@ -215,8 +218,30 @@ generate_from_mean_sd_n <- function(
     }
   }
 
-  # For CLOSURE, `items` defaults to 1; for SPRITE, it must be provided
-  items_val <- if (is.null(items)) 1L else as.integer(items)
+  # If files should be written to disk, prepare a new folder for them, write
+  # info.md and inputs.parquet into it, and record the new path. This comes
+  # after the prompt above so that aborting there leaves no folder behind.
+  parquet_config <- NULL
+
+  if (!in_memory_mode) {
+    path_new_dir <- prepare_folder_mean_sd_n(
+      inputs = list(
+        technique = technique,
+        mean = mean,
+        sd = sd,
+        n = n,
+        scale_min = scale_min,
+        scale_max = scale_max,
+        rounding = rounding,
+        threshold = threshold
+      ),
+      path = path
+    )
+    parquet_config <- list(
+      file_path = path_new_dir,
+      batch_size = 1000
+    )
+  }
 
   # Compute CLOSURE samples by calling into pre-compiled Rust code.
   out <- create_combinations(
@@ -235,9 +260,20 @@ generate_from_mean_sd_n <- function(
     stop_after = stop_after
   )
 
+  # The Rust side signals failure by returning an error message as a string
+  if (is.character(out)) {
+    if (!in_memory_mode) {
+      unlink(path_new_dir, recursive = TRUE)
+    }
+    abort_in_export(
+      "{technique} failed on the Rust level.",
+      "x" = "{out}"
+    )
+  }
+
   # Count samples found; the place of this number depends on the output type
   n_samples_all <- if (in_memory_mode) {
-    length(out$results$sample)
+    out$metrics_main$samples_all
   } else {
     out$total_combinations
   }
@@ -329,6 +365,16 @@ generate_from_mean_sd_n <- function(
       modality_conclusion = out$modality_conclusion |>
         as.list() |>
         tibble::new_tibble(nrow = 1L),
+
+      modality_shapes = out$modality_shapes |>
+        tibble::as_tibble(),
+
+      modality_summary = out$modality_summary |>
+        as.list() |>
+        tibble::new_tibble(nrow = 1L),
+
+      modality_prominence = out$modality_prominence |>
+        tibble::as_tibble(),
 
       frequency = out$frequency |>
         as.list() |>

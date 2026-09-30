@@ -26,7 +26,8 @@ NULL
 #'   and `scale_max = 7`. Prefer the empirical min and max if available: they
 #'   constrain the possible values further.
 #' @param items Numeric (length 1). Number of items composing the original
-#'   measurement scale. Default is `1`, which assumes a single-item scale.
+#'   measurement scale. CLOSURE only supports single-item scales, so this must
+#'   be `1`, the default. For multi-item scales, see [`sprite_generate()`].
 #' @param path String (length 1). Optionally, choose the directory where a new
 #'   folder with CLOSURE results should be created. Use `path = "."` for your
 #'   current working directory. See "Writing to disk" below.

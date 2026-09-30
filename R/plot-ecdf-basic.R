@@ -130,7 +130,7 @@ closure_plot_ecdf <- function(
   if (samples == "all") {
     # Error if the raw data are not available -- visualizing all samples is not
     # possible in this case
-    if (is.null(data[["results"]][["sample"]])) {
+    if (!has_counts(data)) {
       abort_in_export(
         "Visualizing all samples requires those samples.",
         "x" = "`samples` is \"all\" but the actual samples \
@@ -157,12 +157,16 @@ closure_plot_ecdf <- function(
     }
 
     # Zoom in on the detailed `results` -- the key element of `data` needed
-    # here. Flatten them into a single integer vector. If all samples should be
-    # shown, enable grouping the values by sample using a `sample_id` column.
+    # here. Expand the counts into a single vector of all the samples' values,
+    # one sample after another. If all samples should be shown, enable grouping
+    # the values by sample using a `sample_id` column.
+    counts <- results_counts(data)
+
     data <- tibble::new_tibble(
       x = list(
-        value = data$results$sample |>
-          unlist(use.names = FALSE),
+        value = grid_values(data) |>
+          rep(times = nrow(counts)) |>
+          rep(times = as.vector(t(counts))),
 
         horns = data$results$horns |>
           rep(each = inputs$n),
@@ -204,7 +208,7 @@ closure_plot_ecdf <- function(
 
     # Frequency-based ECDF plots that do not require individual samples
     if (samples == "mean") {
-      data <- data[data$samples == "all", c("samples", "value", "f_count")]
+      data <- data[data$samples == "all", c("samples", "value", "f_expected")]
       data <- mutate_ecdf(data, pad = pad)
 
       legend_position <- "none"
@@ -215,7 +219,7 @@ closure_plot_ecdf <- function(
         direction = "hv"
       )
     } else if (samples == "mean_min_max") {
-      data <- data[c("samples", "value", "f_count")]
+      data <- data[c("samples", "value", "f_expected")]
 
       # Necessary (and current) order of the unique values in `data$samples`
       group_order <- c("all", "horns_min", "horns_max")
@@ -311,7 +315,7 @@ closure_plot_ecdf <- function(
 #' the frequency table used inside of `closure_plot_ecdf()`.
 #'
 #' @param data Data frame that contains these columns (and no others):
-#'   `"samples"`, `"value"`, `"f_count"`.
+#'   `"samples"`, `"value"`, `"f_expected"`.
 #' @param pad String. If `"extend"` or `"match"`, the groups will be padded with
 #'   extra rows that have zeros for frequencies. In an ECDF ggplot created
 #'   manually using `ggplot2::geom_step()`, this will have the same effect as
@@ -321,10 +325,10 @@ closure_plot_ecdf <- function(
 #'
 #' @noRd
 mutate_ecdf <- function(data, pad) {
-  cumulative_freq <- cumsum(data$f_count)
+  cumulative_freq <- cumsum(data$f_expected)
 
   # Normalize to get cumulative probabilities (ECDF values)
-  total_freq <- sum(data$f_count)
+  total_freq <- sum(data$f_expected)
   data$ecdf <- cumulative_freq / total_freq
 
   if (pad == "stop") {
@@ -343,7 +347,7 @@ mutate_ecdf <- function(data, pad) {
   pad_start <- list(
     samples = data$samples[1],
     value = value_first - value_pad,
-    f_count = 0,
+    f_expected = 0,
     ecdf = 0
   )
 
@@ -352,7 +356,7 @@ mutate_ecdf <- function(data, pad) {
   pad_end <- list(
     samples = data$samples[1],
     value = value_last + value_pad,
-    f_count = 0,
+    f_expected = 0,
     ecdf = 1
   )
 

@@ -1,44 +1,17 @@
+use closure_core::modality::{ModalityShapes, ShapeClass};
 use closure_core::{
     closure_count, closure_parallel, closure_parallel_streaming, sprite_parallel,
-    sprite_parallel_streaming, FrequencyDist, ModalityConclusion, ModalityCounts, ModalityPairs,
-    ParquetConfig, RestrictionsMinimum, RestrictionsOption, ResultListFromMeanSdN, StreamingConfig,
+    sprite_parallel_streaming, FrequencyDist, ModalityCounts, ModalityPairs, OutputFormat,
+    RestrictionsMinimum, RestrictionsOption, ResultListFromMeanSdN, StreamingConfig,
 };
 /// This is part of unsum, an R package that uses extendr for Rust integration
 use extendr_api::prelude::*;
 use extendr_api::{Result, Robj};
 use std::collections::HashMap;
 
-/// Local wrapper for ParquetConfig to allow TryFrom<Robj> implementation.
+/// Local wrapper for StreamingConfig to allow TryFrom<Robj> implementation.
 /// This wrapper type is necessary because of Rust's orphan rule - we can only
 /// implement traits for types if we own either the trait or the type.
-pub struct ParquetConfigR(pub ParquetConfig);
-
-impl TryFrom<Robj> for ParquetConfigR {
-    type Error = Error;
-
-    fn try_from(robj: Robj) -> Result<Self> {
-        // Extract the fields from the R list/object
-        // Assuming the R side passes a list with 'file_path' and 'batch_size' fields
-        let file_path = robj
-            .dollar("file_path")?
-            .as_str()
-            .ok_or_else(|| Error::Other("file_path must be a string".into()))?
-            .to_string();
-
-        let batch_size = robj
-            .dollar("batch_size")?
-            .as_real()
-            .ok_or_else(|| Error::Other("batch_size must be numeric".into()))?
-            as usize;
-
-        Ok(ParquetConfigR(ParquetConfig {
-            file_path,
-            batch_size,
-        }))
-    }
-}
-
-/// Local wrapper for StreamingConfig to allow TryFrom<Robj> implementation.
 pub struct StreamingConfigR(pub StreamingConfig);
 
 impl TryFrom<Robj> for StreamingConfigR {
@@ -69,8 +42,24 @@ impl TryFrom<Robj> for StreamingConfigR {
             file_path,
             batch_size,
             show_progress,
+            // counts.parquet: one count column per scale value, then horns
+            format: OutputFormat::Counts,
         }))
     }
+}
+
+/// Give a list of equal-length columns the attributes of a data frame with
+/// `n_rows` rows, using R's compact row names instead of storing 1..n.
+fn as_data_frame(mut df: Robj, n_rows: usize) -> Robj {
+    df.set_attrib("class", "data.frame").unwrap();
+    let row_names: Vec<i32> = if n_rows == 0 {
+        Vec::new()
+    } else {
+        // `c(NA_integer_, -n)`; i32::MIN is R's `NA_integer_`
+        vec![i32::MIN, -(n_rows as i32)]
+    };
+    df.set_attrib("row.names", row_names).unwrap();
+    df
 }
 
 /// Helper function to convert FrequencyDist to R data frame
@@ -105,25 +94,97 @@ fn modality_pairs_to_robj(mp: &ModalityPairs) -> Robj {
     .into()
 }
 
-/// (can_be_unimodal, can_be_bimodal, j_shape_low, j_shape_high) — exactly one row
-fn modality_conclusion_to_robj(mc: &ModalityConclusion) -> Robj {
+/// `None` ("not ruled out, but the search was partial") becomes `NA`.
+fn to_rbool(x: Option<bool>) -> Rbool {
+    x.map_or(Rbool::na(), Rbool::from)
+}
+
+/// (can_be_unimodal, can_be_bimodal, j_shape_low, j_shape_high) — exactly one
+/// row. Each is `NA` if no such sample was found in a partial search.
+fn modality_conclusion_to_robj(ms: &ModalityShapes) -> Robj {
     data_frame!(
-        can_be_unimodal = vec![mc.can_be_unimodal],
-        can_be_bimodal  = vec![mc.can_be_bimodal],
-        j_shape_low     = vec![mc.j_shape_low],
-        j_shape_high    = vec![mc.j_shape_high]
+        can_be_unimodal = vec![to_rbool(ms.can_be_unimodal())],
+        can_be_bimodal  = vec![to_rbool(ms.can_be_multimodal())],
+        j_shape_low     = vec![to_rbool(ms.can_be_j_shape_low())],
+        j_shape_high    = vec![to_rbool(ms.can_be_j_shape_high())]
+    )
+    .into()
+}
+
+/// Long format, one row per (class, grid value), like `modality_shapes.parquet`.
+fn modality_shapes_to_robj(ms: &ModalityShapes, values: &[f64]) -> Robj {
+    let (mut class, mut n_samples, mut value, mut count_lo, mut count_hi) =
+        (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new());
+    for b in &ms.bounds {
+        for (i, (&lo, &hi)) in b.count_lo.iter().zip(&b.count_hi).enumerate() {
+            class.push(b.class.as_str());
+            n_samples.push(b.n_samples as f64);
+            value.push(values[i]);
+            count_lo.push(lo);
+            count_hi.push(hi);
+        }
+    }
+    data_frame!(
+        class = class,
+        n_samples = n_samples,
+        value = value,
+        count_lo = count_lo,
+        count_hi = count_hi
+    )
+    .into()
+}
+
+/// One row, same columns as `modality_summary.parquet`.
+fn modality_summary_to_robj(ms: &ModalityShapes) -> Robj {
+    let mut pairs: Vec<(String, Robj)> = vec![
+        ("exhaustive".into(), ms.exhaustive.into()),
+        ("n_scanned".into(), (ms.n_scanned as f64).into()),
+        ("min_prominence".into(), ms.min_prominence.into()),
+        ("deficit_min".into(), (ms.deficit_min as i32).into()),
+        ("deficit_mean".into(), ms.deficit_mean.into()),
+        ("deficit_max".into(), (ms.deficit_max as i32).into()),
+    ];
+    for class in ShapeClass::all() {
+        pairs.push((format!("n_{}", class.as_str()), (ms.n_of(class) as f64).into()));
+    }
+    for class in ShapeClass::all() {
+        let n = ms.band_n_per_class[class as usize] as f64;
+        pairs.push((format!("band_n_{}", class.as_str()), n.into()));
+    }
+    as_data_frame(List::from_pairs(pairs).into(), 1)
+}
+
+/// One row per (rung, class), same columns as `modality_prominence.parquet`.
+fn modality_prominence_to_robj(ms: &ModalityShapes) -> Robj {
+    let (mut prom, mut counts, mut primary, mut class, mut n_samples) =
+        (Vec::new(), Vec::new(), Vec::new(), Vec::new(), Vec::new());
+    for rung in &ms.ladder {
+        for c in ShapeClass::all() {
+            prom.push(rung.min_prominence);
+            counts.push(rung.min_prominence_counts as i32);
+            primary.push(rung.primary);
+            class.push(c.as_str());
+            n_samples.push(rung.n_of(c) as f64);
+        }
+    }
+    data_frame!(
+        min_prominence = prom,
+        min_prominence_counts = counts,
+        primary = primary,
+        class = class,
+        n_samples = n_samples
     )
     .into()
 }
 
 /// Helper function to convert FrequencyTable to R data frame
-/// The frequency table now includes a 'samples' column as the first column
+/// The frequency table includes a 'samples' column as the first column
 fn frequency_table_to_robj(freq_table: &closure_core::FrequencyTable) -> Robj {
-    // Create a data frame with columns: samples, value, f_count, f_relative
     let df = data_frame!(
         samples = freq_table.samples_group().to_vec(),
         value = freq_table.value().to_vec(),
-        f_count = freq_table.f_count().to_vec(),
+        f_expected = freq_table.f_expected().to_vec(),
+        f_representative = freq_table.f_representative().to_vec(),
         f_relative = freq_table.f_relative().to_vec()
     );
 
@@ -209,8 +270,8 @@ fn parse_restrict_min(robj: &Robj) -> Result<RestrictionsOption> {
 /// Callers can extend the returned vector before building the final list.
 fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, Robj)> {
     let metrics_main: Robj = data_frame!(
-        samples_all = rl.metrics_main.samples_all as f64,
-        values_all = rl.metrics_main.values_all as f64
+        samples_all = rl.metrics_main.samples_all,
+        values_all = rl.metrics_main.values_all
     )
     .into();
 
@@ -227,56 +288,49 @@ fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, R
     )
     .into();
 
-    let frequency = frequency_table_to_robj(&rl.frequency);
-    let frequency_dist = frequency_dist_to_robj(&rl.frequency_dist);
-    let modality_counts = modality_counts_to_robj(&rl.modality_counts);
-    let modality_pairs = modality_pairs_to_robj(&rl.modality_pairs);
-    let modality_conclusion = modality_conclusion_to_robj(&rl.modality_conclusion);
-    let results = results_table_to_robj(&rl.results);
+    let ms = &rl.modality_shapes;
 
     vec![
         ("metrics_main", metrics_main),
         ("metrics_horns", metrics_horns),
-        ("frequency", frequency),
-        ("frequency_dist", frequency_dist),
-        ("modality_counts", modality_counts),
-        ("modality_pairs", modality_pairs),
-        ("modality_conclusion", modality_conclusion),
-        ("results", results),
+        ("frequency", frequency_table_to_robj(&rl.frequency)),
+        ("frequency_dist", frequency_dist_to_robj(&rl.frequency_dist)),
+        ("modality_counts", modality_counts_to_robj(&rl.modality_counts)),
+        ("modality_pairs", modality_pairs_to_robj(&rl.modality_pairs)),
+        ("modality_conclusion", modality_conclusion_to_robj(ms)),
+        (
+            "modality_shapes",
+            modality_shapes_to_robj(ms, rl.results.counts.grid().values()),
+        ),
+        ("modality_summary", modality_summary_to_robj(ms)),
+        ("modality_prominence", modality_prominence_to_robj(ms)),
+        ("results", results_table_to_robj(&rl.results)),
     ]
 }
 
-/// Helper function to convert ResultsTable to R list
-/// Returns a simple list that can be converted to a data frame on the R side
+/// Convert ResultsTable to an R data frame with `id`, one integer count column
+/// per scale value (named like `v1`, `v1_5`, `vn2`, as in counts.parquet), and
+/// `horns`. The counts encode each sample losslessly because samples are
+/// sorted, so R holds k + 2 vectors instead of one vector per sample.
 fn results_table_to_robj(results_table: &closure_core::ResultsTable<i32>) -> Robj {
-    // Clone the id vector (Vec<f64>) for R compatibility
-    let id_vec: Vec<f64> = results_table.id.clone();
+    let counts = &results_table.counts;
+    let k = counts.k();
+    let flat = counts.as_flat();
 
-    // Convert each sample to an R integer vector and collect into a list
-    let samples_robjs: Vec<Robj> = results_table
-        .sample
-        .iter()
-        .map(|sample| {
-            // Each sample becomes an R integer vector
-            let sample_clone: Vec<i32> = sample.clone();
-            sample_clone.into_robj()
-        })
-        .collect();
+    let mut pairs: Vec<(&str, Robj)> = Vec::with_capacity(k + 2);
+    pairs.push(("id", Robj::from(&results_table.id)));
+    for (col, name) in counts.grid().column_names().iter().enumerate() {
+        let column: Robj = flat
+            .iter()
+            .skip(col)
+            .step_by(k)
+            .map(|&c| c as i32)
+            .collect_robj();
+        pairs.push((name.as_str(), column));
+    }
+    pairs.push(("horns", Robj::from(&results_table.horns)));
 
-    // Create a list of samples (each element is a vector)
-    let samples_list: Robj = samples_robjs.into_robj();
-
-    // Get the horns values as a numeric vector
-    let horns_vec = results_table.horns.clone();
-
-    // Build a data frame with id, sample (list-column), and horns
-    let n_rows = id_vec.len();
-    let mut df: Robj = list!(id = id_vec, sample = samples_list, horns = horns_vec).into();
-    df.set_attrib("class", "data.frame").unwrap();
-    df.set_attrib("row.names", (1..=n_rows as i32).collect::<Vec<i32>>())
-        .unwrap();
-
-    df
+    as_data_frame(List::from_pairs(pairs).into(), results_table.len())
 }
 
 #[extendr]
@@ -289,7 +343,9 @@ fn count_closure_combinations(
     rounding_error_mean: f64,
     rounding_error_sd: f64,
 ) -> Robj {
-    let count = closure_count(
+    // Invalid input is an error, not a count of 0; report it the way
+    // `create_combinations()` does.
+    match closure_count(
         mean,
         sd,
         n,
@@ -297,16 +353,10 @@ fn count_closure_combinations(
         scale_max,
         rounding_error_mean,
         rounding_error_sd,
-    );
-
-    Robj::from(count)
-}
-
-#[extendr]
-fn create_empty_results(scale_min: i32, scale_max: i32) -> Robj {
-    let empty = ResultListFromMeanSdN::empty(scale_min, scale_max);
-    let pairs = result_list_to_pairs(&empty);
-    Robj::from(List::from_pairs(pairs))
+    ) {
+        Ok(count) => Robj::from(count),
+        Err(e) => Robj::from(format!("CLOSURE error: {}", e)),
+    }
 }
 
 #[extendr]
@@ -325,11 +375,22 @@ fn create_combinations(
     write: Robj,
     stop_after: Option<usize>,
 ) -> Robj {
-    // Validate and parse SPRITE-specific parameters
     let technique_upper = technique.to_uppercase();
 
-    let (restrict_exact_parsed, restrict_min_parsed) = if technique_upper == "SPRITE" {
-        // Parse restrictions for SPRITE
+    if technique_upper != "CLOSURE" && technique_upper != "SPRITE" {
+        return Robj::from(format!(
+            "Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'",
+            technique
+        ));
+    }
+
+    // Validate and parse SPRITE-specific parameters
+    let (items_val, restrict_exact_parsed, restrict_min_parsed) = if technique_upper == "SPRITE"
+    {
+        let Some(items_val) = items else {
+            return Robj::from("Error: items is required for SPRITE technique");
+        };
+
         let exact = match parse_restrict_exact(&restrict_exact) {
             Ok(e) => e,
             Err(e) => return Robj::from(format!("Error parsing restrict_exact: {}", e)),
@@ -340,9 +401,9 @@ fn create_combinations(
             Err(e) => return Robj::from(format!("Error parsing restrict_min: {}", e)),
         };
 
-        (exact, minimum)
+        (items_val, exact, minimum)
     } else {
-        (None, RestrictionsOption::Null)
+        (1, None, RestrictionsOption::Null)
     };
 
     // Writing mode
@@ -356,8 +417,8 @@ fn create_combinations(
         };
 
         // Use streaming mode - writes directly to disk without keeping results in memory
-        let result = match technique_upper.as_str() {
-            "CLOSURE" => closure_parallel_streaming(
+        let result = if technique_upper == "CLOSURE" {
+            closure_parallel_streaming(
                 mean,
                 sd,
                 n,
@@ -365,48 +426,32 @@ fn create_combinations(
                 scale_max,
                 rounding_error_mean,
                 rounding_error_sd,
-                1,
+                items_val,
                 streaming_config,
                 stop_after,
-            ),
-            "SPRITE" => {
-                let items_val = items
-                    .ok_or_else(|| {
-                        return format!("items is required for SPRITE technique");
-                    })
-                    .unwrap_or_else(|_| {
-                        // Return error if items is missing
-                        return 2; // Default fallback
-                    });
-
-                sprite_parallel_streaming(
-                    mean,
-                    sd,
-                    n,
-                    scale_min,
-                    scale_max,
-                    rounding_error_mean,
-                    rounding_error_sd,
-                    items_val,
-                    restrict_exact_parsed,
-                    restrict_min_parsed,
-                    streaming_config,
-                    stop_after,
-                )
-            }
-            _ => {
-                return Robj::from(format!(
-                    "Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'",
-                    technique
-                ));
-            }
+            )
+        } else {
+            sprite_parallel_streaming(
+                mean,
+                sd,
+                n,
+                scale_min,
+                scale_max,
+                rounding_error_mean,
+                rounding_error_sd,
+                items_val,
+                restrict_exact_parsed,
+                restrict_min_parsed,
+                streaming_config,
+                stop_after,
+            )
         };
 
         // Return information about the streaming operation as an R list
         let result = match result {
             Ok(r) => r,
             Err(e) => {
-                return Robj::from(format!("Streaming error: {:?}", e));
+                return Robj::from(format!("Streaming error: {}", e));
             }
         };
         let result_list = list!(
@@ -419,63 +464,44 @@ fn create_combinations(
     }
 
     // Default mode: use parallel without writing to disk
-    let closure_results = match technique_upper.as_str() {
-        "CLOSURE" => {
-            match closure_parallel(
-                mean,
-                sd,
-                n,
-                scale_min,
-                scale_max,
-                rounding_error_mean,
-                rounding_error_sd,
-                1,
-                None, // No parquet config - just return results in memory
-                stop_after,
-            ) {
-                Ok(results) => results,
-                Err(e) => {
-                    return Robj::from(format!("CLOSURE error: {:?}", e));
-                }
-            }
-        }
-        "SPRITE" => {
-            let items_val = match items {
-                Some(val) => val,
-                None => {
-                    return Robj::from("Error: items is required for SPRITE technique");
-                }
-            };
+    let results = if technique_upper == "CLOSURE" {
+        closure_parallel(
+            mean,
+            sd,
+            n,
+            scale_min,
+            scale_max,
+            rounding_error_mean,
+            rounding_error_sd,
+            items_val,
+            None, // No parquet config - just return results in memory
+            stop_after,
+        )
+    } else {
+        sprite_parallel(
+            mean,
+            sd,
+            n,
+            scale_min,
+            scale_max,
+            rounding_error_mean,
+            rounding_error_sd,
+            items_val,
+            restrict_exact_parsed,
+            restrict_min_parsed,
+            None, // No parquet config - just return results in memory
+            stop_after,
+        )
+    };
 
-            match sprite_parallel(
-                mean,
-                sd,
-                n,
-                scale_min,
-                scale_max,
-                rounding_error_mean,
-                rounding_error_sd,
-                items_val,
-                restrict_exact_parsed,
-                restrict_min_parsed,
-                None, // No parquet config - just return results in memory
-                stop_after,
-            ) {
-                Ok(results) => results,
-                Err(e) => {
-                    return Robj::from(format!("SPRITE error: {:?}", e));
-                }
-            }
-        }
-        _ => {
-            return Robj::from(format!(
-                "Unknown technique: {}. Must be 'CLOSURE' or 'SPRITE'",
-                technique
-            ));
+    let results = match results {
+        Ok(results) => results,
+        Err(e) => {
+            return Robj::from(format!("{} error: {}", technique_upper, e));
         }
     };
 
-    let mut pairs = result_list_to_pairs(&closure_results);
+    let mut pairs = result_list_to_pairs(&results);
     pairs.push(("streaming_mode", Robj::from(false)));
     Robj::from(List::from_pairs(pairs))
 }
@@ -486,6 +512,5 @@ fn create_combinations(
 extendr_module! {
     mod unsum;
     fn create_combinations;
-    fn create_empty_results;
     fn count_closure_combinations;
 }

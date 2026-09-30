@@ -23,13 +23,11 @@ write_basic <- function(data, path, technique) {
     )
   }
 
-  if (
-    !any(names(data) == "results") ||
-      !identical(names(data$results), c("id", "sample", "horns"))
-  ) {
+  if (!has_counts(data)) {
     abort_in_export(
       "{technique} list must include a full `results` tibble.",
-      "!" = "Results include samples and horns index values."
+      "!" = "Results include the samples (as counts of each scale value) \
+      and horns index values."
     )
   }
 
@@ -55,11 +53,13 @@ write_basic <- function(data, path, technique) {
   data_names <- names(data)
 
   # Write the small tibbles: those persisted as a Parquet file of their own.
-  # "results" is split into horns.parquet and sample.parquet further below, and
-  # the modality_* tibbles and "directory" are not persisted at all, so that
-  # `write_basic()` produces the same files as streaming to disk from Rust.
+  # "results" is written further below, and "modality_conclusion" and
+  # "directory" are not persisted at all, so that `write_basic()` produces the
+  # same files as streaming to disk from Rust.
   names_on_disk <- FILES_EXPECTED |>
-    setdiff(c("info.md", "horns.parquet", "sample.parquet")) |>
+    setdiff(c(
+      "info.md", "counts.parquet", "scale_values.parquet", "format.parquet"
+    )) |>
     sub("\\.parquet$", "", x = _)
 
   for (name in intersect(data_names, names_on_disk)) {
@@ -69,19 +69,49 @@ write_basic <- function(data, path, technique) {
     )
   }
 
-  # Write the horns values separately; they are stored as a column, not a tibble
+  # Write the results in closure-core's counts layout: counts.parquet has the
+  # count columns and `horns` (the ID is the row number), scale_values.parquet
+  # maps the count columns to scale values, and format.parquet describes both.
   nanoparquet::write_parquet(
-    data$results["horns"],
-    file = paste0(path_new_dir, "horns.parquet")
+    data$results[-1L],
+    file = paste0(path_new_dir, "counts.parquet")
   )
 
-  # The samples are also a column, but before writing them, they need to be
-  # transformed into the same format used for streaming results to disk
-  data$results$sample |>
-    as_wide_n_tibble() |>
-    nanoparquet::write_parquet(
-      file = paste0(path_new_dir, "sample.parquet")
-    )
+  values <- grid_values(data)
+  grid_length <- length(values)
+  scale_range <- data$inputs$scale_max - data$inputs$scale_min
+
+  nanoparquet::write_parquet(
+    tibble::new_tibble(
+      list(
+        index = seq_len(grid_length) - 1L,
+        column = count_col_names(values),
+        value = values,
+        value_hundredths = as.integer(round(values * 100))
+      ),
+      nrow = grid_length
+    ),
+    file = paste0(path_new_dir, "scale_values.parquet")
+  )
+
+  nanoparquet::write_parquet(
+    tibble::new_tibble(
+      list(
+        format = "counts",
+        version = 2L,
+        technique = technique,
+        n = as.integer(data$inputs$n),
+        k = grid_length,
+        items = if (scale_range == 0) 1L else as.integer((grid_length - 1) / scale_range),
+        scale_min = as.integer(data$inputs$scale_min),
+        scale_max = as.integer(data$inputs$scale_max),
+        # CLOSURE samples are in whole scale points, SPRITE's in hundredths
+        sample_scale_factor = if (technique == "CLOSURE") 100L else 1L
+      ),
+      nrow = 1L
+    ),
+    file = paste0(path_new_dir, "format.parquet")
+  )
 
   # Create info.md and issue an alert. Leave an empty line before.
   message()
@@ -153,6 +183,36 @@ read_basic <- function(
 
   files_actual <- dir(path)
 
+  # Error if the folder contains other files than those needed, or if it does
+  # not contain all of those needed. A bespoke message is shown in each case.
+  # This also holds for empty results: closure-core writes every file anyway.
+  if (!setequal(files_actual, FILES_EXPECTED)) {
+    msg_files_expected <- sort(FILES_EXPECTED)
+    files_actual <- sort(files_actual)
+
+    offenders_missing <- setdiff(msg_files_expected, files_actual)
+    offenders_unexpected <- setdiff(files_actual, msg_files_expected)
+
+    msg_missing <- if (length(offenders_missing) == 0) {
+      NULL
+    } else {
+      c("x" = "Missing files: {offenders_missing}")
+    }
+
+    msg_not_needed <- if (length(offenders_unexpected) == 0) {
+      NULL
+    } else {
+      c("x" = "Unexpected files: {offenders_unexpected}")
+    }
+
+    abort_in_export(
+      "Folder must contain all correct files (and no others).",
+      "!" = "Expected files: {msg_files_expected}",
+      msg_missing,
+      msg_not_needed
+    )
+  }
+
   # See comment right below
   parquet_opts <- nanoparquet::parquet_options(
     class = c("tbl_df", "tbl")
@@ -180,113 +240,51 @@ read_basic <- function(
     nrow = 1L
   )
 
-  # Error if the folder contains other files than those needed, or if it does
-  # not contain all of those needed. A bespoke message is shown in each case.
-  if (!setequal(files_actual, FILES_EXPECTED)) {
-    sample_meta <- path |>
-      paste0(slash, "sample.parquet") |>
-      nanoparquet::read_parquet_metadata(options = parquet_opts)
+  # Check that the files read from disk belong to the folder: its name must be
+  # the one that `prepare_folder_mean_sd_n()` or `write_basic()` derive from the
+  # inputs. (Reconstructing the name rather than parsing it keeps negative
+  # numbers, whose minus sign is also the separator, from breaking the check.)
+  name_expected <- inputs |>
+    paste(collapse = "-") |>
+    gsub("\\.", "_", x = _)
 
-    # Escape hatch for empty results
-    if (sample_meta$file_meta_data$num_rows == 0) {
-      out_empty <- c(
-        list(inputs = inputs),
-
-        inputs$scale_min |>
-          create_empty_results(inputs$scale_max) |>
-          lapply(tibble::as_tibble),
-
-        list(directory = directory)
-      )
-
-      check_generator_output(out_empty, technique, allow_empty = TRUE)
-
-      return(out_empty)
-    }
-
-    # Error path
-    msg_files_expected <- sort(FILES_EXPECTED)
-    files_actual <- sort(files_actual)
-
-    offenders_missing <- setdiff(msg_files_expected, files_actual)
-    offenders_unexpected <- setdiff(files_actual, msg_files_expected)
-
-    msg_missing <- if (length(offenders_missing) == 0) {
-      NULL
-    } else {
-      c("x" = "Missing files: {offenders_missing}")
-    }
-
-    msg_not_needed <- if (length(offenders_unexpected) == 0) {
-      NULL
-    } else {
-      c("x" = "Unexpected files: {offenders_unexpected}")
-    }
-
+  if (!identical(name_dir, name_expected)) {
     abort_in_export(
-      "Folder must contain all correct files (and no others).",
-      "!" = "Expected files: {msg_files_expected}",
-      msg_missing,
-      msg_not_needed
+      "Inputs in inputs.parquet must match those in the folder's name.",
+      "x" = "Folder name: {.val {name_dir}}",
+      "x" = "Expected from inputs.parquet: {.val {name_expected}}"
     )
   }
 
   # Read all the small files into a list. At this point, `out` corresponds to
   # `include == "stats_only"` because all of the additions further below
   # correspond to other variants of `include`.
+  modality_summary <- "modality_summary" |> read_file()
+
   out <- list(
     inputs = inputs,
     metrics_main = "metrics_main" |> read_file(),
     metrics_horns = "metrics_horns" |> read_file(),
+    modality_counts = "modality_counts" |> read_file(),
+    modality_pairs = "modality_pairs" |> read_file(),
+    modality_conclusion = modality_conclusion_from_summary(modality_summary),
+    modality_shapes = "modality_shapes" |> read_file(),
+    modality_summary = modality_summary,
+    modality_prominence = "modality_prominence" |> read_file(),
     frequency = "frequency" |> read_file(),
     frequency_dist = "frequency_dist" |> read_file(),
     directory = directory
   )
 
-  # Parse mean and SD from the folder name
-  mean_sd_str <- name_dir |>
-    strsplit("-") |>
-    call_on(function(x) x[[1]][2:3]) |>
-    gsub("_", "\\.", x = _)
-
-  # Check that files read from disk are correct
-  if (
-    !near(as.numeric(mean_sd_str[1]), as.numeric(out$inputs$mean)) ||
-      !near(as.numeric(mean_sd_str[2]), as.numeric(out$inputs$sd))
-  ) {
-    abort_in_export(
-      "Mean and SD in inputs.parquet must match those in the folder's name."
-    )
-  }
-
-  tryCatch(
-    {
-      out$inputs$mean <- mean_sd_str[1]
-      out$inputs$sd <- mean_sd_str[2]
-    },
-    error = function(e) {
-      abort_in_export("\"inputs\" must have \"mean\" and \"sd\" columns.")
-    }
-  )
-
-  tryCatch(
-    {
-      out$frequency$value <- as.integer(out$frequency$value)
-    },
-    error = function(e) {
-      abort_in_export("\"frequency\" must have a \"value\" column.")
-    }
-  )
-
   n_samples_all <- out$metrics_main$samples_all
-  path_horns <- paste0(path, slash, "horns.parquet")
+  path_counts <- paste0(path, slash, "counts.parquet")
 
   # Adjudicate which additional parts of the results to read from disk, if any
   if (include == "stats_and_horns") {
     out$results <- tibble::new_tibble(
       x = list(
         id = as.double(seq_len(n_samples_all)),
-        horns = nanoparquet::read_parquet(path_horns)[[1]]
+        horns = nanoparquet::read_parquet(path_counts, col_select = "horns")[[1]]
       ),
       nrow = n_samples_all
     )
@@ -297,40 +295,31 @@ read_basic <- function(
       "x" = "Number of samples is: {n_samples_all}"
     )
   } else if (include %in% c("all", "capped_error")) {
-    # Read in the results separately. This requires transposing the samples via
-    # `t()` because of the way they are stored on disk, which in turn is because
-    # of the special requirements imposed by streaming in closure-core. Also,
-    # read the horns values, add an ID column, and construct the final tibble.
+    # Each sample is stored as the count of each scale value, one column per
+    # value, followed by the horns index. The counts are unsigned integers on
+    # disk, so convert them to R integers; then prepend the ID numbers.
+    counts <- path_counts |>
+      nanoparquet::read_parquet() |>
+      tryCatch(
+        error = function(e) {
+          abort_in_export(
+            "Reading counts.parquet from disk failed.",
+            "x" = "Original error:",
+            "x" = "{e}",
+            "i" = "If memory is lacking, try\
+              `include = \"stats_and_horns\"`.\
+              In case even this takes up too much memory, use\
+              `include = \"stats_only\"`."
+          )
+        }
+      )
+
+    counts <- unclass(counts)
+    is_count <- names(counts) != "horns"
+    counts[is_count] <- lapply(counts[is_count], as.integer)
+
     out$results <- tibble::new_tibble(
-      x = list(
-        # ID numbers (1 / 3)
-        id = as.double(seq_len(n_samples_all)),
-
-        # Result samples (2 / 3)
-        sample = path |>
-          paste0(slash, "sample.parquet") |>
-          nanoparquet::read_parquet() |>
-          t() |>
-          tibble::as_tibble(.name_repair = "minimal") |>
-          unclass() |>
-          unname() |>
-          tryCatch(
-            error = function(e) {
-              abort_in_export(
-                "Reading sample.parquet from disk failed.",
-                "x" = "Original error:",
-                "x" = "{e}",
-                "i" = "If memory is lacking, try\
-                  `include = \"stats_and_horns\"`.\
-                  In case even this takes up too much memory, use\
-                  `include = \"stats_only\"`."
-              )
-            }
-          ),
-
-        # Horns index values (3 / 3)
-        horns = nanoparquet::read_parquet(path_horns)[[1]]
-      ),
+      x = c(list(id = as.double(seq_len(n_samples_all))), counts),
       nrow = n_samples_all
     )
   } else if (include != "stats_only") {
@@ -345,7 +334,7 @@ read_basic <- function(
 
   # Final check -- is the reconstructed list correct?
   tryCatch(
-    check_generator_output(out, technique),
+    check_generator_output(out, technique, allow_empty = TRUE),
     error = function(e) {
       abort_in_export(
         "Something went wrong when reading from disk.",
@@ -356,4 +345,34 @@ read_basic <- function(
   )
 
   out
+}
+
+
+# Rebuild the `modality_conclusion` tibble from `modality_summary`, which is
+# what closure-core persists. A shape is possible (`TRUE`) if any sample has it
+# at some mode threshold in the prominence band, impossible (`FALSE`) if none
+# has it and the search was exhaustive, and unknown (`NA`) otherwise. This
+# mirrors `ModalityShapes::can_be()` in closure-core.
+modality_conclusion_from_summary <- function(summary) {
+  can_be <- function(classes) {
+    if (sum(unlist(summary[paste0("band_n_", classes)])) > 0) {
+      TRUE
+    } else if (isTRUE(summary$exhaustive)) {
+      FALSE
+    } else {
+      NA
+    }
+  }
+
+  tibble::new_tibble(
+    list(
+      can_be_unimodal = can_be(
+        c("one_mode_interior", "one_mode_low_edge", "one_mode_high_edge")
+      ),
+      can_be_bimodal = can_be(c("two_modes", "three_or_more_modes")),
+      j_shape_low = can_be("one_mode_low_edge"),
+      j_shape_high = can_be("one_mode_high_edge")
+    ),
+    nrow = 1L
+  )
 }

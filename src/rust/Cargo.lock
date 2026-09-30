@@ -360,7 +360,7 @@ dependencies = [
 [[package]]
 name = "closure-core"
 version = "1.0.0"
-source = "git+https://github.com/lhdjung/closure-core.git?branch=frequency-details#1fe8f950c5bf2dbbc1fe8721a8a9b595ac90e3da"
+source = "git+https://github.com/lhdjung/closure-core.git?branch=optimize#5d63b62ba44cdea500d0c451f4df736eaf82a885"
 dependencies = [
  "arrow",
  "num",
@@ -1217,7 +1217,6 @@ version = "0.1.0"
 dependencies = [
  "closure-core",
  "extendr-api",
- "rand",
 ]
 
 [[package]]

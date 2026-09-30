@@ -77,7 +77,7 @@ data
 
     -   `horns_max`, conversely, is about the subset of samples with the highest horns index.
 
--   `results` stores all the samples that CLOSURE found (`sample`) and the corresponding horns index values (`horns`). Each has a unique number (`id`).
+-   `results` stores all the samples that CLOSURE found and the corresponding horns index values (`horns`). Each has a unique number (`id`). A sample is stored as the number of times each scale value occurs in it: `v1` counts the 1s, `v2` the 2s, and so on. This describes each sample completely because the order of values doesn't matter, and it takes up much less memory than listing every value.
 
 See `closure_generate()` for more details.
 

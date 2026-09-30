@@ -19,7 +19,7 @@ is_symmetric_basic <- function(
   data,
   technique,
   tolerance = .Machine$double.eps^0.5,
-  metric = c("f_count", "f_relative")
+  metric = c("f_expected", "f_representative", "f_relative")
 ) {
   check_generator_output(data, technique, allow_empty = TRUE)
   metric <- arg_match_in_export(metric)

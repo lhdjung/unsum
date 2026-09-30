@@ -6,7 +6,7 @@ NULL
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 # fmt: skip
 utils::globalVariables(c(
-  ".", ".data", "data", "directory", "double.eps", "ecdf", "f_count",
+  ".", ".data", "data", "directory", "double.eps", "ecdf", "f_expected",
   "f_relative", "file.sep", "file_meta_data", "formals_final", "frequency",
   "frequency_dist", "group_frequency_table", "hjust", "include", "inputs",
   "label", "lower", "median", "metrics_horns", "metrics_main",
@@ -133,7 +133,6 @@ check_generator_output <- function(
   if (!S7::S7_inherits(data, ResultListFromMeanSdN)) {
     top_level_is_correct <-
       is.list(data) &&
-      any(c(6L, 7L, 9L, 10L) == length(data)) &&
       list(names(data)) %in% TIBBLE_NAMES_POSSIBLE_FORMS &&
       inherits(data$inputs, paste0(lowtech, "_generate"))
 
@@ -211,18 +210,31 @@ check_generator_output <- function(
     )
   )
 
-  # Length of the scale implied by the inputs. In `data$frequency`, each
-  # `samples` category will have this very length. Empty results will only have
-  # one such category, "all".
-  scale_length <- data$inputs$scale_max - data$inputs$scale_min + 1
+  # Number of scale values that the results are tabulated on (the "grid"). In
+  # `data$frequency`, each of the three `samples` categories has this length.
+  # It is `scale_max - scale_min + 1` for CLOSURE. With multi-item SPRITE, the
+  # grid also has the fractional values in between, so the number of steps from
+  # `scale_min` to `scale_max` is a multiple of `scale_max - scale_min`.
+  grid_length <- length(grid_values(data))
+  scale_range <- data$inputs$scale_max - data$inputs$scale_min
+
+  grid_is_correct <- if (scale_range == 0 || technique == "CLOSURE") {
+    grid_length == scale_range + 1
+  } else {
+    grid_length > scale_range && is_whole_number((grid_length - 1) / scale_range)
+  }
+
+  if (!grid_is_correct) {
+    abort_in_export(
+      "{technique} data must not be changed before passing them to other \
+      `{lowtech}_*()` functions.",
+      "!" = "Specifically, `frequency` must have one row per scale value in \
+      each `samples` group."
+    )
+  }
 
   # (Intermezzo to check for empty results)
-  if (
-    !allow_empty &&
-      scale_length == nrow(data$frequency) &&
-      all(is.nan(data$frequency$f_count)) &&
-      all(is.nan(data$frequency$f_relative))
-  ) {
+  if (!allow_empty && all(is.nan(data$frequency$f_expected))) {
     abort_in_export(
       "Results are empty; there is nothing to process any further."
     )
@@ -231,12 +243,13 @@ check_generator_output <- function(
   # Frequency (4 / 6)
   check_component_tibble(
     x = data$frequency,
-    dims = c(3 * scale_length, 4),
+    dims = c(3 * grid_length, 5),
     technique = technique,
     col_names_types = list(
       "samples" = "character",
-      "value" = "integer",
-      "f_count" = "double",
+      "value" = "double",
+      "f_expected" = "double",
+      "f_representative" = "double",
       "f_relative" = "double"
     )
   )
@@ -249,23 +262,23 @@ check_generator_output <- function(
     dims = NULL,
     technique = technique,
     col_names_types = list(
-      "value" = "integer",
+      "value" = "double",
       "count" = "integer",
       "n_samples" = "integer"
     )
   )
 
-  # Modality tibbles — only present for in-memory results (not disk reads)
-  if (
-    !S7::S7_inherits(data, ResultListFromMeanSdN) &&
-      any(names(data) == "modality_counts")
-  ) {
+  # Modality tibbles. With empty results, those that describe the samples'
+  # counts have no rows.
+  if (!S7::S7_inherits(data, ResultListFromMeanSdN)) {
+    modality_rows <- if (data$metrics_main$samples_all == 0) 0L else grid_length
+
     check_component_tibble(
       x = data$modality_counts,
-      dims = c(scale_length, 3L),
+      dims = c(modality_rows, 3L),
       technique = technique,
       col_names_types = list(
-        "value" = "integer",
+        "value" = "double",
         "count_lo" = "integer",
         "count_hi" = "integer"
       )
@@ -273,11 +286,11 @@ check_generator_output <- function(
 
     check_component_tibble(
       x = data$modality_pairs,
-      dims = c(scale_length - 1L, 4L),
+      dims = c(max(modality_rows - 1L, 0L), 4L),
       technique = technique,
       col_names_types = list(
-        "value_a" = "integer",
-        "value_b" = "integer",
+        "value_a" = "double",
+        "value_b" = "double",
         "resolved" = "logical",
         "a_greater" = "logical"
       )
@@ -292,6 +305,40 @@ check_generator_output <- function(
         "can_be_bimodal" = "logical",
         "j_shape_low" = "logical",
         "j_shape_high" = "logical"
+      )
+    )
+
+    # Classes without samples have no rows, so the row count is unknown
+    check_component_tibble(
+      x = data$modality_shapes,
+      dims = NULL,
+      technique = technique,
+      col_names_types = list(
+        "class" = "character",
+        "n_samples" = "double",
+        "value" = "double",
+        "count_lo" = "integer",
+        "count_hi" = "integer"
+      )
+    )
+
+    check_component_tibble(
+      x = data$modality_summary,
+      dims = c(1L, 18L),
+      technique = technique,
+      col_names_types = MODALITY_SUMMARY_TYPES
+    )
+
+    check_component_tibble(
+      x = data$modality_prominence,
+      dims = NULL,
+      technique = technique,
+      col_names_types = list(
+        "min_prominence" = "double",
+        "min_prominence_counts" = "integer",
+        "primary" = "logical",
+        "class" = "character",
+        "n_samples" = "double"
       )
     )
   }
@@ -338,7 +385,7 @@ check_generator_output <- function(
       )
     }
 
-    # Check for "results" tibble without a "sample" column
+    # Check for "results" tibble without count columns
     if (reading_class == "stats_and_horns") {
       check_component_tibble(
         x = data$results,
@@ -356,16 +403,21 @@ check_generator_output <- function(
   # `closure_generate()` or by a reading function with a setting that makes for
   # equivalent "results"
   if (!reading_class_exists || any(reading_class == "capped_error")) {
-    # Results (6 / 6)
+    # Results (6 / 6): one count column per scale value between `id` and
+    # `horns`, named as in closure-core's counts.parquet
+    col_names_types <- c(
+      list("id" = "double"),
+      grid_values(data) |>
+        count_col_names() |>
+        call_on(\(x) `names<-`(as.list(rep("integer", length(x))), x)),
+      list("horns" = "double")
+    )
+
     check_component_tibble(
       x = data$results,
-      dims = c(data$metrics_main$samples_all, 3L),
+      dims = c(data$metrics_main$samples_all, length(col_names_types)),
       technique = technique,
-      col_names_types = list(
-        "id" = "double",
-        "sample" = "list",
-        "horns" = "double"
-      )
+      col_names_types = col_names_types
     )
   }
 
@@ -382,7 +434,6 @@ check_generator_output <- function(
   # Need `isTRUE()` because `freqs_sum_up` can be `NA` but the condition must
   # still be met
   if (!isTRUE(freqs_sum_up)) {
-    f_sum_count <- sum(data$frequency$f_count)
     data_is_empty <- is.nan(f_sum_relative)
 
     # Empty data might be allowed, depending on the caller
@@ -400,7 +451,7 @@ check_generator_output <- function(
 
     abort_in_export(
       "The `f_relative` column in `frequency` must sum up to 1 \
-        (or 0, if `f_count` does).",
+        (or 0, if `f_expected` does).",
       msg_actual_sum
     )
   }
@@ -631,8 +682,12 @@ check_frequency_vector <- function(x, sum_relative = 1) {
 # Pipe helper that allows for calling primitives, anonymous functions, and
 # function factories within a pipe workflow. As a toy example: `object |>
 # call_on(function(x) x[x > 10])`
-call_on <- function(.x, .f, ...) {
-  .f(.x, ...)
+call_on <- function(x, f) {
+  if (is.function(f)) {
+    f(x)
+  } else {
+    cli::cli_abort("can only call functions")
+  }
 }
 
 
@@ -663,13 +718,31 @@ caller_fn_name <- function(n = 1) {
 }
 
 
-# Check whether an S7 object has a specific property, named as a string.
-has_property <- function(x, name) {
-  tryCatch(!is.null(S7::prop(x, name)), error = function(e) FALSE)
+# Specific logic ----------------------------------------------------------
+
+# Given reported numbers as strings (e.g., mean and SD), reconstruct the
+# interval of possible unrounded values and return its center and half-width
+# ("error"). closure-core only accepts a symmetric interval, `x +/- error`, so
+# asymmetric rounding methods like "floor" or "ceiling" require the center of
+# the interval rather than the reported value itself. Where the interval is
+# symmetric around the reported value, that exact value is kept to avoid
+# floating-point drift.
+unround_center_error <- function(x, rounding, threshold) {
+  bounds <- roundwork::unround(
+    x = x,
+    rounding = rounding,
+    threshold = threshold
+  )
+
+  x_num <- as.numeric(x)
+  center <- (bounds$lower + bounds$upper) / 2
+
+  is_symmetric <- near(center, x_num)
+  center[is_symmetric] <- x_num[is_symmetric]
+
+  list(center = center, error = (bounds$upper - bounds$lower) / 2)
 }
 
-
-# Specific logic ----------------------------------------------------------
 
 # Translate "." to the user's working directory. If the path was manually given,
 # `trimws()` removes leading or trailing whitespace, e.g., linebreaks.
@@ -825,25 +898,37 @@ write_final_info_md <- function(path, technique) {
 }
 
 
-# Transform unsum's CLOSURE result lists into the "n"-column format in which
-# `closure_generate()` streams Parquet files to disk (if `path` is specified),
-# and in which `closure_write()` saves Parquet files. This is also the format of
-# the CSV files made by closure-core's test harness or the original Python
-# implementation. Optimized for performance, not readability. As an example,
-# assuming that `data` is `closure_generate()` output, call:
-# `as_wide_n_tibble(data$results$sample)`
-as_wide_n_tibble <- function(samples_all) {
-  n_samples <- length(samples_all)
-  n_final_cols <- length(samples_all[[1]])
+# Scale values that the count columns of `data$results` refer to, in order.
+# With multi-item SPRITE, these include fractional values like 1.5.
+grid_values <- function(data) {
+  data$frequency$value[data$frequency$samples == "all"]
+}
 
-  # Use the numbers from 1 to `n_samples` to name the elements of `samples_all`.
-  # Then, turn the list into a tibble, which is necessary to transpose it using
-  # `t()`. Finally, turn the result into a tibble again, but this time, name the
-  # columns like "n1", "n2", etc.
-  `names<-`(samples_all, seq_len(n_samples)) |>
-    tibble::new_tibble(nrow = n_final_cols) |>
-    t() |>
-    tibble::as_tibble(.name_repair = function(x) paste0("n", seq_along(x)))
+
+# Count columns of `data$results` as an integer matrix: one row per sample, one
+# column per scale value in `grid_values(data)`. Each sample is sorted, so its
+# counts encode it completely; e.g., `rep(grid_values(data), counts[1, ])` is
+# the first sample.
+results_counts <- function(data) {
+  results <- data$results
+  as.matrix(results[-c(1L, ncol(results))])
+}
+
+
+# Does `data$results` have the count columns, not just `id` and `horns`?
+has_counts <- function(data) {
+  !is.null(data$results) && ncol(data$results) > 2L
+}
+
+
+# Names of count columns in closure-core's counts.parquet, given the scale
+# values: `v3` for 3, `v1_5` for 1.5, `v1_33` for 1.33, and `vn2` for -2.
+count_col_names <- function(values) {
+  hundredths <- round(values * 100)
+  whole <- abs(hundredths) %/% 100
+  frac <- abs(hundredths) %% 100
+  frac <- ifelse(frac == 0, "", paste0("_", sub("0$", "", sprintf("%02d", frac))))
+  paste0("v", ifelse(hundredths < 0, "n", ""), whole, frac)
 }
 
 

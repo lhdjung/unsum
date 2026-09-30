@@ -52,29 +52,28 @@ closure_count_all <- function(
   check_single(rounding, "character")
   check_single(threshold, c("double", "integer"))
 
-  mean_num <- as.numeric(mean)
-  sd_num <- as.numeric(sd)
+  check_whole_number(n)
+  check_whole_number(scale_min)
+  check_whole_number(scale_max)
 
-  check_scale(scale_min, scale_max, mean_num)
+  check_scale(scale_min, scale_max, as.numeric(mean))
 
-  mean_sd_unrounded <- roundwork::unround(
+  # See `generate_from_mean_sd_n()` for why the interval centers are used
+  mean_sd_unrounded <- unround_center_error(
     x = c(mean, sd),
     rounding = rounding,
     threshold = threshold
   )
 
-  rounding_error_mean <- mean_num - mean_sd_unrounded$lower[1]
-  rounding_error_sd <- sd_num - mean_sd_unrounded$lower[2]
-
   # Call into the Rust implementation
   count_closure_combinations(
-    mean = mean_num,
-    sd = sd_num,
+    mean = mean_sd_unrounded$center[1],
+    sd = mean_sd_unrounded$center[2],
     n = n,
     scale_min = scale_min,
     scale_max = scale_max,
-    rounding_error_mean = rounding_error_mean,
-    rounding_error_sd = rounding_error_sd
+    rounding_error_mean = mean_sd_unrounded$error[1],
+    rounding_error_sd = mean_sd_unrounded$error[2]
   )
 }
 

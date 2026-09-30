@@ -11,8 +11,8 @@
 #'   uniform distribution within given scale limits. This can be useful as a
 #'   point of reference for `horns()`.
 #'
-#'   These two functions correspond to the `horns` and `horns_uniform` columns
-#'   in [`closure_generate()`].
+#'   These two functions correspond to the `horns` column of `results` and the
+#'   `uniform` column of `metrics_horns` in [`closure_generate()`]'s output.
 #'
 #'   `horns_rescaled()` is a version of `horns()` that  is normalized by scale
 #'   length, such that `0.5` always indicates a uniform distribution,

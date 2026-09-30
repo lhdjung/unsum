@@ -46,8 +46,10 @@ You can use \code{closure_write()} to save the results of
 \code{\link[=closure_generate]{closure_generate()}} on your computer. A message will show the exact
 location.
 
-The data are saved in a new folder as five separate files, one for each
-tibble in \code{closure_generate()}'s output.
+The data are saved in a new folder as separate Parquet files, one for
+each tibble in \code{closure_generate()}'s output. \code{results} is saved as
+counts.parquet, along with scale_values.parquet which maps the count
+columns to scale values.
 
 \code{closure_read()} is the opposite: it reads those files back into R,
 recreating the original CLOSURE list. This is useful for later

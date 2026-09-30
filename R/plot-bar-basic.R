@@ -61,7 +61,7 @@ plot_frequency_bar <- function(
       list(
         samples = rep("all", length(data)),
         value = seq_along(data),
-        f_count = data,
+        f_expected = data,
         f_relative = data / sum(data)
       ),
       nrow = length(data)
@@ -100,16 +100,22 @@ plot_frequency_bar <- function(
       "max" = facet_labels[2L]
     )
 
+    # The bars show the average sample of each group: `f_expected` and its
+    # relative version, `f_relative`
+    cols_bars <- c("samples", "value", "f_expected", "f_relative")
+
     # Save components needed for overlay modes before `data` is overwritten
-    data_frequency_all <- data$frequency[data$frequency$samples == "all", ]
-    data_results <- data$results
-    data_inputs <- data$inputs
+    data_frequency_all <- data$frequency[
+      data$frequency$samples == "all",
+      cols_bars
+    ]
+    data_full <- data
 
     # Zoom in on the frequency table -- the only element of `data` needed here.
     # Filter its rows to only keep those with a specific subset of samples, such
     # as "horns_min" and "horns_max".
     data <- data$frequency
-    data <- data[data$samples %in% frequency_rows_subset, ]
+    data <- data[data$samples %in% frequency_rows_subset, cols_bars]
   }
 
   # Check inputs here because demo plots don't have `samples`
@@ -148,12 +154,12 @@ plot_frequency_bar <- function(
   if (overlay == "none") {
     data_overlay <- NULL
   } else if (overlay == "all_avg") {
-    # Gray background bars: the medoid frequency across all CLOSURE samples
+    # Gray background bars: the average frequency across all CLOSURE samples
     data_overlay <- data_frequency_all
   } else if (need_all_samples) {
     # Build a per-sample frequency table with one row per CLOSURE sample per
-    # scale value. Requires individual sample vectors.
-    if (!"sample" %in% names(data_results)) {
+    # scale value. These are the count columns of `results`.
+    if (!has_counts(data_full)) {
       lowtech <- tolower(technique)
       fn_name_gen <- paste0(lowtech, "_generate")
       fn_name_read <- paste0(lowtech, "_read")
@@ -164,34 +170,22 @@ plot_frequency_bar <- function(
       )
     }
 
-    scale_vals <- seq(data_inputs$scale_min, data_inputs$scale_max)
-    n_scale_vals <- length(scale_vals)
-    scale_min_val <- data_inputs$scale_min
+    # Transpose so that the counts run through the scale values of one sample
+    # before moving on to the next sample
+    counts <- as.vector(t(results_counts(data_full)))
+    n <- data_full$inputs$n
 
-    data_overlay <- do.call(
-      what = rbind,
-      args = lapply(data_results$sample, \(samp) {
-        counts <- tabulate(samp - scale_min_val + 1L, nbins = n_scale_vals)
-        freq <- switch(
+    data_overlay <- tibble::new_tibble(
+      list(
+        value = rep(grid_values(data_full), times = nrow(data_full$results)),
+        frequency = switch(
           format,
-          "relative" = counts / sum(counts),
-          "percent" = 100 * counts / sum(counts),
+          "relative" = counts / n,
+          "percent" = 100 * counts / n,
           as.double(counts)
         )
-
-        if (length(scale_vals) != length(freq)) {
-          cli::cli_abort(c(
-            "Internal error: incongruent lengths.",
-            "x" = "`scale_vals` is length {.val {length(scale_vals)}}.",
-            "x" = "`freq` is length {.val {length(freq)}}."
-          ))
-        }
-
-        tibble::new_tibble(
-          list(value = scale_vals, frequency = freq),
-          nrow = length(freq)
-        )
-      })
+      ),
+      nrow = length(counts)
     )
   } else {
     cli::cli_abort("Internal error: invalid \"overlay\" variant \"{overlay}\".")
@@ -246,7 +240,7 @@ plot_frequency_bar <- function(
     # size of the average sample -- or the total number of values found by the
     # CLOSURE-type technique.
     label_mean_count <- if (samples == "mean") {
-      data$f_count |>
+      data$f_expected |>
         call_on(function(x) sum(x) / n_samples_groups) |>
         call_on(scales::label_number(
           accuracy = 1,
@@ -266,11 +260,11 @@ plot_frequency_bar <- function(
     data$f_relative <- NULL
   } else if (format == "relative") {
     label_y_axis <- "Relative frequency"
-    data$f_count <- NULL
+    data$f_expected <- NULL
   } else if (format == "percent") {
     label_y_axis <- "Percentage of all values"
     data$f_relative <- round(100 * data$f_relative, 2)
-    data$f_count <- NULL
+    data$f_expected <- NULL
   } else {
     cli::cli_abort("Internal error: unhandled `format` type.")
   }
@@ -281,10 +275,10 @@ plot_frequency_bar <- function(
     if (format %in% c("absolute", "absolute_percent")) {
       data_overlay$f_relative <- NULL
     } else if (format == "relative") {
-      data_overlay$f_count <- NULL
+      data_overlay$f_expected <- NULL
     } else if (format == "percent") {
       data_overlay$f_relative <- round(100 * data_overlay$f_relative, 2)
-      data_overlay$f_count <- NULL
+      data_overlay$f_expected <- NULL
     }
   }
 
