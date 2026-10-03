@@ -3,7 +3,7 @@
 # file: standalone-last-export.R
 # last-updated: 2026-10-03
 # license: https://unlicense.org
-# imports: [rlang, cli]
+# imports: [rlang (>= 1.1.0), cli (>= 3.0.0)]
 # ---
 
 # ## Changelog
@@ -12,6 +12,7 @@
 # - Removed the `package_name` argument
 # - Replaced `caller_env_last_export()` by `sys.frame(index_last_export())`
 # - Sped up `arg_match_in_export()`, mostly for an unchanged default
+# - Added version floors for rlang and cli
 #
 # 2026-04-18:
 # - Added `name_last_export()`

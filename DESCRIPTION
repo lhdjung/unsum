@@ -15,12 +15,12 @@ RoxygenNote: 7.3.3
 Depends:
     R (>= 4.2.0)
 Imports:
-    cli,
+    cli (>= 3.0.0),
     ggplot2 (>= 3.4.0),
     ggtext,
     grid,
     nanoparquet,
-    rlang,
+    rlang (>= 1.1.0),
     roundwork,
     S7,
     scales,
