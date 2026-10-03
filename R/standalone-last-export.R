@@ -1,12 +1,18 @@
 # ---
 # repo: lhdjung/unsum
 # file: standalone-last-export.R
-# last-updated: 2026-04-18
+# last-updated: 2026-10-03
 # license: https://unlicense.org
 # imports: [rlang, cli]
 # ---
 
 # ## Changelog
+# 2026-10-03:
+# - Match the user-called function by identity, not by name
+# - Removed the `package_name` argument
+# - Replaced `caller_env_last_export()` by `sys.frame(index_last_export())`
+# - Sped up `arg_match_in_export()`, mostly for an unchanged default
+#
 # 2026-04-18:
 # - Added `name_last_export()`
 
@@ -15,7 +21,7 @@
 abort_in_export <- function(...) {
   cli::cli_abort(
     message = c(...),
-    call = caller_env_last_export(),
+    call = sys.frame(index_last_export()),
     .envir = parent.frame()
   )
 }
@@ -26,119 +32,71 @@ abort_in_export <- function(...) {
 # name the exported function called by the user as the source of the problem.
 # Arguments shared with `rlang::arg_match()` work as there.
 arg_match_in_export <- function(arg, values = NULL, multiple = FALSE) {
-  arg_expr <- rlang::enexpr(arg)
-  arg_name <- as.character(arg_expr)
+  arg_name <- as.character(substitute(arg))
 
   # If values not provided, extract from the calling function's formals
   if (is.null(values)) {
-    parent_formals <- formals(sys.function(sys.parent()))
-
-    if (!arg_name %in% names(parent_formals)) {
+    values <- formals(sys.function(sys.parent()))[[arg_name]]
+    if (is.null(values)) {
       cli::cli_abort(
         "Internal error: {.arg {arg_name}} not found in calling function."
       )
     }
-
-    values <- eval(parent_formals[[arg_name]], envir = parent.frame())
+    values <- eval(values, envir = parent.frame())
   }
 
-  val <- rlang::eval_bare(arg_expr, env = rlang::caller_env())
-
-  # Early escape hatch for performance in the typical use case
-  if (!multiple && is.character(val) && length(val) == 1L && val %in% values) {
-    return(val)
+  # Early escape hatches for the typical cases: a single valid string, or the
+  # default left unchanged, i.e., its first value
+  if (!multiple) {
+    if (is.character(arg) && length(arg) == 1L && arg %in% values) {
+      return(arg)
+    }
+    if (identical(arg, values)) {
+      return(values[[1L]])
+    }
   }
 
   # This is retained for non-typical cases and for its characteristic error msg
   rlang::arg_match(
-    arg = val,
+    arg = arg,
     values = values,
     multiple = multiple,
     error_arg = arg_name,
-    error_call = caller_env_last_export()
+    error_call = sys.frame(index_last_export())
   )
 }
 
 
-# Find the environment of the exported function at the top of the call stack,
-# i.e., the last or outermost exported function that was called. This is useful
-# as a helper within `abort_in_export()` so that the function that was called by
-# the user is named in the error message as the site where the error occurred.
-caller_env_last_export <- function(package_name = NULL) {
-  # If `package_name` is not provided, try detect it in the package environment
-  if (is.null(package_name)) {
-    pkg_env <- parent.env(environment())
-    if (isNamespace(pkg_env)) {
-      package_name <- getNamespaceName(pkg_env)
-    } else {
-      cli::cli_abort(c(
-        "Could not determine package name.",
-        "i" = "Please provide the `package_name` argument."
-      ))
+# Frame number of the outermost exported function on the call stack: the one the
+# user called. Matched by identity, so it's safe for `lapply()` and other
+# functionals. Without an export on the stack, e.g., for an S3 method, this
+# falls back to the outermost function from the package.
+index_last_export <- function() {
+  ns <- topenv(environment())
+  exports <- mget(getNamespaceExports(ns), envir = ns, inherits = TRUE)
+  index_fallback <- NULL
+  for (i in seq_len(sys.nframe())) {
+    fn <- sys.function(i)
+    if (identical(ns, topenv(environment(fn)))) {
+      if (any(vapply(exports, identical, logical(1L), fn))) {
+        return(i)
+      }
+      if (is.null(index_fallback)) {
+        index_fallback <- i
+      }
     }
   }
+  index_fallback
+}
 
-  # Get all frames and calls on the call stack
-  frames <- sys.frames()
-  calls <- sys.calls()
 
-  # Get the namespace of the package
-  ns <- tryCatch(
-    getNamespace(package_name),
-    error = function(e) {
-      cli::cli_abort(
-        "Package \"{package_name}\" not found or not loaded.",
-        "x" = "Original error:",
-        "x" = "{e}"
-      )
-    }
-  )
-
-  # Get list of exported functions from the package
-  exports <- getNamespaceExports(ns)
-
-  # Find the last (most recent in call stack) exported function
-  for (i in seq_along(calls)) {
-    fn <- calls[[i]][[1]]
-
-    # Get name of the current function. If not found, skip to the next element.
-    if (is.name(fn)) {
-      fn_name <- as.character(fn)
-    } else if (is.call(fn)) {
-      fn_name <- deparse(fn)[1]
-    } else {
-      next
-    }
-
+# Name of the user-called function; `NULL` if called via `do.call(fn, ...)`
+name_last_export <- function() {
+  fn <- sys.call(index_last_export())[[1L]]
+  if (is.name(fn)) {
+    as.character(fn)
+  } else if (is.call(fn)) {
     # Remove any package prefix (e.g., "pkg::fn" --> "fn")
-    name_bare <- sub("^.*::", "", fn_name)
-
-    # When an exported function is found, return the environment of its frame
-    if (name_bare %in% exports) {
-      return(frames[[i]])
-    }
+    sub("^.*::", "", deparse(fn)[1L])
   }
-
-  cli::cli_warn("No exported function found on the call stack.")
-  environment()
-}
-
-
-# Like `caller_env_last_export()` but returns the name of the function instead
-# of its environment
-name_last_export <- function(package_name = NULL) {
-  env <- caller_env_last_export(package_name)
-  frames <- sys.frames()
-  calls <- sys.calls()
-
-  for (i in seq_along(frames)) {
-    if (identical(frames[[i]], env)) {
-      fn <- calls[[i]][[1]]
-      fn_name <- if (is.name(fn)) as.character(fn) else deparse(fn)[1]
-      return(sub("^.*::", "", fn_name))
-    }
-  }
-
-  cli::cli_warn("No exported function found on the call stack.")
-  NULL
 }

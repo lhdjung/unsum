@@ -28,3 +28,4 @@
 ^\.crush$
 ^CLOSURE-.*$
 ^SPRITE-.*$
+^jarl\.toml$
