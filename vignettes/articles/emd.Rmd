@@ -1,6 +1,5 @@
 ---
 title: "Earth mover distance in 1D"
-format: html
 ---
 
 $$\text{EMD}(f, g) = \sum_{i=1}^{k} \left|\sum_{j \leq i} f_j - \sum_{j \leq i} g_j\right|$$
