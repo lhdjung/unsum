@@ -20,7 +20,7 @@
 ^CRAN-SUBMISSION$
 ^[.]?air[.]toml$
 ^\.vscode$
-^vignettes/articles$
+^articles$
 ^vignettes/.quarto$
 ^\.positai$
 ^\.claude$
