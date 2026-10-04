@@ -8,8 +8,8 @@
 <title>Get started • unsum</title>
 <!-- katex math --><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" integrity="sha384-nB0miv6/jRmo5UMMR1wu3Gz6NLsoTkbqJghGIsx//Rlm+ZU03BU6SQNC66uf4l5+" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js" integrity="sha384-7zkQWkzuo3B5mTepMUcHkMB5jZaolc2xDwL6VFqjFALcbeS9Ggm/Yr2r3Dy4lfFg" crossorigin="anonymous"></script><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" integrity="sha384-43gviWU0YVjaDtb/GhzOouOXtZMP/7XUzwPTstBeZFe/+rCMvRwr4yROQP43s0Xk" crossorigin="anonymous" onload="renderMathInElement(document.body);"></script><script src="../katex-auto.js"></script><script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Get started">
 </head>
@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">unsum</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -32,6 +32,16 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/unsum.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/emd.html">Earth mover distance in 1D</a></li>
+    <li><a class="dropdown-item" href="../articles/examples.html">Usage examples</a></li>
+    <li><a class="dropdown-item" href="../articles/horns-proof-n-corrected.html">Mathematical foundations of the horns index</a></li>
+    <li><a class="dropdown-item" href="../articles/horns-proof.html">Proving the correctness of the infinite- horns index</a></li>
+    <li><a class="dropdown-item" href="../articles/sd-lower-bound.html">Lower bounds for the standard deviation based on empirical observations</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -80,12 +90,14 @@ values must be integers: e.g., a value can be 2 or 3, but not 2.5.</p>
 <span>  n <span class="op">=</span> <span class="fl">80</span>,</span>
 <span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  scale_max <span class="op">=</span> <span class="fl">5</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All CLOSURE results found</span></span></code></pre></div>
 <p>First create a plot of the mean sample found by CLOSURE. This gives
 us a sense of the overall results, which are quite polarized:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/closure_plot_bar.html">closure_plot_bar</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p><img src="unsum_files/figure-html/unnamed-chunk-3-1.png" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a strongly polarized distribution." width="100%"></p>
+<p><img src="unsum_files/figure-html/unnamed-chunk-3-1.png" class="r-plt" alt="Barplot of `data`, the CLOSURE output. It specifically visualizes the `f_average` column of the `frequency` tibble, but also gives percentage figures, similar to the `f_relative` column. The overall shape is a strongly polarized distribution." width="100%"></p>
 <p>You can customize the plot, e.g., to show the sum of all samples
 found instead of the average sample, or only percentages, or different
 colors. See documentation at <code><a href="../reference/closure_plot_bar.html">closure_plot_bar()</a></code>. However,
@@ -96,79 +108,93 @@ the default should be informative enough for a start.</p>
 <p>Now let’s look at the results themselves:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data</span></span>
-<span><span class="co">#&gt; $inputs</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
-<span><span class="co">#&gt;   mean  sd        n scale_min scale_max rounding   threshold</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3.5   1.8      80         1         5 up_or_down         5</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $metrics</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 5</span></span></span>
-<span><span class="co">#&gt;   samples_initial samples_all values_all horns horns_uniform</span></span>
-<span><span class="co">#&gt;             <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>              15        <span style="text-decoration: underline;">2</span>215     <span style="text-decoration: underline;">177</span>200 0.792           0.5</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $frequency</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 4</span></span></span>
-<span><span class="co">#&gt;   value f_average f_absolute f_relative</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>     1     22.9       <span style="text-decoration: underline;">50</span>778     0.287 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span>     2      5.24      <span style="text-decoration: underline;">11</span>598     0.065<span style="text-decoration: underline;">5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span>     3      3.81       <span style="text-decoration: underline;">8</span>439     0.047<span style="text-decoration: underline;">6</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span>     4      5.24      <span style="text-decoration: underline;">11</span>609     0.065<span style="text-decoration: underline;">5</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span>     5     42.8       <span style="text-decoration: underline;">94</span>776     0.535 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $results</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2,215 × 2</span></span></span>
-<span><span class="co">#&gt;       id sample    </span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;list&gt;</span>    </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>     1 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>     2 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>     3 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>     4 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>     5 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>     6 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>     7 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>     8 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     9 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    10 <span style="color: #949494;">&lt;int [80]&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2,205 more rows</span></span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">CLOSURE results: 2,215 samples</span> <span style="color: #00BBBB;">──────────────────────────────────────────────</span></span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">$inputs</span> · how `closure_generate()` produced these data</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
+<span><span class="co">#&gt;   technique mean  sd        n scale_min scale_max rounding   threshold</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> CLOSURE   3.5   1.8      80         1         5 up_or_down         5</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">$metrics_main</span> · key statistics about the generated samples</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
+<span><span class="co">#&gt;   samples_all values_all</span></span>
+<span><span class="co">#&gt;         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span>        <span style="text-decoration: underline;">2</span>215     <span style="text-decoration: underline;">177</span>200</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">$metrics_horns</span> · on the distribution of horns index values</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 9</span></span></span>
+<span><span class="co">#&gt;    mean uniform     sd     cv    mad   min median   max  range</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0.792     0.5 0.025<span style="text-decoration: underline;">1</span> 0.031<span style="text-decoration: underline;">7</span> 0.018<span style="text-decoration: underline;">9</span> 0.756  0.787 0.844 0.087<span style="text-decoration: underline;">7</span></span></span>
+<span><span class="co">#&gt; With hidden elements:</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$modality_counts</span> for min/max counts per scale value (5 rows)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$modality_pairs</span> for frequency ordering between adjacent values (4 rows)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$modality_conclusion</span> for flagging modality and J-shape status (1 row); `NA` means not found, but the search was partial</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$modality_shapes</span> for min/max counts per scale value within each shape class (10 rows)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$modality_summary</span> for number of samples in each shape class (1 row)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$modality_prominence</span> for shape classes at each mode prominence threshold (18 rows)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$frequency</span> for full frequency table (15 rows)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$frequency_dist</span> for per-value count distributions (86 rows)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> Access <span style="color: #00BB00;">$results</span> for count of each scale value in every sample, and horns indices (2,215 rows)</span></span>
+<span><span class="co">#&gt; <span style="font-style: italic;"># Use `print(show = "all")` to see all elements</span></span></span>
+<span><span class="co">#&gt; <span style="font-style: italic;"># Use `print(show = "none")` to hide elements</span></span></span></code></pre></div>
 <ul>
 <li><p><code>inputs</code> records the arguments in
 <code><a href="../reference/closure_generate.html">closure_generate()</a></code>.</p></li>
+<li><p><code>metrics_main</code> shows the number of initial samples
+that form the basis of CLOSURE (<code>samples_initial</code>), the total
+number of possible samples that could have led to the reported summary
+statistics (<code>samples_all</code>), and the total number of all
+values found in them (<code>values_all</code>).</p></li>
 <li>
-<p><code>metrics</code> shows the number of possible samples that
-could have led to the reported summary statistics
-(<code>samples_all</code>) and the total number of all values found in
-them (<code>values_all</code>).</p>
-<p>Importantly, it also features an index of variation in bounded scales
-(<code>horns</code>). It ranges from 0 to 1, where 0 means no
-variability and 1 would be a sample evenly split between the extremes —
-here, 1, and 5 — with no values in between. The reference value
-<code>horns_uniform</code> shows which value <code>horns</code> would
-have if the mean sample was uniformly distributed. This is 0.5 because
-of the 1-5 scale. See <code><a href="../reference/horns.html">horns()</a></code> for more details.</p>
-<p>The actual <code>horns</code> value is 0.79, which is a high degree
-of variability even in the abstract. However, in practice, 0.79 might be
+<p><code>metrics_horns</code> contains statistics about the “horns
+index” of each sample, a measure of variation in bounded scales. It
+ranges from 0 to 1, where 0 means no variability and 1 would be a sample
+evenly split between the extremes — here, 1, and 5 — with no values in
+between. In particular:</p>
+<ul>
+<li><p><code>mean</code> is the average horns index across all samples.
+The reference value <code>uniform</code> shows which value
+<code>mean</code> would have if the mean sample was uniformly
+distributed. This is 0.5 because of the 1-5 scale. See
+<code><a href="../reference/horns.html">horns()</a></code> for more details.</p></li>
+<li><p>The actual <code>mean</code> horns index is 0.79, which is a high
+degree of variability even in the abstract. In practice, 0.79 might be
 extremely high compared to theoretical expectations: if the sample
 should have a roughly normal shape, even the hypothetical 0.5 uniform
 value would be surprisingly high, let alone the 0.79 actual
-value.</p>
+value.</p></li>
+<li><p>The remaining statistics provide some clues about the variability
+among horns values. More on this below.</p></li>
+</ul>
 </li>
-<li><p><code>frequency</code> shows the absolute and relative
+<li>
+<p><code>frequency</code> shows the absolute and relative
 frequencies of values found by CLOSURE at each scale point. It also
-gives us the (absolute) frequency of values in the average sample that
-we saw in the plot above.</p></li>
+contains the (absolute) frequency of values in the average sample that
+we saw in the plot above. The <code>samples</code> column indicates to
+which subset of the samples a row belongs:</p>
+<ul>
+<li><p><code>all</code> is aggregated across all samples.</p></li>
+<li><p><code>horns_min</code> concerns the subset of samples that have
+the lowest horns index from among all samples.</p></li>
+<li><p><code>horns_max</code>, conversely, is about the subset of
+samples with the highest horns index.</p></li>
+</ul>
+</li>
 <li><p><code>results</code> stores all the samples that CLOSURE found
-(<code>sample</code>). Each has a unique number
-(<code>id</code>).</p></li>
+and the corresponding horns index values (<code>horns</code>). Each has
+a unique number (<code>id</code>). A sample is stored as the number of
+times each scale value occurs in it: <code>v1</code> counts the 1s,
+<code>v2</code> the 2s, and so on. This describes each sample completely
+because the order of values doesn’t matter, and it takes up much less
+memory than listing every value.</p></li>
 </ul>
 <p>See <code><a href="../reference/closure_generate.html">closure_generate()</a></code> for more details.</p>
 <p>In addition to the bar plot, unsum offers an ECDF plot for CLOSURE
 results:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/closure_plot_ecdf.html">closure_plot_ecdf</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
-<p><img src="unsum_files/figure-html/unnamed-chunk-5-1.png" alt="Empirical cumulative distribution function (ECDF) plot of `data`, the CLOSURE output. The curve rises most steeply at the first and last scale values, indicating a strongly polarized distribution." width="100%"></p>
+<p><img src="unsum_files/figure-html/unnamed-chunk-5-1.png" class="r-plt" alt="Empirical cumulative distribution function (ECDF) plot of `data`, the CLOSURE output. The curve rises most steeply at the first and last scale values, indicating a strongly polarized distribution." width="100%"></p>
 </div>
 <div class="section level2">
 <h2 id="horns-index-variation">Horns index variation<a class="anchor" aria-label="anchor" href="#horns-index-variation"></a>
@@ -176,43 +202,17 @@ results:</p>
 <p>You may wonder about variability between the samples. Couldn’t there
 be some with a much lower or higher horns index than the overall mean
 <code>horns</code>? In this case, there would be a chance that the
-original data looked quite different from the average. Check this using
-<code><a href="../reference/closure_horns_analyze.html">closure_horns_analyze()</a></code>:</p>
+original data looked quite different from the average.</p>
+<p>To check this, first use <code><a href="../reference/closure_plot_bar.html">closure_plot_bar()</a></code>. It shows
+the minimum and maximum possible variability as measured by the horns
+index, i.e., the average distributions of those samples with the lowest
+and highest horns index values:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">data_horns</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_horns_analyze.html">closure_horns_analyze</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
-<span><span class="va">data_horns</span></span>
-<span><span class="co">#&gt; $closure_generate_inputs</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 7</span></span></span>
-<span><span class="co">#&gt;   mean  sd        n scale_min scale_max rounding   threshold</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 3.5   1.8      80         1         5 up_or_down         5</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $horns_metrics</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 9</span></span></span>
-<span><span class="co">#&gt;    mean uniform     sd     cv    mad   min median   max  range</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0.792     0.5 0.025<span style="text-decoration: underline;">1</span> 0.031<span style="text-decoration: underline;">7</span> 0.018<span style="text-decoration: underline;">9</span> 0.756  0.787 0.844 0.087<span style="text-decoration: underline;">7</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $horns_results</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 2,215 × 2</span></span></span>
-<span><span class="co">#&gt;       id horns</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span>     1 0.762</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span>     2 0.756</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span>     3 0.756</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span>     4 0.762</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span>     5 0.756</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span>     6 0.762</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span>     7 0.762</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span>     8 0.762</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span>     9 0.756</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span>    10 0.756</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2,205 more rows</span></span></span></code></pre></div>
-<p>Also, <code><a href="../reference/closure_horns_analyze.html">closure_horns_histogram()</a></code> visualizes the
-distribution of horns values across all samples:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/closure_horns_analyze.html">closure_horns_histogram</a></span><span class="op">(</span><span class="va">data_horns</span><span class="op">)</span></span></code></pre></div>
-<p><img src="unsum_files/figure-html/unnamed-chunk-7-1.png" alt="Barplot of horns values distribution. The scale limits range from 0 to 1, but values only start after 0.75 and end before 0.90." width="100%"></p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/closure_plot_bar.html">closure_plot_bar</a></span><span class="op">(</span><span class="va">data</span>, format <span class="op">=</span> <span class="st">"percent"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="unsum_files/figure-html/unnamed-chunk-6-1.png" class="r-plt" alt="Two barplots like the first, except they show the subsets of samples within `data` with minimum and maximum horns index values." width="100%"></p>
+<p>As you can see, the variability does not change very much. The
+distribution is starkly bimodal even with the lowest possible amount of
+variability.</p>
 <p>In sum, the horns values are quite tightly confined. Wide variation
 among them seems to occur only if <code>mean</code> and <code>sd</code>
 have no decimal places.</p>
@@ -222,17 +222,18 @@ have no decimal places.</p>
 </h2>
 <p>What if you have a huge object with CLOSURE results that you want to
 save? Write it to disk with <code><a href="../reference/closure_write.html">closure_write()</a></code>:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Using a temporary folder via `tempdir()` just for this example --</span></span>
 <span><span class="co"># you should use a real folder on your computer instead!</span></span>
 <span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_write</a></span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All files written to:</span></span>
-<span><span class="co">#&gt; /tmp/Rtmp8zKcEl/CLOSURE-3_5-1_8-80-1-5-up_or_down-5/</span></span></code></pre></div>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All CLOSURE files written to:</span></span>
+<span><span class="co">#&gt; /tmp/RtmpFBbPTA/CLOSURE-3_5-1_8-80-1-5-up_or_down-5/</span></span></code></pre></div>
 <p>This stores the results using the highly efficient Parquet format. It
 will only take a tiny fraction of a CSV file’s disk space.</p>
 <p>In your later session, read the data in from the folder to get the
 same CLOSURE list back:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">data_new</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_read</a></span><span class="op">(</span><span class="va">path_new_folder</span><span class="op">)</span></span></code></pre></div>
 <p>A caveat: don’t modify the output of <code><a href="../reference/closure_generate.html">closure_generate()</a></code>
 before passing it into other <code>closure_*()</code> functions. The
@@ -252,7 +253,7 @@ may not catch all of them.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

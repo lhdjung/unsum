@@ -1,0 +1,113 @@
+# Lower bounds for the standard deviation based on empirical observations
+
+The absolute lower bound for the sample standard deviation s is
+trivially 0. Here, we will derive non-trivial bounds on the basis of
+additional constraints that characterize a given sample.
+
+We will use the term *empirical* to denote bounds that were actually
+attained in a given distribution, as opposed to merely *theoretical*
+bounds where this is not guaranteed. Examples for theoretical bounds are
+1 and 7 for a 7-point Likert scale: although the bounds rule out values
+less than 1 or greater than 7, they do not imply that at least one value
+is at 1 and at least one is at 7.
+
+Such a stronger assumption would rather characterize empirical bounds.
+For example, imagine that the minimum value measured on the same Likert
+scale is 2 and the maximum value is 5. In this case, 2 and 5 are the
+empirical bounds.
+
+## Deriving the lower bound for sample variance with empirical bounds
+
+Suppose we have n observations with a sample mean of \bar{x}. Further
+suppose that at least one observation equals the empirical lower bound a
+while at least one observation equals the empirical upper bound b.
+
+We seek to find the minimum possible sample variance consistent with
+these constraints. The sample variance is defined as:
+
+s^2 = \frac{1}{n} \sum\_{i=1}^{n} (x_i - \bar{x})^2
+
+### Finding the minimum configuration
+
+The variance-minimizing configuration should allocate one observation to
+a, one to b, and the remaining n-2 observations to a single location. We
+will call this location c.
+
+Due to the mean constraint, the sum of all observations equals n\bar{x}.
+This can be expressed as
+
+n\bar{x} = a + b + (n-2)c
+
+Solving for c, we obtain
+
+c = \frac{n\bar{x} - a - b}{n-2}
+
+### Computing the minimum variance
+
+This configuration leads to an initial lower bound for the variance:
+
+s^2 \ge \frac{1}{n}\left\[(a-\bar{x})^2 + (b-\bar{x})^2 +
+(n-2)(c-\bar{x})^2\right\]
+
+Now, to express c-\bar{x} using only the parameters:
+
+\begin{align\*} c - \bar{x} &= \frac{n\bar{x} - a - b}{n-2} - \bar{x} \\
+&= \frac{n\bar{x} - a - b - \bar{x}(n-2)}{n-2} \\ &= \frac{n\bar{x} -
+a - b - n\bar{x} + 2\bar{x}}{n-2} \\ &= \frac{2\bar{x} - a - b}{n-2}
+\end{align\*}
+
+Therefore:
+
+s^2 \ge \frac{1}{n}\left\[(a-\bar{x})^2 + (b-\bar{x})^2 + (n-2) \cdot
+\frac{(2\bar{x} - a - b)^2}{(n-2)^2}\right\]
+
+Simplifying this yields the general lower bound for s^2 when empirical
+bounds a and b as well as mean \bar{x} and sample size n are observed:
+
+s^2 \ge \frac{1}{n}\left\[(a-\bar{x})^2 + (b-\bar{x})^2 +
+\frac{(2\bar{x} - a - b)^2}{n-2}\right\]
+
+For the standard deviation, of course, the corresponding lower bound is
+the square root of this quantity:
+
+s \ge \sqrt{ \frac{1}{n}\left\[(a-\bar{x})^2 + (b-\bar{x})^2 +
+\frac{(2\bar{x} - a - b)^2}{n-2}\right\] }
+
+\square
+
+### Special case: mean at midpoint
+
+Consider a case where the sample mean is at the midpoint of the
+empirical range:
+
+\bar{x} = \frac{a+b}{2}
+
+This equality allows us to greatly simplify the above lower bound.
+First, substituting it makes the third term vanish:
+
+\begin{align\*} 2\bar{x} - a - b &= 2 \cdot \frac{a+b}{2} - a - b \\ &=
+a + b - a - b \\ &= 0 \end{align\*}
+
+So the formula simplifies to:
+
+\begin{align\*} s^2 &\geq \frac{1}{n}\left\[\left(a -
+\frac{a+b}{2}\right)^2 + \left(b - \frac{a+b}{2}\right)^2\right\] \\ &=
+\frac{1}{n}\left\[\left(\frac{a-b}{2}\right)^2 +
+\left(\frac{b-a}{2}\right)^2\right\] \\ &= \frac{1}{n}\left\[2 \cdot
+\frac{(b-a)^2}{4}\right\] \\ &= \frac{(b-a)^2}{2n} \end{align\*}
+
+Thus, when \bar{x} = \frac{a+b}{2}, we obtain a clean formula for the
+lower bound of the variance based on n and the empirical lower and upper
+bounds, a and b:
+
+s^2 \geq \frac{(b-a)^2}{2n}
+
+\square
+
+As an aside, note how this relates to *maximizing* variance. Popoviciu’s
+inequality implies that \bar{x} = \frac{a+b}{2} is a necessary (but not
+a sufficient) condition for maximizing the variance given empirical or
+theoretical lower and upper bounds \[a, b\]. The variance is maximized
+if and only if half of the sample is at a and half is at b. The equality
+holds in this case, but also in all other cases in which the
+distribution is symmetrical about the midpoint.
