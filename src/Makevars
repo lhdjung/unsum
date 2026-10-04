@@ -20,6 +20,10 @@ VENDOR_DIR = $(CURDIR)/vendor
 # configure via tools/msrv.R.
 #
 # vendor.tar.xz, if present, is unzipped and used for offline compilation.
+#
+# If R's CC sets a macOS deployment target (e.g., `-mmacos-version-min=26`),
+# it is exported as MACOSX_DEPLOYMENT_TARGET so that C code built by crates
+# (e.g., zstd-sys) targets the same macOS version that R links against.
 $(STATLIB):
 
 	if [ -f ./rust/vendor.tar.xz ]; then \
@@ -30,6 +34,8 @@ $(STATLIB):
 
 	export CARGO_HOME=$(CARGOTMP) && \
 	export PATH="$(PATH):$(HOME)/.cargo/bin" && \
+	MACOS_MIN=`echo '$(CC)' | sed -n 's/.*-mmacosx*-version-min=\([0-9.]*\).*/\1/p'` && \
+	if [ -n "$$MACOS_MIN" ]; then export MACOSX_DEPLOYMENT_TARGET="$$MACOS_MIN"; fi && \
 	RUSTFLAGS="$(RUSTFLAGS) --print=native-static-libs" cargo build -j 2 --offline --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR) 
 
 	# Always clean up CARGOTMP
