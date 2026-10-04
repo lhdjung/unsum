@@ -121,7 +121,7 @@ data <- sprite_generate(
 )
 #> Warning: SPRITE found fewer samples than requested via `stop_after`.
 #> ! `stop_after` is: 1000
-#> ! Samples found: 32
+#> ! Samples found: 33
 #> 
 #> ✔ All SPRITE results found
 
@@ -131,7 +131,7 @@ data <- sprite_generate(
 path_new_folder <- sprite_write(data, path = tempdir())
 #> 
 #> ✔ All SPRITE files written to:
-#> /tmp/Rtmp9DZw1F/SPRITE-2_7-0_6-45-1-5-up_or_down-5/
+#> /tmp/RtmpNpIAjF/SPRITE-2_7-0_6-45-1-5-up_or_down-5/
 
 # In a later session, conveniently read the files
 # back into R. This returns the original list,
@@ -150,13 +150,13 @@ sprite_read(path_new_folder)
 #> # A tibble: 1 × 2
 #>   samples_all values_all
 #>         <dbl>      <dbl>
-#> 1          32       1440
+#> 1          33       1485
 #> 
 #> $metrics_horns
 #> # A tibble: 1 × 9
 #>     mean uniform      sd     cv     mad    min median   max  range
 #>    <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>  <dbl> <dbl>  <dbl>
-#> 1 0.0875     0.5 0.00713 0.0815 0.00642 0.0758 0.0869   0.1 0.0242
+#> 1 0.0874     0.5 0.00704 0.0805 0.00642 0.0758 0.0869   0.1 0.0242
 #> 
 #> $modality_counts
 #> # A tibble: 5 × 3
@@ -164,7 +164,7 @@ sprite_read(path_new_folder)
 #>   <dbl>    <int>    <int>
 #> 1     1        0        3
 #> 2     2        7       17
-#> 3     3       26       34
+#> 3     3       26       35
 #> 4     4        0        3
 #> 5     5        0        1
 #> 
@@ -187,17 +187,17 @@ sprite_read(path_new_folder)
 #> # A tibble: 5 × 5
 #>   class             n_samples value count_lo count_hi
 #>   <chr>                 <dbl> <dbl>    <int>    <int>
-#> 1 one_mode_interior        32     1        0        3
-#> 2 one_mode_interior        32     2        7       17
-#> 3 one_mode_interior        32     3       26       34
-#> 4 one_mode_interior        32     4        0        3
-#> 5 one_mode_interior        32     5        0        1
+#> 1 one_mode_interior        33     1        0        3
+#> 2 one_mode_interior        33     2        7       17
+#> 3 one_mode_interior        33     3       26       35
+#> 4 one_mode_interior        33     4        0        3
+#> 5 one_mode_interior        33     5        0        1
 #> 
 #> $modality_summary
 #> # A tibble: 1 × 18
 #>   exhaustive n_scanned min_prominence deficit_min deficit_mean deficit_max
 #>   <lgl>          <dbl>          <dbl>       <int>        <dbl>       <int>
-#> 1 FALSE             32           0.05           0         0.25           1
+#> 1 FALSE             33           0.05           0        0.242           1
 #> # ℹ 12 more variables: n_flat <dbl>, n_one_mode_interior <dbl>,
 #> #   n_one_mode_low_edge <dbl>, n_one_mode_high_edge <dbl>, n_two_modes <dbl>,
 #> #   n_three_or_more_modes <dbl>, band_n_flat <dbl>,
@@ -210,19 +210,19 @@ sprite_read(path_new_folder)
 #>    min_prominence min_prominence_counts primary class               n_samples
 #>             <dbl>                 <int> <lgl>   <chr>                   <dbl>
 #>  1           0.02                     1 FALSE   flat                        0
-#>  2           0.02                     1 FALSE   one_mode_interior          24
+#>  2           0.02                     1 FALSE   one_mode_interior          25
 #>  3           0.02                     1 FALSE   one_mode_low_edge           0
 #>  4           0.02                     1 FALSE   one_mode_high_edge          0
 #>  5           0.02                     1 FALSE   two_modes                   8
 #>  6           0.02                     1 FALSE   three_or_more_modes         0
 #>  7           0.05                     3 TRUE    flat                        0
-#>  8           0.05                     3 TRUE    one_mode_interior          32
+#>  8           0.05                     3 TRUE    one_mode_interior          33
 #>  9           0.05                     3 TRUE    one_mode_low_edge           0
 #> 10           0.05                     3 TRUE    one_mode_high_edge          0
 #> 11           0.05                     3 TRUE    two_modes                   0
 #> 12           0.05                     3 TRUE    three_or_more_modes         0
 #> 13           0.1                      5 FALSE   flat                        0
-#> 14           0.1                      5 FALSE   one_mode_interior          32
+#> 14           0.1                      5 FALSE   one_mode_interior          33
 #> 15           0.1                      5 FALSE   one_mode_low_edge           0
 #> 16           0.1                      5 FALSE   one_mode_high_edge          0
 #> 17           0.1                      5 FALSE   two_modes                   0
@@ -232,11 +232,11 @@ sprite_read(path_new_folder)
 #> # A tibble: 15 × 5
 #>    samples   value f_expected f_representative f_relative
 #>    <chr>     <dbl>      <dbl>            <dbl>      <dbl>
-#>  1 all           1      1.06                 1    0.0236 
-#>  2 all           2     13.1                 13    0.290  
-#>  3 all           3     29.4                 30    0.653  
-#>  4 all           4      1.19                 1    0.0264 
-#>  5 all           5      0.312                0    0.00694
+#>  1 all           1      1.12                 1    0.0249 
+#>  2 all           2     12.9                 13    0.286  
+#>  3 all           3     29.5                 30    0.657  
+#>  4 all           4      1.15                 1    0.0256 
+#>  5 all           5      0.303                0    0.00673
 #>  6 horns_min     1      1                    1    0.0222 
 #>  7 horns_min     2     13                   13    0.289  
 #>  8 horns_min     3     30                   30    0.667  
@@ -249,25 +249,25 @@ sprite_read(path_new_folder)
 #> 15 horns_max     5      1                    1    0.0222 
 #> 
 #> $frequency_dist
-#> # A tibble: 30 × 3
+#> # A tibble: 31 × 3
 #>    value count n_samples
 #>    <dbl> <int>     <int>
 #>  1     1     0        10
 #>  2     1     1        12
 #>  3     1     2         8
-#>  4     1     3         2
-#>  5     2     7         1
+#>  4     1     3         3
+#>  5     2     7         2
 #>  6     2     8         1
 #>  7     2     9         1
 #>  8     2    10         3
 #>  9     2    11         3
 #> 10     2    12         3
-#> # ℹ 20 more rows
+#> # ℹ 21 more rows
 #> 
 #> $directory
 #> # A tibble: 1 × 1
 #>   path                                               
 #>   <chr>                                              
-#> 1 /tmp/Rtmp9DZw1F/SPRITE-2_7-0_6-45-1-5-up_or_down-5/
+#> 1 /tmp/RtmpNpIAjF/SPRITE-2_7-0_6-45-1-5-up_or_down-5/
 #> 
 ```

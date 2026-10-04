@@ -202,7 +202,7 @@ save? Write it to disk with
 path_new_folder <- closure_write(data, path = tempdir())
 #> 
 #> ✔ All CLOSURE files written to:
-#> /tmp/RtmpFBbPTA/CLOSURE-3_5-1_8-80-1-5-up_or_down-5/
+#> /tmp/RtmpQctqkw/CLOSURE-3_5-1_8-80-1-5-up_or_down-5/
 ```
 
 This stores the results using the highly efficient Parquet format. It

@@ -128,7 +128,7 @@ data <- closure_generate(
 path_new_folder <- closure_write(data, path = tempdir())
 #> 
 #> ✔ All CLOSURE files written to:
-#> /tmp/Rtmp9DZw1F/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/
+#> /tmp/RtmpNpIAjF/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/
 
 # In a later session, conveniently read the files
 # back into R. This returns the original list,
@@ -265,6 +265,6 @@ closure_read(path_new_folder)
 #> # A tibble: 1 × 1
 #>   path                                                
 #>   <chr>                                               
-#> 1 /tmp/Rtmp9DZw1F/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/
+#> 1 /tmp/RtmpNpIAjF/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/
 #> 
 ```
