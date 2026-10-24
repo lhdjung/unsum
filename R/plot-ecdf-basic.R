@@ -67,7 +67,8 @@
 #'   sd = "2",
 #'   n = 52,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 5,
+#'   items_averaged = 1
 #' )
 #'
 #' # Visualize:
@@ -79,7 +80,8 @@
 #   sd = "1.7",
 #   n = 70,
 #   scale_min = 1,
-#   scale_max = 5
+#   scale_max = 5,
+#   items_averaged = 1
 # )
 # samples <- "mean_min_max"
 # pad <- "extend"

@@ -104,7 +104,7 @@ write_basic <- function(data, path, technique) {
         technique = technique,
         n = as.integer(data$inputs$n),
         k = grid_length,
-        items = as.integer(data$inputs$items),
+        items = as.integer(data$inputs$items_averaged),
         scale_min = as.integer(data$inputs$scale_min),
         scale_max = as.integer(data$inputs$scale_max),
         # CLOSURE samples are in whole scale points, SPRITE's in hundredths

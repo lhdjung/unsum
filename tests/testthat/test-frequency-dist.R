@@ -37,7 +37,8 @@ fd_data <- closure_generate(
   sd        = "0.5",
   n         = 12,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 fd_r    <- compute_frequency_dist_r(fd_data)
@@ -121,7 +122,8 @@ fd_data2 <- closure_generate(
   sd        = "1.2",
   n         = 20,
   scale_min = 1,
-  scale_max = 7
+  scale_max = 7,
+  items_averaged = 1
 )
 
 fd_r2    <- compute_frequency_dist_r(fd_data2)

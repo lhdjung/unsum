@@ -98,7 +98,8 @@ data <- closure_generate(
   sd = "2",
   n = 52,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 # Visualize:

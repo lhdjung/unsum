@@ -111,7 +111,8 @@ data <- closure_generate(
   sd = "0.5",
   n = 70,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 # Even with minimal and maximal variance,

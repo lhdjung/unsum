@@ -86,9 +86,10 @@ expand_section <- function(section, technique) {
         integer. One column per scale value, holding the number of times this
         value occurs in the sample. For instance, `v3` counts the 3s. Negative
         values are marked with `n`, as in `vn2` for -2, and decimal values with
-        `_`, as in `v1_5` for 1.5 (only for SPRITE with `items > 1`). Together,
-        these columns describe each sample completely because the order of
-        values within a sample doesn't matter. The counts of each row sum up to
+        `_`, as in `v1_5` for 1.5 (only for SPRITE with
+        `items_averaged > 1`). Together, these columns describe each sample
+        completely because the order of values within a sample doesn't
+        matter. The counts of each row sum up to
         `n`.
         - `horns`: double. Horns index of each sample.
       - **`directory`** (only present if `path` was specified):
@@ -163,7 +164,7 @@ expand_section <- function(section, technique) {
         n = 90,
         scale_min = 1,
         scale_max = 5,
-        items = 1,                # default
+        items_averaged = 1,
         rounding = \"up_or_down\",  # default
         threshold = 5             # default
       )

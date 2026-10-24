@@ -41,7 +41,8 @@
 #'   sd = "0.4",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 7
+#'   scale_max = 7,
+#'   items_averaged = 1
 #' )
 #'
 #' # All CLOSURE samples have low horns indices:
@@ -52,7 +53,8 @@
 #'   sd = "2.2",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 7
+#'   scale_max = 7,
+#'   items_averaged = 1
 #' )
 #'
 #' # The min-max lines are beyond the midpoint,
@@ -64,7 +66,8 @@
 #'   sd = "2.8",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 7
+#'   scale_max = 7,
+#'   items_averaged = 1
 #' )
 #'
 #' # Extremely high variance throughout; close to the upper limit.
@@ -81,7 +84,8 @@
 #'   sd = "2",
 #'   n = 35,
 #'   scale_min = 1,
-#'   scale_max = 7
+#'   scale_max = 7,
+#'   items_averaged = 1
 #' )
 #'
 #' closure_plot_horns_histogram(data_wide_spread)

@@ -168,7 +168,7 @@ check_generator_output <- function(
       "n" = c("integer", "double"),
       "scale_min" = c("integer", "double"),
       "scale_max" = c("integer", "double"),
-      "items" = c("integer", "double"),
+      "items_averaged" = c("integer", "double"),
       "rounding" = "character",
       "threshold" = c("integer", "double")
     )
@@ -214,12 +214,12 @@ check_generator_output <- function(
   # Number of scale values that the results are tabulated on (the "grid"). In
   # `data$frequency`, each of the three `samples` categories has this length.
   # It is `scale_max - scale_min + 1` for CLOSURE. With multi-item SPRITE, the
-  # grid also has the fractional values in between: `items - 1` of them between
+  # grid also has the fractional values in between: `items_averaged - 1` of them
   # each pair of neighboring integers.
   grid_length <- length(grid_values(data))
   scale_range <- data$inputs$scale_max - data$inputs$scale_min
 
-  grid_is_correct <- grid_length == scale_range * data$inputs$items + 1
+  grid_is_correct <- grid_length == scale_range * data$inputs$items_averaged + 1
 
   if (!grid_is_correct) {
     abort_in_export(
@@ -580,6 +580,23 @@ check_single <- function(x, type, allow_null = FALSE) {
   if (is.na(x)) {
     abort_in_export("`{name}` can't be `NA`.")
   }
+}
+
+
+# Error if `items_averaged` is missing. Adapted from scrutiny, where the
+# argument also replaced `items`, which defaulted to 1. That default let means
+# of multi-item scales be treated as single items, and the name was mistaken for
+# the number of scale points. Usage: `if (missing(items_averaged))
+# error_items_missing()`
+error_items_missing <- function() {
+  abort_in_export(
+    "Need to specify `items_averaged`.",
+    "i" = "It is the number of items averaged into each respondent's score, \
+    such as 4 for a mean over four questions. It is not the number of scale \
+    points.",
+    "i" = "For a single item: `items_averaged = 1`.",
+    "i" = "This argument replaces `items`, which defaulted to 1."
+  )
 }
 
 
@@ -946,7 +963,7 @@ count_col_names <- function(values) {
 
 
 # Scale values in hundredths, rounded half away from zero like closure-core's
-# `f64::round()`. R's `round()` rounds half to even, so with `items = 8`, it
+# `f64::round()`. R's `round()` rounds half to even, so with 8 items, it
 # would turn 1.125 into 112 rather than 113.
 to_hundredths <- function(values) {
   sign(values) * floor(abs(values) * 100 + 0.5)

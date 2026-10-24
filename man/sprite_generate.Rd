@@ -10,7 +10,7 @@ sprite_generate(
   n,
   scale_min,
   scale_max,
-  items = 1,
+  items_averaged,
   path = NULL,
   stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
@@ -31,15 +31,17 @@ possible values. For example, with a 1-7 Likert scale, use \code{scale_min = 1}
 and \code{scale_max = 7}. Prefer the empirical min and max if available: they
 constrain the possible values further.}
 
-\item{items}{Numeric (length 1). Number of items/questions in your scale.
-Must be at least 2. This represents how many individual items were averaged
-to produce each participant's mean score.}
+\item{items_averaged}{Numeric (length 1). Number of items averaged into each
+respondent's score, such as \code{4} for a mean over four questions. This is
+not the number of scale points. There is no default, so the assumption is
+stated in every call. Use \code{1} for a single item.}
 
 \item{path}{String (length 1). Optionally, choose the directory where a new
 folder with CLOSURE results should be created. Use \code{path = "."} for your
 current working directory. See "Writing to disk" below.}
 
-\item{stop_after}{Numeric (length 1). \strong{Required} for SPRITE when \code{items > 1}. Limits the number of samples returned to prevent overflow. Recommended
+\item{stop_after}{Numeric (length 1). \strong{Required} for SPRITE when
+\code{items_averaged > 1}. Limits the number of samples returned to prevent overflow. Recommended
 value: 100-1000 depending on your needs.}
 
 \item{include}{String (length 1). If results are written to disk, which parts
@@ -119,9 +121,10 @@ SPRITE, and with CLOSURE if \code{stop_after} was specified.
 integer. One column per scale value, holding the number of times this
 value occurs in the sample. For instance, \code{v3} counts the 3s. Negative
 values are marked with \code{n}, as in \code{vn2} for -2, and decimal values with
-\verb{_}, as in \code{v1_5} for 1.5 (only for SPRITE with \code{items > 1}). Together,
-these columns describe each sample completely because the order of
-values within a sample doesn't matter. The counts of each row sum up to
+\verb{_}, as in \code{v1_5} for 1.5 (only for SPRITE with
+\code{items_averaged > 1}). Together, these columns describe each sample
+completely because the order of values within a sample doesn't
+matter. The counts of each row sum up to
 \code{n}.
 \item \code{horns}: double. Horns index of each sample.
 }
@@ -138,8 +141,8 @@ Call \code{sprite_generate()} to find possible samples using SPRITE
 reconstructs possible sample distributions given summary statistics and
 multi-item scale information.
 
-\code{stop_after} is required when \code{items > 1} to prevent overflow errors in the
-current implementation.
+\code{stop_after} is required when \code{items_averaged > 1} to prevent overflow
+errors in the current implementation.
 }
 \section{Writing to disk}{
  Specify \code{path} if the expected runtime is very
@@ -189,6 +192,7 @@ data_simple <- sprite_generate(
   n = 120,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 2,
   stop_after = 150
 )
 
@@ -197,9 +201,9 @@ sprite_generate(
   mean = "3.5",
   sd = "1.7",
   n = 1000,
-  items = 5,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 5,
   stop_after = 1000
 )
 }

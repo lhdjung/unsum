@@ -17,7 +17,7 @@
 # n <- 30
 # scale_min <- 1
 # scale_max <- 8
-# items <- 1
+# items_averaged <- 1
 # technique <- "CLOSURE"
 # path <- NULL
 # stop_after <- NULL
@@ -34,7 +34,7 @@ generate_from_mean_sd_n <- function(
   n,
   scale_min,
   scale_max,
-  items = 1,
+  items_averaged,
   technique,
   path = NULL,
   stop_after = NULL,
@@ -45,6 +45,12 @@ generate_from_mean_sd_n <- function(
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 ) {
+  # Like scrutiny's `items_averaged`, this has no default, so every call states
+  # whether the mean is one of a single item or of several items averaged
+  if (missing(items_averaged)) {
+    error_items_missing()
+  }
+
   # Comprehensive checks make sure that each argument is of the right type, has
   # length 1, and is not `NA`.
   check_single(mean, "character")
@@ -57,7 +63,7 @@ generate_from_mean_sd_n <- function(
   check_single(rounding, "character")
   check_single(threshold, c("double", "integer"))
   check_single(ask_to_proceed, "logical")
-  check_single(items, c("double", "integer"), allow_null = TRUE)
+  check_single(items_averaged, c("double", "integer"))
 
   check_whole_number(n)
   check_whole_number(scale_min)
@@ -73,8 +79,12 @@ generate_from_mean_sd_n <- function(
       )
     }
   }
-  if (!is.null(items)) {
-    check_whole_number(items)
+  check_whole_number(items_averaged)
+  if (items_averaged < 1) {
+    abort_in_export(
+      "`items_averaged` must be at least 1.",
+      "x" = "It is {.val {items_averaged}}."
+    )
   }
 
   check_numeric_string(mean)
@@ -92,27 +102,26 @@ generate_from_mean_sd_n <- function(
     )
   }
 
-  # For CLOSURE, `items` defaults to 1; for SPRITE, it must be provided
-  items_val <- if (is.null(items)) 1L else as.integer(items)
+  items_val <- as.integer(items_averaged)
 
   # closure-core only implements CLOSURE for single-item scales. Passing
   # anything else through would be silently ignored, so error instead.
   if (technique == "CLOSURE" && items_val != 1L) {
     abort_in_export(
-      "CLOSURE requires `items = 1`.",
-      "x" = "`items` is {.val {items}}.",
+      "CLOSURE requires `items_averaged = 1`.",
+      "x" = "`items_averaged` is {.val {items_averaged}}.",
       "i" = "For multi-item scales, use `sprite_generate()`."
     )
   }
 
   # SPRITE-specific validation
   if (technique == "SPRITE") {
-    # Prevent overflow crashes - SPRITE with items > 1 is prone to overflow
+    # Prevent overflow crashes - multi-item SPRITE is prone to overflow
     # Be very conservative and require stop_after in most cases
     if (items_val > 1L && is.null(stop_after)) {
       abort_in_export(
         "`stop_after` is required when using SPRITE with multi-item scales.",
-        "x" = "Currently using: `items = {items}`",
+        "x" = "Currently using: `items_averaged = {items_averaged}`",
         "i" = "Add `stop_after` to limit results and prevent overflow.",
         "i" = "For example: `stop_after = 1000` will stop after SPRITE found
         the first 1000 results.",
@@ -243,7 +252,7 @@ generate_from_mean_sd_n <- function(
         n = n,
         scale_min = scale_min,
         scale_max = scale_max,
-        items = items_val,
+        items_averaged = items_val,
         rounding = rounding,
         threshold = threshold
       ),
@@ -352,7 +361,7 @@ generate_from_mean_sd_n <- function(
           n = n,
           scale_min = scale_min,
           scale_max = scale_max,
-          items = items_val,
+          items_averaged = items_val,
           rounding = rounding,
           threshold = threshold
         ),

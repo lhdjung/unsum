@@ -86,7 +86,7 @@ The order is the same as in \code{sprite_generate()}:
    n = 90,
    scale_min = 1,
    scale_max = 5,
-   items = 1,                # default
+   items_averaged = 1,
    rounding = "up_or_down",  # default
    threshold = 5             # default
  )
@@ -101,6 +101,7 @@ data <- sprite_generate(
   n = 45,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 1,
   stop_after = 1000
 )
 

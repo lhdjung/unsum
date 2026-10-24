@@ -61,7 +61,7 @@ new_generator_mean_sd_n <- function(technique) {
         ask_to_proceed = ask_to_proceed,
         rounding_error_mean = NULL,
         rounding_error_sd = NULL,
-        items = items
+        items_averaged = items_averaged
       )
     })
   )

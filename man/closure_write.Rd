@@ -86,7 +86,7 @@ The order is the same as in \code{closure_generate()}:
    n = 90,
    scale_min = 1,
    scale_max = 5,
-   items = 1,                # default
+   items_averaged = 1,
    rounding = "up_or_down",  # default
    threshold = 5             # default
  )
@@ -100,7 +100,8 @@ data <- closure_generate(
   sd = "0.6",
   n = 45,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 # Writing to a temporary folder just for this example.

@@ -10,7 +10,7 @@ closure_generate(
   n,
   scale_min,
   scale_max,
-  items = 1,
+  items_averaged,
   path = NULL,
   stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
@@ -31,9 +31,11 @@ possible values. For example, with a 1-7 Likert scale, use \code{scale_min = 1}
 and \code{scale_max = 7}. Prefer the empirical min and max if available: they
 constrain the possible values further.}
 
-\item{items}{Numeric (length 1). Number of items composing the original
-measurement scale. CLOSURE only supports single-item scales, so this must
-be \code{1}, the default. For multi-item scales, see \code{\link[=sprite_generate]{sprite_generate()}}.}
+\item{items_averaged}{Numeric (length 1). Number of items averaged into each
+respondent's score, such as \code{4} for a mean over four questions. This is
+not the number of scale points. There is no default, so the assumption is
+stated in every call. CLOSURE only supports single items, so this must be
+\code{1}. For multi-item scales, see \code{\link[=sprite_generate]{sprite_generate()}}.}
 
 \item{path}{String (length 1). Optionally, choose the directory where a new
 folder with CLOSURE results should be created. Use \code{path = "."} for your
@@ -122,9 +124,10 @@ SPRITE, and with CLOSURE if \code{stop_after} was specified.
 integer. One column per scale value, holding the number of times this
 value occurs in the sample. For instance, \code{v3} counts the 3s. Negative
 values are marked with \code{n}, as in \code{vn2} for -2, and decimal values with
-\verb{_}, as in \code{v1_5} for 1.5 (only for SPRITE with \code{items > 1}). Together,
-these columns describe each sample completely because the order of
-values within a sample doesn't matter. The counts of each row sum up to
+\verb{_}, as in \code{v1_5} for 1.5 (only for SPRITE with
+\code{items_averaged > 1}). Together, these columns describe each sample
+completely because the order of values within a sample doesn't
+matter. The counts of each row sum up to
 \code{n}.
 \item \code{horns}: double. Horns index of each sample.
 }
@@ -197,7 +200,8 @@ data_high <- closure_generate(
   sd = "1.7",
   n = 70,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 data_high
@@ -213,7 +217,8 @@ data_low <- closure_generate(
   sd = "0.5",
   n = 25,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 data_low

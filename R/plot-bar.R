@@ -69,7 +69,8 @@
 #'   sd = "0.5",
 #'   n = 70,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 5,
+#'   items_averaged = 1
 #' )
 #'
 #' # Even with minimal and maximal variance,
@@ -103,6 +104,7 @@ closure_plot_bar <- new_plot_fn_bar("CLOSURE", "#5D3FD3")
 #'   n = 120,
 #'   scale_min = 1,
 #'   scale_max = 5,
+#'   items_averaged = 1,
 #'   stop_after = 150
 #' )
 #'

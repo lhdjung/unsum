@@ -102,6 +102,7 @@ data <- sprite_generate(
   n = 120,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 1,
   stop_after = 150
 )
 

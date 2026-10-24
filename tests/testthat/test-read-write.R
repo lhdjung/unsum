@@ -9,6 +9,7 @@ path_closure <- closure_generate(
   n = 70,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 1,
   path = temp_folder
 )$directory$path
 
@@ -28,7 +29,14 @@ sort_results <- function(results) {
   results[do.call(order, unname(as.list(results))), ]
 }
 
-inputs_round_trip <- list(mean = "3.5", sd = "1.7", n = 30, scale_min = 1, scale_max = 5)
+inputs_round_trip <- list(
+  mean = "3.5",
+  sd = "1.7",
+  n = 30,
+  scale_min = 1,
+  scale_max = 5,
+  items_averaged = 1
+)
 data_memory <- rlang::inject(closure_generate(!!!inputs_round_trip))
 
 test_that("results streamed to disk are the same as those in memory", {
@@ -62,7 +70,7 @@ test_that("`closure_write()` and `closure_read()` round-trip the results", {
 })
 
 test_that("multi-item SPRITE has count columns for fractional values", {
-  data <- sprite_generate("3.5", "1.2", 20, 1, 5, items = 2, stop_after = 10)
+  data <- sprite_generate("3.5", "1.2", 20, 1, 5, items_averaged = 2, stop_after = 10)
   expect_equal(grid_values(data), seq(1, 5, by = 0.5))
   expect_equal(names(data$results)[2:4], c("v1", "v1_5", "v2"))
   expect_true(all(rowSums(results_counts(data)) == 20))
