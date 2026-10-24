@@ -53,6 +53,11 @@ which all other ones would be generated. Based on scale range only.
 
 This can help predict how much time \code{\link[=closure_generate]{closure_generate()}} would take, and
 avoid prohibitively long runs.
+
+Both functions assume a single item, like \code{closure_generate()} with
+\code{items_averaged = 1}: each value in a sample is one of the integers from
+\code{scale_min} to \code{scale_max}. If \code{mean} and \code{sd} describe the average of
+several items per respondent, the counts are not meaningful.
 }
 \examples{
 closure_count_all(

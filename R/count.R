@@ -12,6 +12,11 @@
 #'   This can help predict how much time [`closure_generate()`] would take, and
 #'   avoid prohibitively long runs.
 #'
+#'   Both functions assume a single item, like `closure_generate()` with
+#'   `items_averaged = 1`: each value in a sample is one of the integers from
+#'   `scale_min` to `scale_max`. If `mean` and `sd` describe the average of
+#'   several items per respondent, the counts are not meaningful.
+#'
 #' @inheritParams closure_generate
 #' @param scale_min,scale_max Integers (length 1 each). Minimum and maximum of
 #'   the scales to which the reported statistics refer.
