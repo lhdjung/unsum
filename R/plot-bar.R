@@ -13,7 +13,9 @@
 #'   `"relative"` frequencies.
 #' @param samples String (length 1). How to aggregate the samples? Either take
 #'   the average sample (`"mean"`, the default) or the sum of all samples
-#'   (`"all"`). This only matters if absolute frequencies are shown.
+#'   (`"all"`). This only matters if absolute frequencies are shown. `"all"`
+#'   needs the horns index values in `results`, so if `data` were read from
+#'   disk, use `include = "stats_and_horns"` or `"all"` there.
 #' @param overlay String (length 1). Visualization mode for the frequency
 #'   distribution across all samples, overlaid behind the main bars. Only
 #'   applies when `samples = "mean"`. Options:

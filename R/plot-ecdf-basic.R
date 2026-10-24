@@ -402,6 +402,11 @@ format_equation <- function(
     paste0("<sub>", subscript, "</sub>")
   }
 
+  # Without a variable name, there are no parentheses at all
+  if (is.null(var_name)) {
+    return(prefix)
+  }
+
   # Assemble the label
   paste0(prefix, " (*", var_name, "*", part_sub, " = ", part_number, ")")
 }

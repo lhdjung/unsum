@@ -56,6 +56,9 @@ closure_count_all <- function(
   check_whole_number(scale_min)
   check_whole_number(scale_max)
 
+  check_numeric_string(mean)
+  check_numeric_string(sd)
+
   check_scale(scale_min, scale_max, as.numeric(mean))
 
   # See `generate_from_mean_sd_n()` for why the interval centers are used
@@ -66,7 +69,7 @@ closure_count_all <- function(
   )
 
   # Call into the Rust implementation
-  count_closure_combinations(
+  out <- count_closure_combinations(
     mean = mean_sd_unrounded$center[1],
     sd = mean_sd_unrounded$center[2],
     n = n,
@@ -75,6 +78,16 @@ closure_count_all <- function(
     rounding_error_mean = mean_sd_unrounded$error[1],
     rounding_error_sd = mean_sd_unrounded$error[2]
   )
+
+  # The Rust side signals failure by returning an error message as a string
+  if (is.character(out)) {
+    abort_in_export(
+      "Counting CLOSURE samples failed on the Rust level.",
+      "x" = "{out}"
+    )
+  }
+
+  out
 }
 
 

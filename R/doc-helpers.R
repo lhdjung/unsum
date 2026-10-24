@@ -150,7 +150,7 @@ expand_section <- function(section, technique) {
 
       \\preformatted{{
 
-      {technique}-3_5-1_0-90-1-5-up_or_down-5
+      {technique}-3_5-1_0-90-1-5-1-up_or_down-5
       }}
 
       The order is the same as in `{lowtech}_generate()`:
@@ -163,6 +163,7 @@ expand_section <- function(section, technique) {
         n = 90,
         scale_min = 1,
         scale_max = 5,
+        items = 1,                # default
         rounding = \"up_or_down\",  # default
         threshold = 5             # default
       )

@@ -58,7 +58,10 @@ write_basic <- function(data, path, technique) {
   # same files as streaming to disk from Rust.
   names_on_disk <- FILES_EXPECTED |>
     setdiff(c(
-      "info.md", "counts.parquet", "scale_values.parquet", "format.parquet"
+      "info.md",
+      "counts.parquet",
+      "scale_values.parquet",
+      "format.parquet"
     )) |>
     sub("\\.parquet$", "", x = _)
 
@@ -79,7 +82,6 @@ write_basic <- function(data, path, technique) {
 
   values <- grid_values(data)
   grid_length <- length(values)
-  scale_range <- data$inputs$scale_max - data$inputs$scale_min
 
   nanoparquet::write_parquet(
     tibble::new_tibble(
@@ -87,7 +89,7 @@ write_basic <- function(data, path, technique) {
         index = seq_len(grid_length) - 1L,
         column = count_col_names(values),
         value = values,
-        value_hundredths = as.integer(round(values * 100))
+        value_hundredths = as.integer(to_hundredths(values))
       ),
       nrow = grid_length
     ),
@@ -102,7 +104,7 @@ write_basic <- function(data, path, technique) {
         technique = technique,
         n = as.integer(data$inputs$n),
         k = grid_length,
-        items = if (scale_range == 0) 1L else as.integer((grid_length - 1) / scale_range),
+        items = as.integer(data$inputs$items),
         scale_min = as.integer(data$inputs$scale_min),
         scale_max = as.integer(data$inputs$scale_max),
         # CLOSURE samples are in whole scale points, SPRITE's in hundredths
@@ -174,12 +176,8 @@ read_basic <- function(
 
   slash <- .Platform$file.sep
 
-  name_dir <- path |>
-    strsplit(slash) |>
-    call_on(\(x) {
-      vec <- x[[1]]
-      vec[length(vec)]
-    })
+  # `basename()` also splits on backslashes on Windows, unlike `file.sep`
+  name_dir <- basename(path)
 
   files_actual <- dir(path)
 
@@ -284,7 +282,9 @@ read_basic <- function(
     out$results <- tibble::new_tibble(
       x = list(
         id = as.double(seq_len(n_samples_all)),
-        horns = nanoparquet::read_parquet(path_counts, col_select = "horns")[[1]]
+        horns = nanoparquet::read_parquet(path_counts, col_select = "horns")[[
+          1
+        ]]
       ),
       nrow = n_samples_all
     )

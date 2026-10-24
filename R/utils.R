@@ -159,7 +159,7 @@ check_generator_output <- function(
   # Inputs (1 / 6)
   check_component_tibble(
     x = data$inputs,
-    dims = c(1L, 8L),
+    dims = c(1L, 9L),
     technique = technique,
     col_names_types = list(
       "technique" = "character",
@@ -168,6 +168,7 @@ check_generator_output <- function(
       "n" = c("integer", "double"),
       "scale_min" = c("integer", "double"),
       "scale_max" = c("integer", "double"),
+      "items" = c("integer", "double"),
       "rounding" = "character",
       "threshold" = c("integer", "double")
     )
@@ -213,16 +214,12 @@ check_generator_output <- function(
   # Number of scale values that the results are tabulated on (the "grid"). In
   # `data$frequency`, each of the three `samples` categories has this length.
   # It is `scale_max - scale_min + 1` for CLOSURE. With multi-item SPRITE, the
-  # grid also has the fractional values in between, so the number of steps from
-  # `scale_min` to `scale_max` is a multiple of `scale_max - scale_min`.
+  # grid also has the fractional values in between: `items - 1` of them between
+  # each pair of neighboring integers.
   grid_length <- length(grid_values(data))
   scale_range <- data$inputs$scale_max - data$inputs$scale_min
 
-  grid_is_correct <- if (scale_range == 0 || technique == "CLOSURE") {
-    grid_length == scale_range + 1
-  } else {
-    grid_length > scale_range && is_whole_number((grid_length - 1) / scale_range)
-  }
+  grid_is_correct <- grid_length == scale_range * data$inputs$items + 1
 
   if (!grid_is_correct) {
     abort_in_export(
@@ -586,6 +583,18 @@ check_single <- function(x, type, allow_null = FALSE) {
 }
 
 
+# Make sure a string, such as a reported mean, represents a finite number
+check_numeric_string <- function(x) {
+  if (!is.finite(suppressWarnings(as.numeric(x)))) {
+    name <- deparse(substitute(x))
+    abort_in_export(
+      "`{name}` must be a number written as a string, like {.val {\"3.50\"}}.",
+      "x" = "It is {.val {x}}."
+    )
+  }
+}
+
+
 # Make sure a value has the correct type (or is `NULL`, if allowed)
 check_type <- function(x, t, n = 1, name = NULL, allow_null = FALSE) {
   if (
@@ -924,11 +933,23 @@ has_counts <- function(data) {
 # Names of count columns in closure-core's counts.parquet, given the scale
 # values: `v3` for 3, `v1_5` for 1.5, `v1_33` for 1.33, and `vn2` for -2.
 count_col_names <- function(values) {
-  hundredths <- round(values * 100)
+  hundredths <- to_hundredths(values)
   whole <- abs(hundredths) %/% 100
   frac <- abs(hundredths) %% 100
-  frac <- ifelse(frac == 0, "", paste0("_", sub("0$", "", sprintf("%02d", frac))))
+  frac <- ifelse(
+    frac == 0,
+    "",
+    paste0("_", sub("0$", "", sprintf("%02d", frac)))
+  )
   paste0("v", ifelse(hundredths < 0, "n", ""), whole, frac)
+}
+
+
+# Scale values in hundredths, rounded half away from zero like closure-core's
+# `f64::round()`. R's `round()` rounds half to even, so with `items = 8`, it
+# would turn 1.125 into 112 rather than 113.
+to_hundredths <- function(values) {
+  sign(values) * floor(abs(values) * 100 + 0.5)
 }
 
 

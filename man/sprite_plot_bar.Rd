@@ -35,7 +35,9 @@ value and its percentage of all values. Other options are \code{"absolute"} and
 
 \item{samples}{String (length 1). How to aggregate the samples? Either take
 the average sample (\code{"mean"}, the default) or the sum of all samples
-(\code{"all"}). This only matters if absolute frequencies are shown.}
+(\code{"all"}). This only matters if absolute frequencies are shown. \code{"all"}
+needs the horns index values in \code{results}, so if \code{data} were read from
+disk, use \code{include = "stats_and_horns"} or \code{"all"} there.}
 
 \item{overlay}{String (length 1). Visualization mode for the frequency
 distribution across all samples, overlaid behind the main bars. Only

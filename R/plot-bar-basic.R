@@ -79,7 +79,7 @@ plot_frequency_bar <- function(
 
     # Enable plots without facet labels
     if (is.null(facet_labels)) {
-      facet_labels <- rep("\"\"", 2)
+      facet_labels <- c("", "")
       facet_labels_parens <- NULL
     }
 
@@ -122,6 +122,35 @@ plot_frequency_bar <- function(
   format <- arg_match_in_export(format)
   samples <- arg_match_in_export(samples)
   overlay <- arg_match_in_export(overlay)
+
+  # The default overlay only applies to `samples = "mean"`, so drop it silently
+  # rather than making the user turn it off
+  if (samples != "mean" && overlay == "all_avg") {
+    overlay <- "none"
+  }
+
+  # With `samples = "all"`, the bars show the total count across each group of
+  # samples. `f_expected` is the count in the group's average sample, so scale
+  # it up by the group's size: the number of samples whose horns index is the
+  # min or max, with the same tolerance that closure-core uses for grouping.
+  if (samples == "all" && technique != "DEMO") {
+    horns_all <- data_full$results$horns
+
+    if (is.null(horns_all)) {
+      lowtech <- tolower(technique)
+      abort_in_export(
+        "`samples = \"all\"` requires the horns index values in `results`.",
+        "i" = "Read them with `{lowtech}_read(include = \"stats_and_horns\")`."
+      )
+    }
+
+    group_sizes <- c(
+      horns_min = sum(abs(horns_all - min_max_values[1L]) < 1e-10),
+      horns_max = sum(abs(horns_all - min_max_values[2L]) < 1e-10)
+    )
+
+    data$f_expected <- data$f_expected * unname(group_sizes[data$samples])
+  }
 
   need_all_samples <- overlay %in% c("dots", "interval", "pointinterval")
 
@@ -201,7 +230,7 @@ plot_frequency_bar <- function(
   if (samples == "mean") {
     label_avg_all <- "avg. sample, *n* = "
     label_values <- " "
-  } else if (samples == "all" && n_samples_groups == 1) {
+  } else if (samples == "all" && technique == "DEMO") {
     label_avg_all <- "all "
     label_values <- " values "
   } else if (samples == "all") {

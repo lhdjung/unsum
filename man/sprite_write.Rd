@@ -73,7 +73,7 @@ underscores replace decimal periods. For example:
 
 \preformatted{
 
- SPRITE-3_5-1_0-90-1-5-up_or_down-5
+ SPRITE-3_5-1_0-90-1-5-1-up_or_down-5
  }
 
 The order is the same as in \code{sprite_generate()}:
@@ -86,6 +86,7 @@ The order is the same as in \code{sprite_generate()}:
    n = 90,
    scale_min = 1,
    scale_max = 5,
+   items = 1,                # default
    rounding = "up_or_down",  # default
    threshold = 5             # default
  )

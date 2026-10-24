@@ -64,10 +64,21 @@ generate_from_mean_sd_n <- function(
   check_whole_number(scale_max)
   if (!is.null(stop_after)) {
     check_whole_number(stop_after)
+    # With 0, no samples would be found, which would falsely look like the
+    # summary statistics were inconsistent
+    if (stop_after < 1) {
+      abort_in_export(
+        "`stop_after` must be at least 1.",
+        "x" = "It is {.val {stop_after}}."
+      )
+    }
   }
   if (!is.null(items)) {
     check_whole_number(items)
   }
+
+  check_numeric_string(mean)
+  check_numeric_string(sd)
 
   mean_num <- as.numeric(mean)
   sd_num <- as.numeric(sd)
@@ -232,6 +243,7 @@ generate_from_mean_sd_n <- function(
         n = n,
         scale_min = scale_min,
         scale_max = scale_max,
+        items = items_val,
         rounding = rounding,
         threshold = threshold
       ),
@@ -340,6 +352,7 @@ generate_from_mean_sd_n <- function(
           n = n,
           scale_min = scale_min,
           scale_max = scale_max,
+          items = items_val,
           rounding = rounding,
           threshold = threshold
         ),

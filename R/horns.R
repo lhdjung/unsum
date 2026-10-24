@@ -144,6 +144,12 @@ horns <- function(freqs, scale_min, scale_max) {
     )
   }
 
+  # A one-point scale has no variance at all, so it can't be polarized. This
+  # also avoids dividing by 0 below, and it matches closure-core.
+  if (k < 2) {
+    return(0)
+  }
+
   freqs_relative <- freqs / sum(freqs)
 
   # Using a 1-k scale and weighting it by the relative frequencies
@@ -200,6 +206,11 @@ horns_rescaled <- function(freqs, scale_min, scale_max) {
   # Actual horns index and reference value for uniform distribution
   h_actual <- horns(freqs, scale_min, scale_max)
   h_uniform <- horns_uniform(scale_min, scale_max)
+
+  # Only on a one-point scale, where `h_actual` is also 0
+  if (h_uniform == 0) {
+    return(0)
+  }
 
   if (h_actual <= h_uniform) {
     # Map [0, h_uniform] to [0, 0.5]

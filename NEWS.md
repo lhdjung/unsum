@@ -6,6 +6,7 @@
 -   In `frequency`, the `f_count` column is replaced by `f_expected`, the average count of each scale value within a group of samples, and `f_representative`, the counts in the group's medoid sample. The latter is `NaN` if results were written to disk via `path`. `f_relative` is now `f_expected / n` in memory and on disk alike.
 -   The `value` columns of `frequency`, `frequency_dist`, `modality_counts`, and `modality_pairs` are now doubles because multi-item SPRITE scales have values like 1.5. These tables now have one row per such value.
 -   `modality_conclusion` can now be `NA`: no sample with that shape was found, but the search was partial (SPRITE, or CLOSURE with `stop_after`). Its columns now describe the shapes of individual samples rather than of per-value count ranges.
+-   `inputs` has a new `items` column after `scale_max`. It is also part of the folder name when writing to disk, e.g., `CLOSURE-3_5-1_0-90-1-5-1-up_or_down-5`.
 -   Results written to disk use a new layout. Instead of sample.parquet and horns.parquet, a folder has counts.parquet, scale_values.parquet, and format.parquet, as well as the new modality files. Folders written by earlier versions of unsum can't be read anymore.
 
 ## New features
@@ -26,6 +27,15 @@
 -   Errors on the Rust level are now reported as R errors instead of a confusing `$ operator is invalid for atomic vectors` message. In writing mode, the partially created folder is removed.
 -   `n`, `scale_min`, `scale_max`, `stop_after`, and `items` are now checked for being whole numbers, with a clear error message.
 -   Printing in-memory results no longer shows an empty `$directory` element.
+-   `sprite_generate()` works with `items = 8` and other numbers of items that put scale values exactly halfway between two hundredths. Count column names used to be rounded differently in R than in closure-core, so the results failed validation.
+-   `sprite_generate()` runs that only differ in `items` no longer write to the same folder, which caused a "Folder already exists" error.
+-   `closure_plot_bar()` and `sprite_plot_bar()` with `samples = "all"` now show the total count across all samples of each group, as documented. Previously, they showed the average sample's counts. With `samples = "all"`, the default overlay is now dropped instead of throwing an error.
+-   `facet_labels_parens = NULL` and `facet_labels = NULL` in the bar plot functions now remove the parentheses (or the whole label) instead of leaving `(** = 0.66)` behind.
+-   `closure_generate()` and `horns_rescaled()` no longer fail with a cryptic error on a one-point scale (`scale_min == scale_max`). `horns()` returns `0` there, like closure-core.
+-   `closure_count_all()` now throws an error for invalid input, such as `n = 1`, instead of returning the error message as a string.
+-   Non-numeric strings for `mean` or `sd` now get a clear error message.
+-   `stop_after` must now be at least 1. With `0`, no samples were found, and the warning falsely claimed the summary statistics were inconsistent.
+-   `closure_read()` and `sprite_read()` now accept paths with backslashes on Windows.
 
 # unsum 0.3.0
 
