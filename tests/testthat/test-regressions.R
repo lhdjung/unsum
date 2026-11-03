@@ -152,3 +152,17 @@ test_that("`items_averaged` must be specified and be at least 1", {
   expect_error(sprite_generate("3.5", "1.7", 30, 1, 5, stop_after = 5), "Need to specify `items_averaged`")
   expect_error(sprite_generate("3.5", "1.7", 30, 1, 5, items_averaged = 0, stop_after = 5), "at least 1")
 })
+
+
+test_that("an error raised inside a data mask names the export and ends", {
+  # A user function called in a data mask names itself as its parent, so the
+  # search for the user-called export used to loop forever here. The time limit
+  # makes a relapse fail instead of hang:
+  setTimeLimit(elapsed = 10, transient = TRUE)
+  on.exit(setTimeLimit(), add = TRUE)
+  g <- function(s) closure_count_all("3.0", s, 10, 1, 5)
+  rlang::eval_tidy(quote(g(s)), list(s = "x")) |>
+    expect_error(class = "rlang_error") |>
+    call_on(\(e) e$call) |>
+    expect_identical(quote(closure_count_all("3.0", s, 10, 1, 5)))
+})
