@@ -16,7 +16,7 @@ compare_sprite_closure <- function() {
     rounding = rounding,
     threshold = threshold,
     ask_to_proceed = ask_to_proceed,
-    items = items
+    items_averaged = items_averaged
   )
 
   time_start <- proc.time()["elapsed"]

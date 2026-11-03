@@ -12,6 +12,11 @@
 #'   This can help predict how much time [`closure_generate()`] would take, and
 #'   avoid prohibitively long runs.
 #'
+#'   Both functions assume a single item, like `closure_generate()` with
+#'   `items_averaged = 1`: each value in a sample is one of the integers from
+#'   `scale_min` to `scale_max`. If `mean` and `sd` describe the average of
+#'   several items per respondent, the counts are not meaningful.
+#'
 #' @inheritParams closure_generate
 #' @param scale_min,scale_max Integers (length 1 each). Minimum and maximum of
 #'   the scales to which the reported statistics refer.
@@ -56,6 +61,9 @@ closure_count_all <- function(
   check_whole_number(scale_min)
   check_whole_number(scale_max)
 
+  check_numeric_string(mean)
+  check_numeric_string(sd)
+
   check_scale(scale_min, scale_max, as.numeric(mean))
 
   # See `generate_from_mean_sd_n()` for why the interval centers are used
@@ -66,7 +74,7 @@ closure_count_all <- function(
   )
 
   # Call into the Rust implementation
-  count_closure_combinations(
+  out <- count_closure_combinations(
     mean = mean_sd_unrounded$center[1],
     sd = mean_sd_unrounded$center[2],
     n = n,
@@ -75,6 +83,16 @@ closure_count_all <- function(
     rounding_error_mean = mean_sd_unrounded$error[1],
     rounding_error_sd = mean_sd_unrounded$error[2]
   )
+
+  # The Rust side signals failure by returning an error message as a string
+  if (is.character(out)) {
+    abort_in_export(
+      "Counting CLOSURE samples failed on the Rust level.",
+      "x" = "{out}"
+    )
+  }
+
+  out
 }
 
 

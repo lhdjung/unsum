@@ -31,7 +31,8 @@ data <- closure_generate(
   sd = "1.8",
   n = 80,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 ```
 

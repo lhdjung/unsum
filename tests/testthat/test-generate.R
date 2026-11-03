@@ -6,7 +6,8 @@ data_r_1 <- closure_generate(
   sd = "0.5",
   n = 52,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 
@@ -16,6 +17,7 @@ data_r_2 <- closure_generate(
   n = 120,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 1,
 )
 
 
@@ -70,7 +72,8 @@ test_that("f_representative and f_expected sum to n for each samples group", {
     sd = "1.0",
     n = 50,
     scale_min = 1,
-    scale_max = 7
+    scale_max = 7,
+    items_averaged = 1
   )$frequency
 
   # Each samples group's medoid is a single sample of size n=50, and so is the
@@ -92,7 +95,8 @@ inputs_constant_closure <- list(
   sd = "1.7",
   n = 75,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 
 inputs_constant_sprite <- c(inputs_constant_closure, stop_after = 100)
@@ -141,7 +145,8 @@ inputs_random_closure <- list(
     round(),
 
   scale_min = 1,
-  scale_max = endpoint
+  scale_max = endpoint,
+  items_averaged = 1
 )
 
 inputs_random_sprite <- c(inputs_random_closure, stop_after = 100)

@@ -59,7 +59,6 @@
 #' )
 
 closure_gauge_complexity <- function(mean, sd, n, scale_min, scale_max) {
-
   mean <- as.numeric(mean)
   sd <- as.numeric(sd)
 
@@ -71,22 +70,22 @@ closure_gauge_complexity <- function(mean, sd, n, scale_min, scale_max) {
 
   # 2. Scale range factor (this has exponential impact through the search tree)
   scale_factor <- if (range_size <= 3) {
-    0.1                      # trivial cases
+    0.1 # trivial cases
   } else if (range_size <= 5) {
-    1.0                      # baseline
+    1.0 # baseline
   } else if (range_size <= 7) {
-    50.0                     # under a minute
+    50.0 # under a minute
   } else if (range_size <= 9) {
-    500.0                    # extrapolated
+    500.0 # extrapolated
   } else {
-    5000.0                   # very large ranges
+    5000.0 # very large ranges
   }
 
   # 3. Sample size factor (tree depth effect)
   n_factor <- if (n <= 20) {
     0.5
   } else if (n <= 50) {
-    1.0                      # baseline
+    1.0 # baseline
   } else if (n <= 100) {
     3.0
   } else if (n <= 200) {
@@ -98,29 +97,34 @@ closure_gauge_complexity <- function(mean, sd, n, scale_min, scale_max) {
   # 4. SD constraint factor (loose constraints = less pruning = harder)
   # Your sd=2.0 case was loose and took time
   sd_factor <- if (sd <= 0.5) {
-    0.1                      # very tight = easy
+    0.1 # very tight = easy
   } else if (sd <= 1.0) {
-    0.5                      # tight
+    0.5 # tight
   } else if (sd <= 1.5) {
-    1.0                      # moderate
+    1.0 # moderate
   } else if (sd <= 2.0) {
-    2.0                      # loose
+    2.0 # loose
   } else {
-    5.0                      # very loose
+    5.0 # very loose
   }
 
   # 5. Mean extremeness (extreme means are harder to achieve)
   scale_center <- (scale_min + scale_max) / 2
   mean_distance_from_center <- abs(mean - scale_center)
   max_distance <- (scale_max - scale_min) / 2
-  mean_extremeness <- mean_distance_from_center / max_distance
+  # A one-point scale has no extremes, and dividing by 0 would give `NaN`
+  mean_extremeness <- if (max_distance == 0) {
+    0
+  } else {
+    mean_distance_from_center / max_distance
+  }
 
   mean_factor <- if (mean_extremeness < 0.2) {
-    1.0                      # central means are easier
+    1.0 # central means are easier
   } else if (mean_extremeness < 0.5) {
     1.5
   } else {
-    3.0                      # extreme means are harder
+    3.0 # extreme means are harder
   }
 
   # 6. Base complexity calculation

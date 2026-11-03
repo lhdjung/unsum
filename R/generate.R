@@ -25,9 +25,11 @@ NULL
 #'   possible values. For example, with a 1-7 Likert scale, use `scale_min = 1`
 #'   and `scale_max = 7`. Prefer the empirical min and max if available: they
 #'   constrain the possible values further.
-#' @param items Numeric (length 1). Number of items composing the original
-#'   measurement scale. CLOSURE only supports single-item scales, so this must
-#'   be `1`, the default. For multi-item scales, see [`sprite_generate()`].
+#' @param items_averaged Numeric (length 1). Number of items averaged into each
+#'   respondent's score, such as `4` for a mean over four questions. This is
+#'   not the number of scale points. There is no default, so the assumption is
+#'   stated in every call. CLOSURE only supports single items, so this must be
+#'   `1`. For multi-item scales, see [`sprite_generate()`].
 #' @param path String (length 1). Optionally, choose the directory where a new
 #'   folder with CLOSURE results should be created. Use `path = "."` for your
 #'   current working directory. See "Writing to disk" below.
@@ -84,7 +86,8 @@ NULL
 #'   sd = "1.7",
 #'   n = 70,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 5,
+#'   items_averaged = 1
 #' )
 #'
 #' data_high
@@ -100,7 +103,8 @@ NULL
 #'   sd = "0.5",
 #'   n = 25,
 #'   scale_min = 1,
-#'   scale_max = 5
+#'   scale_max = 5,
+#'   items_averaged = 1
 #' )
 #'
 #' data_low
@@ -121,14 +125,15 @@ closure_generate <- new_generator_mean_sd_n("CLOSURE")
 #'   reconstructs possible sample distributions given summary statistics and
 #'   multi-item scale information.
 #'
-#'   `stop_after` is required when `items > 1` to prevent overflow errors in the
-#'   current implementation.
+#'   `stop_after` is required when `items_averaged > 1` to prevent overflow
+#'   errors in the current implementation.
 #'
-#' @param items Numeric (length 1). Number of items/questions in your scale.
-#'   Must be at least 2. This represents how many individual items were averaged
-#'   to produce each participant's mean score.
-#' @param stop_after Numeric (length 1). **Required** for SPRITE when `items >
-#'   1`. Limits the number of samples returned to prevent overflow. Recommended
+#' @param items_averaged Numeric (length 1). Number of items averaged into each
+#'   respondent's score, such as `4` for a mean over four questions. This is
+#'   not the number of scale points. There is no default, so the assumption is
+#'   stated in every call. Use `1` for a single item.
+#' @param stop_after Numeric (length 1). **Required** for SPRITE when
+#'   `items_averaged > 1`. Limits the number of samples returned to prevent overflow. Recommended
 #'   value: 100-1000 depending on your needs.
 #' @inheritParams closure_generate
 #'
@@ -152,6 +157,7 @@ closure_generate <- new_generator_mean_sd_n("CLOSURE")
 #'   n = 120,
 #'   scale_min = 1,
 #'   scale_max = 5,
+#'   items_averaged = 2,
 #'   stop_after = 150
 #' )
 #'
@@ -160,9 +166,9 @@ closure_generate <- new_generator_mean_sd_n("CLOSURE")
 #'   mean = "3.5",
 #'   sd = "1.7",
 #'   n = 1000,
-#'   items = 5,
 #'   scale_min = 1,
 #'   scale_max = 5,
+#'   items_averaged = 5,
 #'   stop_after = 1000
 #' )
 #' }

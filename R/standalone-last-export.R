@@ -1,12 +1,16 @@
 # ---
 # repo: lhdjung/unsum
 # file: standalone-last-export.R
-# last-updated: 2026-10-03
+# last-updated: 2026-11-03
 # license: https://unlicense.org
 # imports: [rlang (>= 1.1.0), cli (>= 3.0.0)]
 # ---
 
 # ## Changelog
+# 2026-11-03:
+# - Don't loop forever on a frame that names itself as its parent, as one
+#   called in a data mask does
+#
 # 2026-10-03:
 # - Name the innermost export not called by package code, e.g., `inner()`
 #   in `outer(inner())`
@@ -101,11 +105,17 @@ index_last_export <- function() {
       logical(1L)
     )
 
+  # A function called in an environment that isn't on the stack, as in a data
+  # mask, names itself as its parent. Its caller is then the frame below it:
+  caller <- function(frame) {
+    if (parents[frame] < frame) parents[frame] else frame - 1L
+  }
+
   for (i in rev(which(is_export))) {
     # Follow the callers up, skipping functions from other packages
-    parent <- parents[i]
+    parent <- caller(i)
     while (parent > 0L && !in_package[parent]) {
-      parent <- parents[parent]
+      parent <- caller(parent)
     }
     if (parent == 0L) {
       return(i)
