@@ -91,7 +91,7 @@ periods. For example:
 
 
 
-     CLOSURE-3_5-1_0-90-1-5-up_or_down-5
+     CLOSURE-3_5-1_0-90-1-5-1-up_or_down-5
      
 
 The order is the same as in
@@ -105,6 +105,7 @@ The order is the same as in
        n = 90,
        scale_min = 1,
        scale_max = 5,
+       items_averaged = 1,
        rounding = "up_or_down",  # default
        threshold = 5             # default
      )
@@ -117,7 +118,8 @@ data <- closure_generate(
   sd = "0.6",
   n = 45,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 #> 
 #> ✔ All CLOSURE results found
@@ -128,7 +130,7 @@ data <- closure_generate(
 path_new_folder <- closure_write(data, path = tempdir())
 #> 
 #> ✔ All CLOSURE files written to:
-#> /tmp/RtmpNpIAjF/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/
+#> /tmp/RtmpnGo5yO/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/
 
 # In a later session, conveniently read the files
 # back into R. This returns the original list,
@@ -138,10 +140,11 @@ path_new_folder <- closure_write(data, path = tempdir())
 # to your folder here.)
 closure_read(path_new_folder)
 #> $inputs
-#> # A tibble: 1 × 8
-#>   technique mean  sd        n scale_min scale_max rounding   threshold
-#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
-#> 1 CLOSURE   2.7   0.6      45         1         5 up_or_down         5
+#> # A tibble: 1 × 9
+#>   technique mean  sd        n scale_min scale_max items_averaged rounding  
+#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl>          <int> <chr>     
+#> 1 CLOSURE   2.7   0.6      45         1         5              1 up_or_down
+#> # ℹ 1 more variable: threshold <dbl>
 #> 
 #> $metrics_main
 #> # A tibble: 1 × 2
@@ -263,8 +266,8 @@ closure_read(path_new_folder)
 #> 
 #> $directory
 #> # A tibble: 1 × 1
-#>   path                                                
-#>   <chr>                                               
-#> 1 /tmp/RtmpNpIAjF/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/
+#>   path                                                  
+#>   <chr>                                                 
+#> 1 /tmp/RtmpnGo5yO/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/
 #> 
 ```

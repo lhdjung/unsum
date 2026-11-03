@@ -25,7 +25,8 @@ data <- closure_generate(
   sd = "1.8",
   n = 80,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 #> 
 #> ✔ All CLOSURE results found
@@ -61,10 +62,11 @@ data
 #> 
 #> ── CLOSURE results: 2,215 samples ──────────────────────────────────────────────
 #> $inputs · how `closure_generate()` produced these data
-#> # A tibble: 1 × 8
-#>   technique mean  sd        n scale_min scale_max rounding   threshold
-#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
-#> 1 CLOSURE   3.5   1.8      80         1         5 up_or_down         5
+#> # A tibble: 1 × 9
+#>   technique mean  sd        n scale_min scale_max items_averaged rounding  
+#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl>          <int> <chr>     
+#> 1 CLOSURE   3.5   1.8      80         1         5              1 up_or_down
+#> # ℹ 1 more variable: threshold <dbl>
 #> $metrics_main · key statistics about the generated samples
 #> # A tibble: 1 × 2
 #>   samples_all values_all
@@ -202,7 +204,7 @@ save? Write it to disk with
 path_new_folder <- closure_write(data, path = tempdir())
 #> 
 #> ✔ All CLOSURE files written to:
-#> /tmp/RtmpQctqkw/CLOSURE-3_5-1_8-80-1-5-up_or_down-5/
+#> /tmp/Rtmp2CfATq/CLOSURE-3_5-1_8-80-1-5-1-up_or_down-5/
 ```
 
 This stores the results using the highly efficient Parquet format. It

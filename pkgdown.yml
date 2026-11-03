@@ -3,7 +3,7 @@ pkgdown: 2.2.1
 pkgdown_sha: ~
 articles:
   unsum: unsum.html
-last_built: 2026-10-04T09:22Z
+last_built: 2026-11-03T17:37Z
 urls:
   reference: https://lhdjung.github.io/unsum/reference
   article: https://lhdjung.github.io/unsum/articles

@@ -79,7 +79,8 @@ values must be integers: e.g., a value can be 2 or 3, but not 2.5.</p>
 <span>  sd <span class="op">=</span> <span class="st">"1.8"</span>,</span>
 <span>  n <span class="op">=</span> <span class="fl">80</span>,</span>
 <span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  scale_max <span class="op">=</span> <span class="fl">5</span></span>
+<span>  scale_max <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  items_averaged <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All CLOSURE results found</span></span></code></pre></div>
@@ -101,10 +102,11 @@ the default should be informative enough for a start.</p>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">CLOSURE results: 2,215 samples</span> <span style="color: #00BBBB;">──────────────────────────────────────────────</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">$inputs</span> · how `closure_generate()` produced these data</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 8</span></span></span>
-<span><span class="co">#&gt;   technique mean  sd        n scale_min scale_max rounding   threshold</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> CLOSURE   3.5   1.8      80         1         5 up_or_down         5</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 9</span></span></span>
+<span><span class="co">#&gt;   technique mean  sd        n scale_min scale_max items_averaged rounding  </span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> CLOSURE   3.5   1.8      80         1         5              1 up_or_down</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: threshold &lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">$metrics_main</span> · key statistics about the generated samples</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 1 × 2</span></span></span>
 <span><span class="co">#&gt;   samples_all values_all</span></span>
@@ -218,7 +220,7 @@ save? Write it to disk with <code><a href="../reference/closure_write.html">clos
 <span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/closure_write.html">closure_write</a></span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> All CLOSURE files written to:</span></span>
-<span><span class="co">#&gt; /tmp/RtmpQctqkw/CLOSURE-3_5-1_8-80-1-5-up_or_down-5/</span></span></code></pre></div>
+<span><span class="co">#&gt; /tmp/Rtmp2CfATq/CLOSURE-3_5-1_8-80-1-5-1-up_or_down-5/</span></span></code></pre></div>
 <p>This stores the results using the highly efficient Parquet format. It
 will only take a tiny fraction of a CSV file’s disk space.</p>
 <p>In your later session, read the data in from the folder to get the

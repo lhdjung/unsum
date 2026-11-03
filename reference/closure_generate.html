@@ -73,7 +73,7 @@ then return empty results and throw a warning.</p>
 <span>  <span class="va">n</span>,</span>
 <span>  <span class="va">scale_min</span>,</span>
 <span>  <span class="va">scale_max</span>,</span>
-<span>  items <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  <span class="va">items_averaged</span>,</span>
 <span>  path <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  stop_after <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  include <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"stats_and_horns"</span>, <span class="st">"stats_only"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
@@ -106,10 +106,12 @@ and <code>scale_max = 7</code>. Prefer the empirical min and max if available: t
 constrain the possible values further.</p></dd>
 
 
-<dt id="arg-items">items<a class="anchor" aria-label="anchor" href="#arg-items"></a></dt>
-<dd><p>Numeric (length 1). Number of items composing the original
-measurement scale. CLOSURE only supports single-item scales, so this must
-be <code>1</code>, the default. For multi-item scales, see <code><a href="sprite_generate.html">sprite_generate()</a></code>.</p></dd>
+<dt id="arg-items-averaged">items_averaged<a class="anchor" aria-label="anchor" href="#arg-items-averaged"></a></dt>
+<dd><p>Numeric (length 1). Number of items averaged into each
+respondent's score, such as <code>4</code> for a mean over four questions. This is
+not the number of scale points. There is no default, so the assumption is
+stated in every call. CLOSURE only supports single items, so this must be
+<code>1</code>. For multi-item scales, see <code><a href="sprite_generate.html">sprite_generate()</a></code>.</p></dd>
 
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
@@ -200,9 +202,10 @@ SPRITE, and with CLOSURE if <code>stop_after</code> was specified.</p></li>
 integer. One column per scale value, holding the number of times this
 value occurs in the sample. For instance, <code>v3</code> counts the 3s. Negative
 values are marked with <code>n</code>, as in <code>vn2</code> for -2, and decimal values with
-<code>_</code>, as in <code>v1_5</code> for 1.5 (only for SPRITE with <code>items &gt; 1</code>). Together,
-these columns describe each sample completely because the order of
-values within a sample doesn't matter. The counts of each row sum up to
+<code>_</code>, as in <code>v1_5</code> for 1.5 (only for SPRITE with
+<code>items_averaged &gt; 1</code>). Together, these columns describe each sample
+completely because the order of values within a sample doesn't
+matter. The counts of each row sum up to
 <code>n</code>.</p></li>
 <li><p><code>horns</code>: double. Horns index of each sample.</p></li>
 </ul></li>
@@ -256,7 +259,8 @@ have brief descriptions.</p></li>
 <span class="r-in"><span>  sd <span class="op">=</span> <span class="st">"1.7"</span>,</span></span>
 <span class="r-in"><span>  n <span class="op">=</span> <span class="fl">70</span>,</span></span>
 <span class="r-in"><span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  items_averaged <span class="op">=</span> <span class="fl">1</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All CLOSURE results found</span>
@@ -266,10 +270,11 @@ have brief descriptions.</p></li>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">CLOSURE results: 2,492 samples</span> <span style="color: #00BBBB;">──────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">$inputs</span> · how `closure_generate()` produced these data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   technique mean  sd        n scale_min scale_max rounding   threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> CLOSURE   3.5   1.7      70         1         5 up_or_down         5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   technique mean  sd        n scale_min scale_max items_averaged rounding  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> CLOSURE   3.5   1.7      70         1         5              1 up_or_down</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: threshold &lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">$metrics_main</span> · key statistics about the generated samples</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
@@ -310,7 +315,8 @@ have brief descriptions.</p></li>
 <span class="r-in"><span>  sd <span class="op">=</span> <span class="st">"0.5"</span>,</span></span>
 <span class="r-in"><span>  n <span class="op">=</span> <span class="fl">25</span>,</span></span>
 <span class="r-in"><span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  items_averaged <span class="op">=</span> <span class="fl">1</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All CLOSURE results found</span>
@@ -320,10 +326,11 @@ have brief descriptions.</p></li>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BBBB;">──</span> <span style="font-weight: bold;">CLOSURE results: 4 samples</span> <span style="color: #00BBBB;">──────────────────────────────────────────────────</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">$inputs</span> · how `closure_generate()` produced these data</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   technique mean  sd        n scale_min scale_max rounding   threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> CLOSURE   2.9   0.5      25         1         5 up_or_down         5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   technique mean  sd        n scale_min scale_max items_averaged rounding  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> CLOSURE   2.9   0.5      25         1         5              1 up_or_down</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: threshold &lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">$metrics_main</span> · key statistics about the generated samples</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>

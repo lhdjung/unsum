@@ -22,7 +22,7 @@ closure_generate(
   n,
   scale_min,
   scale_max,
-  items = 1,
+  items_averaged,
   path = NULL,
   stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
@@ -53,11 +53,13 @@ closure_generate(
   `scale_max = 7`. Prefer the empirical min and max if available: they
   constrain the possible values further.
 
-- items:
+- items_averaged:
 
-  Numeric (length 1). Number of items composing the original measurement
-  scale. CLOSURE only supports single-item scales, so this must be `1`,
-  the default. For multi-item scales, see
+  Numeric (length 1). Number of items averaged into each respondent's
+  score, such as `4` for a mean over four questions. This is not the
+  number of scale points. There is no default, so the assumption is
+  stated in every call. CLOSURE only supports single items, so this must
+  be `1`. For multi-item scales, see
   [`sprite_generate()`](https://lhdjung.github.io/unsum/reference/sprite_generate.md).
 
 - path:
@@ -178,7 +180,7 @@ closure_generate(
     this value occurs in the sample. For instance, `v3` counts the 3s.
     Negative values are marked with `n`, as in `vn2` for -2, and decimal
     values with `_`, as in `v1_5` for 1.5 (only for SPRITE with
-    `items > 1`). Together, these columns describe each sample
+    `items_averaged > 1`). Together, these columns describe each sample
     completely because the order of values within a sample doesn't
     matter. The counts of each row sum up to `n`.
 
@@ -241,7 +243,8 @@ data_high <- closure_generate(
   sd = "1.7",
   n = 70,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 #> 
 #> ✔ All CLOSURE results found
@@ -251,10 +254,11 @@ data_high
 #> ── CLOSURE results: 2,492 samples ──────────────────────────────────────────────
 #> 
 #> $inputs · how `closure_generate()` produced these data
-#> # A tibble: 1 × 8
-#>   technique mean  sd        n scale_min scale_max rounding   threshold
-#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
-#> 1 CLOSURE   3.5   1.7      70         1         5 up_or_down         5
+#> # A tibble: 1 × 9
+#>   technique mean  sd        n scale_min scale_max items_averaged rounding  
+#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl>          <int> <chr>     
+#> 1 CLOSURE   3.5   1.7      70         1         5              1 up_or_down
+#> # ℹ 1 more variable: threshold <dbl>
 #> 
 #> $metrics_main · key statistics about the generated samples
 #> # A tibble: 1 × 2
@@ -295,7 +299,8 @@ data_low <- closure_generate(
   sd = "0.5",
   n = 25,
   scale_min = 1,
-  scale_max = 5
+  scale_max = 5,
+  items_averaged = 1
 )
 #> 
 #> ✔ All CLOSURE results found
@@ -305,10 +310,11 @@ data_low
 #> ── CLOSURE results: 4 samples ──────────────────────────────────────────────────
 #> 
 #> $inputs · how `closure_generate()` produced these data
-#> # A tibble: 1 × 8
-#>   technique mean  sd        n scale_min scale_max rounding   threshold
-#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl> <chr>          <dbl>
-#> 1 CLOSURE   2.9   0.5      25         1         5 up_or_down         5
+#> # A tibble: 1 × 9
+#>   technique mean  sd        n scale_min scale_max items_averaged rounding  
+#>   <chr>     <chr> <chr> <dbl>     <dbl>     <dbl>          <int> <chr>     
+#> 1 CLOSURE   2.9   0.5      25         1         5              1 up_or_down
+#> # ℹ 1 more variable: threshold <dbl>
 #> 
 #> $metrics_main · key statistics about the generated samples
 #> # A tibble: 1 × 2

@@ -42,6 +42,9 @@
 <li>The <code>value</code> columns of <code>frequency</code>, <code>frequency_dist</code>, <code>modality_counts</code>, and <code>modality_pairs</code> are now doubles because multi-item SPRITE scales have values like 1.5. These tables now have one row per such value.</li>
 <li>
 <code>modality_conclusion</code> can now be <code>NA</code>: no sample with that shape was found, but the search was partial (SPRITE, or CLOSURE with <code>stop_after</code>). Its columns now describe the shapes of individual samples rather than of per-value count ranges.</li>
+<li>In <code><a href="../reference/closure_generate.html">closure_generate()</a></code> and <code><a href="../reference/sprite_generate.html">sprite_generate()</a></code>, <code>items</code> is now <code>items_averaged</code> and no longer has a default, as in scrutiny. It is the number of items averaged into each respondent’s score, and its old name was mistaken for the number of scale points. With the default of 1, a mean of a multi-item scale was silently treated as a single item. Use <code>items_averaged = 1</code> for a single item. CLOSURE still requires <code>items_averaged = 1</code>.</li>
+<li>
+<code>inputs</code> has a new <code>items_averaged</code> column after <code>scale_max</code>. It is also part of the folder name when writing to disk, e.g., <code>CLOSURE-3_5-1_0-90-1-5-1-up_or_down-5</code>.</li>
 <li>Results written to disk use a new layout. Instead of sample.parquet and horns.parquet, a folder has counts.parquet, scale_values.parquet, and format.parquet, as well as the new modality files. Folders written by earlier versions of unsum can’t be read anymore.</li>
 </ul></div>
 <div class="section level3">
@@ -57,13 +60,30 @@
 <h3 id="bugfixes-development-version">Bugfixes<a class="anchor" aria-label="anchor" href="#bugfixes-development-version"></a></h3>
 <ul><li>Asymmetric rounding methods now search the correct interval. Previously, <code><a href="../reference/closure_generate.html">closure_generate()</a></code>, <code><a href="../reference/sprite_generate.html">sprite_generate()</a></code>, and <code><a href="../reference/closure_count_all.html">closure_count_all()</a></code> passed a symmetric rounding error around the reported value to the Rust level even if <code>rounding</code> was, e.g., <code>"floor"</code> or <code>"ceiling"</code>. With <code>"floor"</code>, this meant only exact matches were found (usually none); with <code>"ceiling"</code>, too many.</li>
 <li>
-<code>closure_generate(items = 2)</code> now throws an error instead of silently running CLOSURE with <code>items = 1</code>. CLOSURE only supports single-item scales; use <code><a href="../reference/sprite_generate.html">sprite_generate()</a></code> for others.</li>
+<code>closure_generate(items_averaged = 2)</code> now throws an error instead of silently running CLOSURE with <code>items = 1</code>. CLOSURE only supports single-item scales; use <code><a href="../reference/sprite_generate.html">sprite_generate()</a></code> for others.</li>
 <li>Results with negative scale values can now be read back from disk. The minus sign used to be confused with the dashes separating the values in the folder name.</li>
 <li>Empty results written to disk via <code>path</code> can now be read back with <code><a href="../reference/closure_write.html">closure_read()</a></code> (and <code><a href="../reference/sprite_write.html">sprite_read()</a></code>) instead of throwing an error.</li>
 <li>Errors on the Rust level are now reported as R errors instead of a confusing <code>$ operator is invalid for atomic vectors</code> message. In writing mode, the partially created folder is removed.</li>
 <li>
-<code>n</code>, <code>scale_min</code>, <code>scale_max</code>, <code>stop_after</code>, and <code>items</code> are now checked for being whole numbers, with a clear error message.</li>
+<code>n</code>, <code>scale_min</code>, <code>scale_max</code>, <code>stop_after</code>, and <code>items_averaged</code> are now checked for being whole numbers, with a clear error message.</li>
 <li>Printing in-memory results no longer shows an empty <code>$directory</code> element.</li>
+<li>
+<code><a href="../reference/sprite_generate.html">sprite_generate()</a></code> works with <code>items_averaged = 8</code> and other numbers of items that put scale values exactly halfway between two hundredths. Count column names used to be rounded differently in R than in closure-core, so the results failed validation.</li>
+<li>
+<code><a href="../reference/sprite_generate.html">sprite_generate()</a></code> runs that only differ in <code>items_averaged</code> no longer write to the same folder, which caused a “Folder already exists” error.</li>
+<li>
+<code><a href="../reference/closure_plot_bar.html">closure_plot_bar()</a></code> and <code><a href="../reference/sprite_plot_bar.html">sprite_plot_bar()</a></code> with <code>samples = "all"</code> now show the total count across all samples of each group, as documented. Previously, they showed the average sample’s counts. With <code>samples = "all"</code>, the default overlay is now dropped instead of throwing an error.</li>
+<li>
+<code>facet_labels_parens = NULL</code> and <code>facet_labels = NULL</code> in the bar plot functions now remove the parentheses (or the whole label) instead of leaving <code>(** = 0.66)</code> behind.</li>
+<li>
+<code><a href="../reference/closure_generate.html">closure_generate()</a></code> and <code><a href="../reference/horns.html">horns_rescaled()</a></code> no longer fail with a cryptic error on a one-point scale (<code>scale_min == scale_max</code>). <code><a href="../reference/horns.html">horns()</a></code> returns <code>0</code> there, like closure-core.</li>
+<li>
+<code><a href="../reference/closure_count_all.html">closure_count_all()</a></code> now throws an error for invalid input, such as <code>n = 1</code>, instead of returning the error message as a string.</li>
+<li>Non-numeric strings for <code>mean</code> or <code>sd</code> now get a clear error message.</li>
+<li>
+<code>stop_after</code> must now be at least 1. With <code>0</code>, no samples were found, and the warning falsely claimed the summary statistics were inconsistent.</li>
+<li>
+<code><a href="../reference/closure_write.html">closure_read()</a></code> and <code><a href="../reference/sprite_write.html">sprite_read()</a></code> now accept paths with backslashes on Windows.</li>
 </ul></div>
 </div>
     <div class="section level2">

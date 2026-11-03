@@ -101,7 +101,8 @@ data_near_zero <- closure_generate(
   sd = "0.4",
   n = 35,
   scale_min = 1,
-  scale_max = 7
+  scale_max = 7,
+  items_averaged = 1
 )
 #> → Just a second...
 #> 
@@ -116,7 +117,8 @@ data_near_midpoint <- closure_generate(
   sd = "2.2",
   n = 35,
   scale_min = 1,
-  scale_max = 7
+  scale_max = 7,
+  items_averaged = 1
 )
 #> → This could take a minute...
 #> 
@@ -132,7 +134,8 @@ data_near_one <- closure_generate(
   sd = "2.8",
   n = 35,
   scale_min = 1,
-  scale_max = 7
+  scale_max = 7,
+  items_averaged = 1
 )
 #> → This could take a minute...
 #> 
@@ -153,7 +156,8 @@ data_wide_spread <- closure_generate(
   sd = "2",
   n = 35,
   scale_min = 1,
-  scale_max = 7
+  scale_max = 7,
+  items_averaged = 1
 )
 #> → This could take a minute...
 #> 

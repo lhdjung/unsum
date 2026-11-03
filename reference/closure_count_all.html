@@ -9,7 +9,11 @@ which all other ones would be generated. Based on scale range only.
 
 
 This can help predict how much time closure_generate() would take, and
-avoid prohibitively long runs."><meta property="og:description" content="Determine how many samples closure_generate() would find for
+avoid prohibitively long runs.
+Both functions assume a single item, like closure_generate() with
+items_averaged = 1: each value in a sample is one of the integers from
+scale_min to scale_max. If mean and sd describe the average of
+several items per respondent, the counts are not meaningful."><meta property="og:description" content="Determine how many samples closure_generate() would find for
 a given set of summary statistics.
 closure_count_all() counts all CLOSURE samples that correspond to the
 input summary statistics, but without actually generating the samples. This
@@ -19,7 +23,11 @@ which all other ones would be generated. Based on scale range only.
 
 
 This can help predict how much time closure_generate() would take, and
-avoid prohibitively long runs."></head><body>
+avoid prohibitively long runs.
+Both functions assume a single item, like closure_generate() with
+items_averaged = 1: each value in a sample is one of the integers from
+scale_min to scale_max. If mean and sd describe the average of
+several items per respondent, the counts are not meaningful."></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -63,6 +71,10 @@ is much faster than <code><a href="closure_generate.html">closure_generate()</a>
 which all other ones would be generated. Based on scale range only.</p></li>
 </ul><p>This can help predict how much time <code><a href="closure_generate.html">closure_generate()</a></code> would take, and
 avoid prohibitively long runs.</p>
+<p>Both functions assume a single item, like <code><a href="closure_generate.html">closure_generate()</a></code> with
+<code>items_averaged = 1</code>: each value in a sample is one of the integers from
+<code>scale_min</code> to <code>scale_max</code>. If <code>mean</code> and <code>sd</code> describe the average of
+several items per respondent, the counts are not meaningful.</p>
     </div>
 
     <div class="section level2">

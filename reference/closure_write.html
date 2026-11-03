@@ -135,7 +135,7 @@ determine the CLOSURE results. Dashes separate values and
 underscores replace decimal periods. For example:</p>
 <div class="sourceCode"><pre><code>
 
- CLOSURE-3_5-1_0-90-1-5-up_or_down-5
+ CLOSURE-3_5-1_0-90-1-5-1-up_or_down-5
  </code></pre></div>
 
 <p>The order is the same as in <code><a href="closure_generate.html">closure_generate()</a></code>:</p>
@@ -147,6 +147,7 @@ underscores replace decimal periods. For example:</p>
 <span>   n <span class="op">=</span> <span class="fl">90</span>,</span>
 <span>   scale_min <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>   scale_max <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>   items_averaged <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>   rounding <span class="op">=</span> <span class="st">"up_or_down"</span>,  <span class="co"># default</span></span>
 <span>   threshold <span class="op">=</span> <span class="fl">5</span>             <span class="co"># default</span></span>
 <span> <span class="op">)</span></span>
@@ -161,7 +162,8 @@ underscores replace decimal periods. For example:</p>
 <span class="r-in"><span>  sd <span class="op">=</span> <span class="st">"0.6"</span>,</span></span>
 <span class="r-in"><span>  n <span class="op">=</span> <span class="fl">45</span>,</span></span>
 <span class="r-in"><span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  items_averaged <span class="op">=</span> <span class="fl">1</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All CLOSURE results found</span>
@@ -172,7 +174,7 @@ underscores replace decimal periods. For example:</p>
 <span class="r-in"><span><span class="va">path_new_folder</span> <span class="op">&lt;-</span> <span class="fu">closure_write</span><span class="op">(</span><span class="va">data</span>, path <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All CLOSURE files written to:</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> /tmp/RtmpNpIAjF/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> /tmp/RtmpnGo5yO/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># In a later session, conveniently read the files</span></span></span>
 <span class="r-in"><span><span class="co"># back into R. This returns the original list,</span></span></span>
@@ -182,10 +184,11 @@ underscores replace decimal periods. For example:</p>
 <span class="r-in"><span><span class="co"># to your folder here.)</span></span></span>
 <span class="r-in"><span><span class="fu">closure_read</span><span class="op">(</span><span class="va">path_new_folder</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $inputs</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 8</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   technique mean  sd        n scale_min scale_max rounding   threshold</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> CLOSURE   2.7   0.6      45         1         5 up_or_down         5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   technique mean  sd        n scale_min scale_max items_averaged rounding  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span> <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>          <span style="color: #949494; font-style: italic;">&lt;int&gt;</span> <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> CLOSURE   2.7   0.6      45         1         5              1 up_or_down</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: threshold &lt;dbl&gt;</span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $metrics_main</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 2</span></span>
@@ -307,9 +310,9 @@ underscores replace decimal periods. For example:</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $directory</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 1 × 1</span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   path                                                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                               </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> /tmp/RtmpNpIAjF/CLOSURE-2_7-0_6-45-1-5-up_or_down-5/</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   path                                                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> /tmp/RtmpnGo5yO/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 </code></pre></div>
     </div>

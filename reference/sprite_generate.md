@@ -5,8 +5,8 @@ parameter reconstruction via iterative techniques). SPRITE reconstructs
 possible sample distributions given summary statistics and multi-item
 scale information.
 
-`stop_after` is required when `items > 1` to prevent overflow errors in
-the current implementation.
+`stop_after` is required when `items_averaged > 1` to prevent overflow
+errors in the current implementation.
 
 ## Usage
 
@@ -17,7 +17,7 @@ sprite_generate(
   n,
   scale_min,
   scale_max,
-  items = 1,
+  items_averaged,
   path = NULL,
   stop_after = NULL,
   include = c("stats_and_horns", "stats_only", "all"),
@@ -48,11 +48,12 @@ sprite_generate(
   `scale_max = 7`. Prefer the empirical min and max if available: they
   constrain the possible values further.
 
-- items:
+- items_averaged:
 
-  Numeric (length 1). Number of items/questions in your scale. Must be
-  at least 2. This represents how many individual items were averaged to
-  produce each participant's mean score.
+  Numeric (length 1). Number of items averaged into each respondent's
+  score, such as `4` for a mean over four questions. This is not the
+  number of scale points. There is no default, so the assumption is
+  stated in every call. Use `1` for a single item.
 
 - path:
 
@@ -62,9 +63,9 @@ sprite_generate(
 
 - stop_after:
 
-  Numeric (length 1). **Required** for SPRITE when `items > 1`. Limits
-  the number of samples returned to prevent overflow. Recommended value:
-  100-1000 depending on your needs.
+  Numeric (length 1). **Required** for SPRITE when `items_averaged > 1`.
+  Limits the number of samples returned to prevent overflow. Recommended
+  value: 100-1000 depending on your needs.
 
 - include:
 
@@ -170,7 +171,7 @@ sprite_generate(
     this value occurs in the sample. For instance, `v3` counts the 3s.
     Negative values are marked with `n`, as in `vn2` for -2, and decimal
     values with `_`, as in `v1_5` for 1.5 (only for SPRITE with
-    `items > 1`). Together, these columns describe each sample
+    `items_averaged > 1`). Together, these columns describe each sample
     completely because the order of values within a sample doesn't
     matter. The counts of each row sum up to `n`.
 
@@ -232,6 +233,7 @@ data_simple <- sprite_generate(
   n = 120,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 2,
   stop_after = 150
 )
 
@@ -240,9 +242,9 @@ sprite_generate(
   mean = "3.5",
   sd = "1.7",
   n = 1000,
-  items = 5,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 5,
   stop_after = 1000
 )
 } # }

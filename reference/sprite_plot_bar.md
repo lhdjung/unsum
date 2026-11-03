@@ -53,6 +53,8 @@ sprite_plot_bar(
   String (length 1). How to aggregate the samples? Either take the
   average sample (`"mean"`, the default) or the sum of all samples
   (`"all"`). This only matters if absolute frequencies are shown.
+  `"all"` needs the horns index values in `results`, so if `data` were
+  read from disk, use `include = "stats_and_horns"` or `"all"` there.
 
 - overlay:
 
@@ -138,6 +140,7 @@ data <- sprite_generate(
   n = 120,
   scale_min = 1,
   scale_max = 5,
+  items_averaged = 1,
   stop_after = 150
 )
 #> 

@@ -103,7 +103,9 @@ value and its percentage of all values. Other options are <code>"absolute"</code
 <dt id="arg-samples">samples<a class="anchor" aria-label="anchor" href="#arg-samples"></a></dt>
 <dd><p>String (length 1). How to aggregate the samples? Either take
 the average sample (<code>"mean"</code>, the default) or the sum of all samples
-(<code>"all"</code>). This only matters if absolute frequencies are shown.</p></dd>
+(<code>"all"</code>). This only matters if absolute frequencies are shown. <code>"all"</code>
+needs the horns index values in <code>results</code>, so if <code>data</code> were read from
+disk, use <code>include = "stats_and_horns"</code> or <code>"all"</code> there.</p></dd>
 
 
 <dt id="arg-overlay">overlay<a class="anchor" aria-label="anchor" href="#arg-overlay"></a></dt>
@@ -192,7 +194,8 @@ part using <code>facet_labels_parens = NULL</code> or the entire label using
 <span class="r-in"><span>  sd <span class="op">=</span> <span class="st">"0.5"</span>,</span></span>
 <span class="r-in"><span>  n <span class="op">=</span> <span class="fl">70</span>,</span></span>
 <span class="r-in"><span>  scale_min <span class="op">=</span> <span class="fl">1</span>,</span></span>
-<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span></span></span>
+<span class="r-in"><span>  scale_max <span class="op">=</span> <span class="fl">5</span>,</span></span>
+<span class="r-in"><span>  items_averaged <span class="op">=</span> <span class="fl">1</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> <span style="color: #00BB00;">✔</span> All CLOSURE results found</span>

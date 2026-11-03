@@ -25,6 +25,19 @@
   found, but the search was partial (SPRITE, or CLOSURE with
   `stop_after`). Its columns now describe the shapes of individual
   samples rather than of per-value count ranges.
+- In
+  [`closure_generate()`](https://lhdjung.github.io/unsum/reference/closure_generate.md)
+  and
+  [`sprite_generate()`](https://lhdjung.github.io/unsum/reference/sprite_generate.md),
+  `items` is now `items_averaged` and no longer has a default, as in
+  scrutiny. It is the number of items averaged into each respondent’s
+  score, and its old name was mistaken for the number of scale points.
+  With the default of 1, a mean of a multi-item scale was silently
+  treated as a single item. Use `items_averaged = 1` for a single item.
+  CLOSURE still requires `items_averaged = 1`.
+- `inputs` has a new `items_averaged` column after `scale_max`. It is
+  also part of the folder name when writing to disk, e.g.,
+  `CLOSURE-3_5-1_0-90-1-5-1-up_or_down-5`.
 - Results written to disk use a new layout. Instead of sample.parquet
   and horns.parquet, a folder has counts.parquet, scale_values.parquet,
   and format.parquet, as well as the new modality files. Folders written
@@ -64,9 +77,9 @@
   Rust level even if `rounding` was, e.g., `"floor"` or `"ceiling"`.
   With `"floor"`, this meant only exact matches were found (usually
   none); with `"ceiling"`, too many.
-- `closure_generate(items = 2)` now throws an error instead of silently
-  running CLOSURE with `items = 1`. CLOSURE only supports single-item
-  scales; use
+- `closure_generate(items_averaged = 2)` now throws an error instead of
+  silently running CLOSURE with `items = 1`. CLOSURE only supports
+  single-item scales; use
   [`sprite_generate()`](https://lhdjung.github.io/unsum/reference/sprite_generate.md)
   for others.
 - Results with negative scale values can now be read back from disk. The
@@ -80,10 +93,46 @@
 - Errors on the Rust level are now reported as R errors instead of a
   confusing `$ operator is invalid for atomic vectors` message. In
   writing mode, the partially created folder is removed.
-- `n`, `scale_min`, `scale_max`, `stop_after`, and `items` are now
-  checked for being whole numbers, with a clear error message.
+- `n`, `scale_min`, `scale_max`, `stop_after`, and `items_averaged` are
+  now checked for being whole numbers, with a clear error message.
 - Printing in-memory results no longer shows an empty `$directory`
   element.
+- [`sprite_generate()`](https://lhdjung.github.io/unsum/reference/sprite_generate.md)
+  works with `items_averaged = 8` and other numbers of items that put
+  scale values exactly halfway between two hundredths. Count column
+  names used to be rounded differently in R than in closure-core, so the
+  results failed validation.
+- [`sprite_generate()`](https://lhdjung.github.io/unsum/reference/sprite_generate.md)
+  runs that only differ in `items_averaged` no longer write to the same
+  folder, which caused a “Folder already exists” error.
+- [`closure_plot_bar()`](https://lhdjung.github.io/unsum/reference/closure_plot_bar.md)
+  and
+  [`sprite_plot_bar()`](https://lhdjung.github.io/unsum/reference/sprite_plot_bar.md)
+  with `samples = "all"` now show the total count across all samples of
+  each group, as documented. Previously, they showed the average
+  sample’s counts. With `samples = "all"`, the default overlay is now
+  dropped instead of throwing an error.
+- `facet_labels_parens = NULL` and `facet_labels = NULL` in the bar plot
+  functions now remove the parentheses (or the whole label) instead of
+  leaving `(** = 0.66)` behind.
+- [`closure_generate()`](https://lhdjung.github.io/unsum/reference/closure_generate.md)
+  and
+  [`horns_rescaled()`](https://lhdjung.github.io/unsum/reference/horns.md)
+  no longer fail with a cryptic error on a one-point scale
+  (`scale_min == scale_max`).
+  [`horns()`](https://lhdjung.github.io/unsum/reference/horns.md)
+  returns `0` there, like closure-core.
+- [`closure_count_all()`](https://lhdjung.github.io/unsum/reference/closure_count_all.md)
+  now throws an error for invalid input, such as `n = 1`, instead of
+  returning the error message as a string.
+- Non-numeric strings for `mean` or `sd` now get a clear error message.
+- `stop_after` must now be at least 1. With `0`, no samples were found,
+  and the warning falsely claimed the summary statistics were
+  inconsistent.
+- [`closure_read()`](https://lhdjung.github.io/unsum/reference/closure_write.md)
+  and
+  [`sprite_read()`](https://lhdjung.github.io/unsum/reference/sprite_write.md)
+  now accept paths with backslashes on Windows.
 
 ## unsum 0.3.0
 

@@ -17,6 +17,12 @@ This can help predict how much time
 [`closure_generate()`](https://lhdjung.github.io/unsum/reference/closure_generate.md)
 would take, and avoid prohibitively long runs.
 
+Both functions assume a single item, like
+[`closure_generate()`](https://lhdjung.github.io/unsum/reference/closure_generate.md)
+with `items_averaged = 1`: each value in a sample is one of the integers
+from `scale_min` to `scale_max`. If `mean` and `sd` describe the average
+of several items per respondent, the counts are not meaningful.
+
 ## Usage
 
 ``` r
