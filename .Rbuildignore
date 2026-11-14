@@ -29,3 +29,4 @@
 ^CLOSURE-.*$
 ^SPRITE-.*$
 ^jarl\.toml$
+^man/figures/logo\.R$
