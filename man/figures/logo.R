@@ -13,19 +13,19 @@ gold <- "#f2c94c"
 border <- "#5D3FD3" # CLOSURE purple
 
 # The background is a very dark shade of the border's hue, and the histograms
-# are a slightly lighter one, so they read as texture behind the gold.
+# are a lighter one, so they read as texture behind the gold.
 sky <- "#16122f"
-bars <- "#2a2457"
+bars <- "#463d8f"
 
 pts <- function(x, y) paste(sprintf("%.1f,%.1f", x, y), collapse = " ")
 polygon <- function(x, y) sprintf('<polygon points="%s"/>', pts(x, y))
 
 # The word. Letters sit between y_top and y_bot and are w wide, measured along
 # the middle of the tube.
-sw <- 20
-y_top <- 270
-y_bot <- 330
-w <- 48
+sw <- 19
+y_top <- 271
+y_bot <- 329
+w <- 46
 r <- w / 2
 
 u <- function(x) {
@@ -106,7 +106,8 @@ outline <- systemfonts::glyph_outline(glyph, font, size = 260)
 sigma <- polygon(outline$x + 123, 365 - outline$y)
 
 # The other two pieces broke off along jagged cracks well above and below the
-# word. They float askew, turned away from the word.
+# word. They float askew, turned away from the word. Like the word, they are
+# shrunk a little, to 96% of the sigma's size, around the center of the logo.
 crack <- function(x, y) list(x = x + 10 * 0:4, y = y + c(0, 4, -3, 4, 0))
 
 piece <- function(id, x, y, transform) {
@@ -127,7 +128,11 @@ k1 <- crack(178, 244)
 k2 <- crack(186, 356)
 
 pieces <- c(
-  sprintf('<g fill="%s">', gold),
+  sprintf(
+    '<g fill="%s" transform="translate(260 300) scale(%g) translate(-260 -300)">',
+    gold,
+    0.96
+  ),
   piece(
     "top",
     c(0, k1$x, 520, 520, 0),
