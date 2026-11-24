@@ -73,9 +73,15 @@ test_that("`items_averaged` is part of the inputs and the folder name", {
 })
 
 
-test_that("a one-point scale works", {
-  data <- closure_generate("3", "0", 10, scale_min = 3, scale_max = 3, items_averaged = 1)
-  expect_equal(data$metrics_main$samples_all, 1)
+test_that("a one-point scale is an error in the generators but not in `horns()`", {
+  expect_error(
+    closure_generate("3", "0", 10, scale_min = 3, scale_max = 3, items_averaged = 1),
+    "must be greater than"
+  )
+  expect_error(
+    sprite_generate("3", "0", 10, scale_min = 3, scale_max = 3, items_averaged = 1),
+    "must be greater than"
+  )
   expect_equal(horns(5, 3, 3), 0)
   expect_equal(horns_rescaled(5, 3, 3), 0)
 })

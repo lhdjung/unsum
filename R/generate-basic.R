@@ -95,6 +95,17 @@ generate_from_mean_sd_n <- function(
 
   check_scale(scale_min, scale_max, mean_num)
 
+  # A one-point scale has a single possible sample, and its shape analysis
+  # contradicted itself: every sample was flat, so an exhaustive run would
+  # "prove" that the data was not unimodal. closure-core rejects it.
+  if (scale_min == scale_max) {
+    abort_in_export(
+      "`scale_max` must be greater than `scale_min`.",
+      "x" = "Both are {.val {scale_min}}.",
+      "i" = "With a single scale value, every observation equals it."
+    )
+  }
+
   if (sd_num < 0) {
     abort_in_export(
       "Standard deviation cannot be negative.",
