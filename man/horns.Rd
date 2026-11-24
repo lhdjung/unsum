@@ -104,9 +104,12 @@ given set of summary statistics depend on the substantive context of the
 data (\href{https://peerj.com/preprints/26968/}{Heathers et al. 2018}).
 
 Heathers wrote about SPRITE, but the logic applies equally to CLOSURE.
-Indeed, as CLOSURE is exhaustive but SPRITE is not, it is only CLOSURE that
-provides certainty about the set of possible samples and their horns
-indices.
+The horns indices the samples can have do not depend on the technique: the
+reported SD and its rounding fix every sample's variance, and with it its
+horns index, before any search. CLOSURE and SPRITE therefore return samples
+with the same horns values, up to that rounding. What CLOSURE adds by being
+exhaustive is certainty about the set of samples itself, such as which
+shapes occur among them.
 }
 
 \subsection{Rust implementation}{
