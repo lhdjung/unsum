@@ -143,6 +143,14 @@ fn modality_summary_to_robj(ms: &ModalityShapes) -> Robj {
         ("deficit_min".into(), (ms.deficit_min as i32).into()),
         ("deficit_mean".into(), ms.deficit_mean.into()),
         ("deficit_max".into(), (ms.deficit_max as i32).into()),
+        ("bar_gap_min".into(), (ms.bar_gap_min as i32).into()),
+        ("bar_gap_max".into(), (ms.bar_gap_max as i32).into()),
+        ("bar_gap_min_share".into(), ms.bar_gap_min_share.into()),
+        ("bar_gap_max_share".into(), ms.bar_gap_max_share.into()),
+        ("second_peak_min".into(), (ms.second_peak_min as i32).into()),
+        ("second_peak_max".into(), (ms.second_peak_max as i32).into()),
+        ("edge_drop_min".into(), (ms.edge_drop_min as i32).into()),
+        ("edge_drop_max".into(), (ms.edge_drop_max as i32).into()),
     ];
     for class in ShapeClass::all() {
         pairs.push((format!("n_{}", class.as_str()), (ms.n_of(class) as f64).into()));
@@ -284,7 +292,9 @@ fn result_list_to_pairs(rl: &ResultListFromMeanSdN<i32>) -> Vec<(&'static str, R
         min = rl.metrics_horns.min,
         median = rl.metrics_horns.median,
         max = rl.metrics_horns.max,
-        range = rl.metrics_horns.range
+        range = rl.metrics_horns.range,
+        single_peak_ceiling = rl.metrics_horns.single_peak_ceiling,
+        beyond_single_peak = rl.metrics_horns.beyond_single_peak
     )
     .into();
 
@@ -429,6 +439,7 @@ fn create_combinations(
                 items_val,
                 streaming_config,
                 stop_after,
+                None, // prominence: the default cutoffs
             )
         } else {
             sprite_parallel_streaming(
@@ -444,6 +455,7 @@ fn create_combinations(
                 restrict_min_parsed,
                 streaming_config,
                 stop_after,
+                None, // prominence: the default cutoffs
             )
         };
 
@@ -476,6 +488,7 @@ fn create_combinations(
             items_val,
             None, // No parquet config - just return results in memory
             stop_after,
+            None, // prominence: the default cutoffs
         )
     } else {
         sprite_parallel(
@@ -491,6 +504,7 @@ fn create_combinations(
             restrict_min_parsed,
             None, // No parquet config - just return results in memory
             stop_after,
+            None, // prominence: the default cutoffs
         )
     };
 

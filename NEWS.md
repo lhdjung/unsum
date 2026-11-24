@@ -14,10 +14,14 @@
 
 -   The output of `closure_generate()` and `sprite_generate()` gains three tibbles: `modality_shapes`, `modality_summary`, and `modality_prominence`. They describe how many samples take which shape (e.g., one or two modes). All modality tibbles are now also written to disk and read back from it.
 -   Large result sets are much faster to return to R, and they take up much less memory.
+-   `modality_summary` gains eight columns giving, over all samples, the smallest and largest value of the numbers that shape verdicts rest on, in observations: `bar_gap_*` (tallest minus shortest bar), `second_peak_*` (how clearly a second peak stands out), and `edge_drop_*` (how far the tallest bar stands above the bars towards the nearer end of the scale).
+-   `metrics_horns` gains `single_peak_ceiling`, the highest horns index that any single-peaked sample on the scale can have, and `beyond_single_peak`, which is `TRUE` if the reported statistics rule out every single-peaked sample. The latter follows from the statistics alone, so it is meaningful for SPRITE and for `stop_after` too.
 
 ## Changes in results
 
 -   The underlying Rust crate, closure-core, was updated with many fixes. CLOSURE now finds samples that lie exactly on the bounds of the mean or SD (so there can be more samples than before), and `stop_after` is now an exact upper bound. SPRITE takes rounding errors literally, represents multi-item scales exactly, and reaches many more distinct samples than before.
+-   Shape classification changed in closure-core. Near-uniform samples count as flat, and a single peak counts as a floor or ceiling effect when the bars between it and that end of the scale are within the cutoff of it, so `j_shape_low` and `j_shape_high` can be `TRUE` where they were `FALSE`. Equal lower peaks separated by a shallow dip count as one mode.
+-   SPRITE returns no samples at once, instead of after a futile search, when the SD is wider than any whole-number sample allows or narrower than any sample with the restrictions allows.
 
 ## Bugfixes
 

@@ -196,7 +196,7 @@ check_generator_output <- function(
   # Horns metrics (3 / 6)
   check_component_tibble(
     x = data$metrics_horns,
-    dims = c(1L, 9L),
+    dims = c(1L, 11L),
     technique = technique,
     col_names_types = list(
       "mean" = "double",
@@ -207,7 +207,9 @@ check_generator_output <- function(
       "min" = "double",
       "median" = "double",
       "max" = "double",
-      "range" = "double"
+      "range" = "double",
+      "single_peak_ceiling" = "double",
+      "beyond_single_peak" = "logical"
     )
   )
 
@@ -321,7 +323,7 @@ check_generator_output <- function(
 
     check_component_tibble(
       x = data$modality_summary,
-      dims = c(1L, 18L),
+      dims = c(1L, 26L),
       technique = technique,
       col_names_types = MODALITY_SUMMARY_TYPES
     )
