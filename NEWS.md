@@ -22,6 +22,7 @@
 -   The underlying Rust crate, closure-core, was updated with many fixes. CLOSURE now finds samples that lie exactly on the bounds of the mean or SD (so there can be more samples than before), and `stop_after` is now an exact upper bound. SPRITE takes rounding errors literally, represents multi-item scales exactly, and reaches many more distinct samples than before.
 -   Shape classification changed in closure-core. Near-uniform samples count as flat, and a single peak counts as a floor or ceiling effect when the bars between it and that end of the scale are within the cutoff of it, so `j_shape_low` and `j_shape_high` can be `TRUE` where they were `FALSE`. Equal lower peaks separated by a shallow dip count as one mode.
 -   SPRITE returns no samples at once, instead of after a futile search, when the SD is wider than any whole-number sample allows or narrower than any sample with the restrictions allows.
+-   `closure_generate()` gives an error for `n` above 1,000,000, whose search could exhaust memory and crash R. `closure_count_all()` has no such limit.
 
 ## Bugfixes
 
