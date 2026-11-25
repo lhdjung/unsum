@@ -87,8 +87,11 @@ expand_section <- function(section, technique) {
       value over the samples of the numbers that shape verdicts rest on:
       `bar_gap_*` (tallest minus shortest bar; flatness), `second_peak_*`
       (how clearly a second peak stands out), and `edge_drop_*` (how far the
-      tallest bar stands above the bars towards the nearer end of the scale;
-      bell versus floor or ceiling effect), all counted in observations.
+      tallest bar stands above the lowest bar towards either end of the scale,
+      the smaller of the two; bell versus floor or ceiling effect), all counted
+      in observations. `bar_gap_min_share` and `bar_gap_max_share` divide the
+      gap by the average bar height instead, so they can exceed 1. If no sample
+      was found, the counts in observations are `0` and the shares `NaN`.
       - **`modality_conclusion`**: whether any sample can be unimodal,
       bimodal, or J-shaped. `NA` means that no such sample was found, but the
       search was partial, so it might still exist. This is always the case with

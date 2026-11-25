@@ -14,7 +14,7 @@
 
 -   The output of `closure_generate()` and `sprite_generate()` gains three tibbles: `modality_shapes`, `modality_summary`, and `modality_prominence`. They describe how many samples take which shape (e.g., one or two modes). All modality tibbles are now also written to disk and read back from it.
 -   Large result sets are much faster to return to R, and they take up much less memory.
--   `modality_summary` gains eight columns giving, over all samples, the smallest and largest value of the numbers that shape verdicts rest on, in observations: `bar_gap_*` (tallest minus shortest bar), `second_peak_*` (how clearly a second peak stands out), and `edge_drop_*` (how far the tallest bar stands above the bars towards the nearer end of the scale).
+-   `modality_summary` gains eight columns giving, over all samples, the smallest and largest value of the numbers that shape verdicts rest on, in observations: `bar_gap_*` (tallest minus shortest bar), `second_peak_*` (how clearly a second peak stands out), and `edge_drop_*` (how far the tallest bar stands above the lowest bar towards either end of the scale, the smaller of the two).
 -   `metrics_horns` gains `single_peak_ceiling`, the highest horns index that any single-peaked sample on the scale can have, and `beyond_single_peak`, which is `TRUE` if the reported statistics rule out every single-peaked sample. The latter follows from the statistics alone, so it is meaningful for SPRITE and for `stop_after` too.
 
 ## Changes in results
