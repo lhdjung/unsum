@@ -105,11 +105,11 @@ data (\href{https://peerj.com/preprints/26968/}{Heathers et al. 2018}).
 
 Heathers wrote about SPRITE, but the logic applies equally to CLOSURE.
 The horns indices the samples can have do not depend on the technique: the
-reported SD and its rounding fix every sample's variance, and with it its
-horns index, before any search. CLOSURE and SPRITE therefore return samples
-with the same horns values, up to that rounding. What CLOSURE adds by being
-exhaustive is certainty about the set of samples itself, such as which
-shapes occur among them.
+reported mean and SD, with their rounding, bound every sample's variance,
+and with it its horns index, before any search. SPRITE's horns values
+therefore lie within the same narrow range as CLOSURE's, though SPRITE may
+not reach its ends. What CLOSURE adds by being exhaustive is certainty
+about the set of samples itself, such as which shapes occur among them.
 }
 
 \subsection{Rust implementation}{
