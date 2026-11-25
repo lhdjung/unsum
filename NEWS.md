@@ -36,7 +36,7 @@
 -   `sprite_generate()` runs that only differ in `items_averaged` no longer write to the same folder, which caused a "Folder already exists" error.
 -   `closure_plot_bar()` and `sprite_plot_bar()` with `samples = "all"` now show the total count across all samples of each group, as documented. Previously, they showed the average sample's counts. With `samples = "all"`, the default overlay is now dropped instead of throwing an error.
 -   `facet_labels_parens = NULL` and `facet_labels = NULL` in the bar plot functions now remove the parentheses (or the whole label) instead of leaving `(** = 0.66)` behind.
--   `closure_generate()` and `sprite_generate()` give a clear error on a one-point scale (`scale_min == scale_max`): a single scale value leaves only one possible sample, whose shape analysis contradicts itself. `horns()` and `horns_rescaled()` no longer fail there and return `0`, like closure-core.
+-   `closure_generate()`, `sprite_generate()`, and `closure_count_all()` give a clear error on a one-point scale (`scale_min == scale_max`): a single scale value leaves only one possible sample, whose shape analysis contradicts itself. `horns()` and `horns_rescaled()` no longer fail there and return `0`, like closure-core.
 -   `closure_count_all()` now throws an error for invalid input, such as `n = 1`, instead of returning the error message as a string.
 -   Non-numeric strings for `mean` or `sd` now get a clear error message.
 -   `stop_after` must now be at least 1. With `0`, no samples were found, and the warning falsely claimed the summary statistics were inconsistent.

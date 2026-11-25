@@ -64,7 +64,7 @@ closure_count_all <- function(
   check_numeric_string(mean)
   check_numeric_string(sd)
 
-  check_scale(scale_min, scale_max, as.numeric(mean))
+  check_scale(scale_min, scale_max, as.numeric(mean), allow_one_point = FALSE)
 
   # See `generate_from_mean_sd_n()` for why the interval centers are used
   mean_sd_unrounded <- unround_center_error(

@@ -528,7 +528,8 @@ check_scale <- function(
   scale_min,
   scale_max,
   mean = NULL,
-  warning = NULL
+  warning = NULL,
+  allow_one_point = TRUE
 ) {
   if (scale_min > scale_max) {
     abort_in_export(
@@ -536,6 +537,17 @@ check_scale <- function(
       "!" = warning,
       "x" = "`scale_min` is {.val {scale_min}}.",
       "x" = "`scale_max` is {.val {scale_max}}."
+    )
+  }
+
+  # A one-point scale has a single possible sample, and its shape analysis
+  # contradicted itself: every sample was flat, so an exhaustive run would
+  # "prove" that the data was not unimodal. closure-core rejects it.
+  if (!allow_one_point && scale_min == scale_max) {
+    abort_in_export(
+      "`scale_max` must be greater than `scale_min`.",
+      "x" = "Both are {.val {scale_min}}.",
+      "i" = "With a single scale value, every observation equals it."
     )
   }
 
