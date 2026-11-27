@@ -23,6 +23,7 @@ reference:
 - title: Metrics
 - contents:
   - closure_count_all
+  - closure_count_details
   - closure_gauge_complexity
   - horns
 - title: Read and write

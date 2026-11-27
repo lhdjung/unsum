@@ -1,8 +1,8 @@
 use closure_core::modality::{ModalityShapes, ShapeClass};
 use closure_core::{
-    closure_count, closure_parallel, closure_parallel_streaming, sprite_parallel,
+    closure_count, closure_count_details, closure_parallel, closure_parallel_streaming, sprite_parallel,
     sprite_parallel_streaming, FrequencyDist, ModalityCounts, ModalityPairs, OutputFormat,
-    RestrictionsMinimum, RestrictionsOption, ResultListFromMeanSdN, StreamingConfig,
+    ProminenceThresholds, RestrictionsMinimum, RestrictionsOption, ResultListFromMeanSdN, StreamingConfig,
 };
 /// This is part of unsum, an R package that uses extendr for Rust integration
 use extendr_api::prelude::*;
@@ -369,6 +369,65 @@ fn count_closure_combinations(
     }
 }
 
+/// Per-value counts over all CLOSURE samples and over the single-peaked ones,
+/// computed without listing any sample. Count ranges are empty vectors when
+/// there is no sample; the distribution has one row per value and count that
+/// occurs in some sample.
+#[extendr]
+fn count_closure_details(
+    mean: f64,
+    sd: f64,
+    n: i32,
+    scale_min: i32,
+    scale_max: i32,
+    rounding_error_mean: f64,
+    rounding_error_sd: f64,
+) -> Robj {
+    let details = match closure_count_details(
+        mean,
+        sd,
+        n,
+        scale_min,
+        scale_max,
+        rounding_error_mean,
+        rounding_error_sd,
+    ) {
+        Ok(details) => details,
+        Err(e) => return Robj::from(format!("CLOSURE error: {}", e)),
+    };
+    let (all, single_peak) = (&details.all, &details.single_peak);
+    let ints = |counts: Vec<u32>| counts.into_iter().map(|c| c as i32).collect::<Vec<_>>();
+
+    let (mut value, mut count, mut n_all, mut n_single_peak) = (vec![], vec![], vec![], vec![]);
+    for (j, &v) in details.values.iter().enumerate() {
+        for (c, &samples) in all.by_count[j].iter().enumerate() {
+            if samples > 0 {
+                value.push(v as f64);
+                count.push(c as i32);
+                n_all.push(samples as f64);
+                n_single_peak.push(single_peak.by_count[j][c] as f64);
+            }
+        }
+    }
+
+    list!(
+        samples_all = all.n_samples as f64,
+        samples_single_peak = single_peak.n_samples as f64,
+        value = details.values.iter().map(|&v| v as f64).collect::<Vec<_>>(),
+        count_lo = ints(all.count_lo()),
+        count_hi = ints(all.count_hi()),
+        count_mean = all.count_mean(),
+        single_peak_count_lo = ints(single_peak.count_lo()),
+        single_peak_count_hi = ints(single_peak.count_hi()),
+        single_peak_count_mean = single_peak.count_mean(),
+        dist_value = value,
+        dist_count = count,
+        dist_n_samples = n_all,
+        dist_n_samples_single_peak = n_single_peak
+    )
+    .into()
+}
+
 #[extendr]
 fn create_combinations(
     mean: f64,
@@ -384,8 +443,16 @@ fn create_combinations(
     restrict_min: Robj,
     write: Robj,
     stop_after: Option<usize>,
+    prominence: f64,
+    prominence_band: Vec<f64>,
 ) -> Robj {
     let technique_upper = technique.to_uppercase();
+
+    // The shape cutoffs; closure-core checks that they are fractions of `n`
+    let prominence = Some(ProminenceThresholds {
+        primary: prominence,
+        band: prominence_band,
+    });
 
     if technique_upper != "CLOSURE" && technique_upper != "SPRITE" {
         return Robj::from(format!(
@@ -439,7 +506,7 @@ fn create_combinations(
                 items_val,
                 streaming_config,
                 stop_after,
-                None, // prominence: the default cutoffs
+                prominence.clone(),
             )
         } else {
             sprite_parallel_streaming(
@@ -455,7 +522,7 @@ fn create_combinations(
                 restrict_min_parsed,
                 streaming_config,
                 stop_after,
-                None, // prominence: the default cutoffs
+                prominence.clone(),
             )
         };
 
@@ -488,7 +555,7 @@ fn create_combinations(
             items_val,
             None, // No parquet config - just return results in memory
             stop_after,
-            None, // prominence: the default cutoffs
+            prominence.clone(),
         )
     } else {
         sprite_parallel(
@@ -504,7 +571,7 @@ fn create_combinations(
             restrict_min_parsed,
             None, // No parquet config - just return results in memory
             stop_after,
-            None, // prominence: the default cutoffs
+            prominence.clone(),
         )
     };
 
@@ -527,4 +594,5 @@ extendr_module! {
     mod unsum;
     fn create_combinations;
     fn count_closure_combinations;
+    fn count_closure_details;
 }

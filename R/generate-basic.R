@@ -25,6 +25,8 @@
 # rounding = "up_or_down"
 # threshold = 5
 # ask_to_proceed <- TRUE
+# prominence <- 0.05
+# prominence_band <- c(0.02, 0.05, 0.10)
 # rounding_error_mean <- NULL
 # rounding_error_sd <- NULL
 
@@ -42,6 +44,8 @@ generate_from_mean_sd_n <- function(
   rounding = "up_or_down",
   threshold = 5,
   ask_to_proceed = TRUE,
+  prominence = 0.05,
+  prominence_band = c(0.02, 0.05, 0.10),
   rounding_error_mean = NULL,
   rounding_error_sd = NULL
 ) {
@@ -64,6 +68,19 @@ generate_from_mean_sd_n <- function(
   check_single(threshold, c("double", "integer"))
   check_single(ask_to_proceed, "logical")
   check_single(items_averaged, c("double", "integer"))
+  check_single(prominence, c("double", "integer"))
+
+  # closure-core checks that each cutoff is a fraction of `n`
+  if (
+    !is.numeric(prominence_band) ||
+      length(prominence_band) == 0L ||
+      anyNA(prominence_band)
+  ) {
+    abort_in_export(
+      "`prominence_band` must be a numeric vector without `NA`s.",
+      "x" = "It is {.val {prominence_band}}."
+    )
+  }
 
   check_whole_number(n)
   check_whole_number(scale_min)
@@ -278,7 +295,9 @@ generate_from_mean_sd_n <- function(
     restrict_exact = NULL,
     restrict_min = NULL,
     write = parquet_config,
-    stop_after = stop_after
+    stop_after = stop_after,
+    prominence = as.numeric(prominence),
+    prominence_band = as.numeric(prominence_band)
   )
 
   # The Rust side signals failure by returning an error message as a string

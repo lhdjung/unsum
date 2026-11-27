@@ -6,14 +6,18 @@ NULL
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 # fmt: skip
 utils::globalVariables(c(
-  ".", ".data", "data", "directory", "double.eps", "ecdf", "f_expected",
-  "f_relative", "file.sep", "file_meta_data", "formals_final", "frequency",
-  "frequency_dist", "group_frequency_table", "hjust", "include", "inputs",
-  "label", "lower", "median", "metrics_horns", "metrics_main",
-  "modality_conclusion", "modality_counts", "modality_pairs", "n", "num_rows",
-  "path", "reader", "results", "sample_id", "samples", "samples_all",
-  "samples_cap", "scale_max", "scale_min", "sd", "total_combinations",
-  "uniform", "value", "values_all", "vjust", "writer", "x", "y", "y_text"
+  ".", ".data", "count_hi", "count_lo", "count_mean", "data", "directory",
+  "dist_count", "dist_n_samples", "dist_n_samples_single_peak", "dist_value",
+  "double.eps", "ecdf", "f_expected", "f_relative", "file.sep",
+  "file_meta_data", "formals_final", "frequency", "frequency_dist",
+  "group_frequency_table", "hjust", "include", "inputs", "label", "lower",
+  "median", "metrics_horns", "metrics_main", "modality_conclusion",
+  "modality_counts", "modality_pairs", "n", "num_rows", "path", "reader",
+  "results", "sample_id", "samples", "samples_all", "samples_cap",
+  "samples_single_peak", "scale_max", "scale_min", "sd",
+  "single_peak_count_hi", "single_peak_count_lo", "single_peak_count_mean",
+  "total_combinations", "uniform", "value", "values_all", "vjust", "writer",
+  "x", "y", "y_text"
 ))
 
 

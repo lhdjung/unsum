@@ -63,9 +63,12 @@ expand_section <- function(section, technique) {
         - `beyond_single_peak`: logical. `TRUE` if no single-peaked sample
         meets the reported statistics: even the lowest SD that the rounding
         allows is larger than any single-peaked sample with the reported mean
-        can have. The original data then had a dip somewhere, if the reported
+        can have, or than any single-peaked sample of `n` values can have at
+        any mean. The original data then had a dip somewhere, if the reported
         statistics are correct. This follows from the statistics alone, so it
-        also holds for SPRITE and if `stop_after` was specified.
+        also holds for SPRITE and if `stop_after` was specified. `FALSE` does
+        not mean that a single-peaked sample exists; [`closure_count_details()`]
+        answers that exactly.
       - **`frequency`**:
         - `samples`: string. Frequencies apply to one of three subsets of
         samples: `\"all\"` for all samples, `\"horns_min\"` for those samples

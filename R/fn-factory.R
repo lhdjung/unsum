@@ -59,6 +59,8 @@ new_generator_mean_sd_n <- function(technique) {
         rounding = rounding,
         threshold = threshold,
         ask_to_proceed = ask_to_proceed,
+        prominence = prominence,
+        prominence_band = prominence_band,
         rounding_error_mean = NULL,
         rounding_error_sd = NULL,
         items_averaged = items_averaged

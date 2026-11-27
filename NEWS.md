@@ -12,17 +12,20 @@
 
 ## New features
 
+-   New `closure_count_details()` gives, for each scale value and each count, the number of CLOSURE samples in which the value occurs that many times, over all samples and over the single-peaked ones, without generating any sample. It settles whether any single-peaked sample has the reported statistics, and the range of each value's count among all samples or among the single-peaked ones. This needs no cutoff for what counts as a peak, and it remains feasible at sample sizes where `closure_generate()` is not.
+-   `closure_generate()` and `sprite_generate()` gain `prominence` and `prominence_band`, the cutoffs for the shape classes as fractions of `n`. Previously, they were fixed at their defaults, `0.05` and `c(0.02, 0.05, 0.10)`.
+-   Printing the results of `closure_generate()` and `sprite_generate()` now says so if no single-peaked sample has the reported statistics (`beyond_single_peak` in `metrics_horns`).
 -   The output of `closure_generate()` and `sprite_generate()` gains three tibbles: `modality_shapes`, `modality_summary`, and `modality_prominence`. They describe how many samples take which shape (e.g., one or two modes). All modality tibbles are now also written to disk and read back from it.
 -   Large result sets are much faster to return to R, and they take up much less memory.
 -   `modality_summary` gains eight columns giving, over all samples, the smallest and largest value of the numbers that shape verdicts rest on, in observations: `bar_gap_*` (tallest minus shortest bar), `second_peak_*` (how clearly a second peak stands out), and `edge_drop_*` (how far the tallest bar stands above the lowest bar towards either end of the scale, the smaller of the two).
--   `metrics_horns` gains `single_peak_ceiling`, the highest horns index that any single-peaked sample on the scale can have, and `beyond_single_peak`, which is `TRUE` if the reported statistics rule out every single-peaked sample. The latter follows from the statistics alone, so it is meaningful for SPRITE and for `stop_after` too.
+-   `metrics_horns` gains `single_peak_ceiling`, the highest horns index that any single-peaked sample on the scale can have, and `beyond_single_peak`, which is `TRUE` if the reported statistics rule out every single-peaked sample. The latter follows from the statistics alone, so it is meaningful for SPRITE and for `stop_after` too. It is also `TRUE` if even the lowest SD that the rounding allows is beyond the largest that any single-peaked sample of `n` values can have, which flags more small samples: e.g., on a 1-7 scale with `n = 5`, mean 4.00, and SD 1.73.
 
 ## Changes in results
 
 -   The underlying Rust crate, closure-core, was updated with many fixes. CLOSURE now finds samples that lie exactly on the bounds of the mean or SD (so there can be more samples than before), and `stop_after` is now an exact upper bound. SPRITE takes rounding errors literally, represents multi-item scales exactly, and reaches many more distinct samples than before.
 -   Shape classification changed in closure-core. Near-uniform samples count as flat, and a single peak counts as a floor or ceiling effect when the bars between it and that end of the scale are within the cutoff of it, so `j_shape_low` and `j_shape_high` can be `TRUE` where they were `FALSE`. Equal lower peaks separated by a shallow dip count as one mode.
 -   SPRITE returns no samples at once, instead of after a futile search, when the SD is wider than any whole-number sample allows or narrower than any sample with the restrictions allows.
--   `closure_generate()` gives an error for `n` above 1,000,000, whose search could exhaust memory and crash R. `closure_count_all()` has no such limit.
+-   `closure_generate()` and `sprite_generate()` give an error for `n` above 1,000,000, whose search could exhaust memory and crash R. `closure_count_all()` has no such limit.
 
 ## Bugfixes
 
