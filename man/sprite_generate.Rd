@@ -16,7 +16,9 @@ sprite_generate(
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
-  ask_to_proceed = TRUE
+  ask_to_proceed = TRUE,
+  prominence = 0.05,
+  prominence_band = c(0.02, 0.05, 0.1)
 )
 }
 \arguments{
@@ -66,6 +68,21 @@ if \code{rounding} is any of \code{"up_or_down"}, \code{"up"}, and \code{"down"}
 \item{ask_to_proceed}{Logical (length 1). If the runtime is predicted to be
 very long in an interactive setting, should the function prompt you to
 proceed or abort? Default is \code{TRUE}.}
+
+\item{prominence}{Numeric (length 1). Cutoff for shape classification, as a
+fraction of \code{n}: how far a peak must rise above the dip separating it from
+any taller bar to count as a mode. It also decides how uneven the bars can
+be for a sample to count as flat. The per-class counts in
+\code{modality_summary} and the bounds in \code{modality_shapes} use this cutoff.
+Default is \code{0.05}, i.e., 5\% of \code{n}. This is a convention, not a derived
+value.}
+
+\item{prominence_band}{Numeric. Cutoffs, as fractions of \code{n}, that
+\code{modality_conclusion} considers: a shape counts as possible if some sample
+takes it at any whole-observation cutoff from the lowest to the highest of
+these. \code{modality_prominence} gives the number of samples in each shape at
+each of them. \code{prominence} is always added, so it widens the band if it
+lies outside. Default is \code{c(0.02, 0.05, 0.10)}.}
 }
 \value{
 \code{sprite_generate()} returns a named list of tibbles (data frames):
@@ -89,6 +106,17 @@ deviation, coefficient of variation, median absolute deviation, minimum,
 median, maximum, and range of the horns index values across all samples.
 Note that \code{mad} is not scaled using a constant, as \code{\link[stats:mad]{stats::mad()}} is
 by default.
+\item \code{single_peak_ceiling}: double. The highest horns index that any
+single-peaked sample on this scale can have.
+\item \code{beyond_single_peak}: logical. \code{TRUE} if no single-peaked sample
+meets the reported statistics: even the lowest SD that the rounding
+allows is larger than any single-peaked sample with the reported mean
+can have, or than any single-peaked sample of \code{n} values can have at
+any mean. The original data then had a dip somewhere, if the reported
+statistics are correct. This follows from the statistics alone, so it
+also holds for SPRITE and if \code{stop_after} was specified. \code{FALSE} does
+not mean that a single-peaked sample exists; \code{\link[=closure_count_details]{closure_count_details()}}
+answers that exactly.
 }
 \item \strong{\code{frequency}}:
 \itemize{
@@ -109,7 +137,15 @@ be found while streaming results to disk.
 \item \strong{\code{modality_counts}}, \strong{\code{modality_pairs}}, \strong{\code{modality_shapes}},
 \strong{\code{modality_summary}}, \strong{\code{modality_prominence}}: the range of counts
 of each scale value, and the shapes (e.g., one or two modes) that the
-samples take.
+samples take. \code{modality_summary} also gives the smallest and largest
+value over the samples of the numbers that shape verdicts rest on:
+\verb{bar_gap_*} (tallest minus shortest bar; flatness), \verb{second_peak_*}
+(how clearly a second peak stands out), and \verb{edge_drop_*} (how far the
+tallest bar stands above the lowest bar towards either end of the scale,
+the smaller of the two; bell versus floor or ceiling effect), all counted
+in observations. \code{bar_gap_min_share} and \code{bar_gap_max_share} divide the
+gap by the average bar height instead, so they can exceed 1. If no sample
+was found, the counts in observations are \code{0} and the shares \code{NaN}.
 \item \strong{\code{modality_conclusion}}: whether any sample can be unimodal,
 bimodal, or J-shaped. \code{NA} means that no such sample was found, but the
 search was partial, so it might still exist. This is always the case with

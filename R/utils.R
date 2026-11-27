@@ -6,14 +6,18 @@ NULL
 # Avoid NOTEs in R-CMD saying "no visible binding for global variable".
 # fmt: skip
 utils::globalVariables(c(
-  ".", ".data", "data", "directory", "double.eps", "ecdf", "f_expected",
-  "f_relative", "file.sep", "file_meta_data", "formals_final", "frequency",
-  "frequency_dist", "group_frequency_table", "hjust", "include", "inputs",
-  "label", "lower", "median", "metrics_horns", "metrics_main",
-  "modality_conclusion", "modality_counts", "modality_pairs", "n", "num_rows",
-  "path", "reader", "results", "sample_id", "samples", "samples_all",
-  "samples_cap", "scale_max", "scale_min", "sd", "total_combinations",
-  "uniform", "value", "values_all", "vjust", "writer", "x", "y", "y_text"
+  ".", ".data", "count_hi", "count_lo", "count_mean", "data", "directory",
+  "dist_count", "dist_n_samples", "dist_n_samples_single_peak", "dist_value",
+  "double.eps", "ecdf", "f_expected", "f_relative", "file.sep",
+  "file_meta_data", "formals_final", "frequency", "frequency_dist",
+  "group_frequency_table", "hjust", "include", "inputs", "label", "lower",
+  "median", "metrics_horns", "metrics_main", "modality_conclusion",
+  "modality_counts", "modality_pairs", "n", "num_rows", "path", "reader",
+  "results", "sample_id", "samples", "samples_all", "samples_cap",
+  "samples_single_peak", "scale_max", "scale_min", "sd",
+  "single_peak_count_hi", "single_peak_count_lo", "single_peak_count_mean",
+  "total_combinations", "uniform", "value", "values_all", "vjust", "writer",
+  "x", "y", "y_text"
 ))
 
 
@@ -196,7 +200,7 @@ check_generator_output <- function(
   # Horns metrics (3 / 6)
   check_component_tibble(
     x = data$metrics_horns,
-    dims = c(1L, 9L),
+    dims = c(1L, 11L),
     technique = technique,
     col_names_types = list(
       "mean" = "double",
@@ -207,7 +211,9 @@ check_generator_output <- function(
       "min" = "double",
       "median" = "double",
       "max" = "double",
-      "range" = "double"
+      "range" = "double",
+      "single_peak_ceiling" = "double",
+      "beyond_single_peak" = "logical"
     )
   )
 
@@ -321,7 +327,7 @@ check_generator_output <- function(
 
     check_component_tibble(
       x = data$modality_summary,
-      dims = c(1L, 18L),
+      dims = c(1L, 26L),
       technique = technique,
       col_names_types = MODALITY_SUMMARY_TYPES
     )
@@ -526,7 +532,8 @@ check_scale <- function(
   scale_min,
   scale_max,
   mean = NULL,
-  warning = NULL
+  warning = NULL,
+  allow_one_point = TRUE
 ) {
   if (scale_min > scale_max) {
     abort_in_export(
@@ -534,6 +541,17 @@ check_scale <- function(
       "!" = warning,
       "x" = "`scale_min` is {.val {scale_min}}.",
       "x" = "`scale_max` is {.val {scale_max}}."
+    )
+  }
+
+  # A one-point scale has a single possible sample, and its shape analysis
+  # contradicted itself: every sample was flat, so an exhaustive run would
+  # "prove" that the data was not unimodal. closure-core rejects it.
+  if (!allow_one_point && scale_min == scale_max) {
+    abort_in_export(
+      "`scale_max` must be greater than `scale_min`.",
+      "x" = "Both are {.val {scale_min}}.",
+      "i" = "With a single scale value, every observation equals it."
     )
   }
 

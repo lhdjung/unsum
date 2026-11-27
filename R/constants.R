@@ -63,9 +63,12 @@ SHAPE_CLASSES <- c(
   "three_or_more_modes"
 )
 
-# Column names and types of the `modality_summary` tibble. The `n_*` columns
-# count samples per shape class at the primary mode threshold; the `band_n_*`
-# columns count those with that shape at any threshold in the prominence band.
+# Column names and types of the `modality_summary` tibble. The `bar_gap_*`,
+# `second_peak_*`, and `edge_drop_*` columns give the smallest and largest
+# value over the samples of the number each shape verdict rests on. The `n_*`
+# columns count samples per shape class at the primary mode threshold; the
+# `band_n_*` columns count those with that shape at any threshold in the
+# prominence band. The order must match closure-core's output.
 MODALITY_SUMMARY_TYPES <- c(
   list(
     "exhaustive" = "logical",
@@ -73,7 +76,15 @@ MODALITY_SUMMARY_TYPES <- c(
     "min_prominence" = "double",
     "deficit_min" = "integer",
     "deficit_mean" = "double",
-    "deficit_max" = "integer"
+    "deficit_max" = "integer",
+    "bar_gap_min" = "integer",
+    "bar_gap_max" = "integer",
+    "bar_gap_min_share" = "double",
+    "bar_gap_max_share" = "double",
+    "second_peak_min" = "integer",
+    "second_peak_max" = "integer",
+    "edge_drop_min" = "integer",
+    "edge_drop_max" = "integer"
   ),
   `names<-`(as.list(rep("double", 6L)), paste0("n_", SHAPE_CLASSES)),
   `names<-`(as.list(rep("double", 6L)), paste0("band_n_", SHAPE_CLASSES))

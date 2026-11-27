@@ -29,3 +29,5 @@
 ^CLOSURE-.*$
 ^SPRITE-.*$
 ^jarl\.toml$
+^AGENTS\.md$
+^CLAUDE\.md$

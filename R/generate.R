@@ -56,6 +56,19 @@ NULL
 #' @param ask_to_proceed Logical (length 1). If the runtime is predicted to be
 #'   very long in an interactive setting, should the function prompt you to
 #'   proceed or abort? Default is `TRUE`.
+#' @param prominence Numeric (length 1). Cutoff for shape classification, as a
+#'   fraction of `n`: how far a peak must rise above the dip separating it from
+#'   any taller bar to count as a mode. It also decides how uneven the bars can
+#'   be for a sample to count as flat. The per-class counts in
+#'   `modality_summary` and the bounds in `modality_shapes` use this cutoff.
+#'   Default is `0.05`, i.e., 5% of `n`. This is a convention, not a derived
+#'   value.
+#' @param prominence_band Numeric. Cutoffs, as fractions of `n`, that
+#'   `modality_conclusion` considers: a shape counts as possible if some sample
+#'   takes it at any whole-observation cutoff from the lowest to the highest of
+#'   these. `modality_prominence` gives the number of samples in each shape at
+#'   each of them. `prominence` is always added, so it widens the band if it
+#'   lies outside. Default is `c(0.02, 0.05, 0.10)`.
 #'
 #' @return `r expand_section("generate_return", "CLOSURE")`
 #'

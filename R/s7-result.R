@@ -128,7 +128,6 @@ S7::method(`[[`, ResultListFromMeanSdN) <- function(x, name) {
 }
 
 
-
 # More methods ------------------------------------------------------------
 
 # The next two functions have constant output because their values are derived
@@ -188,6 +187,13 @@ S7::method(print, ResultListFromMeanSdN) <- function(
   cli::cli_h1(
     "{.bold {technique} results: {msg_samples_all} {msg_sample_s}}"
   )
+
+  if (isTRUE(x@metrics_horns$beyond_single_peak)) {
+    cli::cli_alert_warning(paste(
+      "No single-peaked sample has these statistics. If they are correct,",
+      "the original data had a dip (see {.field $metrics_horns})."
+    ))
+  }
 
   # Elements that are shown by default
   visible <- c(

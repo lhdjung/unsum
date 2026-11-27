@@ -16,6 +16,8 @@ compare_sprite_closure <- function() {
     rounding = rounding,
     threshold = threshold,
     ask_to_proceed = ask_to_proceed,
+    prominence = prominence,
+    prominence_band = prominence_band,
     items_averaged = items_averaged
   )
 

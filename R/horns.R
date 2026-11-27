@@ -80,9 +80,12 @@
 #'   data ([Heathers et al. 2018](https://peerj.com/preprints/26968/)).
 #'
 #'   Heathers wrote about SPRITE, but the logic applies equally to CLOSURE.
-#'   Indeed, as CLOSURE is exhaustive but SPRITE is not, it is only CLOSURE that
-#'   provides certainty about the set of possible samples and their horns
-#'   indices.
+#'   The horns indices the samples can have do not depend on the technique: the
+#'   reported mean and SD, with their rounding, bound every sample's variance,
+#'   and with it its horns index, before any search. SPRITE's horns values
+#'   therefore lie within the same narrow range as CLOSURE's, though SPRITE may
+#'   not reach its ends. What CLOSURE adds by being exhaustive is certainty
+#'   about the set of samples itself, such as which shapes occur among them.
 #'
 #'   ## Rust implementation
 #'

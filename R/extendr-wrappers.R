@@ -10,9 +10,11 @@
 #' @useDynLib unsum, .registration = TRUE
 NULL
 
-create_combinations <- function(mean, sd, n, scale_min, scale_max, technique, rounding_error_mean, rounding_error_sd, items, restrict_exact, restrict_min, write, stop_after) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, technique, rounding_error_mean, rounding_error_sd, items, restrict_exact, restrict_min, write, stop_after)
+create_combinations <- function(mean, sd, n, scale_min, scale_max, technique, rounding_error_mean, rounding_error_sd, items, restrict_exact, restrict_min, write, stop_after, prominence, prominence_band) .Call(wrap__create_combinations, mean, sd, n, scale_min, scale_max, technique, rounding_error_mean, rounding_error_sd, items, restrict_exact, restrict_min, write, stop_after, prominence, prominence_band)
 
 count_closure_combinations <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd) .Call(wrap__count_closure_combinations, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd)
+
+count_closure_details <- function(mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd) .Call(wrap__count_closure_details, mean, sd, n, scale_min, scale_max, rounding_error_mean, rounding_error_sd)
 
 
 # nolint end

@@ -58,6 +58,17 @@ expand_section <- function(section, technique) {
         median, maximum, and range of the horns index values across all samples.
         Note that `mad` is not scaled using a constant, as [`stats::mad()`] is
         by default.
+        - `single_peak_ceiling`: double. The highest horns index that any
+        single-peaked sample on this scale can have.
+        - `beyond_single_peak`: logical. `TRUE` if no single-peaked sample
+        meets the reported statistics: even the lowest SD that the rounding
+        allows is larger than any single-peaked sample with the reported mean
+        can have, or than any single-peaked sample of `n` values can have at
+        any mean. The original data then had a dip somewhere, if the reported
+        statistics are correct. This follows from the statistics alone, so it
+        also holds for SPRITE and if `stop_after` was specified. `FALSE` does
+        not mean that a single-peaked sample exists; [`closure_count_details()`]
+        answers that exactly.
       - **`frequency`**:
         - `samples`: string. Frequencies apply to one of three subsets of
         samples: `\"all\"` for all samples, `\"horns_min\"` for those samples
@@ -75,7 +86,15 @@ expand_section <- function(section, technique) {
       - **`modality_counts`**, **`modality_pairs`**, **`modality_shapes`**,
       **`modality_summary`**, **`modality_prominence`**: the range of counts
       of each scale value, and the shapes (e.g., one or two modes) that the
-      samples take.
+      samples take. `modality_summary` also gives the smallest and largest
+      value over the samples of the numbers that shape verdicts rest on:
+      `bar_gap_*` (tallest minus shortest bar; flatness), `second_peak_*`
+      (how clearly a second peak stands out), and `edge_drop_*` (how far the
+      tallest bar stands above the lowest bar towards either end of the scale,
+      the smaller of the two; bell versus floor or ceiling effect), all counted
+      in observations. `bar_gap_min_share` and `bar_gap_max_share` divide the
+      gap by the average bar height instead, so they can exceed 1. If no sample
+      was found, the counts in observations are `0` and the shares `NaN`.
       - **`modality_conclusion`**: whether any sample can be unimodal,
       bimodal, or J-shaped. `NA` means that no such sample was found, but the
       search was partial, so it might still exist. This is always the case with
