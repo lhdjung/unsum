@@ -61,6 +61,7 @@ Now let’s look at the results themselves:
 data
 #> 
 #> ── CLOSURE results: 2,215 samples ──────────────────────────────────────────────
+#> ! No single-peaked sample has these statistics. If they are correct, the original data had a dip (see $metrics_horns).
 #> $inputs · how `closure_generate()` produced these data
 #> # A tibble: 1 × 9
 #>   technique mean  sd        n scale_min scale_max items_averaged rounding  
@@ -73,10 +74,11 @@ data
 #>         <dbl>      <dbl>
 #> 1        2215     177200
 #> $metrics_horns · on the distribution of horns index values
-#> # A tibble: 1 × 9
+#> # A tibble: 1 × 11
 #>    mean uniform     sd     cv    mad   min median   max  range
 #>   <dbl>   <dbl>  <dbl>  <dbl>  <dbl> <dbl>  <dbl> <dbl>  <dbl>
 #> 1 0.792     0.5 0.0251 0.0317 0.0189 0.756  0.787 0.844 0.0877
+#> # ℹ 2 more variables: single_peak_ceiling <dbl>, beyond_single_peak <lgl>
 #> With hidden elements:
 #> ℹ Access $modality_counts for min/max counts per scale value (5 rows)
 #> ℹ Access $modality_pairs for frequency ordering between adjacent values (4 rows)
@@ -204,7 +206,7 @@ save? Write it to disk with
 path_new_folder <- closure_write(data, path = tempdir())
 #> 
 #> ✔ All CLOSURE files written to:
-#> /tmp/Rtmp2CfATq/CLOSURE-3_5-1_8-80-1-5-1-up_or_down-5/
+#> /tmp/RtmpW5lHyW/CLOSURE-3_5-1_8-80-1-5-1-up_or_down-5/
 ```
 
 This stores the results using the highly efficient Parquet format. It

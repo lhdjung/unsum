@@ -1,5 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://lhdjung.github.io/unsum/404.html</loc></url>
+<url><loc>https://lhdjung.github.io/unsum/AGENTS.html</loc></url>
+<url><loc>https://lhdjung.github.io/unsum/CLAUDE.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/LICENSE-text.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/LICENSE.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/articles/index.html</loc></url>
@@ -8,6 +10,7 @@
 <url><loc>https://lhdjung.github.io/unsum/index.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/news/index.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/reference/closure_count_all.html</loc></url>
+<url><loc>https://lhdjung.github.io/unsum/reference/closure_count_details.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/reference/closure_gauge_complexity.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/reference/closure_generate.html</loc></url>
 <url><loc>https://lhdjung.github.io/unsum/reference/closure_plot_bar.html</loc></url>

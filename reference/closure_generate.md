@@ -28,7 +28,9 @@ closure_generate(
   include = c("stats_and_horns", "stats_only", "all"),
   rounding = "up_or_down",
   threshold = 5,
-  ask_to_proceed = TRUE
+  ask_to_proceed = TRUE,
+  prominence = 0.05,
+  prominence_band = c(0.02, 0.05, 0.1)
 )
 ```
 
@@ -111,6 +113,25 @@ closure_generate(
   interactive setting, should the function prompt you to proceed or
   abort? Default is `TRUE`.
 
+- prominence:
+
+  Numeric (length 1). Cutoff for shape classification, as a fraction of
+  `n`: how far a peak must rise above the dip separating it from any
+  taller bar to count as a mode. It also decides how uneven the bars can
+  be for a sample to count as flat. The per-class counts in
+  `modality_summary` and the bounds in `modality_shapes` use this
+  cutoff. Default is `0.05`, i.e., 5% of `n`. This is a convention, not
+  a derived value.
+
+- prominence_band:
+
+  Numeric. Cutoffs, as fractions of `n`, that `modality_conclusion`
+  considers: a shape counts as possible if some sample takes it at any
+  whole-observation cutoff from the lowest to the highest of these.
+  `modality_prominence` gives the number of samples in each shape at
+  each of them. `prominence` is always added, so it widens the band if
+  it lies outside. Default is `c(0.02, 0.05, 0.10)`.
+
 ## Value
 
 `closure_generate()` returns a named list of tibbles (data frames):
@@ -141,6 +162,20 @@ closure_generate(
     all samples. Note that `mad` is not scaled using a constant, as
     [`stats::mad()`](https://rdrr.io/r/stats/mad.html) is by default.
 
+  - `single_peak_ceiling`: double. The highest horns index that any
+    single-peaked sample on this scale can have.
+
+  - `beyond_single_peak`: logical. `TRUE` if no single-peaked sample
+    meets the reported statistics: even the lowest SD that the rounding
+    allows is larger than any single-peaked sample with the reported
+    mean can have, or than any single-peaked sample of `n` values can
+    have at any mean. The original data then had a dip somewhere, if the
+    reported statistics are correct. This follows from the statistics
+    alone, so it also holds for SPRITE and if `stop_after` was
+    specified. `FALSE` does not mean that a single-peaked sample exists;
+    [`closure_count_details()`](https://lhdjung.github.io/unsum/reference/closure_count_details.md)
+    answers that exactly.
+
 - **`frequency`**:
 
   - `samples`: string. Frequencies apply to one of three subsets of
@@ -164,7 +199,16 @@ closure_generate(
 - **`modality_counts`**, **`modality_pairs`**, **`modality_shapes`**,
   **`modality_summary`**, **`modality_prominence`**: the range of counts
   of each scale value, and the shapes (e.g., one or two modes) that the
-  samples take.
+  samples take. `modality_summary` also gives the smallest and largest
+  value over the samples of the numbers that shape verdicts rest on:
+  `bar_gap_*` (tallest minus shortest bar; flatness), `second_peak_*`
+  (how clearly a second peak stands out), and `edge_drop_*` (how far the
+  tallest bar stands above the lowest bar towards either end of the
+  scale, the smaller of the two; bell versus floor or ceiling effect),
+  all counted in observations. `bar_gap_min_share` and
+  `bar_gap_max_share` divide the gap by the average bar height instead,
+  so they can exceed 1. If no sample was found, the counts in
+  observations are `0` and the shares `NaN`.
 
 - **`modality_conclusion`**: whether any sample can be unimodal,
   bimodal, or J-shaped. `NA` means that no such sample was found, but
@@ -252,6 +296,7 @@ data_high <- closure_generate(
 data_high
 #> 
 #> ── CLOSURE results: 2,492 samples ──────────────────────────────────────────────
+#> ! No single-peaked sample has these statistics. If they are correct, the original data had a dip (see $metrics_horns).
 #> 
 #> $inputs · how `closure_generate()` produced these data
 #> # A tibble: 1 × 9
@@ -267,10 +312,11 @@ data_high
 #> 1        2492     174440
 #> 
 #> $metrics_horns · on the distribution of horns index values
-#> # A tibble: 1 × 9
+#> # A tibble: 1 × 11
 #>    mean uniform     sd     cv    mad   min median   max  range
 #>   <dbl>   <dbl>  <dbl>  <dbl>  <dbl> <dbl>  <dbl> <dbl>  <dbl>
 #> 1 0.708     0.5 0.0223 0.0314 0.0210 0.676  0.705 0.748 0.0719
+#> # ℹ 2 more variables: single_peak_ceiling <dbl>, beyond_single_peak <lgl>
 #> 
 #> With hidden elements:
 #> ℹ Access $modality_counts for min/max counts per scale value (5 rows)
@@ -323,10 +369,11 @@ data_low
 #> 1           4        100
 #> 
 #> $metrics_horns · on the distribution of horns index values
-#> # A tibble: 1 × 9
+#> # A tibble: 1 × 11
 #>     mean uniform      sd     cv     mad    min median    max   range
 #>    <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>  <dbl>  <dbl>   <dbl>
 #> 1 0.0624     0.5 0.00400 0.0641 0.00400 0.0584 0.0624 0.0664 0.00800
+#> # ℹ 2 more variables: single_peak_ceiling <dbl>, beyond_single_peak <lgl>
 #> 
 #> With hidden elements:
 #> ℹ Access $modality_counts for min/max counts per scale value (5 rows)

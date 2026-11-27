@@ -25,6 +25,8 @@
 - [`closure_count_all()`](https://lhdjung.github.io/unsum/reference/closure_count_all.md)
   [`closure_count_initial()`](https://lhdjung.github.io/unsum/reference/closure_count_all.md)
   : Count CLOSURE samples in advance
+- [`closure_count_details()`](https://lhdjung.github.io/unsum/reference/closure_count_details.md)
+  : Count CLOSURE samples per scale value, and single-peaked ones
 - [`closure_gauge_complexity()`](https://lhdjung.github.io/unsum/reference/closure_gauge_complexity.md)
   : Heuristic to predict CLOSURE runtime
 - [`horns()`](https://lhdjung.github.io/unsum/reference/horns.md)

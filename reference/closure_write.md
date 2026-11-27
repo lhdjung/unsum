@@ -130,7 +130,7 @@ data <- closure_generate(
 path_new_folder <- closure_write(data, path = tempdir())
 #> 
 #> ✔ All CLOSURE files written to:
-#> /tmp/RtmpnGo5yO/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/
+#> /tmp/RtmpxKQzsy/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/
 
 # In a later session, conveniently read the files
 # back into R. This returns the original list,
@@ -153,10 +153,11 @@ closure_read(path_new_folder)
 #> 1          54       2430
 #> 
 #> $metrics_horns
-#> # A tibble: 1 × 9
+#> # A tibble: 1 × 11
 #>     mean uniform      sd     cv     mad    min median   max  range
 #>    <dbl>   <dbl>   <dbl>  <dbl>   <dbl>  <dbl>  <dbl> <dbl>  <dbl>
 #> 1 0.0905     0.5 0.00746 0.0824 0.00642 0.0758 0.0933   0.1 0.0242
+#> # ℹ 2 more variables: single_peak_ceiling <dbl>, beyond_single_peak <lgl>
 #> 
 #> $modality_counts
 #> # A tibble: 5 × 3
@@ -194,16 +195,17 @@ closure_read(path_new_folder)
 #> 5 one_mode_interior        54     5        0        1
 #> 
 #> $modality_summary
-#> # A tibble: 1 × 18
+#> # A tibble: 1 × 26
 #>   exhaustive n_scanned min_prominence deficit_min deficit_mean deficit_max
 #>   <lgl>          <dbl>          <dbl>       <int>        <dbl>       <int>
 #> 1 TRUE              54           0.05           0        0.148           1
-#> # ℹ 12 more variables: n_flat <dbl>, n_one_mode_interior <dbl>,
-#> #   n_one_mode_low_edge <dbl>, n_one_mode_high_edge <dbl>, n_two_modes <dbl>,
-#> #   n_three_or_more_modes <dbl>, band_n_flat <dbl>,
-#> #   band_n_one_mode_interior <dbl>, band_n_one_mode_low_edge <dbl>,
-#> #   band_n_one_mode_high_edge <dbl>, band_n_two_modes <dbl>,
-#> #   band_n_three_or_more_modes <dbl>
+#> # ℹ 20 more variables: bar_gap_min <int>, bar_gap_max <int>,
+#> #   bar_gap_min_share <dbl>, bar_gap_max_share <dbl>, second_peak_min <int>,
+#> #   second_peak_max <int>, edge_drop_min <int>, edge_drop_max <int>,
+#> #   n_flat <dbl>, n_one_mode_interior <dbl>, n_one_mode_low_edge <dbl>,
+#> #   n_one_mode_high_edge <dbl>, n_two_modes <dbl>, n_three_or_more_modes <dbl>,
+#> #   band_n_flat <dbl>, band_n_one_mode_interior <dbl>,
+#> #   band_n_one_mode_low_edge <dbl>, band_n_one_mode_high_edge <dbl>, …
 #> 
 #> $modality_prominence
 #> # A tibble: 18 × 5
@@ -268,6 +270,6 @@ closure_read(path_new_folder)
 #> # A tibble: 1 × 1
 #>   path                                                  
 #>   <chr>                                                 
-#> 1 /tmp/RtmpnGo5yO/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/
+#> 1 /tmp/RtmpxKQzsy/CLOSURE-2_7-0_6-45-1-5-1-up_or_down-5/
 #> 
 ```
