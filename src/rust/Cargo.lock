@@ -360,7 +360,7 @@ dependencies = [
 [[package]]
 name = "closure-core"
 version = "1.0.0"
-source = "git+https://github.com/lhdjung/closure-core.git?branch=optimize#c7a196c6fdd4f3905790750d144dc2bfcdcba9c4"
+source = "git+https://github.com/lhdjung/closure-core.git?branch=optimize#2508e151cdab32c735f76064ed022ace3c805de0"
 dependencies = [
  "arrow",
  "num",
